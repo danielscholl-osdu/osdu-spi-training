@@ -253,10 +253,14 @@ test('audio markers are ordered, inside the recording, and point at real views',
       );
     }
   }
-  assert.equal(episodes[0].id, 'machinery', 'the orientation frames the rest');
+  assert.equal(
+    episodes[0].id,
+    'orientation',
+    'the orientation frames the rest',
+  );
   const home = pageRenderers.home(parseRoute('#start'));
   assert.ok(
-    home.includes('data-listen-stop="180"'),
+    home.includes('data-listen-stop="243"'),
     'home carries the frame cue',
   );
   assert.ok(home.includes('data-listen-now'), 'home cue has a live note line');

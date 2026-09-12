@@ -93,7 +93,7 @@ function homePage() {
       <div class="home-start-actions"><a class="home-cta" href="${routeHref('running-stack')}">Start with 01 · What is a stack? →</a><a class="home-cta-alt" href="${routeHref('running-stack', 'request')}">Or trace one API request through it first</a></div>
       ${listenChips('start', {
         kicker: 'Hear the frame first',
-        lead: 'Three minutes from the orientation conversation: the data problem OSDU answers, and the three things SPI means here. It keeps playing while you read this page, and stops when the section ends.',
+        lead: 'Two and a half minutes from the orientation conversation: the request this site follows, and the three things SPI means here. It keeps playing while you read this page, and stops when the section ends.',
       })}
     </section>
     <section class="home-path" aria-label="The learning path">
