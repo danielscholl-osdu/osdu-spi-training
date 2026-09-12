@@ -74,18 +74,22 @@ function pathCards() {
 }
 
 function homePage() {
-  return `<section class="home-names" aria-label="One word, three things">
-      <div class="section-heading"><span class="guide-kicker">First, the word</span><h2>SPI means three things here</h2><p>They are related, and the site says which one it means. Each has its own repository and its own view.</p></div>
+  return `<section class="home-start" aria-label="Where to begin">
+      <div class="home-start-copy"><span class="guide-kicker">Where to begin</span><h2>Find your request on the map. Then see what built the map, and where its Azure code lives.</h2><p>Five views, each answering one question, each ending with what you can now say. One example runs through all of them: a partition lookup for opendes in a stack called dev1.</p></div>
+      <div class="home-start-actions"><a class="home-cta" href="${routeHref('running-stack')}">Start with 01 · What is a stack? →</a><a class="home-cta-alt" href="${routeHref('running-stack', 'request')}">Or trace one API request through it first</a></div>
+    </section>
+    <section class="home-path" aria-label="The learning path">
+      <div class="section-heading"><span class="guide-kicker">The path</span><h2>Five views, in order</h2><p>Each builds on the one before. Take them in order the first time; after that, any of them stands alone.</p></div>
+      ${pathCards()}
+    </section>
+    <section class="home-names" aria-label="One word, three things">
+      <div class="section-heading"><span class="guide-kicker">The word</span><h2>SPI means three things here</h2><p>They are related, and the site says which one it means. In the order the views meet them: the environment, the interface, the engineering system.</p></div>
       ${spiNamesFigure()}
     </section>
     <section class="home-zoom" id="guide-ladder" aria-label="From the subscription to the source">
-      <div class="section-heading"><span class="guide-kicker">The mental map</span><h2>Six places, from the outside in</h2><p>Everything in this site sits at one of these levels. The views zoom in from the resource group to the code; the numbers on the right are the views that explain each level, and each view says which levels it works at.</p></div>
+      <div class="section-heading"><span class="guide-kicker">The mental map</span><h2>Six places, from the outside in</h2><p>Everything in this site sits at one of these places. The resource group holds the Azure data services and the cluster side by side; the cluster holds namespaces, and a namespace holds services. The sixth place is not inside any of them: it is the source a service is built from. The numbers on the right are the views that explain each place.</p></div>
       ${zoomLadder()}
       ${ownerLegend()}
-    </section>
-    <section class="home-path" aria-label="The learning path">
-      <div class="section-heading"><span class="guide-kicker">The path</span><h2>Five views, each answering one question</h2><p>Take them in order the first time. Each builds on the one before and ends with what you can now say.</p></div>
-      ${pathCards()}
     </section>
     <section class="home-ways" aria-label="Alongside the path">
       <a class="way way-listen" href="${routeHref('listen')}"><span class="way-icon" aria-hidden="true">▶</span><b>Listen</b><p>A ${Math.round(audio.duration / 60)}-minute deep dive that keeps playing while you explore. Every chapter marker opens the matching view.</p><span class="way-cta">Open the player →</span></a>
@@ -129,9 +133,20 @@ export function chapterOutcomes(key) {
 
 export function chapterScope(key) {
   const chapter = chapters[key];
-  return chapter.where
-    ? `<p class="view-scope"><span>In this view</span>${escapeHtml(chapter.where)} <a href="#start?guide=ladder">See the six levels →</a></p>`
-    : '';
+  if (!chapter.where) return '';
+  return `<div class="view-scope">
+    <p><span>In this view</span>${escapeHtml(chapter.where)} <a href="#start?guide=ladder">See the six places →</a></p>
+    ${chapter.example ? `<p><span>The running example</span>${escapeHtml(chapter.example)}</p>` : ''}
+  </div>`;
+}
+
+export function mythCallout(id) {
+  const myth = myths.find((entry) => entry.id === id);
+  if (!myth) return '';
+  return `<aside class="easy-mistake" aria-label="Easy mistake">
+    <div class="easy-mistake-head"><span class="guide-kicker">Easy mistake</span><a href="${routeHref('not-true')}">All ${myths.length}, by theme →</a></div>
+    ${mythCard(myth)}
+  </aside>`;
 }
 
 function listenPage(route) {

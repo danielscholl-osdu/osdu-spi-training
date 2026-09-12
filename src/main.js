@@ -11,6 +11,7 @@ import {
   posterInline,
   chapterOutcomes,
   chapterScope,
+  mythCallout,
 } from './components/pages.js';
 import { createPlayer } from './components/player.js';
 import { parseRoute, routeHref } from './router.js';
@@ -95,10 +96,13 @@ function renderChapterFrame(route, scene) {
   const key = route.chapter;
   document.getElementById('chapter-navigation').innerHTML =
     chapterNavigation(key);
-  document.getElementById('chapter-kicker').textContent =
+  const kicker =
     scene.group === 'learn'
       ? `${String(learnOrder.indexOf(key) + 1).padStart(2, '0')} · ${scene.title}`
       : scene.title;
+  document.getElementById('chapter-kicker').textContent = kicker;
+  document.getElementById('rail-current').textContent = kicker;
+  setRailOpen(false);
   document.getElementById('premise').textContent = scene.premise || '';
   document.getElementById('premise').hidden = !scene.premise;
   document.getElementById('headline').innerHTML = scene.headline;
@@ -125,9 +129,10 @@ function renderChapterFrame(route, scene) {
   document.body.dataset.page = scene.kind === 'page' ? scene.page : 'map';
 }
 
-function guidesFor(scene, route) {
-  const guides = scene.guides || [];
-  return Array.isArray(guides) ? guides : guides[route.step] || [];
+function forStep(value, route) {
+  if (!value) return [];
+  if (Array.isArray(value)) return value;
+  return [value[route.step] || []].flat();
 }
 
 function render() {
@@ -168,16 +173,14 @@ function render() {
     document.getElementById('figure-title').textContent = scene.figure;
   }
   if (mapChanged) {
-    document.getElementById('chapter-guides').innerHTML = guidesFor(
-      scene,
-      route,
-    )
-      .map((guide) =>
-        suppliedPosters.some((poster) => poster.id === guide)
-          ? posterInline(guide)
-          : guideFigure(guide, { compact: true }),
-      )
-      .join('');
+    document.getElementById('chapter-guides').innerHTML =
+      forStep(scene.guides, route)
+        .map((guide) =>
+          suppliedPosters.some((poster) => poster.id === guide)
+            ? posterInline(guide)
+            : guideFigure(guide, { compact: true }),
+        )
+        .join('') + forStep(scene.mistakes, route).map(mythCallout).join('');
   }
   if (mapChanged) {
     document.getElementById('diagram').innerHTML =
@@ -255,5 +258,16 @@ document.addEventListener('keydown', (event) => {
     lastSelectedElement?.focus({ preventScroll: true });
   }
 });
+function setRailOpen(open) {
+  document.querySelector('.rail').dataset.open = String(open);
+  document
+    .getElementById('rail-toggle')
+    .setAttribute('aria-expanded', String(open));
+}
+document.getElementById('rail-toggle').addEventListener('click', () => {
+  const rail = document.querySelector('.rail');
+  setRailOpen(rail.dataset.open !== 'true');
+});
+
 window.addEventListener('hashchange', render);
 render();

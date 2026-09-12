@@ -372,26 +372,20 @@ function levelTags(level) {
 
 // Nested boxes for the start page. Levels 1–5 nest; level 6 stands beside
 // them because source is where a service comes from, not somewhere inside it.
+// The resource group holds the data services and the cluster side by side; the
+// cluster nests namespaces and one service. The source sits outside, feeding in.
 export function zoomLadder() {
-  const nested = zoomLevels.slice(0, 5);
-  const source = zoomLevels[5];
-  const open = nested
-    .map(
-      (
-        level,
-        i,
-      ) => `<div class="zoom-box owner-${level.owner} zoom-depth-${i}" id="zoom-${level.id}">
-        <div class="zoom-bar"><span class="zoom-index">${i + 1}</span><a href="${level.href}"><b>${level.name}</b><small>${level.detail}</small></a>${levelTags(level)}</div>`,
-    )
-    .join('');
-  const close = '</div>'.repeat(nested.length);
+  const [group, resources, cluster, workloads, service, source] = zoomLevels;
+  const box = (level, index, inner = '') =>
+    `<div class="zoom-box owner-${level.owner} zoom-depth-${index}" id="zoom-${level.id}">
+      <div class="zoom-bar"><span class="zoom-index">${index + 1}</span><a href="${level.href}"><b>${level.name}</b><small>${level.detail}</small></a>${levelTags(level)}</div>${inner}</div>`;
+  const inside = box(cluster, 2, box(workloads, 3, box(service, 4)));
+  const siblings = `<div class="zoom-siblings">${box(resources, 1)}${inside}</div>`;
   return `<div class="zoom-ladder">
-    <div class="zoom-nest">${open}${close}</div>
+    <div class="zoom-nest">${box(group, 0, siblings)}</div>
     <div class="zoom-aside">
-      <div class="zoom-arrow" aria-hidden="true"><span>built from</span>←</div>
-      <div class="zoom-box owner-${source.owner} zoom-source" id="zoom-${source.id}">
-        <div class="zoom-bar"><span class="zoom-index">6</span><a href="${source.href}"><b>${source.name}</b><small>${source.detail}</small></a>${levelTags(source)}</div>
-      </div>
+      <div class="zoom-arrow" aria-hidden="true"><span>built from, not inside</span>←</div>
+      ${box(source, 5).replace('zoom-depth-5', 'zoom-depth-5 zoom-source')}
     </div>
   </div>`;
 }

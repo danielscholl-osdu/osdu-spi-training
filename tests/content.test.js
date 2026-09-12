@@ -87,20 +87,34 @@ test('chapters connect to renderers, explanations, and named sources', () => {
     assert.equal(typeof diagramRenderers[chapter.diagram], 'function');
     assert.ok(Object.hasOwn(componentDetails, chapter.selected));
     verifyDetails(diagramRenderers[chapter.diagram](parseRoute(`#${id}`)), id);
-    const guides = Array.isArray(chapter.guides)
-      ? chapter.guides
-      : Object.values(chapter.guides || {}).flat();
-    if (!Array.isArray(chapter.guides))
-      for (const step of Object.keys(chapter.guides || {}))
+    const steps =
+      id === 'bring-up'
+        ? creationMoments.map((moment) => moment.id)
+        : id === 'running-stack'
+          ? ['developer', 'request']
+          : [];
+    const flatten = (value, name) => {
+      if (!value) return [];
+      if (Array.isArray(value)) return value;
+      for (const step of Object.keys(value))
         assert.ok(
-          creationMoments.some((moment) => moment.id === step),
-          `${id}: guides keyed by unknown step ${step}`,
+          steps.includes(step),
+          `${id}: ${name} keyed by unknown step ${step}`,
         );
-    for (const guide of guides)
+      return Object.values(value).flat();
+    };
+    for (const guide of flatten(chapter.guides, 'guides'))
       assert.ok(
         suppliedPosters.some((entry) => entry.id === guide) ||
           nativeGuides.some((entry) => entry.id === guide),
         `${id}: unknown field guide ${guide}`,
+      );
+    const mistakes = flatten(chapter.mistakes, 'mistakes');
+    assert.ok(mistakes.length, `${id}: no easy mistake beside the map`);
+    for (const mistake of mistakes)
+      assert.ok(
+        myths.some((myth) => myth.id === mistake),
+        `${id}: unknown easy mistake ${mistake}`,
       );
   }
   for (const [id, chapter] of pageChapters)
@@ -251,6 +265,7 @@ test('learn views state a question, what they build on, their scope, and outcome
   for (const [id, chapter] of learn) {
     assert.ok(chapter.question?.trim(), `${id}: question`);
     assert.ok(chapter.builds?.trim(), `${id}: builds`);
+    assert.ok(chapter.example?.trim(), `${id}: running example`);
     assert.ok(chapter.outcomes?.length >= 2, `${id}: outcomes`);
     assert.ok(chapter.where?.trim(), `${id}: where`);
   }
@@ -261,7 +276,16 @@ test('learn views state a question, what they build on, their scope, and outcome
   }
   for (const meaning of spiMeanings)
     verifyRoute(meaning.href, `SPI meaning ${meaning.id}`);
-  assert.ok(zoomLadder().includes('zoom-source'));
+  const ladder = zoomLadder();
+  assert.ok(ladder.includes('zoom-source'));
+  assert.ok(ladder.includes('zoom-siblings'));
+  assert.ok(
+    ladder.indexOf('id="zoom-cluster"') > ladder.indexOf('zoom-siblings'),
+  );
+  assert.deepEqual(
+    spiMeanings.map((meaning) => meaning.id),
+    ['stack', 'interface', 'engineering'],
+  );
   assert.ok(spiNamesFigure().split('<article').length === 4);
 });
 

@@ -7,7 +7,7 @@ export const chapters = {
     subtitle: 'What this site is for',
     headline: 'OSDU on Azure,<span>explained by boundary.</span>',
     intro:
-      'You already know the OSDU APIs. SPI stands for Service Provider Interface, and this site uses the word for three related things: the interface inside each service, the Azure environment those services run in, and the engineering system that keeps the Azure code maintainable. Five views build the picture from the subscription down to the source; every one ends in the documentation.',
+      'You already know the OSDU APIs. SPI stands for Service Provider Interface, and this site uses the word for three related things: the Azure environment the services run in, the interface inside each service, and the engineering system that keeps the Azure code maintainable. By the end you can say where your request runs, what created the environment it runs in, and where a change to the Azure provider belongs.',
     premise: 'For engineers who know OSDU and are new to SPI.',
     sources: ['architecture', 'engineering', 'designs', 'decisions'],
   },
@@ -18,12 +18,16 @@ export const chapters = {
     subtitle: 'Place familiar OSDU concepts',
     headline: 'AKS is one part<span>of the stack.</span>',
     intro:
-      'Your OSDU APIs run inside Kubernetes. Their data partitions reach Azure resources outside the cluster. The stack is both sides together, in one resource group. Start by finding the things you already know.',
+      'Your OSDU APIs run inside Kubernetes. Their data partitions reach Azure resources outside the cluster. The stack is both sides together, in one resource group, built for development and test. Start by finding the things you already know.',
     premise: 'You know OSDU. Start with the environment around it.',
     figure: 'Follow the boundaries',
     selected: 'environment',
     diagram: 'overview',
     guides: ['familiar', 'inside-the-cluster', 'profiles'],
+    mistakes: {
+      developer: 'profiles-save-money',
+      request: 'certificate-means-encrypted',
+    },
     scope:
       'Development and test only. OSDU services share a managed identity and middleware credentials. This stack provides no backup, disaster recovery, or per-service Azure access isolation.',
     sources: ['architecture', 'identity', 'images'],
@@ -31,6 +35,8 @@ export const chapters = {
     builds: 'Starts from what you already know: OSDU APIs and data partitions.',
     where:
       'This view stays wide: the resource group, the Azure resources in it, the AKS cluster, and the namespaces inside the cluster. It does not open a service yet.',
+    example:
+      'Ask the partition service in dev1 what opendes uses: GET /api/partition/v1/partitions/opendes. The request enters at the gateway, reaches the partition service in the osdu namespace, and the answer names Azure resources outside the cluster.',
     outcomes: [
       'A stack is a resource group: AKS plus the Azure data services around it, not the cluster alone.',
       'My partition’s records, blobs, and events each have their own Azure resource; entitlements, identities, and Key Vault are shared by the environment.',
@@ -55,6 +61,11 @@ export const chapters = {
       inspect: ['milestones'],
       remove: ['credentials'],
     },
+    mistakes: {
+      reconcile: 'suspended-means-frozen',
+      inspect: 'finished-means-ready',
+      remove: 'teardown-green-means-deleted',
+    },
     scope:
       'Illustrated core profile · dev1 / opendes. Running spi up creates billable resources; spi down deletes compute and data. The ≈45–50 min provisioning observations were from centralus; the CLI defaults to westus3. Times vary, and overlapping phases must not be added.',
     sources: ['install', 'lifecycle', 'flux', 'identity'],
@@ -63,6 +74,8 @@ export const chapters = {
       'Uses the boundaries from 01: the stack, AKS, and the resources outside it.',
     where:
       'This view follows the same wide picture through time: the resource group filling with Azure resources, then the cluster, then the namespaces Flux assembles inside it.',
+    example:
+      'Before that partition lookup can answer, dev1 has to exist: the resource group, the Azure resources for opendes, the cluster, and the partition service running inside it. Each moment shows what creates the next piece.',
     outcomes: [
       'The CLI and Bicep create Azure and seed the cluster; Flux assembles the workloads; controllers keep them healthy. Different owners, different clocks.',
       'A successful spi up exit is the first of five milestones, not readiness. spi status --watch is how I follow the rest.',
@@ -81,6 +94,7 @@ export const chapters = {
     selected: 'azureimpl',
     diagram: 'spi',
     guides: ['one-request', 'identity'],
+    mistakes: ['role-assignment-missing'],
     scope:
       'ADR-038 anticipates upstream removing its Azure implementations. The fork seeds Azure source once and keeps it outside the generated shared-code branch.',
     sources: ['ownership', 'concepts', 'engineering'],
@@ -89,6 +103,8 @@ export const chapters = {
       'Zooms into the service node from 01 and uses its per-partition resources and managed identity.',
     where:
       'This view zooms into one service inside the osdu namespace. Everything around it from the first two views is still there; only the scale changed.',
+    example:
+      'The same lookup, inside the partition service: common code validates the request, then the Azure provider behind the interface resolves opendes to its Azure resources and reads them with Workload Identity.',
     outcomes: [
       'Common service code calls a provider interface; the Azure implementation resolves the partition’s backends and calls them with Workload Identity.',
       'The interface and its implementation ship in one image. There is no network hop between them.',
@@ -107,6 +123,7 @@ export const chapters = {
     selected: 'repo',
     diagram: 'engineering',
     guides: ['contribution-chain', 'borrow-prove-restore'],
+    mistakes: ['smoke-proves-api'],
     scope:
       'One service fork per service; customer mirror forks form a further tier. Eligible onboarded runs can deploy-test. A skipped deploy gate is not live acceptance evidence.',
     sources: ['forkDeploy', 'proof', 'branches', 'forkTiers'],
@@ -116,6 +133,8 @@ export const chapters = {
       'Uses the fork-owned paths from 03 and the shared environment from 01.',
     where:
       'This view steps outside the running stack to where the code comes from: the service fork, the shared engineering system, and the stack repository that runs the environment.',
+    example:
+      'Suppose that provider needs a fix. The change lands in the osdu-spi-partition fork, becomes an image digest, and reaches dev1 through the image lock, where a deploy lane can prove it before restoring the pin.',
     outcomes: [
       'Three repositories, three jobs: a service fork owns provider code, osdu-spi supplies the workflows, osdu-spi-stack runs the environment.',
       'A candidate travels fork → GHCR digest → osdu-image-lock → running pod, and every hop leaves something I can inspect.',
@@ -140,6 +159,8 @@ export const chapters = {
       'Each contradiction points back to the view where the concept was built.',
     where:
       'These checks range across every level, from the resource group to the source repositories. Each one names the view where its concept was built.',
+    example:
+      'Each of these would have cost you time somewhere between running spi up for dev1 and getting that partition lookup to answer.',
     outcomes: [
       'When something looks wrong, I know which owner to ask and which command shows its view of the world.',
       'Provisioning, convergence, readiness, and proof are different signals, and I check the one I actually need.',

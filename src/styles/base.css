@@ -201,6 +201,9 @@ summary:focus-visible {
 .chapter-link:hover {
   background: #eaf1f6;
 }
+.rail-toggle {
+  display: none;
+}
 .rail-note {
   font-size: 13px;
   color: var(--muted);
@@ -730,8 +733,44 @@ details[open] summary span {
   .rail {
     padding: 0 14px;
   }
+  .rail-toggle {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    width: 100%;
+    padding: 13px 2px;
+    border: 0;
+    background: none;
+    font: inherit;
+    font-size: 14px;
+    color: var(--ink);
+    text-align: left;
+    cursor: pointer;
+  }
+  .rail-toggle-label {
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: #7b93a6;
+  }
+  .rail-toggle b {
+    flex: 1;
+    font-weight: 600;
+  }
+  .rail-toggle-glyph {
+    color: var(--muted);
+    transition: transform 0.15s;
+  }
+  .rail-toggle[aria-expanded='true'] .rail-toggle-glyph {
+    transform: rotate(180deg);
+  }
   .rail nav {
     display: block;
+    padding-bottom: 8px;
+  }
+  .rail[data-open='false'] nav {
+    display: none;
   }
   .rail-group {
     grid-template-columns: 1fr 1fr;

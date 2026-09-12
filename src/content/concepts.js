@@ -1,5 +1,7 @@
-// The site's mental map: six nested places, from the subscription down to the
-// source a service is built from. Every learn view names the levels it works at.
+// The site's mental map: six places. The resource group holds the data services
+// and the cluster side by side; the cluster nests namespaces and services. The
+// sixth place, the source, feeds the service rather than containing anything.
+// Every learn view names the levels it works at.
 export const zoomLevels = [
   {
     id: 'subscription',
@@ -13,9 +15,9 @@ export const zoomLevels = [
   {
     id: 'resources',
     owner: 'cli',
-    name: 'Azure resources around the cluster',
+    name: 'Azure data services beside the cluster',
     detail:
-      'Cosmos DB, Storage, and Service Bus per partition; Gremlin, Key Vault, and identities shared.',
+      'Cosmos DB, Storage, and Service Bus per partition; Gremlin, Key Vault, and identities shared. Reached from the cluster with Workload Identity.',
     example: 'opendes · shared',
     chapters: ['running-stack'],
     href: '#running-stack/developer?detail=cosmos',
@@ -25,7 +27,7 @@ export const zoomLevels = [
     owner: 'cli',
     name: 'AKS Automatic',
     detail:
-      'The Kubernetes boundary. Provisioned first; everything inside depends on its OIDC issuer.',
+      'The Kubernetes boundary, beside the data services. Provisioned first; everything inside depends on its OIDC issuer.',
     example: 'one cluster',
     chapters: ['running-stack', 'bring-up'],
     href: '#running-stack/developer?detail=aks',
@@ -54,15 +56,26 @@ export const zoomLevels = [
     owner: 'fork',
     name: 'Where the code comes from',
     detail:
-      'A service fork owns the provider; osdu-spi supplies the workflows; osdu-spi-stack runs the environment.',
+      'Not a place inside the stack: the repositories the service is built from. A service fork owns the provider; osdu-spi supplies the workflows; osdu-spi-stack runs the environment.',
     example: 'three repositories',
     chapters: ['engineering-system'],
     href: '#engineering-system',
   },
 ];
 
-// One acronym, three things. The site says which one it means.
+// One acronym, three things, in the order the views meet them. The site says
+// which one it means.
 export const spiMeanings = [
+  {
+    id: 'stack',
+    kicker: 'On Azure',
+    name: 'The SPI Stack',
+    copy: 'The Azure environment that runs the OSDU services: Bicep for the resources, the spi CLI to drive it, Flux for the workloads.',
+    lives: 'Azure/osdu-spi-stack',
+    href: '#running-stack',
+    hrefLabel: '01 · What is a stack?',
+    owner: 'cli',
+  },
   {
     id: 'interface',
     kicker: 'In the code',
@@ -72,16 +85,6 @@ export const spiMeanings = [
     href: '#spi-boundary',
     hrefLabel: '03 · The SPI boundary',
     owner: 'fork',
-  },
-  {
-    id: 'stack',
-    kicker: 'On Azure',
-    name: 'The SPI Stack',
-    copy: 'The Azure environment that runs those services: Bicep for the resources, the spi CLI to drive it, Flux for the workloads.',
-    lives: 'Azure/osdu-spi-stack',
-    href: '#running-stack',
-    hrefLabel: '01 · What is a stack?',
-    owner: 'cli',
   },
   {
     id: 'engineering',
