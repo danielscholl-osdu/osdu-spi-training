@@ -23,7 +23,7 @@ export const chapters = {
     figure: 'Follow the boundaries',
     selected: 'environment',
     diagram: 'overview',
-    guides: ['familiar', 'profiles'],
+    guides: ['familiar', 'inside-the-cluster', 'profiles'],
     scope:
       'Development and test only. OSDU services share a managed identity and middleware credentials. This stack provides no backup, disaster recovery, or per-service Azure access isolation.',
     sources: ['architecture', 'identity', 'images'],
@@ -50,8 +50,9 @@ export const chapters = {
     guides: {
       provision: ['owners'],
       bootstrap: ['owners'],
-      reconcile: ['timeline'],
+      reconcile: ['timeline', 'inside-the-cluster'],
       inspect: ['milestones'],
+      remove: ['credentials'],
     },
     scope:
       'Illustrated core profile · dev1 / opendes. Running spi up creates billable resources; spi down deletes compute and data. The ≈45–50 min provisioning observations were from centralus; the CLI defaults to westus3. Times vary, and overlapping phases must not be added.',
@@ -77,7 +78,7 @@ export const chapters = {
     figure: 'One service, two source owners',
     selected: 'azureimpl',
     diagram: 'spi',
-    guides: ['identity'],
+    guides: ['one-request', 'identity'],
     scope:
       'ADR-038 anticipates upstream removing its Azure implementations. The fork seeds Azure source once and keeps it outside the generated shared-code branch.',
     sources: ['ownership', 'concepts', 'engineering'],
@@ -102,7 +103,7 @@ export const chapters = {
     figure: 'Source → image → environment',
     selected: 'repo',
     diagram: 'engineering',
-    guides: ['contribution-chain'],
+    guides: ['contribution-chain', 'borrow-prove-restore'],
     scope:
       'One service fork per service; customer mirror forks form a further tier. Eligible onboarded runs can deploy-test. A skipped deploy gate is not live acceptance evidence.',
     sources: ['forkDeploy', 'proof', 'branches', 'forkTiers'],

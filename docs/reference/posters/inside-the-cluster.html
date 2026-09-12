@@ -1,0 +1,302 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Inside the cluster · namespaces and the order things come up</title>
+<style>
+  :root{
+    --bg:#f7f9fc; --ink:#172b3f; --muted:#60758a;
+    --hair:#cbd6e2; --card:#fff; --cardline:#d8e1eb;
+    --k:#173f68; --kt:#edf4fb;                 /* default accent = navy */
+  }
+  .k-blue {--k:#1479c9; --kt:#ebf5fd;}
+  .k-green{--k:#4d8d36; --kt:#eff7eb;}
+  .k-amber{--k:#b57400; --kt:#fff6e5;}
+  .k-red  {--k:#c0392b; --kt:#fdeeec;}
+  .k-navy {--k:#173f68; --kt:#edf4fb;}
+  .k-gray {--k:#718398; --kt:#f1f4f7;}
+
+  *{box-sizing:border-box;}
+  html,body{margin:0; padding:0; background:var(--bg);}
+  body{font-family:'Inter',system-ui,-apple-system,'Segoe UI',Helvetica,Arial,sans-serif;
+       color:var(--ink); -webkit-font-smoothing:antialiased;}
+  .sheet{width:1800px; min-height:1200px; background:var(--bg); padding:42px 72px 44px;
+         display:flex; flex-direction:column; gap:20px;}
+
+  /* ---------- header plate ---------- */
+  .plate{display:flex; justify-content:space-between; align-items:flex-start; gap:48px;}
+  .kicker{font-size:17px; font-weight:800; letter-spacing:3.5px; text-transform:uppercase; color:#1479c9;}
+  .title{font-size:52px; font-weight:800; letter-spacing:-1px; margin:10px 0 0; line-height:1.04;}
+  .subtitle{font-size:25px; font-weight:450; color:var(--muted); margin:8px 0 0;}
+  .purpose{background:#173f68; color:#fff; border-radius:14px; padding:16px 30px;
+           text-align:center; min-width:400px; flex:0 0 auto;}
+  .purpose .p-label{font-size:16px; font-weight:800; letter-spacing:3.2px; text-transform:uppercase; opacity:.72;}
+  .purpose .p-line{font-size:23px; font-weight:800; margin-top:8px;}
+  .purpose .p-fine{font-size:16px; font-weight:450; opacity:.75; margin-top:5px;}
+  .rule{height:3px; background:#173f68; margin-top:-10px;}
+
+  /* ---------- bands ---------- */
+  .band{display:flex; flex-direction:column; gap:14px;}
+  .band-label{font-size:20px; font-weight:800; letter-spacing:2.5px; text-transform:uppercase; color:var(--muted);}
+  .band-label.ruled{border-bottom:2px solid var(--hair); padding-bottom:12px;}
+  .band-note{font-size:19px; color:var(--ink); margin-top:-6px;}
+  .row{display:flex; gap:20px; align-items:stretch;}
+  .row.center{align-items:center;}
+  .cols{display:grid; gap:24px; align-items:start;}   /* set grid-template-columns inline */
+
+  /* ---------- boxes ---------- */
+  .box{background:var(--card); border:2px solid var(--cardline); border-radius:16px;
+       padding:15px 22px; display:flex; flex-direction:column; gap:4px; justify-content:center;}
+  .box.tint{background:var(--kt); border:3px solid var(--k);}
+  .box.rail{box-shadow:inset 10px 0 0 0 var(--k); padding-left:36px;}
+  .box.dashed{border-style:dashed;}
+  .box.solid{background:var(--k); border-color:var(--k); color:#fff;}
+  .box.solid .sub,.box.solid .fine{color:rgba(255,255,255,.78);}
+  .box.solid .eyebrow{color:rgba(255,255,255,.75);}
+  .box.mid{align-items:center; text-align:center;}
+  .grow{flex:1;}
+
+  .eyebrow{font-size:16px; font-weight:800; letter-spacing:2.6px; text-transform:uppercase; color:var(--k);}
+  .name{font-size:27px; font-weight:800; line-height:1.15;}
+  .name-sm{font-size:21px; font-weight:800; line-height:1.2;}
+  .sub{font-size:19px; color:var(--muted); line-height:1.32;}
+  .fine{font-size:16px; color:var(--muted); line-height:1.32;}
+  .ink{color:var(--ink);} .acc{color:var(--k);} .b{font-weight:800;}
+  .code{font-family:ui-monospace,'SFMono-Regular',Consolas,'Liberation Mono',monospace; letter-spacing:-.02em;}
+  .tag{font-size:15px; font-weight:800; letter-spacing:1.6px; text-transform:uppercase; color:var(--k);}
+  .head-row{display:flex; justify-content:space-between; align-items:baseline; gap:16px;}
+
+  /* ---------- connectors ---------- */
+  .arw{width:46px; height:24px; color:var(--k); flex:0 0 auto; align-self:center;}
+  .arw line{stroke:currentColor; stroke-width:4;}
+  .arw polygon{fill:currentColor;}
+  .arw.down{transform:rotate(90deg);}
+  .hair{height:2px; background:var(--hair); flex:0 0 26px; align-self:center;}
+
+  /* ---------- numbered node track ---------- */
+  .nodes{display:flex;}
+  .node{flex:1; display:flex; flex-direction:column; align-items:center; text-align:center; gap:10px;}
+  .n-title{font-size:21px; font-weight:800;}
+  .n-mid{position:relative; width:100%; height:50px; display:flex; align-items:center; justify-content:center;}
+  .n-mid::before{content:""; position:absolute; top:50%; left:0; right:0; height:4px;
+                 transform:translateY(-50%); background:var(--k);}
+  .node:first-child .n-mid::before{left:50%;}
+  .node:last-child  .n-mid::before{right:50%;}
+  .n-dot{position:relative; width:54px; height:54px; border-radius:50%; background:var(--k); color:#fff;
+         display:grid; place-items:center; font-size:24px; font-weight:800;}
+  .n-sub{font-size:16px; color:var(--muted); line-height:1.3; padding:0 8px;}
+
+  /* ---------- grouped container ---------- */
+  .group{background:#fff; border:2px solid var(--cardline); border-radius:20px; padding:20px;
+         display:flex; flex-direction:column; gap:14px;}
+  .group.tint{background:var(--kt); border:3px dashed var(--k);}
+  .group-label{font-size:18px; font-weight:800; letter-spacing:2.4px; text-transform:uppercase; color:var(--muted);}
+  .group.tint .group-label{color:var(--k);}
+
+  /* ---------- callout ---------- */
+  .callout{background:var(--kt); border:2px solid var(--k); border-radius:14px;
+           padding:14px 22px; font-size:19px; line-height:1.4;}
+  .callout .fine{margin-top:4px;}
+
+  /* ---------- ledger (label / meaning rows) ---------- */
+  .ledger{display:grid; grid-template-columns:max-content 1fr;}
+  .ledger > div{padding:11px 0; border-bottom:2px solid var(--hair);}
+  .ledger > .lg-k{padding-right:38px;}
+  .ledger > div:nth-last-child(-n+2){border-bottom:0;}
+  .lg-k{font-size:17px; font-weight:800; letter-spacing:1.6px; text-transform:uppercase; color:var(--k);}
+  .lg-v{font-size:18px; color:var(--ink);}
+
+  /* ---------- bottom card row ---------- */
+  .cards{display:grid; grid-auto-flow:column; grid-auto-columns:1fr; gap:22px;}
+  .card{background:#fff; border:2px solid var(--cardline); border-radius:16px; padding:12px 16px 13px 26px;
+        box-shadow:inset 10px 0 0 0 var(--k); display:flex; flex-direction:column; gap:6px;}
+  .card.solid{background:#173f68; border-color:#173f68; box-shadow:none; color:#fff; padding-left:22px;}
+  .card.solid .eyebrow{color:rgba(255,255,255,.75);} .card.solid .fine{color:rgba(255,255,255,.78);}
+
+  /* ---------- staggered ladder ---------- */
+  .ladder{display:flex; align-items:flex-end; gap:18px;}
+  .rung{flex:1; padding:11px 16px; gap:2px; justify-content:flex-start;} .rung .eyebrow{font-size:13px; letter-spacing:2px;} .rung .name-sm{font-size:18px;} .rung .fine{font-size:14.5px;} .rung.s1{margin-bottom:0;} .rung.s2{margin-bottom:26px;}
+  .rung.s3{margin-bottom:52px;} .rung.s4{margin-bottom:198px;}
+  .floor{border-top:3px dashed var(--hair); margin-top:16px; padding-top:12px; text-align:center;
+         font-size:16px; font-weight:800; letter-spacing:2.4px; text-transform:uppercase; color:var(--muted);}
+
+  /* ---------- page-local: namespace shelf, layer ladder, lanes ---------- */
+  .ns{padding:12px 16px 12px 26px; gap:3px; justify-content:flex-start;}
+  .ns .name-sm{font-size:19px;}
+  .ns .fine{font-size:14.5px;}
+  .ns .eyebrow{font-size:13px; letter-spacing:2px;}
+  .ns .owner{font-size:14px; font-weight:800; letter-spacing:1.4px; text-transform:uppercase; color:var(--k); margin-top:6px;}
+  .steps{display:flex; align-items:flex-end; gap:0;}
+  .step{flex:1; display:flex; flex-direction:column; gap:0;}
+  .step .box{border-radius:14px; padding:11px 16px; gap:2px; justify-content:flex-start;}
+  .step .box .eyebrow{font-size:13px; letter-spacing:2px;}
+  .step .box .name-sm{font-size:18px;}
+  .step .box .fine{font-size:14.5px;}
+  .riser{height:12px; border-left:0;}
+  .step.l1 .riser{height:0;} .step.l2 .riser{height:44px;} .step.l3 .riser{height:88px;}
+  .step .tread{height:0; border-top:4px solid var(--k); margin:0 -1px;}
+  .stepgap{width:34px; flex:0 0 auto; align-self:stretch; position:relative;}
+  .stepgap svg{position:absolute; left:-6px; top:50%; transform:translateY(-50%); width:46px; height:24px; color:#1479c9;}
+  .lane{display:grid; grid-template-columns:150px 1fr 1fr; gap:0; align-items:stretch;}
+  .lane > div{padding:9px 14px; border-bottom:2px solid var(--hair); font-size:15.5px; line-height:1.35;}
+  .lane > .lk{font-size:13.5px; font-weight:800; letter-spacing:1.8px; text-transform:uppercase; color:var(--k); display:flex; align-items:center;}
+  .lane > .lv .code{font-size:14.5px; color:var(--ink);}
+  .lane.last > div{border-bottom:0;}
+  .mono{font-family:ui-monospace,'SFMono-Regular',Consolas,'Liberation Mono',monospace; letter-spacing:-.03em; font-size:13.5px !important;}
+  .card .fine{font-size:14.5px;} .card .eyebrow{font-size:14px; letter-spacing:2.2px;} .card .name-sm{font-size:19px;}
+  .kv{display:flex; gap:10px; align-items:baseline;}
+  .switch{display:flex; flex-direction:column; gap:8px;}
+  .switch .box{padding:12px 18px; gap:3px;}
+</style>
+</head>
+<body>
+
+<div class="sheet" style="height:1200px;">
+
+  <!-- header plate -->
+  <div class="plate">
+    <div>
+      <div class="kicker">OSDU SPI Stack · Inside the cluster</div>
+      <h1 class="title" style="font-size:46px;">Namespaces and the order things come up</h1>
+      <p class="subtitle">Three owners · one ladder of Kustomizations · two switches, not one</p>
+    </div>
+    <div class="purpose">
+      <div class="p-label">Purpose</div>
+      <div class="p-line">Start diagnosis in the namespace that owns the failure.</div>
+      <div class="p-fine">Flux objects in osdu-flux, workloads in foundation, platform, osdu</div>
+    </div>
+  </div>
+  <div class="rule"></div>
+
+  <!-- band 1: chassis, the cluster as namespaces -->
+  <div class="band">
+    <div class="band-label">Chassis · the AKS cluster as its namespaces, and who writes there</div>
+    <div class="cols" style="grid-template-columns:1fr 1.15fr 1fr 1fr 1fr 1fr; gap:14px; align-items:stretch;">
+      <div class="box rail k-gray ns">
+        <div class="eyebrow">Extension-owned</div>
+        <div class="name-sm code">flux-system</div>
+        <div class="fine">Flux controllers. Protected by AKS admission policy, the deployer cannot write here.</div>
+        <div class="owner">Writes: AKS Flux extension</div>
+      </div>
+      <div class="box tint k-blue ns">
+        <div class="eyebrow">SPI-owned GitOps</div>
+        <div class="name-sm code">osdu-flux</div>
+        <div class="fine">GitRepository, Kustomizations, HelmReleases, Helm release history. Inputs: <span class="code">spi-cluster-config</span>, <span class="code">spi-ingress-config</span>, <span class="code">spi-init-values</span>, <span class="code">osdu-image-lock</span>, seed Secrets.</div>
+        <div class="owner">Writes: CLI bootstrap, then Flux</div>
+      </div>
+      <div class="box tint k-green ns">
+        <div class="eyebrow">Operators · no sidecar</div>
+        <div class="name-sm code">foundation</div>
+        <div class="fine">ECK, CloudNativePG, cert-manager, trust-manager. ExternalDNS in <span class="code">dns</span> mode.</div>
+        <div class="owner">Writes: Flux (layer 1)</div>
+      </div>
+      <div class="box tint k-green ns">
+        <div class="eyebrow">Middleware · no sidecar</div>
+        <div class="name-sm code">platform</div>
+        <div class="fine">Elasticsearch, Redis, PostgreSQL, Airflow, TLS Certificates.</div>
+        <div class="owner">Writes: Flux (layers 2 to 3)</div>
+      </div>
+      <div class="box tint k-green ns">
+        <div class="eyebrow">Product · Istio sidecar</div>
+        <div class="name-sm code">osdu</div>
+        <div class="fine">OSDU APIs, init and seeding Jobs, schema loader. <span class="code">osdu-config</span> and <span class="code">workload-identity-sa</span> seeded by the CLI.</div>
+        <div class="owner">Writes: CLI seeds, Flux (layers 4 to 6)</div>
+      </div>
+      <div class="box rail k-gray ns">
+        <div class="eyebrow">Azure-managed mesh</div>
+        <div class="name-sm code">aks-istio-system<br>aks-istio-ingress</div>
+        <div class="fine">Managed Istio and ingress. The <span class="code">spi-gateway</span> Gateway lives in <span class="code">aks-istio-ingress</span>, rendered by the ingress tree only.</div>
+        <div class="owner">Writes: AKS, Gateway via Flux</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- band 2: ladder + switches -->
+  <div class="cols" style="grid-template-columns:1.55fr 1fr; gap:22px;">
+
+    <div class="band">
+      <div class="band-label">The ladder · <span class="code" style="text-transform:none; letter-spacing:0;">dependsOn</span> plus <span class="code" style="text-transform:none; letter-spacing:0;">wait: true</span>, layer by layer</div>
+      <div class="ladder" style="gap:16px;">
+        <div class="box tint k-blue rung s1">
+          <div class="eyebrow">Layer 1 · foundation</div>
+          <div class="name-sm">Operators, in parallel</div>
+          <div class="fine">cert-manager, ECK, CloudNativePG, Helm sources. trust-manager waits on cert-manager.</div>
+        </div>
+        <div class="box tint k-blue rung s2">
+          <div class="eyebrow">Layers 2 to 3 · platform</div>
+          <div class="name-sm">Middleware on its operator</div>
+          <div class="fine">Elasticsearch on ECK, PostgreSQL on CNPG, Redis on cert-manager and Helm sources. Airflow waits on PostgreSQL.</div>
+        </div>
+        <div class="box tint k-blue rung s3">
+          <div class="eyebrow">Layers 4 to 6 · osdu</div>
+          <div class="name-sm">Bootstrap, services, Jobs</div>
+          <div class="fine">CA Bundles and Redis DestinationRule, then core services, then init, schema load, legal and members Jobs, then reference APIs.</div>
+        </div>
+      </div>
+      <div class="floor" style="margin-top:0;">Floor · layers 0a and 0b · <span class="code" style="text-transform:none; letter-spacing:0;">spi-namespaces</span> then NodePools · every rung stands on these</div>
+      <div class="lane">
+        <div class="lk">Gates</div>
+        <div class="lv">Later layers start only when earlier ones report Ready, and Ready means workload health, not manifest applied.</div>
+        <div class="lv">Timeouts per layer: 10 to 15 min middleware, 30 min OSDU layers. Schema-load Job deadline 150 min is a ceiling, not a duration (its layer allows 155).</div>
+      </div>
+      <div class="lane last">
+        <div class="lk">Non-gating</div>
+        <div class="lv">Legal-tag and members seeding are leaves. A failed seed stays visible without holding back Ready.</div>
+        <div class="lv">Reference APIs wait on core services and schema load only. Fork RBAC sits outside the chain.</div>
+      </div>
+    </div>
+
+    <div class="band">
+      <div class="band-label">Two switches · fetching is not reconciling</div>
+      <div class="switch">
+        <div class="box tint dashed k-amber">
+          <div class="head-row"><div class="eyebrow">Switch 1 · Git fetching</div><div class="tag">Suspended after deploy</div></div>
+          <div class="name-sm">Source polling, off by default</div>
+          <div class="fine"><span class="code">spi up</span> ends by setting <span class="code">spec.suspend: true</span> on the <span class="code">osdu-spi-stack-system</span> GitRepository. No new commits arrive until <span class="code">spi reconcile --resume</span>. Resumed, it polls every ten minutes.</div>
+        </div>
+        <div class="box tint k-green">
+          <div class="head-row"><div class="eyebrow">Switch 2 · Reconciliation</div><div class="tag">Always on</div></div>
+          <div class="name-sm">Kustomizations and HelmReleases keep working</div>
+          <div class="fine">They apply the cached revision and live inputs: <span class="code">osdu-image-lock</span> substituted at reconcile, upstream Helm repositories, operators. <span class="code">spi reconcile --refresh-images</span> rolls services without touching Git.</div>
+        </div>
+        <div class="callout k-red">
+          <span class="b">Suspension is not a snapshot.</span>
+          <div class="fine">Live ConfigMaps can change, external charts and controllers keep their own cadence. Only the Git fetch is pinned.</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- band 3: diagnosis lanes + verdict -->
+  <div class="band">
+    <div class="band-label ruled">Diagnosis · one command per layer, then walk <span class="code" style="text-transform:none; letter-spacing:0;">dependsOn</span> upstream</div>
+    <div class="cards" style="grid-auto-columns:unset; grid-template-columns:1.05fr .95fr 1.15fr 1fr; gap:18px;">
+      <div class="card k-blue">
+        <div class="eyebrow">The graph · osdu-flux</div>
+        <div class="fine mono ink">kubectl get kustomizations -n osdu-flux</div>
+        <div class="fine mono ink">flux get helmreleases -n osdu-flux</div>
+        <div class="fine">A downstream error names only its direct dependency. Follow it to the first unhealthy Kustomization.</div>
+      </div>
+      <div class="card k-green">
+        <div class="eyebrow">Workloads · by namespace</div>
+        <div class="fine mono ink">kubectl get pods -n foundation</div>
+        <div class="fine mono ink">kubectl get pods -n platform</div>
+        <div class="fine mono ink">kubectl get jobs -n osdu</div>
+        <div class="fine">HelmRelease objects and Helm history stay in <span class="code">osdu-flux</span>, not here.</div>
+      </div>
+      <div class="card k-red">
+        <div class="eyebrow">Stalled · RetriesExceeded</div>
+        <div class="fine"><span class="ink b">Ready=False, Stalled=True.</span> Retries spent, helm-controller stopped, dependents at DependencyNotReady, pods possibly healthy.</div>
+        <div class="fine">Re-applying the unchanged manifest does nothing. <span class="code ink">spi reconcile</span> resets it for one forced attempt. A terminal stall (bad chart, bad CEL) needs a real change.</div>
+      </div>
+      <div class="card solid">
+        <div class="eyebrow">Verdict</div>
+        <div class="name-sm">Read the namespace that owns the failure, not the one that reports it.</div>
+        <div class="fine">Flux state in osdu-flux, workload state in foundation, platform, osdu. The last blocked service is rarely the cause.</div>
+      </div>
+    </div>
+  </div>
+
+</div>
+</body>
+</html>

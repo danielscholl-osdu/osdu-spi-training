@@ -2,11 +2,13 @@ import { chapters } from './content/chapters.js';
 import { componentDetails } from './content/component-details.js';
 import { creationMoments } from './content/creation-moments.js';
 import { sources } from './content/sources.js';
+import { suppliedPosters } from './content/posters.js';
 import { diagramRenderers } from './components/diagrams.js';
 import {
   pageRenderers,
   chapterNavigation,
   guideFigure,
+  posterInline,
   chapterOutcomes,
   chapterZoom,
 } from './components/pages.js';
@@ -171,8 +173,8 @@ function render() {
       route,
     )
       .map((guide) =>
-        guide === 'contribution-chain'
-          ? `<figure class="field-guide is-compact"><figcaption><span class="guide-kicker">Field guide</span><h3>The Contribution Chain</h3><p>Code flows down from the OSDU community by sync and climbs back up by pull request. Every change has one home tier.</p></figcaption><a class="poster-inline" href="${routeHref('field-guides')}#poster-contribution-chain"><img src="posters/contribution-chain.jpg" width="2000" height="1467" alt="The Contribution Chain: three tiers of one service and where a change belongs" loading="lazy" /><span>Read the poster →</span></a></figure>`
+        suppliedPosters.some((poster) => poster.id === guide)
+          ? posterInline(guide)
           : guideFigure(guide, { compact: true }),
       )
       .join('');

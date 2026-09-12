@@ -6,7 +6,7 @@ Three ways in, all ending in the source documentation:
 
 - **Listen.** A one-hour generated deep dive with 22 chapter markers, source-check notes, and a transcript. It keeps playing while you move around the site.
 - **Explore.** Five views, each answering one question: **What is a stack?**, **How it comes to life**, **The SPI boundary**, **How changes arrive**, and **Things that are not true**. Every view shows where it sits on a six-level ladder from the subscription down to the source, and ends with what the learner can now say.
-- **Read.** Field guides: two supplied posters, preserved as given, and six infographics built for the site (where the familiar things live, four owners, the spi up timeline, five milestones, three profiles, identity as two problems).
+- **Read.** Field guides: seven posters (two supplied with the training material, two adopted from the source repositories, three built for this site: namespaces and ordering, one request end to end, credentials and teardown) and six smaller infographics built in HTML (where the familiar things live, four owners, the spi up timeline, five milestones, three profiles, identity as two problems).
 
 Explanations are optional, and source documentation supplies depth. There are no quizzes, scores, or required exercises.
 

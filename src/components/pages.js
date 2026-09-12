@@ -33,6 +33,15 @@ function sourceLinks(keys) {
     .join(' · ')}</p>`;
 }
 
+export function posterInline(id) {
+  const poster = suppliedPosters.find((entry) => entry.id === id);
+  if (!poster) return '';
+  return `<figure class="field-guide is-compact is-poster" id="guide-${id}" data-guide="${id}">
+    <figcaption><span class="guide-kicker">Poster</span><h3>${poster.title}</h3><p>${poster.summary}</p></figcaption>
+    <a class="poster-inline" href="${routeHref('field-guides')}#poster-${id}"><img src="${poster.image}" width="${poster.width}" height="${poster.height}" alt="${escapeHtml(poster.title)}" loading="lazy" /><span>Read the poster with its notes →</span></a>
+  </figure>`;
+}
+
 export function guideFigure(id, { heading = 'h3', compact = false } = {}) {
   const guide = nativeGuides.find((entry) => entry.id === id);
   if (!guide) return '';
@@ -164,7 +173,7 @@ function listenPage(route) {
 
 function guidesPage() {
   return `<section class="poster-set" aria-label="Supplied posters">
-      <div class="section-heading"><span class="guide-kicker">Supplied posters</span><h2>Two reference posters</h2><p>Open one at full size, or follow its links into the map.</p></div>
+      <div class="section-heading"><span class="guide-kicker">Posters</span><h2>${suppliedPosters.length} posters, one idea each</h2><p>Two supplied with the training material, two adopted from the source repositories, three built for this site. Open one at full size, or follow its links into the map. Each caption records where the poster and the documentation differ.</p></div>
       ${suppliedPosters
         .map(
           (poster) => `<article class="poster" id="poster-${poster.id}">
@@ -185,7 +194,7 @@ function guidesPage() {
         .join('')}
     </section>
     <section class="guide-set" aria-label="Field guides built for this site">
-      <div class="section-heading"><span class="guide-kicker">Built for this site</span><h2>${nativeGuides.length} field guides</h2><p>Each also appears beside the view it explains. Print this page for a set of posters.</p></div>
+      <div class="section-heading"><span class="guide-kicker">Built for this site</span><h2>${nativeGuides.length} field guides</h2><p>Smaller, one idea each, built in HTML. Each also appears beside the view it explains. Print this page for the full set.</p></div>
       ${ownerLegend()}
       ${nativeGuides.map((guide) => guideFigure(guide.id)).join('')}
     </section>`;

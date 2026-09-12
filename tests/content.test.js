@@ -101,7 +101,7 @@ test('chapters connect to renderers, explanations, and named sources', () => {
         );
     for (const guide of guides)
       assert.ok(
-        guide === 'contribution-chain' ||
+        suppliedPosters.some((entry) => entry.id === guide) ||
           nativeGuides.some((entry) => entry.id === guide),
         `${id}: unknown field guide ${guide}`,
       );

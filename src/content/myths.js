@@ -71,7 +71,7 @@ export const myths = [
     theme: 'identity',
     claim: 'Deleting the Secret rotates the password.',
     reality:
-      'The chart consumes the CLI-created Secret, and the CLI reuses the persistent credential seed. You get the same password back. Deleting the seed itself is worse: a later spi up can generate values the running middleware does not know.',
+      'Reconciliation does not regenerate a chart Secret, and the next spi up copies the same value back from the persistent seed. Deleting the seed itself is worse: a later spi up can generate values the running middleware does not know.',
     check: 'kubectl get secret spi-secrets -n osdu-flux',
     source: 'secrets',
     route: '#running-stack/developer?detail=vault',
@@ -82,8 +82,8 @@ export const myths = [
     theme: 'gitops',
     claim: 'Re-applying the manifest will retry it.',
     reality:
-      'A HelmRelease that has exhausted its remediation retries is marked Stalled with reason RetriesExceeded. The controller reacts to a generation change, and identical content does not change the generation.',
-    check: 'kubectl get helmrelease -n osdu   # look for RetriesExceeded',
+      'A HelmRelease that has exhausted its remediation retries is marked Stalled with reason RetriesExceeded, and re-applying the unchanged manifest does not move its generation. spi reconcile clears the failure count and forces one attempt; a terminal stall (a bad chart or CEL expression) needs a real change.',
+    check: 'flux get helmreleases -n osdu-flux   # look for RetriesExceeded',
     source: 'flux',
     route: '#running-stack/developer?detail=flux',
     routeLabel: 'Reconciliation on the map',

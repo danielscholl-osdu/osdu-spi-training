@@ -23,6 +23,18 @@ Iterations 1 and 2 put the material on screen. This iteration is about whether t
 | View 05        | The ten field checks are grouped into five themes (readiness and proof, GitOps and reconciliation, identity and data access, the front door, the Azure estate), each heading linking to the view where the concept was built.                                                                                                                                      |
 | Start page     | Order is now: the word, the ladder, the path, listen and field guides, documentation. The lifecycle spine and the three-myth preview were removed; the documentation cards match the three meanings.                                                                                                                                                               |
 
+## Posters
+
+After the flow work, the field guides gained five posters. Two were adopted from the source repositories, where they were made with the same infographic skill: Borrow, Prove, Restore (osdu-spi) and The Backing Environment (osdu-spi-stack); their captions record what has and has not been built since they were drawn. Three were built for this site, each from a named set of design guides and decision records, with the HTML source kept beside the PNG in `docs/reference/posters/`:
+
+| Poster                                                  | Shape                                   | Sits beside                     | Grounded in                                                      |
+| ------------------------------------------------------- | --------------------------------------- | ------------------------------- | ---------------------------------------------------------------- |
+| Namespaces and the order things come up                 | a ladder over lanes                     | 01 and the Assemble OSDU moment | Flux reconciliation guide; ADRs 006, 007, 014, 019, 025          |
+| One request, end to end                                 | a path with two seams                   | 03                              | Workload identity and gateway guides; ADRs 005, 016, 023, 026    |
+| Where every credential lives, and what spi down forgets | temporary machinery over durable ground | the Remove moment               | Secret and environment lifecycle guides; ADRs 010, 023, 029, 034 |
+
+Building them against the sources corrected two site claims: the stalled HelmRelease check now names `spi reconcile` and queries osdu-flux, where HelmRelease objects actually live; the deleted-Secret check now says reconciliation does not regenerate the Secret and the next spi up copies the seed value back. The inline poster embed is now generic: any supplied poster can be listed in a view's guides.
+
 ## Verification
 
 `npm run check` passes: formatting, eleven content tests, and a production build. New tests cover: every learn view has a question, a build-on note, outcomes, and valid zoom levels; every ladder level and SPI meaning routes to a real view; every field check has a theme that points back to a learn view; every row of the familiar-things guide links a real map component; lifecycle guides are keyed by real moments. Headless renders were checked at 1440 and 390 pixels for the start page and all five learn views.
