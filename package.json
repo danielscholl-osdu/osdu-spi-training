@@ -1,0 +1,23 @@
+{
+  "name": "osdu-fieldnotes-training",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "description": "A visual learning site for engineers new to Azure OSDU SPI Stack.",
+  "engines": {
+    "node": ">=22.12.0"
+  },
+  "scripts": {
+    "dev": "vite",
+    "build": "vite build",
+    "preview": "vite preview",
+    "test": "node --test",
+    "format": "prettier --write .",
+    "format:check": "prettier --check .",
+    "check": "npm run format:check && npm test && npm run build"
+  },
+  "devDependencies": {
+    "prettier": "3.9.6",
+    "vite": "8.2.2"
+  }
+}

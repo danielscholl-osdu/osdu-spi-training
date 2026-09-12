@@ -2,3 +2,14 @@
 *.swp
 .idea/
 .vscode/
+
+# Generated output and local tooling
+/dist/
+/node_modules/
+/coverage/
+/.playwright-cli/
+/output/
+*.log
+.env
+.env.*
+!.env.example

@@ -1,34 +1,79 @@
-# OSDU Fieldnotes: learning prototype
+# OSDU Fieldnotes
 
-A local, static prototype for senior engineers who know OSDU and are new to the Azure SPI stack and fork engineering system.
+An interactive learning site for senior engineers who know OSDU and are new to Azure SPI Stack and the engineering system behind the service forks.
 
-## Experience
+The prototype follows four views: **What is a stack?**, **How it comes to life**, **The SPI boundary**, and **How changes arrive**. Learners explore architecture and follow the same environment as it is assembled. Explanations are optional, and source documentation supplies depth. There are no quizzes, scores, or required exercises.
 
-Four short views follow the learner's existing knowledge:
+## Local development
 
-1. What is a stack: place the workstation outside Azure and explore the nested stack and AKS boundaries. Switch between developer and API request paths.
-2. How it comes to life: step through the same map from a prepared workstation to Azure provisioning, cluster bootstrap, Flux reconciliation, and readiness inspection.
-3. The SPI boundary: distinguish shared behavior from provider implementation.
-4. How changes arrive: connect the stack, service repositories, and engineering system.
-
-The same architecture map anchors the first two views. The stack includes AKS and its Azure dependencies; the Azure SPI provider is nested inside the OSDU service. The creation walkthrough starts with an empty planned footprint and reveals resources as they are assembled. Its five moments are explanatory stages, not measured progress or an exact serial execution trace. Flux rollout overlaps the final CLI work.
-
-The diagrams reveal detail when a component or boundary is selected. There are no quizzes, scored activities, required steps, or completion tracking. The aim is voluntary exploration and useful explanations. Documentation is a secondary reference.
-
-## Preview
-
-Serve `dist` with any static web server. For example, from this folder:
+Requires Node.js 22.12 or newer and npm. From this repository:
 
 ```sh
-python3 -m http.server 8875 --bind 127.0.0.1 --directory dist
+npm ci
+npm run dev
 ```
 
-Open http://127.0.0.1:8875. No application build or package installation is required. Google Fonts is optional; local font fallbacks are provided.
+Open http://127.0.0.1:5173. Saving source changes updates the development preview. The site uses plain HTML, CSS, and JavaScript modules with [Vite](https://vite.dev/guide/) for development and builds. It has no runtime package dependencies.
 
-## Prototype scope
+The original review preview at http://127.0.0.1:8875 can continue serving `dist/` while it is running. It is separate from the development server and shows the most recent build when refreshed.
 
-The diagrams are conceptual, not live environment status. Runtime and engineering claims are drawn from the local `osdu-spi-stack` architecture and identity guides, and `osdu-spi` concepts, ownership, and deploy-lane documentation. Linked source pages provide details. The diagrams do not imply every service uses every shown backend.
+## Repository layout
 
-Before expanding the content, review whether the sequence feels natural, the first view gives an immediate reason to explore, component details reward curiosity, and the visual density suits an experienced engineer. The next iteration should follow that feedback rather than add more course machinery.
+```text
+src/
+  index.html                    Page frame
+  main.js                       Navigation and shared interaction
+  router.js                     Chapter, moment, and selection URLs
+  content/
+    chapters.js                 Chapter copy, order, and source references
+    component-details.js        Component explanations
+    creation-moments.js         Six lifecycle moments
+    sources.js                  Documentation labels and source locations
+  components/
+    architecture.js             Environment map and creation interaction
+    diagrams.js                 Chapter diagram renderers
+    node.js                     Shared component markup
+  styles/
+    base.css                    Shared visual design
+    architecture.css            Architecture and walkthrough layout
+docs/
+  concept-review.html           Review of the first concept
+  feedback-response.md          Changes and review disposition
+  audio-source-notes.md         Guide-to-site mapping and narration corrections
+tests/                         Content integrity checks
+vite.config.js                 Local servers and static build
+dist/                          Generated output; ignored by Git
+```
 
-This workspace is separate from the service and engineering-system source repositories. Nothing is published or connected to Azure.
+## Commands
+
+| Command           | Purpose                                              |
+| ----------------- | ---------------------------------------------------- |
+| `npm run dev`     | Development server at `127.0.0.1:5173`               |
+| `npm run format`  | Format source and project files                      |
+| `npm test`        | Check content, renderer, and explanation connections |
+| `npm run build`   | Generate the static site in `dist/`                  |
+| `npm run preview` | Preview the build at `127.0.0.1:4173`                |
+| `npm run check`   | Check formatting, run tests, and build               |
+
+See [CONTRIBUTING.md](CONTRIBUTING.md) for where to edit content and diagrams. [AGENTS.md](AGENTS.md) preserves the learning intent and repository conventions for coding agents.
+
+## Concept review
+
+[docs/concept-review.html](docs/concept-review.html) reviews the first concept against the current `osdu-spi-stack` and `osdu-spi` source documentation. It records what the prototype gets right and must keep, the claims that are factually wrong, and an ordered list of changes for the next iteration. Open the file in a browser. It reviews the five-file prototype at commit `fdc27d9`; the copy is unchanged by the move into `src/`, so its content findings still apply.
+
+## Scope and sources
+
+This is an illustrative development and test environment, not live Azure status. The complete stack includes AKS, its workloads, and supporting Azure resources. The creation moments simplify the deployment lifecycle; Flux rollout overlaps the final CLI work.
+
+Technical content comes from the `osdu-spi-stack` architecture, deployment, identity, and fork-deployment guides and the `osdu-spi` concepts and engineering-system documentation. Each chapter links to its sources. The diagrams group examples; every service does not use every backend shown.
+
+The site executes no Azure commands, requires no Azure credentials, and remains separate from the source repositories it explains. Google Fonts is optional; system-font fallbacks are provided. Nothing is published by the development or build commands.
+
+## Current iteration and overview audio
+
+The next iteration keeps the same architecture map through six lifecycle moments, from local preparation through teardown. Component explanations sit beside the map on a wide screen and open in a bottom panel on a phone. Deep links preserve a specific moment and component, for example `#bring-up/inspect?detail=connect`.
+
+[The feedback response](docs/feedback-response.md) records the changes, verification, and remaining scope. The original review remains unchanged.
+
+The supplied [OSDU SPI Stack guide](osdu-spi-stack-guide.pdf) is useful overview material. [Audio source notes](docs/audio-source-notes.md) map it to the four website views and identify wording to correct before narration. When the audio is available, add a native player with a transcript and optional links to these diagram states. No audio file has been supplied or included in the build yet.

@@ -1,0 +1,80 @@
+export const sources = {
+  architecture: {
+    label: 'Stack architecture',
+    repo: 'osdu-spi-stack',
+    path: 'docs/architecture.md',
+    href: 'https://github.com/Azure/osdu-spi-stack/blob/main/docs/architecture.md',
+  },
+  lifecycle: {
+    label: 'Deployment and teardown',
+    repo: 'osdu-spi-stack',
+    path: 'docs/design/deployment-lifecycle.md',
+    href: 'https://github.com/Azure/osdu-spi-stack/blob/main/docs/design/deployment-lifecycle.md',
+  },
+  identity: {
+    label: 'Workload Identity and API callers',
+    repo: 'osdu-spi-stack',
+    path: 'docs/design/workload-identity.md',
+    href: 'https://github.com/Azure/osdu-spi-stack/blob/main/docs/design/workload-identity.md',
+  },
+  flux: {
+    label: 'Flux dependency ordering',
+    repo: 'osdu-spi-stack',
+    path: 'docs/design/flux-reconciliation.md',
+    href: 'https://github.com/Azure/osdu-spi-stack/blob/main/docs/design/flux-reconciliation.md',
+  },
+  install: {
+    label: 'Install the SPI CLI',
+    repo: 'osdu-spi-stack',
+    path: 'docs/install.md',
+    href: 'https://github.com/Azure/osdu-spi-stack/blob/main/docs/install.md',
+  },
+  images: {
+    label: 'Image sources and canonical policy',
+    repo: 'osdu-spi-stack',
+    path: 'docs/decisions/033-explicit-canonical-image-source-policy.md',
+    href: 'https://github.com/Azure/osdu-spi-stack/blob/main/docs/decisions/033-explicit-canonical-image-source-policy.md',
+  },
+  forkDeploy: {
+    label: 'Fork deployment contract',
+    repo: 'osdu-spi-stack',
+    path: 'docs/design/fork-deployment.md',
+    href: 'https://github.com/Azure/osdu-spi-stack/blob/main/docs/design/fork-deployment.md',
+  },
+  ownership: {
+    label: 'Why Azure source belongs to the fork',
+    repo: 'osdu-spi',
+    path: 'doc/src/adr/038-upstream-filter-transform.md',
+    href: 'https://azure.github.io/osdu-spi/adr/038-upstream-filter-transform/',
+  },
+  concepts: {
+    label: 'OSDU provider concepts',
+    repo: 'osdu-spi',
+    path: 'doc/src/concepts.md',
+    href: 'https://azure.github.io/osdu-spi/concepts/',
+  },
+  engineering: {
+    label: 'Engineering-system architecture',
+    repo: 'osdu-spi',
+    path: 'doc/src/architecture/overview.md',
+    href: 'https://azure.github.io/osdu-spi/architecture/overview/',
+  },
+  branches: {
+    label: 'Three-branch strategy',
+    repo: 'osdu-spi',
+    path: 'doc/src/architecture/three_branch_strategy.md',
+    href: 'https://azure.github.io/osdu-spi/architecture/three_branch_strategy/',
+  },
+  proof: {
+    label: 'Borrow, prove, restore',
+    repo: 'osdu-spi',
+    path: 'doc/src/adr/041-borrow-prove-restore-lane.md',
+    href: 'https://azure.github.io/osdu-spi/adr/041-borrow-prove-restore-lane/',
+  },
+  forkTiers: {
+    label: 'Service forks and customer mirrors',
+    repo: 'osdu-spi',
+    path: 'doc/src/architecture/fork_tiers.md',
+    href: 'https://azure.github.io/osdu-spi/architecture/fork_tiers/',
+  },
+};

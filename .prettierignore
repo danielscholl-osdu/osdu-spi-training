@@ -1,0 +1,7 @@
+dist/
+node_modules/
+coverage/
+package-lock.json
+
+# Preserve the supplied review artifact verbatim.
+docs/concept-review.html

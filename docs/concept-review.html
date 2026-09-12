@@ -1,0 +1,1799 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width,initial-scale=1" />
+    <meta
+      name="description"
+      content="Design, content and accuracy review of the OSDU Fieldnotes learning prototype, checked against osdu-spi-stack and osdu-spi."
+    />
+    <style>
+      :root {
+        color-scheme: light dark;
+      }
+      body {
+        margin: 0;
+      }
+      img {
+        max-width: 100%;
+      }
+      [hidden] {
+        display: none !important;
+      }
+    </style>
+    <title>Fieldnotes Concept Review</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      rel="stylesheet"
+      href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,600;12..96,700;12..96,800&family=Newsreader:ital,opsz,wght@0,6..72,400;0,6..72,500;0,6..72,600;1,6..72,400&family=IBM+Plex+Mono:wght@400;500;600&display=swap"
+    />
+    <style>
+      :root {
+        --paper: #f2f3ef;
+        --surface: #ffffff;
+        --sunken: #eceee7;
+        --ink: #16191a;
+        --ink2: #464d4f;
+        --muted: #6d7578;
+        --rule: #dbdfd6;
+        --rule2: #c6ccc0;
+        --accent: #0e5c4f;
+        --accent-soft: #e2eeea;
+        --err: #96331a;
+        --err-soft: #f6e8e1;
+        --major: #7d5410;
+        --major-soft: #f6eede;
+        --minor: #5f686b;
+        --minor-soft: #eaeceb;
+        --shadow:
+          0 1px 2px rgba(20, 30, 28, 0.05), 0 8px 24px rgba(20, 30, 28, 0.05);
+      }
+      @media (prefers-color-scheme: dark) {
+        :root:not([data-theme='light']) {
+          --paper: #101314;
+          --surface: #191d1e;
+          --sunken: #14191a;
+          --ink: #e9ebe6;
+          --ink2: #aab2b3;
+          --muted: #7e8688;
+          --rule: #282e2f;
+          --rule2: #39413f;
+          --accent: #5cc6ae;
+          --accent-soft: #16302b;
+          --err: #e59371;
+          --err-soft: #33201a;
+          --major: #d8b463;
+          --major-soft: #2f2818;
+          --minor: #949c9e;
+          --minor-soft: #202526;
+          --shadow: 0 1px 2px rgba(0, 0, 0, 0.4), 0 8px 24px rgba(0, 0, 0, 0.3);
+        }
+      }
+      :root[data-theme='dark'] {
+        --paper: #101314;
+        --surface: #191d1e;
+        --sunken: #14191a;
+        --ink: #e9ebe6;
+        --ink2: #aab2b3;
+        --muted: #7e8688;
+        --rule: #282e2f;
+        --rule2: #39413f;
+        --accent: #5cc6ae;
+        --accent-soft: #16302b;
+        --err: #e59371;
+        --err-soft: #33201a;
+        --major: #d8b463;
+        --major-soft: #2f2818;
+        --minor: #949c9e;
+        --minor-soft: #202526;
+        --shadow: 0 1px 2px rgba(0, 0, 0, 0.4), 0 8px 24px rgba(0, 0, 0, 0.3);
+      }
+
+      * {
+        box-sizing: border-box;
+      }
+      body {
+        background: var(--paper);
+        color: var(--ink);
+        font:
+          400 17.5px/1.62 Newsreader,
+          Georgia,
+          'Times New Roman',
+          serif;
+        -webkit-font-smoothing: antialiased;
+      }
+      .wrap {
+        max-width: 1080px;
+        margin: 0 auto;
+        padding: 0 28px 120px;
+      }
+      .col {
+        max-width: 70ch;
+      }
+      h1,
+      h2,
+      h3,
+      h4,
+      .disp {
+        font-family:
+          'Bricolage Grotesque',
+          system-ui,
+          -apple-system,
+          sans-serif;
+        font-weight: 700;
+        letter-spacing: -0.018em;
+        text-wrap: balance;
+      }
+      code,
+      kbd,
+      .mono {
+        font-family:
+          'IBM Plex Mono', ui-monospace, SFMono-Regular, Menlo, monospace;
+      }
+      a {
+        color: var(--accent);
+        text-decoration-thickness: 1px;
+        text-underline-offset: 2px;
+      }
+      :focus-visible {
+        outline: 2px solid var(--accent);
+        outline-offset: 3px;
+        border-radius: 2px;
+      }
+
+      /* masthead */
+      .mast {
+        border-bottom: 1px solid var(--rule2);
+        padding: 52px 0 22px;
+        margin-bottom: 34px;
+      }
+      .eyebrow {
+        font-family: 'IBM Plex Mono', monospace;
+        font-size: 11.5px;
+        font-weight: 500;
+        letter-spacing: 0.16em;
+        text-transform: uppercase;
+        color: var(--accent);
+        margin: 0 0 18px;
+      }
+      h1 {
+        font-size: clamp(38px, 5.6vw, 62px);
+        line-height: 1.02;
+        font-weight: 800;
+        margin: 0 0 16px;
+        letter-spacing: -0.032em;
+      }
+      .dek {
+        font-size: 20px;
+        line-height: 1.5;
+        color: var(--ink2);
+        margin: 0;
+        max-width: 60ch;
+      }
+      .dek em {
+        font-style: italic;
+        color: var(--ink);
+      }
+      .meta {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 0 34px;
+        margin-top: 30px;
+        font-family: 'IBM Plex Mono', monospace;
+        font-size: 11.5px;
+        line-height: 1.7;
+        color: var(--muted);
+      }
+      .meta b {
+        display: block;
+        color: var(--ink2);
+        font-weight: 500;
+        letter-spacing: 0.09em;
+        text-transform: uppercase;
+        font-size: 10.5px;
+      }
+
+      /* sections */
+      section {
+        margin: 56px 0 0;
+        scroll-margin-top: 20px;
+      }
+      h2 {
+        font-size: 13px;
+        font-weight: 700;
+        letter-spacing: 0.15em;
+        text-transform: uppercase;
+        color: var(--accent);
+        margin: 0 0 20px;
+        font-family: 'IBM Plex Mono', monospace;
+        display: flex;
+        align-items: baseline;
+        gap: 14px;
+      }
+      h2::after {
+        content: '';
+        flex: 1;
+        height: 1px;
+        background: var(--rule);
+      }
+      h3 {
+        font-size: 25px;
+        line-height: 1.22;
+        margin: 0 0 10px;
+        letter-spacing: -0.022em;
+      }
+      h4 {
+        font-size: 18px;
+        line-height: 1.3;
+        margin: 0 0 6px;
+      }
+      p {
+        margin: 0 0 17px;
+      }
+      .lede {
+        font-size: 20px;
+        line-height: 1.55;
+      }
+      strong {
+        font-weight: 600;
+        color: var(--ink);
+      }
+
+      code {
+        font-size: 0.845em;
+        background: var(--sunken);
+        border: 1px solid var(--rule);
+        border-radius: 4px;
+        padding: 0.1em 0.36em;
+        color: var(--ink);
+        white-space: nowrap;
+      }
+      .err-i {
+        color: var(--err);
+      }
+
+      /* hero rule */
+      .rule-card {
+        background: var(--surface);
+        border: 1px solid var(--rule2);
+        border-left: 4px solid var(--accent);
+        border-radius: 3px;
+        padding: 30px 34px;
+        box-shadow: var(--shadow);
+        margin: 0 0 26px;
+      }
+      .rule-card .kick {
+        font-family: 'IBM Plex Mono', monospace;
+        font-size: 11px;
+        letter-spacing: 0.14em;
+        text-transform: uppercase;
+        color: var(--accent);
+        margin: 0 0 12px;
+      }
+      .rule-card .said {
+        font-family: 'Bricolage Grotesque', sans-serif;
+        font-weight: 700;
+        font-size: clamp(23px, 3.1vw, 31px);
+        line-height: 1.22;
+        letter-spacing: -0.025em;
+        margin: 0 0 16px;
+      }
+      .rule-card p:last-child {
+        margin-bottom: 0;
+        color: var(--ink2);
+      }
+
+      /* stats */
+      .stats {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(148px, 1fr));
+        gap: 1px;
+        background: var(--rule);
+        border: 1px solid var(--rule);
+        border-radius: 3px;
+        overflow: hidden;
+        margin: 0 0 16px;
+      }
+      .stat {
+        background: var(--surface);
+        padding: 20px 18px;
+      }
+      .stat .n {
+        font-family: 'Bricolage Grotesque', sans-serif;
+        font-weight: 800;
+        font-size: 38px;
+        line-height: 1;
+        letter-spacing: -0.04em;
+        font-variant-numeric: tabular-nums;
+        display: block;
+      }
+      .stat .n.zero {
+        color: var(--err);
+      }
+      .stat .l {
+        display: block;
+        margin-top: 9px;
+        font-size: 13.5px;
+        line-height: 1.35;
+        color: var(--ink2);
+      }
+      .stat .s {
+        display: block;
+        margin-top: 5px;
+        font-family: 'IBM Plex Mono', monospace;
+        font-size: 10.5px;
+        letter-spacing: 0.06em;
+        text-transform: uppercase;
+        color: var(--muted);
+      }
+      .caption {
+        font-size: 14px;
+        color: var(--muted);
+        margin: 0;
+        font-style: italic;
+      }
+
+      /* keep list */
+      .keep {
+        display: grid;
+        gap: 1px;
+        background: var(--rule);
+        border: 1px solid var(--rule);
+        border-radius: 3px;
+        overflow: hidden;
+      }
+      .keep > div {
+        background: var(--surface);
+        padding: 19px 22px;
+        display: grid;
+        grid-template-columns: auto 1fr;
+        gap: 0 16px;
+        align-items: baseline;
+      }
+      .keep .mk {
+        font-family: 'IBM Plex Mono', monospace;
+        font-size: 11px;
+        font-weight: 600;
+        color: var(--accent);
+        letter-spacing: 0.08em;
+      }
+      .keep h4 {
+        grid-column: 2;
+      }
+      .keep p {
+        grid-column: 2;
+        margin: 0;
+        font-size: 16px;
+        line-height: 1.55;
+        color: var(--ink2);
+      }
+
+      /* findings */
+      .find {
+        background: var(--surface);
+        border: 1px solid var(--rule);
+        border-radius: 3px;
+        margin: 0 0 14px;
+        overflow: hidden;
+        box-shadow: var(--shadow);
+      }
+      .find > header {
+        display: flex;
+        gap: 14px;
+        align-items: baseline;
+        padding: 18px 22px 0;
+        flex-wrap: wrap;
+      }
+      .find h4 {
+        flex: 1;
+        min-width: 15rem;
+        margin: 0;
+      }
+      .badge {
+        font-family: 'IBM Plex Mono', monospace;
+        font-size: 10px;
+        font-weight: 600;
+        letter-spacing: 0.1em;
+        text-transform: uppercase;
+        padding: 3px 8px;
+        border-radius: 2px;
+        white-space: nowrap;
+        border: 1px solid;
+      }
+      .b-err {
+        color: var(--err);
+        background: var(--err-soft);
+        border-color: var(--err);
+      }
+      .b-major {
+        color: var(--major);
+        background: var(--major-soft);
+        border-color: var(--major);
+      }
+      .b-minor {
+        color: var(--minor);
+        background: var(--minor-soft);
+        border-color: var(--rule2);
+      }
+      .find .where {
+        padding: 6px 22px 0;
+        font-family: 'IBM Plex Mono', monospace;
+        font-size: 11.5px;
+        color: var(--muted);
+        word-break: break-word;
+      }
+      .find .body {
+        padding: 14px 22px 20px;
+      }
+      .find .body p {
+        font-size: 16.5px;
+        margin: 0 0 12px;
+      }
+      .find .body p:last-child {
+        margin-bottom: 0;
+      }
+      .find.is-err {
+        border-left: 3px solid var(--err);
+      }
+      .find.is-major {
+        border-left: 3px solid var(--major);
+      }
+      .find.is-minor {
+        border-left: 3px solid var(--rule2);
+      }
+
+      .vs {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 1px;
+        background: var(--rule);
+        border: 1px solid var(--rule);
+        border-radius: 3px;
+        overflow: hidden;
+        margin: 0 0 14px;
+      }
+      .vs > div {
+        background: var(--sunken);
+        padding: 14px 16px;
+      }
+      .vs .lab {
+        font-family: 'IBM Plex Mono', monospace;
+        font-size: 10px;
+        font-weight: 600;
+        letter-spacing: 0.11em;
+        text-transform: uppercase;
+        margin: 0 0 7px;
+      }
+      .vs .site .lab {
+        color: var(--err);
+      }
+      .vs .repo .lab {
+        color: var(--accent);
+      }
+      .vs p {
+        font-size: 15px;
+        line-height: 1.5;
+        margin: 0;
+        color: var(--ink2);
+      }
+      .vs p + p {
+        margin-top: 8px;
+      }
+      .fix {
+        border-top: 1px solid var(--rule);
+        background: var(--accent-soft);
+        padding: 13px 22px;
+        font-size: 15.5px;
+        line-height: 1.55;
+        color: var(--ink);
+      }
+      .fix b {
+        font-family: 'IBM Plex Mono', monospace;
+        font-size: 10px;
+        letter-spacing: 0.11em;
+        text-transform: uppercase;
+        color: var(--accent);
+        display: block;
+        margin-bottom: 5px;
+        font-weight: 600;
+      }
+
+      /* theme blocks */
+      .theme {
+        border-top: 1px solid var(--rule);
+        padding-top: 26px;
+        margin-top: 30px;
+      }
+      .theme:first-of-type {
+        border-top: 0;
+        padding-top: 0;
+        margin-top: 0;
+      }
+      .theme > .n {
+        font-family: 'IBM Plex Mono', monospace;
+        font-size: 11px;
+        letter-spacing: 0.12em;
+        color: var(--muted);
+        display: block;
+        margin-bottom: 7px;
+      }
+      ul.plain {
+        list-style: none;
+        padding: 0;
+        margin: 0;
+      }
+      ul.plain > li {
+        padding: 0 0 0 22px;
+        position: relative;
+        margin-bottom: 15px;
+        font-size: 16.5px;
+        line-height: 1.58;
+        color: var(--ink2);
+      }
+      ul.plain > li::before {
+        content: '';
+        position: absolute;
+        left: 0;
+        top: 0.62em;
+        width: 9px;
+        height: 1.5px;
+        background: var(--rule2);
+      }
+      ul.plain > li strong {
+        color: var(--ink);
+      }
+
+      blockquote {
+        margin: 0 0 18px;
+        padding: 2px 0 2px 20px;
+        border-left: 2px solid var(--accent);
+        font-style: italic;
+        color: var(--ink2);
+        font-size: 17px;
+      }
+      blockquote cite {
+        display: block;
+        font-style: normal;
+        font-family: 'IBM Plex Mono', monospace;
+        font-size: 11px;
+        letter-spacing: 0.06em;
+        color: var(--muted);
+        margin-top: 8px;
+      }
+
+      /* table */
+      .tw {
+        overflow-x: auto;
+        border: 1px solid var(--rule);
+        border-radius: 3px;
+        background: var(--surface);
+      }
+      table {
+        border-collapse: collapse;
+        width: 100%;
+        min-width: 600px;
+        font-size: 16px;
+      }
+      th,
+      td {
+        text-align: left;
+        padding: 13px 16px;
+        border-bottom: 1px solid var(--rule);
+        vertical-align: top;
+      }
+      thead th {
+        font-family: 'IBM Plex Mono', monospace;
+        font-size: 10.5px;
+        font-weight: 600;
+        letter-spacing: 0.1em;
+        text-transform: uppercase;
+        color: var(--muted);
+        background: var(--sunken);
+      }
+      tbody tr:last-child td {
+        border-bottom: 0;
+      }
+      td.num {
+        font-family: 'IBM Plex Mono', monospace;
+        font-variant-numeric: tabular-nums;
+        color: var(--accent);
+        font-weight: 600;
+        width: 1%;
+        white-space: nowrap;
+      }
+      td.eff {
+        font-family: 'IBM Plex Mono', monospace;
+        font-size: 13px;
+        white-space: nowrap;
+        color: var(--ink2);
+        width: 1%;
+      }
+
+      .note {
+        background: var(--sunken);
+        border: 1px dashed var(--rule2);
+        border-radius: 3px;
+        padding: 20px 24px;
+        margin: 0;
+      }
+      .note p:last-child {
+        margin-bottom: 0;
+      }
+
+      footer.end {
+        margin-top: 70px;
+        padding-top: 22px;
+        border-top: 1px solid var(--rule2);
+        font-family: 'IBM Plex Mono', monospace;
+        font-size: 11.5px;
+        line-height: 1.8;
+        color: var(--muted);
+      }
+
+      @media (max-width: 720px) {
+        body {
+          font-size: 16.5px;
+        }
+        .wrap {
+          padding: 0 18px 80px;
+        }
+        .vs {
+          grid-template-columns: 1fr;
+        }
+        .find > header {
+          padding: 16px 17px 0;
+        }
+        .find .where,
+        .find .body,
+        .fix {
+          padding-left: 17px;
+          padding-right: 17px;
+        }
+        .keep > div {
+          grid-template-columns: 1fr;
+          gap: 6px;
+        }
+        .keep h4,
+        .keep p {
+          grid-column: 1;
+        }
+      }
+      @media (prefers-reduced-motion: reduce) {
+        * {
+          transition: none !important;
+          animation: none !important;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <div class="wrap">
+      <header class="mast">
+        <p class="eyebrow">Concept review · OSDU Fieldnotes</p>
+        <h1>The map is right.<br />The panels are empty.</h1>
+        <p class="dek">
+          The structural bet behind this prototype is better than most internal
+          training ever gets. The prose is the part that isn't carrying its
+          weight — and the fix is a style guide you already wrote, sitting in
+          <em>osdu-spi-stack</em>.
+        </p>
+        <div class="meta">
+          <div><b>Reviewed</b>commit fdc27d9<br />dist/ · 5 files · 62 KB</div>
+          <div>
+            <b>Checked against</b>osdu-spi-stack @ docs + src<br />osdu-spi @
+            doc/src + ADRs
+          </div>
+          <div>
+            <b>Method</b>10 review passes, each<br />adversarially verified
+          </div>
+          <div>
+            <b>Survived</b>91 findings<br />1 blocking · 31 major · 43 minor ·
+            16 ideas
+          </div>
+        </div>
+      </header>
+
+      <section>
+        <h2>Verdict</h2>
+        <div class="col">
+          <p class="lede">
+            The core idea is sound, and one decision in it is genuinely good:
+            <strong
+              >a single <code>architectureMap()</code> renders both chapter 01
+              and all five moments of chapter 02, at identical
+              coordinates.</strong
+            >
+            The learner pays for the spatial model once, then spends everything
+            else on the new variable. That is the thing worth protecting.
+          </p>
+          <p>
+            The risk is that the site was built from your question — "what is a
+            stack?" — rather than from the reader's, which is "where is the OSDU
+            I already run, in this picture?" The words <em>partition</em>,
+            <em>entitlements</em>, <em>indexer</em> and <em>schema</em> appear
+            zero times across all five files. The audience's existing knowledge
+            is the one asset the premise depends on, and the site never spends
+            it.
+          </p>
+          <p>
+            You asked four questions. Short answers: the sequence is right but
+            has no exit and no clock; chapter 01 does not yet give a reason to
+            explore, because its default selection is invisible; the component
+            details do <em>not</em> reward curiosity, for a reason that has
+            nothing to do with interaction; and the visual density is fine —
+            it's the <strong>information</strong> density that is off.
+          </p>
+        </div>
+      </section>
+
+      <section>
+        <h2>The one thing</h2>
+        <div class="rule-card">
+          <p class="kick">Authoring rule</p>
+          <p class="said">
+            Every detail panel earns its place by carrying at least one fact you
+            could only know from having run this.
+          </p>
+          <p>
+            This is the only finding here that is a filter rather than a backlog
+            item. Applied, it collapses a dozen separate "add this fact"
+            recommendations into one test each sentence has to pass, it costs no
+            new UI, and it makes the <em>next</em> forty panels better instead
+            of repairing four of the current twenty-nine.
+          </p>
+        </div>
+        <div class="col">
+          <p>
+            The proof it works is already in your file. One sentence in 1,230
+            words passes it:
+          </p>
+          <blockquote>
+            A successful CLI exit can precede application readiness.<cite
+              >component-details.js · rollout</cite
+            >
+          </blockquote>
+          <p>
+            That is the sentence every single review pass singled out,
+            unprompted. It is the only one that names a failure mode the reader
+            will actually hit.
+          </p>
+        </div>
+      </section>
+
+      <section>
+        <h2>The evidence</h2>
+        <div class="stats">
+          <div class="stat">
+            <span class="n">29</span><span class="l">detail panels</span
+            ><span class="s">1,230 words</span>
+          </div>
+          <div class="stat">
+            <span class="n zero">0</span
+            ><span class="l">numbers of any kind</span
+            ><span class="s">no durations, counts, versions</span>
+          </div>
+          <div class="stat">
+            <span class="n zero">0</span
+            ><span class="l">file paths or resource names</span
+            ><span class="s">no configmaps, no manifests</span>
+          </div>
+          <div class="stat">
+            <span class="n">4</span><span class="l">command forms named</span
+            ><span class="s">of 16 the CLI ships</span>
+          </div>
+          <div class="stat">
+            <span class="n">1</span><span class="l">of 3 namespaces named</span
+            ><span class="s">platform only</span>
+          </div>
+        </div>
+        <p class="caption">
+          Counted over the title + body of every entry in
+          <code>component-details.js</code>.
+        </p>
+
+        <div class="col" style="margin-top: 30px">
+          <p>
+            Compare the doc this chapter conceptually mirrors.
+            <code>docs/design/deployment-lifecycle.md</code> is
+            <strong>1,513 words</strong> — shorter than the site's panel copy —
+            and carries 60 backticked artifacts, an eight-row stage table, and
+            real numbers: 45–50 minutes total, ~30 for AKS, a ten-minute source
+            timeout, a 150-minute deadline on the schema-load Job alone.
+          </p>
+          <p>
+            That last one matters. A learner who follows chapter 02 to the end,
+            runs <code>spi status --watch</code>, and sits at a pending
+            schema-load Job for two hours has no way to know that's normal. The
+            site taught them the shape and withheld the scale.
+          </p>
+        </div>
+
+        <div
+          class="rule-card"
+          style="margin-top: 30px; border-left-color: var(--major)"
+        >
+          <p class="kick" style="color: var(--major)">
+            You already wrote the rule
+          </p>
+          <p class="said" style="font-size: clamp(20px, 2.5vw, 25px)">
+            "Point at the thing: file paths, resource names, chart keys, a
+            <code style="font-size: 0.8em">kubectl</code> command… Keep numbers
+            exact where one exists. Never round into vagueness."
+          </p>
+          <p>
+            <code>osdu-spi-stack/docs/STYLE.md</code> governs ADRs, design docs
+            and architecture.md. It bans hedge adverbs, requires a named
+            artifact or an exact number behind every claim, and its review
+            checklist rejects a page that "states the same idea more than once
+            in different forms" or "ends with a summary, a maxim, or a call to
+            action."
+          </p>
+          <p>
+            The training site is written in the opposite register from the
+            system it teaches. Not all of STYLE.md transfers — second person is
+            right for a learner, and a takeaway is a legitimate teaching device
+            where a maxim in an ADR is not. But <em>point at the thing</em> and
+            <em>keep numbers exact</em> transfer completely, and applying just
+            those two would resolve most of what follows.
+          </p>
+        </div>
+      </section>
+
+      <section>
+        <h2>Keep these</h2>
+        <div class="keep">
+          <div>
+            <span class="mk">01</span>
+            <h4>One map, two chapters</h4>
+            <p>
+              Chapter 01's overview and all five of chapter 02's moments come
+              out of one function at identical grid coordinates. Do not let a
+              fifth chapter clone-and-modify it — give it more parameters
+              instead.
+            </p>
+          </div>
+          <div>
+            <span class="mk">02</span>
+            <h4>The workstation is drawn outside the Azure boundary</h4>
+            <p>
+              And the copy closes the loop:
+              <em
+                >"a running environment does not need your terminal to stay
+                open."</em
+              >
+              Correcting a misconception with geometry sticks far better than
+              correcting it with prose. The layout is doing the teaching.
+            </p>
+          </div>
+          <div>
+            <span class="mk">03</span>
+            <h4>Stage 0 is an empty footprint</h4>
+            <p>
+              Dashed borders and
+              <span class="mono" style="font-size: 0.85em"
+                >PLANNED BOUNDARY</span
+              >
+              are a reserved visual language meaning "does not exist yet," used
+              nowhere else. A diagram that only ever shows the finished state
+              can never teach that a cluster existing and OSDU being usable are
+              different events. Easy to break in a cleanup pass — don't.
+            </p>
+          </div>
+          <div>
+            <span class="mk">04</span>
+            <h4>The same command in moments 2, 3 and 4</h4>
+            <p>
+              <code>spi up --env dev1</code> repeats verbatim while the label
+              moves from "Run once" to "Still the same invocation" to "Flux
+              starts while the CLI is still working." Most walkthroughs would
+              have invented three commands to make the steps look distinct. This
+              is the one place where the <em>interaction itself</em> carries a
+              fact prose can't: you click three times expecting three commands
+              and are told, structurally, that there is one. If you're asking
+              whether this format beats writing another markdown page — this is
+              the existence proof, and the answer is yes.
+            </p>
+          </div>
+          <div>
+            <span class="mk">05</span>
+            <h4>The three-signal readiness model</h4>
+            <p>
+              "CLI success, healthy workloads, and a successful API response are
+              distinct signals," plus the Git-suspension default. Both
+              repo-exact, both the failure modes that actually burn new
+              operators, both taught before the learner can hit them. This is
+              the class of sentence the whole site should be built from.
+            </p>
+          </div>
+          <div>
+            <span class="mk">06</span>
+            <h4>Contrast was clearly cared about</h4>
+            <p>
+              Measured across nineteen text roles, exactly one falls short of
+              AA, and only by 3%. That is unusual and worth saying out loud.
+            </p>
+          </div>
+        </div>
+      </section>
+
+      <section>
+        <h2>Factual errors — fix these first</h2>
+        <div class="col">
+          <p>
+            These are the only findings that make the site <em>wrong</em> rather
+            than incomplete. All are string edits.
+          </p>
+        </div>
+
+        <article class="find is-err">
+          <header>
+            <h4>
+              The Container Registry tile is not where the images come from
+            </h4>
+            <span class="badge b-err">Wrong</span>
+          </header>
+          <p class="where">
+            architecture.js → node('cloudsupport','Container
+            Registry','Container images')
+          </p>
+          <div class="vs">
+            <div class="site">
+              <p class="lab">The site says</p>
+              <p>
+                A tile labelled "Container Registry / Container images" inside
+                the stack boundary, and "The stack also provisions an Azure
+                Container Registry." Chapter 04 then says "an image connects
+                service engineering to the running stack."
+              </p>
+            </div>
+            <div class="repo">
+              <p class="lab">The repo says</p>
+              <p>
+                <code>acr.bicep</code> creates a Basic registry with
+                <code>adminUserEnabled: false</code> and no push path. ADR-033:
+                canonical images resolve from the OSDU community GitLab
+                registry; fork images come from
+                <code>ghcr.io/&lt;owner&gt;/&lt;service&gt;</code>. ADR-013
+                names ACR as a <em>future</em> mirror target.
+              </p>
+            </div>
+          </div>
+          <div class="body">
+            <p>
+              A reader joins the two chapters, goes looking for their fork image
+              in ACR, finds an empty registry, and stops trusting the map. The
+              real answer — community GitLab for canonical, GHCR for forks — is
+              more interesting, and it is the actual bridge between the two
+              repos the site is trying to connect.
+            </p>
+          </div>
+          <div class="fix">
+            <b>Fix</b>Subtitle → "Provisioned, not the image source." Name
+            GitLab and GHCR in the <code>cloudsupport</code> copy, and name GHCR
+            in chapter 04's
+            <span class="mono" style="font-size: 0.85em">THE HANDOFF</span>
+            panel.
+          </div>
+        </article>
+
+        <article class="find is-err">
+          <header>
+            <h4>The site contradicts itself on provisioning order</h4>
+            <span class="badge b-err">Wrong</span>
+          </header>
+          <p class="where">component-details.js → clouddata vs emptycluster</p>
+          <div class="vs">
+            <div class="site">
+              <p class="lab">The site says</p>
+              <p>
+                <code>clouddata</code>: "They are provisioned alongside AKS."
+              </p>
+              <p>
+                <code>emptycluster</code>: "The CLI <em>first</em> provisions
+                AKS and <em>then</em> the Azure data and support resources."
+              </p>
+            </div>
+            <div class="repo">
+              <p class="lab">The repo says</p>
+              <p>
+                <code>deployment-lifecycle.md</code>'s stage table: Resource
+                group → AKS → Azure PaaS. <code>main.bicep</code>'s stated
+                prerequisite is the AKS OIDC issuer. The ordering is a
+                dependency, not a coincidence.
+              </p>
+            </div>
+          </div>
+          <div class="fix">
+            <b>Fix</b>"provisioned alongside AKS" → "provisioned after AKS." One
+            word.
+          </div>
+        </article>
+
+        <article class="find is-err">
+          <header>
+            <h4>Eight nodes in chapter 04 resolve to six panels</h4>
+            <span class="badge b-err">Wrong</span>
+          </header>
+          <p class="where">
+            diagrams.js:11 · node('stack',…) twice, node('image',…) twice ·
+            main.js:17 selectDetail
+          </p>
+          <div class="body">
+            <p>
+              Clicking "Running Azure stack" opens a panel headed
+              <span class="mono" style="font-size: 0.85em"
+                >RUNTIME ENVIRONMENT · osdu-spi-stack</span
+              >
+              about the CLI and Bicep — and because
+              <code>selectDetail</code> presses by
+              <code>data-detail</code> value, it lights up <em>both</em> boxes
+              at once. Verified in the browser: two nodes highlighted, one
+              panel.
+            </p>
+            <p>
+              This is in the chapter whose entire thesis is "these are different
+              things, follow the change to its owner." It tells the reader twice
+              that two different things are the same.
+              <strong>This survived the Vite restructure</strong> — it is still
+              live in <code>src/components/diagrams.js</code>.
+            </p>
+          </div>
+          <div class="fix">
+            <b>Fix</b>Split the ids and write distinct copy. Change
+            <code>selectDetail(id)</code> to press by element identity, so the
+            deliberate <code>clouddata</code>/<code>cloudsupport</code> grouping
+            in chapter 01 keeps working. Then add one assertion to
+            <code>tests/content.test.js</code> — ids must be unique per diagram
+            — and it can never come back.
+          </div>
+        </article>
+
+        <article class="find is-err">
+          <header>
+            <h4>
+              Three of the four osdu-spi source links land on broken pages
+            </h4>
+            <span class="badge b-err">Wrong</span>
+          </header>
+          <p class="where">
+            chapters.js → sources, all pointing at
+            github.com/…/blob/main/doc/src/*.md
+          </p>
+          <div class="vs">
+            <div class="site">
+              <p class="lab">The site says</p>
+              <p>
+                "Go deeper in the documentation" →
+                <code>osdu-spi/blob/main/doc/src/concepts.md</code>,
+                <code>…/architecture/overview.md</code>,
+                <code>…/three_branch_strategy.md</code>
+              </p>
+            </div>
+            <div class="repo">
+              <p class="lab">What's there</p>
+              <p>
+                Those files carry 9–25 lines each of mkdocs-material-only syntax
+                — <code>:material-cog:{ .lg .middle }</code>,
+                <code>&lt;div class="grid cards" markdown&gt;</code> — which
+                GitHub's blob view renders as literal garbage. The real pages
+                are published at <code>azure.github.io/osdu-spi/</code>.
+              </p>
+            </div>
+          </div>
+          <div class="body">
+            <p>
+              A senior engineer's first act is to click a source link to see
+              whether you actually read the docs. Every link resolves to a real
+              file, which is genuinely good — but three of them show the reader
+              a mangled page.
+            </p>
+          </div>
+          <div class="fix">
+            <b>Fix</b>Point the four <code>osdu-spi</code> links at the
+            published site: <code>concepts.md</code> →
+            <code>azure.github.io/osdu-spi/concepts/</code>, and so on. Note
+            that <code>tests/content.test.js:41</code> currently
+            <em>asserts</em> the <code>blob/main/</code> shape, so relax that
+            regex in the same change.
+          </div>
+        </article>
+
+        <article class="find is-err">
+          <header>
+            <h4>A forward reference to material that never arrives</h4>
+            <span class="badge b-err">Wrong</span>
+          </header>
+          <p class="where">component-details.js → upstream</p>
+          <div class="body">
+            <p>
+              "The branch mechanics come later in the guide." Chapter 04
+              <em>is</em> the last chapter, and <code>fork_upstream</code> /
+              <code>fork_integration</code> appear nowhere. It reads as
+              unfinished.
+            </p>
+          </div>
+          <div class="fix">
+            <b>Fix</b>Delete six words, or "…in the documentation" — the
+            three-branch doc is already linked in the same chapter's sources.
+          </div>
+        </article>
+
+        <article class="find is-major">
+          <header>
+            <h4>"Service fork", singular, throughout</h4>
+            <span class="badge b-major">Misleading</span>
+          </header>
+          <p class="where">diagrams.js → node('repo','Service fork',…)</p>
+          <div class="body">
+            <p>
+              There are eight named service forks, each with its own
+              three-branch topology and GHCR package, and their deploy lanes
+              queue independently against one shared environment. There is also
+              a whole second tier the site never mentions — customer mirror
+              forks, which sync verbatim rather than filtered. "Three
+              repositories" is defensible as a statement about <em>owners</em>;
+              "Service fork" as a single box is not.
+            </p>
+          </div>
+          <div class="fix">
+            <b>Fix</b>Keep the headline. Change the node subtitle to "One per
+            service" and name <code>osdu-spi-partition</code> as the reference
+            fork.
+          </div>
+        </article>
+
+        <article class="find is-major">
+          <header>
+            <h4>
+              The legend points at colors that appear nowhere in the figure
+            </h4>
+            <span class="badge b-major">Misleading</span>
+          </header>
+          <p class="where">base.css → .legend span::before, .boundary-labels</p>
+          <div class="body">
+            <p>
+              Chapter 03's legend swatches render
+              <code>--blue #087ab8</code> and <code>--orange #b6501e</code>. The
+              nodes they label render <code>--navy #102c47</code> and
+              <code>--orange-bg #fff3e8</code>. This is the only place on the
+              site where the color system is explained, in the chapter whose
+              central teaching device <em>is</em> the color split — and below
+              620px <code>.boundary-labels</code> is <code>display:none</code>,
+              so on a phone the legend maps to nothing at all.
+            </p>
+          </div>
+          <div class="fix">
+            <b>Fix</b
+            ><code>.legend span::before{background:var(--navy)}</code> and the
+            same for the first boundary label. Two lines.
+          </div>
+        </article>
+
+        <article class="find is-minor">
+          <header>
+            <h4>
+              "spi check checks… it does not prove all deployment permissions"
+            </h4>
+            <span class="badge b-minor">Imprecise</span>
+          </header>
+          <p class="where">component-details.js → localsetup</p>
+          <div class="body">
+            <p>
+              <code>spi check</code> iterates a tool registry only — az, bicep,
+              kubectl, kubelogin, flux. It checks no login, no subscription, no
+              role assignment. "All" implies it proves some.
+            </p>
+          </div>
+          <div class="fix">
+            <b>Fix</b>"It does not check your Azure login, your active
+            subscription, or whether your identity can create role assignments."
+            Fixes the "check checks" stutter too.
+          </div>
+        </article>
+      </section>
+
+      <section>
+        <h2>Themes</h2>
+
+        <div class="theme">
+          <span class="n">THEME 01</span>
+          <h3>The bridge to what the reader already knows is missing</h3>
+          <div class="col">
+            <p>
+              The premise is "you know OSDU, start from there." The copy never
+              once starts from there. This is the highest-leverage block of work
+              on the list.
+            </p>
+          </div>
+          <ul class="plain col">
+            <li>
+              <strong>Partitions are absent.</strong> Zero hits. Meanwhile the
+              repo:
+              <em
+                >"Each partition gets a Cosmos DB SQL account, Service Bus
+                namespace, and Storage account. The environment shares Gremlin,
+                common Storage, Key Vault, and in-cluster middleware. The first
+                partition is the primary partition and hosts the system database
+                used by schema loading."</em
+              >
+              This is the single cheapest bridge available — an OSDU engineer
+              knows data partitions cold, and one sentence converts an abstract
+              Azure box diagram into their existing model. Split the backend
+              tiles into "Per partition · opendes" and "Shared by the
+              environment."
+            </li>
+            <li>
+              <strong
+                >Namespaces are absent, and the map has no node for
+                "operators."</strong
+              >
+              The <code>rollout</code> panel says Flux reconciles "operators,
+              middleware, OSDU services and initialization in dependency order"
+              at the exact moment the map renders Flux, a gateway, a service
+              pair and one middleware tile — the word has no visual referent.
+              Meanwhile the CLI literally prints
+              <code>kubectl get pods -n foundation</code> as a next step after
+              <code>spi up</code>, so the reader's first contact with those
+              names is an unexplained terminal table. Cheapest fix: put
+              <code>foundation</code>, <code>platform</code>,
+              <code>osdu</code> into the existing
+              <code>flux</code>/<code>middleware</code>/<code>service</code>
+              copy and add one operators tile. Then the payoff line:
+              <em
+                >only <code>osdu</code> gets Istio sidecars;
+                <code>platform</code> is deliberately outside the mesh because
+                <code>istio-init</code> needs NET_ADMIN and Deployment
+                Safeguards rejects it.</em
+              >
+            </li>
+            <li>
+              <strong
+                >Chapter 03 defines SPI from zero, to an audience that has
+                it.</strong
+              >
+              "SPI means Service Provider Interface…" is the third of four views
+              — the reader's most alert attention — spent on something they
+              brought with them. This is the best value-per-character change on
+              the site: open from their knowledge and pivot.
+              <em
+                >"You already know this boundary — it's the same
+                <code>provider/</code> split you read in every community service
+                on GitLab. What changed is the tree around it."</em
+              >
+            </li>
+            <li>
+              <strong
+                >The motivation for the entire engineering system is
+                missing.</strong
+              >
+              ADR-038: upstream
+              <em>plans to remove its Azure implementations</em>;
+              <code>provider/&lt;svc&gt;-azure</code> and
+              <code>testing/&lt;svc&gt;-test-azure</code> will be deleted and
+              the Azure code becomes yours to own. Without that, "seeds Azure
+              provider and test source" reads as a convenience. With it, four
+              scattered mechanisms become one story. Worth knowing: chapter 03's
+              own linked source, <code>concepts.md</code>, is stale against
+              ADR-038 — its diagram still shows the provider arriving from
+              upstream. Your copy is more current than the doc you send people
+              to.
+            </li>
+            <li>
+              <strong>Profiles are never mentioned,</strong> and the payoff line
+              is a perfect caption for your own diagram:
+              <em
+                >"Profiles select Kubernetes workloads, not a smaller Azure
+                resource estate."</em
+              >
+              That maps one-to-one onto the map's AKS-box / Azure-column split.
+              One sentence; skip the toggle.
+            </li>
+            <li>
+              <strong
+                >The one thing the reader most needs and cannot infer:</strong
+              >
+              <em
+                >"This is not a production configuration. OSDU services share a
+                managed identity and middleware credentials. Backup, disaster
+                recovery, and per-service Azure access isolation are not
+                provided by this stack."</em
+              >
+              That's <code>architecture.md</code> line 12. Grep the site:
+              <em>production</em> 0, <em>backup</em> 0, <em>disaster</em> 0. For
+              an audience that runs production OSDU, this is a fact they will
+              otherwise carry into a design review.
+            </li>
+          </ul>
+        </div>
+
+        <div class="theme">
+          <span class="n">THEME 02</span>
+          <h3>The arc has no exit and no clock</h3>
+          <ul class="plain col">
+            <li>
+              <strong><code>spi down</code> appears zero times.</strong> The
+              site walks the reader to billable Azure resources, warns them once
+              in caption text, and offers no way out — while the repo README
+              bolds "Remove the environment when it is no longer needed." Add a
+              sixth moment and render it as the reverse of stage 0: boundary
+              outline stays, workloads clear, one node remains —
+              <em>"Managed identities · name suffix."</em> The footprint that
+              doesn't go away <em>is</em> the lesson, and the survival behavior
+              is genuinely surprising.
+            </li>
+            <li>
+              <strong
+                >Duration is absent, and duration is the shape of this
+                sequence.</strong
+              >
+              Moment 2 is two-thirds of the wall clock and all five render as
+              equal-weight clicks. Add an elapsed figure to each moment in the
+              timing pill that already exists. Do <em>not</em> make the step bar
+              proportional — your own README says the moments are explanatory
+              stages, and moment 4 explicitly overlaps moment 3.
+            </li>
+            <li>
+              <strong><code>spi connect</code> is absent.</strong> The site
+              teaches only the path of the person who <em>creates</em> an
+              environment. A newly onboarded engineer is handed one. That's also
+              why the billable warning stings: you taught the expensive path
+              first.
+            </li>
+            <li>
+              <strong><code>spi token</code> is absent,</strong> and the arc's
+              final beat is "then make an authenticated OSDU API request." The
+              gateway panel explains that the sidecar validates a bearer without
+              ever saying how to get one. The command exists, composes (<code
+                >TOKEN=$(spi token)</code
+              >), and ships three identities including
+              <code>--no-access</code> for 401 tests. Leaving it out reproduces
+              the exact failure mode the engineering system exists to fix —
+              <em
+                >"The tests are in the repository; the knowledge of how to run
+                them is not."</em
+              >
+            </li>
+            <li>
+              <strong
+                >The lifecycle is a chapter you already have the machinery
+                for.</strong
+              >
+              ADR-029 defines five verbs with costs: status (seconds), refresh
+              (5–20 min), upgrade (20–60 min), reset (3–6 h), teardown (15–45
+              min). Same map, same step-reveal component, real numbers, and it
+              answers the question every operator asks second.
+            </li>
+          </ul>
+        </div>
+
+        <div class="theme">
+          <span class="n">THEME 03</span>
+          <h3>The site's own interaction contract breaks</h3>
+          <div class="col">
+            <p>
+              Every chapter header promises "Select a component to look closer."
+              Four things quietly break that promise — which matters, because
+              this is precisely the interaction you're trying to validate.
+            </p>
+          </div>
+          <ul class="plain col">
+            <li>
+              <strong
+                >The detail panel is below the fold on the two chapters that
+                need it.</strong
+              >
+              Measured at 1440×1000: the diagram is 871px tall, and the panel
+              sits at y=1216 — 216px past the bottom of a maximized window,
+              before any browser chrome. A reader clicks a node near the top of
+              the map and sees nothing change. On a phone chapter 02 is 3,381px
+              tall with the step buttons at the top and the explanation at the
+              bottom. Chapters 03 and 04 fit fine, so it's invisible unless you
+              check.
+              <em
+                >Fix: make the panel sticky to the bottom of the figure, or move
+                it beside the map above 1200px.</em
+              >
+            </li>
+            <li>
+              <strong
+                >The first screen's default selection is invisible.</strong
+              >
+              <code>selected:'environment'</code> is a scope button whose entire
+              selected state is a heading color shift. The panel says "THE STACK
+              BOUNDARY" and nothing in the map visibly connects to it — so the
+              click→panel relationship can't be inferred by observation, on the
+              exact view where you asked whether it gives an immediate reason to
+              explore. Light the container, not the heading.
+            </li>
+            <li>
+              <strong
+                >Chapter 02 fires the panel unasked, and echoes the paragraph
+                above it.</strong
+              >
+              Moment 4 puts "This overlaps the final CLI work" and "Flux
+              reconciliation overlaps the final CLI work" on screen ~400px
+              apart, verbatim. The reader concludes the panel repeats rather
+              than deepens, and stops clicking.
+            </li>
+            <li>
+              <strong>Five nodes silently lose their selection ring.</strong>
+              <code>.architecture-map .node{box-shadow:none}</code> and
+              <code>.node[aria-pressed=true]{box-shadow:…}</code> have equal
+              specificity; source order wins. Selection survives via border
+              color, but on those five it becomes pixel-identical to hover.
+              There are now five selection idioms on the site — pick one.
+            </li>
+          </ul>
+        </div>
+
+        <div class="theme">
+          <span class="n">THEME 04</span>
+          <h3>The thesis is below the fold too</h3>
+          <ul class="plain col">
+            <li>
+              <strong
+                >The four takeaways are the best prose on the site, and they're
+                last.</strong
+              >
+              "AKS is one part of the stack" names a specific wrong model the
+              reader probably holds — and it sits after a 360px diagram and a
+              149px panel, at 15px in muted grey. Meanwhile three of four
+              headlines are verbless noun pairs. The reader most likely to leave
+              early is the confident one, and they never see it. Promote the
+              takeaways to headlines.
+            </li>
+            <li>
+              <strong
+                >Four labels in the top 200px, one an exact uppercase copy of
+                another.</strong
+              >
+              Chapter 03 carries four names for itself: "The SPI boundary" /
+              "Find the Azure-specific work" / "THE SPI BOUNDARY" / "The
+              boundary is in code." The rail subtitles are sharper than the
+              titles above them. Delete the category and render
+              <code>01 · &lt;title&gt;</code> from one string.
+            </li>
+            <li>
+              <strong
+                >The one sentence that frames the whole guide is in the rail
+                footer and <code>display:none</code> below 900px.</strong
+              >
+              "You know OSDU. Start with the environment around it." That's the
+              only statement of premise anywhere, and on a tablet it vanishes
+              with nothing replacing it. Move it into the main column above
+              chapter 01.
+            </li>
+            <li>
+              <strong>Six panels end on a disclaimer.</strong> Chapter 02's
+              climax — the last sentence of the last moment — is "This view
+              shows an illustrative assembled environment, not a live readiness
+              result." There are thirteen negation clauses across the two
+              content files, ten using the identical
+              <em>X; it does not Y</em> shape. Keep the hedges that teach. State
+              scope once per chapter in the caption that already exists, and end
+              every other paragraph on the fact.
+            </li>
+          </ul>
+        </div>
+
+        <div class="theme">
+          <span class="n">THEME 05</span>
+          <h3>Structure: the panel is the wrong vehicle for ownership</h3>
+          <div class="col">
+            <p>
+              A specific instance worth separating out.
+              <code>architecture.md</code> presents system boundaries as a
+              four-row ownership table — CLI and Bicep, Flux, Kubernetes
+              controllers, Operator — each with a responsibility and a boundary,
+              including the two best lines in the corpus:
+              <em>"Flux does not reconcile Azure infrastructure"</em> and
+              <em>"A successful CLI exit is not an API-readiness check."</em>
+            </p>
+            <p>
+              The site has that content, scattered across eleven click-to-reveal
+              panels. For a senior engineer that is a downgrade: you converted
+              random access into sequential discovery, and removed the ability
+              to compare two rows. The panel is the right vehicle for
+              <em>"what is this box?"</em> It is the wrong vehicle for
+              <em>"who owns what?"</em>
+            </p>
+            <p>
+              <strong
+                >Keep the map and the click-to-explain. Add the four-row table
+                below it.</strong
+              >
+              Different question, different instrument.
+            </p>
+            <p>
+              The same logic points at what the missing chapter should be. The
+              Flux dependency graph is 17 Kustomizations with named
+              <code>dependsOn</code> edges, and the repo's own advice is
+              <em
+                >"A downstream error may name only its direct dependency. Follow
+                that dependency upstream rather than assuming the last blocked
+                service is the root cause."</em
+              >
+              That's the thing a reader will need at 2am, it's inherently a
+              graph, and it's the one diagram that can't be a static picture.
+            </p>
+          </div>
+        </div>
+
+        <div class="theme">
+          <span class="n">THEME 06</span>
+          <h3>Nothing below a chapter is linkable</h3>
+          <div class="col">
+            <p>
+              <code>#bring-up</code> is the deepest shareable address, and it
+              always opens on whatever moment the module-level variable happens
+              to hold. Verified: leave chapter 02 at moment 5 and come back, and
+              you land on "Replay from the start ↺" directly beneath an intro
+              that says "Move through five moments." A reload resets; the back
+              button does nothing.
+            </p>
+            <p>
+              The most common real use of a training artifact is one engineer
+              pasting a colleague a link to <em>one specific picture</em>. Parse
+              <code>#chapter/step</code>, make the controls navigate rather than
+              mutate, and gate the scroll reset on the chapter key actually
+              changing. Roughly a dozen lines, and it deletes the stale-state
+              bug as a side effect.
+            </p>
+          </div>
+        </div>
+
+        <div class="theme">
+          <span class="n">THEME 07</span>
+          <h3>Hygiene and color, one pass each</h3>
+          <ul class="plain col">
+            <li>
+              <strong
+                >Dead code is now indistinguishable from live code.</strong
+              >
+              Verified by exercising every chapter and every interactive state
+              in the browser: <code>.runtime</code>, <code>.cluster-rows</code>,
+              <code>.service-block</code>, <code>.startup</code>,
+              <code>.startup-arrow</code>, <code>.command-intro</code>,
+              <code>.request-connector</code>, <code>.data-side</code>,
+              <code>.delivery</code>, <code>.gateway</code>,
+              <code>.client</code> never render. That's a previous diagram
+              language, plus its responsive rules. Three detail entries —
+              <code>provision</code>, <code>bootstrap</code>,
+              <code>reconcile</code> — are a superseded draft of chapter 02
+              still shipping.
+            </li>
+            <li>
+              <strong>Two stylesheets fight over the same selectors.</strong>
+              Both declare <code>main</code>, <code>.diagram</code>,
+              <code>.shell</code>, <code>.intro</code>, <code>h1</code> at equal
+              specificity, with breakpoints that don't align. Visible symptom
+              around 1150px: the node box shrinks while its subtext grows. One
+              owner per selector.
+            </li>
+            <li>
+              <strong>One contrast failure, not many.</strong>
+              <code>--blue #087ab8</code> measures 4.36:1 — 3% under AA — and
+              it's on the chapter kicker, every source link and every detail
+              label, so it fails on every chapter at once.
+              <code>#0b6a9c</code> fixes ten selectors in one token change.
+              Everything else I measured passes.
+            </li>
+            <li>
+              <strong>Orange means three things.</strong> Fork-owned code, Azure
+              managed services you consume, and a build artifact — inside a blue
+              box labelled "Azure / Cloud boundary." Reserve orange for
+              fork-owned source and re-tone the managed family neutral.
+            </li>
+            <li>
+              <strong
+                ><code>selectDetail</code> destructures with no guard,</strong
+              >
+              and runs before the title assignment. One typo in a future
+              <code>node()</code> call aborts the render midway, leaving the
+              previous chapter's takeaway, sources and title on screen with no
+              visible error.
+            </li>
+          </ul>
+        </div>
+      </section>
+
+      <section>
+        <h2>Note: the ground moved mid-review</h2>
+        <div class="note col">
+          <p>
+            This review targets commit <code>fdc27d9</code> — the five-file
+            <code>dist/</code>. While it was running, the working tree was
+            restructured into a Vite project with <code>src/content/</code>,
+            <code>src/components/</code>, Prettier, and
+            <code>tests/content.test.js</code>.
+          </p>
+          <p>
+            <strong
+              >All content, accuracy, pedagogy and narrative findings above
+              still apply</strong
+            >
+            — the copy is byte-identical, just relocated, and the addresses here
+            point at the new files. Three structural findings were fixed by the
+            restructure and I've dropped them: the hardcoded next-link array,
+            the <code>document.title</code> DOM scrape, and content fused into
+            markup.
+          </p>
+          <p>
+            One upside worth acting on:
+            <code>tests/content.test.js</code> already asserts that every
+            <code>data-detail</code> resolves and every chapter has a renderer.
+            That's the drift guard, and it's now about ten lines from catching
+            two of the errors above — a uniqueness assertion on detail ids per
+            diagram, and a check that each source path exists in a sibling
+            checkout when one is present.
+          </p>
+        </div>
+      </section>
+
+      <section>
+        <h2>Next iteration, in order</h2>
+        <div class="tw">
+          <table>
+            <thead>
+              <tr>
+                <th></th>
+                <th>Change</th>
+                <th>Effort</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td class="num">1</td>
+                <td>All eight factual errors. Strings plus two CSS lines.</td>
+                <td class="eff">1 hour</td>
+              </tr>
+              <tr>
+                <td class="num">2</td>
+                <td>
+                  Split the duplicate detail ids, press by element identity, add
+                  the uniqueness assertion to the test. Delete
+                  <code>provision</code
+                  >/<code>bootstrap</code>/<code>reconcile</code>.
+                </td>
+                <td class="eff">30 min</td>
+              </tr>
+              <tr>
+                <td class="num">3</td>
+                <td>
+                  <strong>The bridge pass.</strong> Rewrite chapter 03's intro
+                  to open from what they know; add the partition →
+                  Cosmos/Service&nbsp;Bus/Storage mapping; put the three
+                  namespace names into existing copy; add an operators tile; add
+                  ADR-038's "upstream is deleting its Azure implementations";
+                  add the not-production paragraph.
+                </td>
+                <td class="eff">half day</td>
+              </tr>
+              <tr>
+                <td class="num">4</td>
+                <td>
+                  <strong>Close the arc.</strong> Sixth moment for
+                  <code>spi down</code> with the surviving-footprint frame;
+                  elapsed figures in the timing pill that exists;
+                  <code>spi connect</code> and <code>spi token</code> in moment
+                  5.
+                </td>
+                <td class="eff">half day</td>
+              </tr>
+              <tr>
+                <td class="num">5</td>
+                <td>
+                  Move the detail panel above the fold — sticky, or beside the
+                  map above 1200px. Light the default selection in chapter 01.
+                </td>
+                <td class="eff">2 hours</td>
+              </tr>
+              <tr>
+                <td class="num">6</td>
+                <td>
+                  Promote the takeaways to headlines; delete the duplicate
+                  category label; move "You know OSDU…" into the main column;
+                  cut chapter 02's echoed note.
+                </td>
+                <td class="eff">2 hours</td>
+              </tr>
+              <tr>
+                <td class="num">7</td>
+                <td>
+                  Deep links: <code>#chapter/step</code>, controls navigate
+                  instead of mutate.
+                </td>
+                <td class="eff">1 hour</td>
+              </tr>
+              <tr>
+                <td class="num">8</td>
+                <td>
+                  Hygiene before chapter 05: delete the dead selectors, one
+                  owner per global selector across the two stylesheets, guard
+                  <code>selectDetail</code>.
+                </td>
+                <td class="eff">half day</td>
+              </tr>
+              <tr>
+                <td class="num">9</td>
+                <td>
+                  One color pass: <code>--blue</code> → <code>#0b6a9c</code>,
+                  orange reserved for fork-owned source, fix the legend
+                  swatches.
+                </td>
+                <td class="eff">2 hours</td>
+              </tr>
+              <tr>
+                <td class="num">10</td>
+                <td>Add the ownership table under chapter 01's map.</td>
+                <td class="eff">2 hours</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </section>
+
+      <section>
+        <h2>Parked deliberately</h2>
+        <div class="col">
+          <ul class="plain">
+            <li>
+              <strong>A fifth "when it doesn't work" chapter.</strong> Best idea
+              in the review and the biggest violation of your own
+              no-course-machinery constraint. Items 3 and 4 deliver most of its
+              value inside chapter 02. Revisit once the Flux dependency graph
+              exists.
+            </li>
+            <li>
+              <strong>A cost meter.</strong> The repo refuses to quote a dollar
+              figure on purpose. Show minutes, never dollars.
+            </li>
+            <li>
+              <strong>Scrollytelling.</strong> The step bar's random access is
+              strictly better for something people return to.
+            </li>
+            <li>
+              <strong>A change-routing quiz.</strong> The teaching content is
+              one sentence appended to a panel, not a feature.
+            </li>
+            <li>
+              <strong>Renaming "Fieldnotes."</strong> The masthead is a
+              two-level container — series, then volume — and your roadmap is a
+              second volume about the engineering system. It's the one piece of
+              chrome that already accommodates the plan. The register mismatch
+              is real, but it's a copy problem, and the authoring rule at the
+              top fixes it.
+            </li>
+          </ul>
+          <p style="margin-top: 24px">
+            One rule for future diagrams, worth setting now:
+            <strong
+              >hero maps stay hand-built, because click-to-explain
+              <em>is</em> the product. Everything else is mermaid</strong
+            >
+            — which means the branch graph copies straight out of
+            <code>three_branch_strategy.md</code> with zero redrawing, and the
+            engineering-system volume gets a lot cheaper.
+          </p>
+          <p>
+            And the corollary to the authoring rule:
+            <strong
+              >spend interactivity on the facts prose gets wrong, not on the
+              facts prose states fine.</strong
+            >
+            The repeated <code>spi up --env dev1</code> is the model.
+          </p>
+        </div>
+      </section>
+
+      <footer class="end">
+        Reviewed against osdu-spi-stack and osdu-spi as checked out locally ·
+        claims verified against docs, ADRs, Bicep and CLI source<br />
+        Measurements taken in-browser at 1440×1000 and 375×812 · contrast
+        computed over 19 text roles<br />
+        Nothing in this review was run against Azure.
+      </footer>
+    </div>
+  </body>
+</html>
