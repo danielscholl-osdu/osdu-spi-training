@@ -81,13 +81,13 @@ function frameSection() {
   return `<section class="home-frame" aria-label="The frame, in three minutes">
       <div class="home-frame-copy">
         <span class="guide-kicker">Before the path</span>
-        <h2>Why the Azure half of OSDU is now Microsoft’s to keep alive, and where it is proved.</h2>
-        <p>Three minutes gives you the frame the views assume: the community kept the shared code, the Azure provider lives in service forks that take upstream change daily, and a candidate image is proved by borrowing a slot in a real Azure stack.</p>
+        <h2>Who maintains the Azure provider now, and where a change to it is proved.</h2>
+        <p>SPI is the Service Provider Interface, the seam in OSDU’s code between shared logic and a cloud implementation; the site also uses the name for the stack and the engineering system built around it. Three minutes gives you the frame the views assume: the community kept the shared code, the Azure provider lives in service forks that take upstream change daily, and a candidate image is proved by borrowing a slot in a real Azure stack.</p>
         ${listenChips('start', {
           kicker: 'Listen, two minutes',
-          lead: 'The brief keeps playing while you read this page, and stops when it ends.',
+          lead: 'Plays while you read this page.',
         })}
-        <p class="home-frame-more"><a href="#listen?episode=${conversation.id}">${escapeHtml(conversation.title)} →</a><span>The full conversation, ${Math.round(conversation.duration / 60)} minutes: the argument behind the frame, cued from the views as you go.</span></p>
+        <p class="home-frame-more"><a href="#listen?episode=${conversation.id}">${escapeHtml(conversation.short)} →</a><span>${escapeHtml(conversation.title)}, the full conversation, ${Math.round(conversation.duration / 60)} minutes: the argument behind the frame, cued from the views as you go.</span></p>
       </div>
       <figure class="home-frame-video">
         <video controls preload="metadata" playsinline poster="${frameVideo.poster}" width="${frameVideo.width}" height="${frameVideo.height}" aria-label="${escapeHtml(frameVideo.title)}" data-frame-video>
@@ -115,12 +115,12 @@ function homePage() {
     'Eight',
   ];
   return `<section class="home-start" aria-label="Where to begin">
-      <div class="home-start-copy"><span class="guide-kicker">Where to begin</span><h2>Follow one OSDU request down to its Azure provider. Then follow a fix to that provider back into a running stack.</h2><p>${words[learnCount]} views, each answering one question, each ending with what you can now say. The running example is real: a partition lookup, and the cache fallback that keeps it answering.</p></div>
+      <div class="home-start-copy"><span class="guide-kicker">Where to begin</span><h2>Follow one OSDU request down to its Azure provider. Then follow a fix to that provider back into a running stack.</h2><p>Six views, each answering one question, each ending with what you can now say, then the assumptions that cost an afternoon. The running example starts real, a partition lookup and the cache fallback that keeps it answering, and turns illustrative at 04.</p></div>
       <div class="home-start-actions"><a class="home-cta" href="${routeHref('running-stack')}">Start with 01 · What is a stack? →</a><a class="home-cta-alt" href="${routeHref('running-stack', 'request')}">Or trace one API request through it first</a></div>
     </section>
     ${frameSection()}
     <section class="home-path" aria-label="The learning path">
-      <div class="section-heading"><span class="guide-kicker">The path</span><h2>${words[learnCount]} views, in order</h2><p>Each builds on the one before. Take them in order the first time; after that, any of them stands alone.</p></div>
+      <div class="section-heading"><span class="guide-kicker">The path</span><h2>Six views, in order, then the checks</h2><p>Each of the six builds on the one before; 07 collects the assumptions the documentation contradicts. Take them in order the first time; after that, any of them stands alone.</p></div>
       ${pathCards()}
     </section>
     <section class="home-loop" id="guide-round-trip" aria-label="The round trip">
@@ -130,7 +130,7 @@ function homePage() {
     <section class="home-doors" aria-label="Two reasons to be here">
       <div class="section-heading"><span class="guide-kicker">Two reasons to be here</span><h2>The stack stands alone. The engineering system does not.</h2></div>
       <div class="doors">
-        <a class="door" href="${routeHref('running-stack')}"><span class="door-kicker">Just bring up OSDU on Azure</span><b>Views 01 and 02 are enough.</b><p>spi up builds the environment and pins every service image by digest. Each service runs the community image unless that service has been promoted to its fork, a choice recorded on the resource group. You never touch a fork.</p><span class="way-cta">Start at 01 →</span></a>
+        <a class="door" href="${routeHref('running-stack')}"><span class="door-kicker">Just bring up OSDU on Azure</span><b>Views 01 and 02 are enough.</b><p>spi up builds the environment and records every service image in the image lock. Every canonical image comes from the community registry today; per-service promotion to a fork (osdu-spi-stack ADR-033) is designed, not built. You never touch a fork.</p><span class="way-cta">Start at 01 →</span></a>
         <a class="door door-fork" href="${routeHref('spi-boundary')}"><span class="door-kicker">Maintain or mirror a service fork</span><b>Views 03 to 06, and you will need a stack.</b><p>The fork owns the Azure provider and the workflows around it. To prove a change it borrows a slot in a running stack, so the stack comes first even when the fork is your job.</p><span class="way-cta">Start at 03 →</span></a>
       </div>
     </section>
@@ -144,7 +144,7 @@ function homePage() {
       ${ownerLegend()}
     </section>
     <section class="home-ways" aria-label="Alongside the path">
-      <a class="way way-listen" href="${routeHref('listen')}"><span class="way-icon" aria-hidden="true">▶</span><b>Listen</b><p>Four generated recordings, from a two-minute brief to hour-long deep dives, that keep playing while you explore. Every marker opens the matching view, and the fork views carry short cues into them.</p><span class="way-cta">Open the player →</span></a>
+      <a class="way way-listen" href="${routeHref('listen')}"><span class="way-icon" aria-hidden="true">▶</span><b>Listen</b><p>Four generated recordings, from a two-minute brief to hour-long deep dives, that keep playing while you explore. Every marker opens the matching view, and the map views carry short cues into them.</p><span class="way-cta">Open the player →</span></a>
       <a class="way way-read" href="${routeHref('field-guides')}"><span class="way-icon" aria-hidden="true">≋</span><b>Field guides</b><p>The infographics from the views, together with the supplied posters, on one page you can print.</p><span class="way-cta">See the field guides →</span></a>
     </section>
     <section class="home-sources" aria-label="Documentation sets">
@@ -186,7 +186,8 @@ export function chapterOutcomes(key) {
 export function chapterScope(key) {
   const chapter = chapters[key];
   if (!chapter.where) return '';
-  return `<p class="view-scope"><span>In this view</span>${escapeHtml(chapter.where)} <a href="#start?guide=ladder">See the six places →</a></p>`;
+  return `<p class="view-question"><span>This view answers</span>${escapeHtml(chapter.question || '')}${chapter.builds ? ` <em>${escapeHtml(chapter.builds)}</em>` : ''}</p>
+  <p class="view-scope"><span>In this view</span>${escapeHtml(chapter.where)} <a href="#start?guide=ladder">See the six places →</a></p>`;
 }
 
 // The running example, drawn as hops above the map. Each hop selects a

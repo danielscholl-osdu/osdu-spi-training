@@ -46,7 +46,7 @@ const stackMarkers = [
   },
   {
     time: 915,
-    title: 'The general contractor leaves; the decorator keeps working',
+    title: 'The CLI exits; Flux keeps working',
     copy: 'The CLI can exit successfully while Flux is still assembling half the system. A successful exit is not a readiness check.',
     route: '#bring-up/reconcile',
     routeLabel: 'Assemble OSDU',
@@ -89,14 +89,14 @@ const stackMarkers = [
   {
     time: 1831,
     title: 'When reconciliation gets stuck',
-    copy: 'Retry exhaustion marks a HelmRelease Stalled, and a webhook that rewrites CPU requests can loop with server-side apply. Both are documented traps.',
+    copy: 'Retry exhaustion marks a HelmRelease Stalled, and an immutable Job template can end in RollbackFailed. Both are documented traps.',
     route: '#not-true',
     routeLabel: 'Things that are not true',
   },
   {
     time: 2035,
     title: 'Identity is two different jobs: outbound',
-    copy: 'A pod exchanges a projected ServiceAccount token for an Azure access token. No connection string is stored anywhere in the cluster.',
+    copy: 'A pod exchanges a projected ServiceAccount token for an Azure access token. No usable Azure data-plane key or connection string is stored in the cluster.',
     route: '#field-guides?guide=identity',
     routeLabel: 'Identity field guide',
   },
@@ -137,8 +137,8 @@ const stackMarkers = [
   },
   {
     time: 2937,
-    title: 'One environment, eight forks',
-    copy: 'The standing shared environment is the test target for eight service fork repositories. Its design is mostly about not letting them break each other.',
+    title: 'One environment, eight forks by design',
+    copy: 'The standing shared environment is the test target for the service forks: designed for eight, with partition the first. Its design is mostly about not letting them break each other.',
     route: '#handshake?detail=running',
     routeLabel: 'The shared running environment',
   },
@@ -168,7 +168,7 @@ const stackMarkers = [
 const orientationMarkers = [
   {
     time: 0,
-    title: 'The overcrowded skyscraper',
+    title: 'Shared plumbing: the problem with one repository',
     copy: 'An open-source project pictured as a community garden, then as a building where every tenant shares the plumbing. The image the rest of the conversation argues against.',
     route: '#start',
     routeLabel: 'Start here',
@@ -205,9 +205,10 @@ const orientationMarkers = [
   {
     time: 384.3,
     title: 'What Microsoft is left holding',
-    copy: 'The Azure directories no longer exist upstream. What Microsoft holds is what it maintains, and Azure Data Manager for Energy depends on that code.',
+    copy: 'What Microsoft holds is what it maintains, and Azure Data Manager for Energy depends on that code.',
     route: '#fork-shape?detail=provider-azure',
     routeLabel: 'The fork-owned provider',
+    note: 'Upstream plans to remove its Azure implementation (community ADR 61; osdu-spi ADR-038). As of September 2026 the directory is still there; the fork is built so that removal deletes nothing on its side whenever it lands.',
     note: '“Proprietary” is the narration’s word. The service forks and both Microsoft projects are public repositories under the Apache 2.0 license. What changed is ownership and responsibility, not visibility.',
   },
   {
@@ -226,7 +227,7 @@ const orientationMarkers = [
   },
   {
     time: 496.1,
-    title: 'Eight forks; ownership runs through the tree',
+    title: 'Forks by service; ownership runs through the tree',
     copy: 'One directory structure, two owners at the same commit: upstream-owned core and build configuration beside fork-owned provider and tests that synchronization never touches.',
     route: '#fork-shape',
     routeLabel: 'The shape of the fork',
@@ -315,7 +316,7 @@ const orientationMarkers = [
   {
     time: 1177.6,
     title: 'A day in the fork, and who is on the hook',
-    copy: 'Integration conflicts arrive daily, a change is proved on a stack of your own, and Microsoft, not the community, owns whether the Azure implementation survives.',
+    copy: 'Integration conflicts arrive daily, a change is proved by borrowing a slot in a shared stack, and Microsoft, not the community, owns whether the Azure implementation survives.',
     route: '#fork-day',
     routeLabel: 'A day in the fork',
   },
@@ -357,7 +358,7 @@ const briefMarkers = [
 const branchesMarkers = [
   {
     time: 0,
-    title: 'The green checkmark that lied',
+    title: 'A fallback that looked like success',
     copy: 'A tool that crashed on every run for months, hidden by a fallback that looked exactly like success. The episode’s frame: a system that refuses to wear that blindfold.',
     route: '#not-true',
     routeLabel: 'Things that are not true',
@@ -378,7 +379,7 @@ const branchesMarkers = [
   },
   {
     time: 376,
-    title: 'Upstream takes a bulldozer to the Azure code',
+    title: 'Upstream plans to remove the Azure code',
     copy: 'A snapshot fork stops being OSDU; a hand-merged fork compounds in cost. The fork must own the provider directory permanently while taking shared code daily.',
     route: '#fork-shape?detail=upstream',
     routeLabel: 'Upstream on the map',
@@ -393,7 +394,7 @@ const branchesMarkers = [
   {
     time: 617,
     title: 'One template for eight services',
-    copy: 'The workflows, actions, and rulesets live in osdu-spi. Eight forks are generated from it and own only their configuration. The rule: split what fails differently.',
+    copy: 'The workflows, actions, and rulesets live in osdu-spi. The forks, designed for eight with partition the first, are generated from it and own only their configuration. The rule: split what fails differently.',
     route: '#fork-shape?detail=engineering',
     routeLabel: 'The template on the map',
   },
@@ -420,7 +421,7 @@ const branchesMarkers = [
   },
   {
     time: 1281,
-    title: 'From sculpting to 3D printing',
+    title: 'fork_upstream as a function of the upstream tip',
     copy: 'fork_upstream is a pure function of the upstream tip and the filter. read-tree into a scratch index, filter, commit-tree with two parents: merge-shaped provenance, no merge algorithm.',
     route: '#fork-shape?detail=fork-upstream',
     routeLabel: 'The generated branch',
@@ -428,7 +429,7 @@ const branchesMarkers = [
   {
     time: 1419,
     title: 'Halt on the unknown',
-    copy: 'Generation trades a loud failure for a quiet one, so the filter classifies everything and exits 2 on anything new. Guessing would be convenient once and wrong forever.',
+    copy: 'Generation trades a loud failure for a quiet one, so the filter classifies everything and exits 2 on anything new. Guessing would silently take ownership of the wrong path.',
     route: '#fork-shape?detail=filter',
     routeLabel: 'The filter',
   },
@@ -478,14 +479,14 @@ const branchesMarkers = [
   {
     time: 2413,
     title: 'Credentials: app tokens and the guard clause',
-    copy: 'No personal tokens; short-lived GitHub App tokens. Credential-bearing jobs repeat the same if-guard verbatim, because the clause is the policy and a reviewer is not.',
+    copy: 'No personal tokens; short-lived GitHub App tokens. Credential-bearing jobs repeat the same if-guard verbatim, because the guard clause, not review, is what enforces the boundary.',
     route: '#fork-day/prove?detail=candidate',
     routeLabel: 'The build and prove moment',
   },
   {
     time: 2553,
     title: 'The pull_request_target lesson',
-    copy: 'Running the trusted workflow file against untrusted checked-out code invited that code into a privileged runner. CodeQL flagged it. The fix was structural: the job that publishes never checks out PR code.',
+    copy: 'Running the trusted workflow file against untrusted checked-out code invited that code into a privileged runner. CodeQL flagged it. The fix was structural: the job that publishes excludes pull_request_target, cross-repository PRs, and Dependabot.',
     route: '#handshake?detail=gate',
     routeLabel: 'Deploy Gate',
     note: 'The cascade now runs on workflow_dispatch, started by the monitor or by hand. The narration describes the lesson, not the current trigger.',
@@ -535,8 +536,8 @@ const branchesMarkers = [
   },
   {
     time: 3759,
-    title: 'The AI blindfold',
-    copy: 'A summariser that never once succeeded, hidden by a seamless fallback. “A fallback that cannot be distinguished from success is not resilience. It is a blindfold.”',
+    title: 'The fallback that hid a failure for months',
+    copy: 'A summariser that never once succeeded, hidden by a fallback that looked like success. “A fallback that cannot be distinguished from success is not resilience. It is a blindfold.”',
     route: '#not-true',
     routeLabel: 'Things that are not true',
   },
@@ -637,6 +638,7 @@ export const frameVideo = {
     'The split, the service forks, the candidate image, and the borrowed slot in a live stack, drawn in one minute.',
   notes: [
     'The narration calls the Azure logic proprietary. The service forks are public repositories under the Apache 2.0 license; what changed is ownership, not visibility.',
+    'The narration says the community stripped out all cloud-specific code. Upstream plans that removal (community ADR 61); as of September 2026 the Azure directory is still there.',
     'Restore is conditional: the run puts the environment back only while it still owns its pin, and a lost runner can leave work for a person.',
   ],
 };

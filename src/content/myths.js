@@ -27,7 +27,8 @@ export const myths = [
     claim: 'Async indexing works with the default images.',
     reality:
       'The community indexer-queue builds a Service Bus connection string regardless of Workload Identity and reads the DISABLED placeholder. Records-changed indexing needs a Workload-Identity-capable replacement image.',
-    check: 'kubectl get secret -n osdu | grep -i servicebus',
+    check:
+      'az keyvault secret list --vault-name <vault> --query "[?ends_with(name,`sb-connection`)].name"',
     source: 'entra',
     route: '#running-stack/request?detail=events',
     routeLabel: 'Service Bus on the request path',
@@ -49,7 +50,7 @@ export const myths = [
     claim: 'Profiles save money.',
     reality:
       'bare, minimal, and core select Kubernetes workloads. All three provision the full Azure estate, including the cluster and every PaaS service. A bare deployment simply has nothing running on top.',
-    check: 'spi up --env dev1 --profile minimal   # same Azure bill',
+    check: 'spi up --env dev1 --profile minimal   # same Azure estate',
     source: 'architecture',
     route: '#field-guides?guide=profiles',
     routeLabel: 'Three profiles, one estate',
@@ -59,7 +60,7 @@ export const myths = [
     theme: 'identity',
     claim: 'The token was accepted, so the call is authorized.',
     reality:
-      'The sidecar validates the JWT against the configured Entra issuers and projects x-app-id and x-user-id. That is authentication. The service still decides authorization from partition configuration and entitlements, and a 401 or 403 alone does not say which of the two boundaries failed.',
+      'The sidecar validates the JWT against the configured Entra issuers and projects x-app-id and x-user-id. That is authentication. The service still decides authorization: for most services that is an entitlements lookup, while the partition service admits app-only callers instead. A 401 or 403 alone does not say which of the two boundaries failed.',
     check:
       'kubectl get requestauthentication spi-osdu-jwt-authn -n osdu -o yaml',
     source: 'identity',
@@ -117,7 +118,7 @@ export const myths = [
     claim: 'The teardown job was green, so it was deleted.',
     reality:
       'The CI teardown step requests resource-group deletion asynchronously and tolerates failure. Green means the request was made. A separate orphan sweeper exists precisely because that is not enough.',
-    check: 'az group list --tag spi-name-suffix --output table',
+    check: 'az group exists --name <resource-group-from-run>',
     source: 'smoke',
     route: '#bring-up/remove',
     routeLabel: 'Removing the stack',
@@ -162,7 +163,7 @@ export const myths = [
     theme: 'fork',
     claim: 'human-required is a note for whoever looks next.',
     reality:
-      'It is state. While the label is on the tracking issue nothing retries. Removing it is the signal: the monitor relabels the issue cascade-active within six hours and runs the cascade again. Fixing the conflict without removing the label leaves the fork stopped.',
+      'It is state. While the label is on the tracking issue nothing retries. For a failed cascade, removing it is the signal: the monitor relabels the issue cascade-active within six hours and runs the cascade again. For a blocked one, fix on fork_integration and run Cascade Integration again. Fixing the conflict without doing either leaves the fork stopped.',
     check: 'gh issue list --label human-required --label cascade-failed',
     source: 'cascadeMonitor',
     route: '#fork-day/review?detail=labels',
@@ -175,7 +176,7 @@ export const myths = [
     reality:
       'Validation already pushed an immutable sha-* image for the release commit. Release Please tags the commit; the release workflow waits for that image and adds the semantic-version tag to it. The bytes on the merge commit are the bytes that get the version; a PR run borrowed dev1 for its own, earlier digest.',
     check:
-      'gh api /orgs/Azure/packages/container/partition/versions --jq ".[0].metadata.container.tags"',
+      'gh api /orgs/Azure/packages/container/osdu-spi-partition/versions --jq ".[0].metadata.container.tags"',
     source: 'release',
     route: '#fork-day/release?detail=release-tag',
     routeLabel: 'The release moment',
@@ -198,7 +199,7 @@ export const myths = [
     claim:
       'Template sync will deliver .spi/service.yaml along with the workflows.',
     reality:
-      'It is excluded by name. The service repository writes its own descriptor, and changes to it are reviewed with the code. Workflows, actions, rulesets, and the Dockerfile arrive from osdu-spi; the descriptor never does. osdu-spi-partition has not written one yet, which is why its Deploy Gate skips.',
+      'It is excluded by name. The service repository writes its own descriptor, and changes to it are reviewed with the code. Workflows, actions, rulesets, and the Dockerfile arrive from osdu-spi; the descriptor never does. osdu-spi-partition has not written one yet; once it adopts the lane, the gate will say so after it says not onboarded.',
     check: 'jq .exclusions .github/sync-config.json   # in osdu-spi',
     source: 'descriptor',
     route: '#fork-shape?detail=descriptor-file',
@@ -209,7 +210,7 @@ export const myths = [
     theme: 'fork',
     claim: 'The stack only ever runs released versions of a fork.',
     reality:
-      'Every eligible same-repository PR and every push to main pushes a sha-* digest, and Deploy Gate lets that run borrow dev1 for it. A release is a later, optional tag on one of those digests. The version PR can sit unmerged for weeks while candidates are proved daily.',
+      'Every eligible same-repository PR and every push to main or fork_integration pushes a sha-* digest, and Deploy Gate lets that run borrow dev1 for it. A release is a later, optional tag on one of those digests. The version PR can sit unmerged for weeks while candidates are proved daily.',
     check:
       'gh run list --workflow Validation --json headBranch,event,conclusion | head',
     source: 'deployTest',
@@ -236,7 +237,7 @@ export const myths = [
     reality:
       'Only while this run still owns the pin. spi service reset --if-run compares the run id in the lock annotation with its own; a newer run’s pin is left alone and the reset exits 2, which the lane treats as success. A cancelled run or a lost runner can strand a pin until the stale sweep finds it.',
     check:
-      'kubectl -n osdu-flux get configmap osdu-image-lock -o jsonpath="{.metadata.annotations.spi-stack\.osdu\.dev/pins}"',
+      'kubectl -n osdu-flux get configmap osdu-image-lock -o jsonpath="{.metadata.annotations.spi-stack\\.osdu\\.dev/pins}"',
     source: 'ephemeralPins',
     route: '#handshake?detail=restore',
     routeLabel: 'The restore step',

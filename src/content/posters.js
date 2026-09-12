@@ -169,7 +169,7 @@ export const suppliedPosters = [
     ],
     notes: [
       'env-upgrade, env-refresh, and the test-identity ensure step are built. env-reset, env-teardown, the pin backstop, and onboarding-intent reconciliation remain unbuilt, so the Saturday reset cadence describes the target, not a running job.',
-      'Explicit canonical source promotion (ADR-033) is unbuilt; today the lock projects the environment’s source policy without a per-service promotion step.',
+      'Explicit canonical source promotion (ADR-033) is unbuilt; today the lock projects only the trusted-repository roster, and every canonical image comes from the community registry.',
     ],
     explore: [
       {
@@ -232,6 +232,7 @@ export const suppliedPosters = [
       'Entra is the only data plane: local auth is off on Cosmos and Service Bus, shared key is off on Storage, and the retained key fields say DISABLED.',
     ],
     notes: [
+      'This poster follows a storage record read to Cosmos DB. The partition lookup in the running example stops at the common Storage tables and never visits Cosmos.',
       'The stack documentation does not describe the data-partition-id header; it is the OSDU contract, unchanged, so the poster shows only the bearer on the client hop.',
       'The community indexer-queue still builds a Service Bus connection string, so records-changed indexing needs a Workload-Identity-capable image.',
     ],
@@ -304,7 +305,7 @@ export const nativeGuides = [
     id: 'owners',
     title: 'Four owners, four boundaries',
     summary:
-      'Most of the design exists to keep these boundaries clean. Knowing which owner you are looking at tells you which tool can change what you see.',
+      'Knowing which owner you are looking at tells you which tool can change what you see.',
     appearsIn: { label: 'How it comes to life', href: '#bring-up/provision' },
     sources: ['architecture', 'lifecycle'],
   },
@@ -352,7 +353,7 @@ export const nativeGuides = [
     id: 'identity',
     title: 'Identity is two different problems',
     summary:
-      'A pod obtaining an Azure token and a gateway identifying an OSDU caller are separate paths. One succeeding proves nothing about the other.',
+      'A pod obtaining an Azure token and a service’s sidecar identifying an OSDU caller are separate paths. One succeeding proves nothing about the other.',
     appearsIn: { label: 'The SPI boundary', href: '#spi-boundary' },
     sources: ['identity', 'entra'],
   },

@@ -63,7 +63,7 @@ function ownersGuide() {
       </article>`,
     )
     .join('')}</div>
-    <p class="guide-thesis">A successful CLI exit is not a readiness check. Provisioning and convergence are separate concerns with separate timelines.</p>`;
+    <p class="guide-thesis">Provisioning and convergence are separate concerns with separate timelines.</p>`;
 }
 
 const milestones = [
@@ -148,7 +148,7 @@ function profilesGuide() {
         </section>`,
       )
       .join('')}</div>
-    <p class="guide-thesis">Profiles select Flux workload scope, not a smaller Azure bill. The bottom layer is provisioned by every profile.</p>
+    <p class="guide-thesis">Profiles select Flux workload scope, not a smaller Azure estate. The bottom layer is provisioned by every profile.</p>
   </div>`;
 }
 
@@ -171,7 +171,7 @@ function identityGuide() {
         <li><b>Bearer + data-partition-id</b><span>the same headers you already send to OSDU</span></li>
         <li><b>Gateway</b><span>spi-gateway bound to the managed Istio ingress</span></li>
         <li><b>Sidecar</b><span>RequestAuthentication validates; an EnvoyFilter projects x-app-id and x-user-id</span></li>
-        <li><b>The service decides</b><span>entitlements still answer the authorization question</span></li>
+        <li><b>The service decides</b><span>entitlements answer for most services; partition admits app-only callers</span></li>
       </ol>
       <p>Caller authentication and OSDU authorization remain separate checks.</p>
     </section>
@@ -431,9 +431,9 @@ export function roundTripFigure() {
       <div class="loop-head"><b>The fork</b><small>a schedule · views 04 and 05</small></div>
       ${stop('#fork-shape', '04', 'Where the provider lives', 'paths the fork owns, branches it regenerates')}
       <span class="loop-arrow" aria-hidden="true">↓</span>
-      ${stop('#fork-day', '05', 'One day in the fork', 'sync, cascade, wait, release')}
+      ${stop('#fork-day', '05', 'One day in the fork', 'generate, integrate, propose, prove')}
       <span class="loop-arrow" aria-hidden="true">↓</span>
-      <div class="loop-stop loop-digest"><b>One tagged digest</b><small>ghcr.io/…@sha256</small></div>
+      <div class="loop-stop loop-digest"><b>A candidate digest</b><small>ghcr.io/…:sha-*</small></div>
     </div>
     <div class="loop-cross loop-back"><span aria-hidden="true">←</span><span>pinned into dev1, proved, restored</span></div>
     <a class="loop-seam" href="#handshake"><span class="loop-number">06</span><b>The handshake</b><small>the image lock, the only object both sides write</small></a>
@@ -515,13 +515,13 @@ const clocks = [
   [
     'Cascade Monitor',
     'every 6 hours',
-    'Dispatches, retries, escalates, heals stale drift',
+    'Dispatches missed cascades, retries cleared failures, escalates',
     '#fork-day?detail=monitor',
   ],
   [
     'Settings Apply',
     'Mondays 04:00 UTC',
-    'Labels, rulesets, required checks reconciled',
+    'Rulesets, onboarding variables, GHCR visibility',
     '#fork-day?detail=settings-apply',
   ],
   [

@@ -189,7 +189,7 @@ function forkShapeDiagram() {
     </div>
     <div class="tree-legend"><span><i class="cell-kept">●</i> present, from upstream</span><span><i class="cell-fork">◆</i> fork-owned</span><span><i class="cell-fork-planned">◇</i> fork-owned, not yet written</span><span><i class="cell-absent">—</i> absent by construction</span><span><i class="cell-kept">+</i> profile injected by the filter</span></div>
   </div>
-  <section class="tree-around" aria-label="Around the repository"><span class="group-label">Around the repository</span><div class="tree-around-nodes">${node('filter', 'The filter', 'upstream-filter.yml · keep, strip, fork, inject')}${node('engineering', 'osdu-spi, the template', 'Workflows and Dockerfile arrive as PRs')}${node('mirror', 'A customer mirror fork', 'Second tier · copies main verbatim')}${node('image', 'The image, by digest', 'ghcr.io/azure/partition')}</div></section>`;
+  <section class="tree-around" aria-label="Around the repository"><span class="group-label">Around the repository</span><div class="tree-around-nodes">${node('filter', 'The filter', 'upstream-filter.yml · keep, strip, fork, inject')}${node('engineering', 'osdu-spi, the template', 'Workflows and Dockerfile arrive as PRs')}${node('mirror', 'A customer mirror fork', 'Second tier · copies main verbatim')}${node('image', 'The image, by digest', 'ghcr.io/azure/osdu-spi-partition')}</div></section>`;
 }
 
 // View 05: the same branches, followed through one change.
@@ -249,14 +249,20 @@ const momentArtifacts = {
   review: {
     'fork-integration': [
       ['labels', 'The labels', 'validated, or blocked / failed'],
-      ['conflict', 'If it conflicts', 'cascade-failed · fix here · retry'],
+      ['conflict', 'If it conflicts', 'cascade-blocked · fix here · run again'],
     ],
     'main-branch': [
       ['integration-pr', 'Integration PR', 'release/upstream-* → main'],
     ],
   },
   prove: {
-    image: [['candidate', 'The candidate', 'ghcr.io/azure/partition@sha256:…']],
+    image: [
+      [
+        'candidate',
+        'The candidate',
+        'ghcr.io/azure/osdu-spi-partition@sha256:…',
+      ],
+    ],
   },
   release: {
     'main-branch': [
@@ -335,7 +341,7 @@ const seamStates = [
 function seamDiagram() {
   return `<div class="zoom-crumb" aria-label="Where this sits"><a href="#fork-day/prove">A candidate digest</a><span>›</span><b>the handshake</b><span>›</span><a href="#running-stack">a running stack</a></div>
   <div class="seam-map">
-    <section class="seam-inputs"><span class="group-label"><span class="lane-number">1</span>What the fork brings</span><div class="seam-pair">${node('image', 'Candidate B, by digest', 'ghcr.io/azure/partition@sha256:…')}${node('descriptor', '.spi/service.yaml', 'Which suites, and what each needs', 'fork-code')}</div></section>
+    <section class="seam-inputs"><span class="group-label"><span class="lane-number">1</span>What the fork brings</span><div class="seam-pair">${node('image', 'Candidate B, by digest', 'ghcr.io/azure/osdu-spi-partition@sha256:…')}${node('descriptor', '.spi/service.yaml', 'Which suites, and what each needs', 'fork-code')}</div></section>
     <section class="seam-state-panel" aria-label="The lock and the pod, step by step"><span class="group-label">The lock and the pod, as the run goes</span>
       ${seamStates
         .map(
@@ -345,13 +351,13 @@ function seamDiagram() {
         <p>${state.copy}</p></div>`,
         )
         .join('')}
-      <p class="state-note">A and B stand for two digests. Select a step in B, or the lock in C, to move the state. Illustrative run ids.</p>
+      <p class="state-note">A and B stand for two digests. Select a step in 2, or the lock in 3, to move the state. Illustrative run ids.</p>
     </section>
     <section class="seam-run"><span class="group-label"><span class="lane-number">2</span>The run, in order · validate.yml</span>
       ${node('gate', 'Deploy Gate', 'No credentials · may this run borrow?')}
       <div class="spi-step" aria-hidden="true">↓ then, as the deploy identity</div>
       ${node('facts', 'Read the facts', 'spi status --json · spi info --json')}
-      <div class="spi-step" aria-hidden="true">↓ deployable: pin B into the lock (C)</div>
+      <div class="spi-step" aria-hidden="true">↓ deployable: pin B into osdu-image-lock (3)</div>
       ${node('verify', 'Verify', 'Pod imageID = B · up to 15 min')}
       <div class="spi-step" aria-hidden="true">↓ running the candidate</div>
       ${node('proof', 'Prove', 'Each declared suite, from its image')}
@@ -365,7 +371,7 @@ function seamDiagram() {
       ${node('running', 'The partition pod', 'Flux reconciles the lock; the pod follows', 'shared-code')}
     </section>
   </div>
-  <div class="ownership-legend"><span><i class="fork-swatch"></i>Fork-owned</span><span><i class="shared-swatch"></i>Built by the stack</span><span>Five repository settings connect them. Everything else is read per run.</span></div>`;
+  <div class="ownership-legend"><span><i class="fork-swatch"></i>Fork-owned</span><span><i class="shared-swatch"></i>Built by the stack</span><span>Five repository settings plus trust onboarding connect them. Everything else is read per run.</span></div>`;
 }
 
 export const diagramRenderers = {

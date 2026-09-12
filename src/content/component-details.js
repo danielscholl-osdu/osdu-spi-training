@@ -42,10 +42,10 @@ export const componentDetails = {
   'image-source': {
     label: 'Image registries',
     title: 'Community images and fork images have different sources.',
-    body: 'Community service images resolve from the OSDU GitLab registry. A service fork publishes to ghcr.io/<owner>/<service>, using the short service name. The provisioned ACR is a possible future mirror; it is not the source in this flow.',
+    body: 'Community service images resolve from the OSDU GitLab registry. A service fork publishes to ghcr.io/<owner>/<SERVICE_NAME, or the repository name when that variable is unset>. The provisioned ACR is a possible future mirror; it is not the source in this flow.',
     artifact: {
       label: 'A fork package',
-      code: 'ghcr.io/azure/partition@sha256:<digest>',
+      code: 'ghcr.io/azure/osdu-spi-partition@sha256:<digest>',
     },
     source: 'forkDeploy',
   },
@@ -315,10 +315,10 @@ export const componentDetails = {
   image: {
     label: 'The image, by digest',
     title: 'One Dockerfile, one public package, addressed by digest.',
-    body: 'Validation builds build/Dockerfile on the Microsoft OpenJDK 17 Azure Linux base with the provider JAR and pushes it as ghcr.io/azure/partition tagged sha-<commit>. The package takes the short service name from SERVICE_NAME, not the repository name, because that is the name the stack pins under. The stack pins by digest, never by tag, so a retag cannot change what runs. The package must stay public: if its visibility flips, pods fail with ErrImagePull and Settings Apply can only report it.',
+    body: 'Validation builds build/Dockerfile on the Microsoft OpenJDK 17 Azure Linux base with the provider JAR and pushes it as ghcr.io/azure/osdu-spi-partition tagged sha-<commit>. The package name is SERVICE_NAME when the repository sets that variable and the repository name otherwise; partition has not set it, so it publishes under its repository name. The stack pins by digest, never by tag, so a retag cannot change what runs. The package must stay public: if its visibility flips, pods fail with ErrImagePull and Settings Apply can only report it.',
     artifact: {
       label: 'What leaves the fork',
-      code: 'ghcr.io/azure/partition:sha-<commit>\nghcr.io/azure/partition@sha256:<digest>\nSERVICE_NAME=partition   (repository variable)',
+      code: 'ghcr.io/azure/osdu-spi-partition:sha-<commit>\nghcr.io/azure/osdu-spi-partition@sha256:<digest>\nSERVICE_NAME   (repository variable; unset on partition)',
     },
     source: 'ghcr',
   },
@@ -328,7 +328,7 @@ export const componentDetails = {
     body: 'dev1 is a stack like any other: spi up made it, Flux assembles it, and its deploy identity survives spi down. While partition is pinned to a candidate, the other services keep running their canonical images, so a broken-but-ready candidate can fail a sibling’s suite. Several onboarded forks can share the environment, one service slot each, and a concurrency group serialises runs per service.',
     artifact: {
       label: 'What the run may read',
-      code: 'Role spi-fork-verifier (namespace osdu):\n  deployments get/list/watch · pods get/list/watch',
+      code: 'Role spi-fork-verifier (namespace osdu):\n  deployments, pods, pods/log, events, configmaps, jobs · get/list',
     },
     source: 'envLifecycle',
   },
@@ -336,10 +336,10 @@ export const componentDetails = {
     label: 'osdu-image-lock',
     title:
       'One ConfigMap names every service image. A deploy is an edit to it.',
-    body: 'The lock is a stack object in osdu-flux with one key per service, PARTITION_IMAGE_DIGEST among them, and Flux substitutes the values at apply time. A fork run writes its digest with spi service pin --ephemeral, which also records the run id, the source commit, and the canonical image to restore, in the spi-stack.osdu.dev/pins annotation. The write is a compare-and-set: two runs cannot both own the partition slot. Between runs the lock holds the canonical image, which is the community image unless the service was promoted to its fork.',
+    body: 'The lock is a stack object in osdu-flux with one key per service, PARTITION_IMAGE_DIGEST among them, and Flux substitutes the values at apply time. A fork run writes its digest with spi service pin --ephemeral, which also records the run id, the source commit, and the canonical image to restore, in the spi-stack.osdu.dev/pins annotation. The write is a compare-and-set, so a lost write is caught and a later pin takes over. Between runs the lock holds the canonical image, which today comes from the community registry; per-service promotion to a fork (osdu-spi-stack ADR-033) is designed, not built.',
     artifact: {
       label: 'The pin',
-      code: 'spi service pin partition --image ghcr.io/azure/partition@sha256:… \\\n  --ephemeral --run-id $GITHUB_RUN_ID --source-repo Azure/osdu-spi-partition --source-sha …',
+      code: 'spi service pin partition --image ghcr.io/azure/osdu-spi-partition@sha256:… \\\n  --ephemeral --run-id $GITHUB_RUN_ID --source-repo Azure/osdu-spi-partition --source-sha …',
     },
     source: 'imageLock',
   },
@@ -377,8 +377,8 @@ export const componentDetails = {
   },
   'provider-azure': {
     label: 'The Azure provider',
-    title: 'Upstream will delete this directory. The fork holds it.',
-    body: 'provider/partition-azure implements the interface from view 03. It exists on main and fork_integration and is absent from fork_upstream by construction, so an upstream deletion has nothing to delete on the fork side. It was seeded once at initialization, the only -X theirs merge in the system, and has been fork-owned since.',
+    title: 'Upstream plans to remove this directory. The fork holds it.',
+    body: 'provider/partition-azure implements the interface from view 03. It exists on main and fork_integration and is absent from fork_upstream by construction, so an upstream deletion has nothing to delete on the fork side. It was brought across once by a scripted cutover and has been fork-owned since.',
     artifact: {
       label: 'Where it is and is not',
       code: 'upstream tip:      present, scheduled for removal\nfork_upstream:     absent (never enters the merge base)\nmain:              provider/partition-azure/  fork-owned',
@@ -419,7 +419,7 @@ export const componentDetails = {
   'descriptor-file': {
     label: 'The descriptor',
     title: 'The one engineering file the template does not write.',
-    body: '.spi/service.yaml declares the acceptance suites the stack should run against this service and what each needs. It is excluded from template sync by name: the service repository writes it, and changes to it are reviewed with the code. Two authors, one column: the workflows above arrive from osdu-spi; this file is authored here. osdu-spi-partition has not written its descriptor yet; once it adopts the newer validation workflow, Deploy Gate will skip until the file exists, with the reason no .spi/service.yaml declares the suites.',
+    body: '.spi/service.yaml declares the acceptance suites the stack should run against this service and what each needs. It is excluded from template sync by name: the service repository writes it, and changes to it are reviewed with the code. Two authors, one column: the workflows above arrive from osdu-spi; this file is authored here. osdu-spi-partition has not written its descriptor yet; once it adopts the newer validation workflow, Deploy Gate will report not onboarded first, and then skip until the file exists, with the reason no .spi/service.yaml declares the suites.',
     artifact: {
       label: 'Service-owned, never synced',
       code: '.spi/service.yaml    schemaVersion: 3, written in this repository\nsync-config.json     "exclusions": [".spi", "CODEOWNERS", …]',
@@ -429,7 +429,7 @@ export const componentDetails = {
   'fork-upstream': {
     label: 'fork_upstream',
     title: 'A generated tree with two parents and no Azure code.',
-    body: 'Every sync writes the filtered upstream tip as a new commit whose parents are the previous fork_upstream and the upstream commit. Two trailers make it checkable: Upstream-Sha names the upstream commit and Filter-Rev names the filter configuration. Nobody merges into this branch; if the filter changes, the branch is regenerated.',
+    body: 'Every sync writes the filtered upstream tip as a new commit whose parents are the previous fork_upstream and the upstream commit. Two trailers make it checkable: Upstream-Sha names the upstream commit and Filter-Rev names the filter configuration. Upstream is never merged in as text, and the generated commit lands through a reviewed sync PR; if the filter changes, the branch is regenerated.',
     artifact: {
       label: 'What a sync commit carries',
       code: 'git commit-tree <tree> -p fork_upstream -p <upstream-sha>\nUpstream-Sha: <sha>\nFilter-Rev: <revision>',
@@ -439,10 +439,10 @@ export const componentDetails = {
   'fork-integration': {
     label: 'fork_integration',
     title: 'The workspace where the two trees meet.',
-    body: 'The cascade merges main into this branch first, so everything the fork already accepted is here, then merges fork_upstream on top, stamps versions, and builds -P core,azure. Conflicts are resolved here, by a person, and pushed directly; its protection is relaxed for that reason. A hard reset to main happens only when the monitor finds the branch ahead of main with no open integration PR and no conflict issue, which it treats as stale and heals.',
+    body: 'The cascade merges main into this branch first, so everything the fork already accepted is here, then merges fork_upstream on top, stamps versions, and builds -P core,azure. Conflicts are resolved here, by a person, and pushed directly; its protection is relaxed for that reason. Integration Branch Cleanup resets it to main after each integration merge; the cascade also self-heals a workspace that drifted ahead of main with nothing in flight.',
     artifact: {
       label: 'Order of merges',
-      code: '1. fork_integration ← main           (the fix is here)\n2. fork_integration ← fork_upstream  (upstream’s change)\n3. mvn -P core,azure verify',
+      code: '1. fork_integration ← main           (the fix is here)\n2. fork_integration ← fork_upstream  (upstream’s change)\n3. mvn -P core,azure install',
     },
     source: 'cascade',
   },
@@ -500,10 +500,10 @@ export const componentDetails = {
   'cascade-run': {
     label: 'Cascade Integration',
     title: 'The first build of the provider against the new shared code.',
-    body: 'The cascade is where the fork-owned fix, already on main, and the upstream change, on fork_upstream, compile together. It is a workflow_dispatch run: Cascade Monitor starts it with the tracking issue number when the sync PR merges, and a person can start it the same way. It merges main first, then fork_upstream, builds -P core,azure with Java 17, and opens the integration PR when the build and tests pass. Coverage is reported, not gated.',
+    body: 'The cascade is where the fork-owned fix, already on main, and the upstream change, on fork_upstream, compile together. It is a workflow_dispatch run: a person starts it with the tracking issue number after merging the sync PR, and Cascade Monitor catches a forgotten one within six hours. It merges main first, then fork_upstream, builds -P core,azure with Java 17, and opens the integration PR when the build and tests pass. Coverage is reported, not gated.',
     artifact: {
       label: 'Cascade build',
-      code: "mvn -P ${{ vars.MAVEN_PROFILE || 'core,azure' }} verify",
+      code: "mvn -B clean install -P ${{ vars.MAVEN_PROFILE || 'core,azure' }}",
     },
     source: 'cascade',
   },
@@ -520,7 +520,7 @@ export const componentDetails = {
   'integration-pr': {
     label: 'The integration PR',
     title: 'The cascade proposes; a person approves.',
-    body: 'A clean cascade opens a PR from release/upstream-<timestamp> into main, titled Upstream Integration to Main, carrying the combined tree. Review is asymmetric on purpose: the sync PR into fork_upstream is generated and needs no reading, while this PR gets the same checks as any other change to main. It is not the release. Release Please opens a separate version PR after the merge.',
+    body: 'A clean cascade opens a PR from release/upstream-<timestamp> into main, titled Upstream Integration to Main, carrying the combined tree. Review is asymmetric on purpose: the sync PR into fork_upstream carries a generated tree and is reviewed for what upstream changed, while this PR gets the same checks as any other change to main. It is not the release. Release Please opens a separate version PR after the merge.',
     artifact: {
       label: 'Two different PRs into main',
       code: 'release/upstream-<timestamp>  → main   the integration PR (cascade)\nrelease-please--branches--main → main  the version PR (Release Please)',
@@ -541,10 +541,10 @@ export const componentDetails = {
   conflict: {
     label: 'A blocked cascade',
     title: 'When the shared interface changes, the provider has to follow.',
-    body: 'Suppose upstream renamed a method on the partition provider interface. fork_upstream generates cleanly, because it carries no provider. The cascade then fails to compile provider/partition-azure against the new interface: the tracking issue gets cascade-failed and human-required, no integration PR opens, and main is untouched. The fix is a provider change on fork_integration by the fork’s owner. Removing human-required tells the monitor to run the cascade again.',
+    body: 'Suppose upstream renamed a method on the partition provider interface. fork_upstream generates cleanly, because it carries no provider. The cascade then fails to compile provider/partition-azure against the new interface: the tracking issue gets cascade-blocked and human-required and a validation-failed issue opens, no integration PR opens, and main is untouched. The fix is a provider change on fork_integration by the fork’s owner. Removing human-required tells the monitor to run the cascade again.',
     artifact: {
       label: 'Who acts, and the retry',
-      code: 'labels: cascade-failed, human-required\nfix on: fork_integration (provider/partition-azure)\nretry:  gh issue edit <n> --remove-label human-required',
+      code: 'labels: cascade-blocked, human-required\nfix on: fork_integration (provider/partition-azure)\nretry:  run Cascade Integration again\n        (removing human-required retries only cascade-failed)',
     },
     source: 'humanRequired',
   },
@@ -552,10 +552,10 @@ export const componentDetails = {
     label: 'The candidate digest',
     title:
       'Every eligible commit gets an immutable image before anyone talks about releases.',
-    body: 'Validation runs on the PR and again on the push to main. Each run builds build/Dockerfile and pushes ghcr.io/azure/partition:sha-<commit>, which resolves to one digest. That digest, not a version, is what the stack borrows a slot for in view 06. Release tags are added to a sha-* image later, if a release happens at all; the digest tested on the PR and the digest on the merge commit are two different builds.',
+    body: 'Validation runs on the PR and again on the push to main. Each run builds build/Dockerfile and pushes ghcr.io/azure/osdu-spi-partition:sha-<commit>, which resolves to one digest. That digest, not a version, is what the stack borrows a slot for in view 06. Release tags are added to a sha-* image later, if a release happens at all; the digest tested on the PR and the digest on the merge commit are two different builds.',
     artifact: {
       label: 'One commit, one digest',
-      code: 'docker-push: ghcr.io/azure/partition:sha-<commit>\n             → sha256:<digest>   (the candidate)',
+      code: 'docker-push: ghcr.io/azure/osdu-spi-partition:sha-<commit>\n             → sha256:<digest>   (the candidate)',
     },
     source: 'validation',
   },
@@ -572,7 +572,7 @@ export const componentDetails = {
   monitor: {
     label: 'Cascade Monitor',
     title: 'The scheduler that dispatches, retries, and escalates.',
-    body: 'Every six hours the monitor looks at the tracking issues. A merged sync PR with no cascade yet is dispatched; a human-required label that a person removed is retried; anything blocked longer than 48 hours is escalated with a comment. It also heals a fork_integration that drifted ahead of main with nothing in flight. It is why the day view has no step called wait for the monitor.',
+    body: 'Every six hours the monitor looks at the tracking issues. A merged sync PR with no cascade yet is dispatched; a human-required label that a person removed is retried; anything blocked longer than 48 hours is escalated with a comment. Resetting fork_integration after a merge belongs to Integration Branch Cleanup, not the monitor. It is why the day view has no step called wait for the monitor.',
     artifact: {
       label: 'What it looks for',
       code: 'schedule: every 6 hours\nissue labels: upstream-sync, cascade-blocked, cascade-failed, human-required',
@@ -582,10 +582,10 @@ export const componentDetails = {
   'release-tag': {
     label: 'The release tag',
     title: 'The version lands on an image that already exists.',
-    body: 'Merging the version PR makes Release Please tag main and publish the release. The workflow adds <release-tag>-upstream-<upstream-version> so the fork release can always be traced to the upstream version it carries, then polls GHCR for the sha-* image validation pushed for that commit and adds the semantic-version tag to it. No new build runs. The digest with the version tag is the merge commit’s build, which may differ from the digest a PR run borrowed dev1 for.',
+    body: 'Merging the version PR makes Release Please tag main and publish the release. The workflow adds <release-tag>-upstream-<upstream-version> which records the upstream version the release carries (on partition it reads upstream-v0.0.0, because the lookup expects an upstream main and partition’s is master), then polls GHCR for the sha-* image validation pushed for that commit and adds the semantic-version tag to it. No new build runs. The digest with the version tag is the merge commit’s build, which may differ from the digest a PR run borrowed dev1 for.',
     artifact: {
       label: 'Tags on one digest',
-      code: 'ghcr.io/azure/partition:sha-<commit>\nghcr.io/azure/partition:v1.4.0\ngit tag v1.4.0-upstream-0.29.0',
+      code: 'ghcr.io/azure/osdu-spi-partition:sha-<commit>\nghcr.io/azure/osdu-spi-partition:v1.4.0\ngit tag v1.4.0-upstream-0.29.0',
     },
     source: 'release',
   },
@@ -603,10 +603,10 @@ export const componentDetails = {
   'settings-apply': {
     label: 'Settings Apply',
     title: 'Repository settings are reconciled, not remembered.',
-    body: 'Every Monday at 04:00 UTC the fork reapplies its labels, rulesets, and required checks from the JSON files the template delivered. A ruleset someone loosened is tightened again; a label someone renamed comes back. It cannot fix everything: a GHCR package flipped to private is reported, not repaired, and the pods see ErrImagePull until a person flips it back.',
+    body: 'Every Monday at 04:00 UTC the fork reapplies its rulesets from the JSON files the template delivered, checks that the onboarding variables are set, and reports GHCR package visibility. A ruleset someone loosened is tightened again. It cannot fix everything: a GHCR package flipped to private is reported, not repaired, and the pods see ErrImagePull until a person flips it back.',
     artifact: {
       label: 'What it reconciles',
-      code: '.github/labels.json\n.github/branch-protection.json\n.github/security-on.json',
+      code: '.github/rulesets/default-branch.json\n.github/rulesets/integration-branch.json\nvars: AZURE_CLIENT_ID … SPI_STACK_CLUSTER',
     },
     source: 'workflowSystem',
   },
@@ -679,7 +679,7 @@ export const componentDetails = {
     body: 'Suppose a second partition run pinned its own candidate while this one was still proving. The lock annotation now names the newer run id. This run’s reset --if-run compares ids, finds it is not the owner, writes nothing, and exits 2, which the lane treats as success. The newer run will restore the canonical image when it finishes. The concurrency group makes this rare, but the rule is what makes a lost runner safe: no run can put back an image over someone else’s pin.',
     artifact: {
       label: 'The comparison',
-      code: 'annotation spi-stack.osdu.dev/pins: {"partition": {"runId": "9902", …}}\nthis run:  --if-run 9901   → exit 2, nothing written',
+      code: 'annotation spi-stack.osdu.dev/pins: {"partition": {"run_id": "9902", …}}\nthis run:  --if-run 9901   → exit 2, nothing written',
     },
     source: 'ephemeralPins',
   },
