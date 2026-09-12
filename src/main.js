@@ -116,7 +116,9 @@ function positionLabel(key) {
   const scene = chapters[key];
   if (scene.group === 'learn')
     return `${learnOrder.indexOf(key) + 1} of ${learnOrder.length} · ${scene.book}`;
-  return scene.group === 'supplement' ? 'Supplement' : 'OSDU Fieldnotes';
+  return scene.group === 'supplement'
+    ? 'Supplement'
+    : 'OSDU Azure SPI Fieldnotes';
 }
 
 function renderChapterFrame(route, scene) {
@@ -169,7 +171,7 @@ function render() {
   const chapterChanged = previousRoute?.chapter !== route.chapter;
   const mapChanged = chapterChanged || previousRoute?.step !== route.step;
   const focusedKey = document.activeElement?.dataset.routeKey;
-  document.title = `${scene.title} · OSDU Fieldnotes`;
+  document.title = `${scene.title} · OSDU Azure SPI Fieldnotes`;
   if (chapterChanged) renderChapterFrame(route, scene);
 
   if (scene.kind === 'page') {

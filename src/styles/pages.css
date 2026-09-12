@@ -1842,9 +1842,6 @@ body:has(.audio-dock:not([hidden])) main {
     font-size: 13px;
     padding: 7px 8px;
   }
-  .header-meta {
-    display: none;
-  }
   .page {
     gap: 32px;
   }

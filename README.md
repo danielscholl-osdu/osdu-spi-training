@@ -1,4 +1,4 @@
-# OSDU Fieldnotes
+# OSDU Azure SPI Fieldnotes
 
 An interactive learning site for senior engineers who know OSDU and are new to Azure SPI Stack and the engineering system behind the service forks.
 
