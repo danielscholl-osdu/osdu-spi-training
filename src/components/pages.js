@@ -90,7 +90,7 @@ function homePage() {
     'Eight',
   ];
   return `<section class="home-start" aria-label="Where to begin">
-      <div class="home-start-copy"><span class="guide-kicker">Where to begin</span><h2>Two repositories, one answer: a stack you can bring up in an hour, and a fork that keeps the Azure code alive.</h2><p>Follow one request down the stack to the Azure code it reaches. Then follow one fix to that code out through the fork and back in. ${words[learnCount]} views, each answering one question, each ending with what you can now say.</p></div>
+      <div class="home-start-copy"><span class="guide-kicker">Where to begin</span><h2>Follow one OSDU request down to its Azure provider. Then follow a fix to that provider back into a running stack.</h2><p>${words[learnCount]} views, each answering one question, each ending with what you can now say. The running example is real: a partition lookup, and the cache fallback that keeps it answering.</p></div>
       <div class="home-start-actions"><a class="home-cta" href="${routeHref('running-stack')}">Start with 01 · What is a stack? →</a><a class="home-cta-alt" href="${routeHref('running-stack', 'request')}">Or trace one API request through it first</a></div>
     </section>
     <section class="home-path" aria-label="The learning path">
@@ -104,7 +104,7 @@ function homePage() {
     <section class="home-doors" aria-label="Two reasons to be here">
       <div class="section-heading"><span class="guide-kicker">Two reasons to be here</span><h2>The stack stands alone. The engineering system does not.</h2></div>
       <div class="doors">
-        <a class="door" href="${routeHref('running-stack')}"><span class="door-kicker">Just bring up OSDU on Azure</span><b>Views 01 and 02 are enough.</b><p>spi up builds the environment and pulls every service image by digest from GHCR. Which image each service uses is a choice recorded on the resource group. You never touch a fork.</p><span class="way-cta">Start at 01 →</span></a>
+        <a class="door" href="${routeHref('running-stack')}"><span class="door-kicker">Just bring up OSDU on Azure</span><b>Views 01 and 02 are enough.</b><p>spi up builds the environment and pins every service image by digest. Each service runs the community image unless that service has been promoted to its fork, a choice recorded on the resource group. You never touch a fork.</p><span class="way-cta">Start at 01 →</span></a>
         <a class="door door-fork" href="${routeHref('spi-boundary')}"><span class="door-kicker">Maintain or mirror a service fork</span><b>Views 03 to 06, and you will need a stack.</b><p>The fork owns the Azure provider and the workflows around it. To prove a change it borrows a slot in a running stack, so the stack comes first even when the fork is your job.</p><span class="way-cta">Start at 03 →</span></a>
       </div>
     </section>

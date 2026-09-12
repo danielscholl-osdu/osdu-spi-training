@@ -162,7 +162,7 @@ test('every lifecycle state and request path has unambiguous component selection
 });
 
 test('deep links recover chapter, lifecycle moment, and component without module state', () => {
-  const base = { guide: null, time: null };
+  const base = { guide: null, episode: null, time: null };
   for (const moment of creationMoments) {
     assert.deepEqual(
       parseRoute(routeHref('bring-up', moment.id, moment.detail)),
@@ -186,6 +186,7 @@ test('deep links recover chapter, lifecycle moment, and component without module
     step: '',
     detail: null,
     guide: null,
+    episode: null,
     time: 1234,
   });
   assert.equal(parseRoute('#listen?t=-5').time, null);
@@ -342,10 +343,35 @@ test('the fork moments and the retired engineering route keep resolving', () => 
     assert.ok(markup.includes(`data-detail="${moment.detail}"`), moment.id);
     verifyDetails(markup, `fork-day/${moment.id}`);
   }
-  assert.equal(
-    parseRoute('#engineering-system?detail=delivery').chapter,
-    'handshake',
-  );
+  const retired = {
+    '#engineering-system?detail=delivery': ['handshake', '', 'delivery'],
+    '#engineering-system?detail=repo': ['fork-shape', '', 'main-branch'],
+    '#engineering-system?detail=image': ['fork-day', 'prove', 'candidate'],
+    '#engineering-system?detail=stack-source': [
+      'running-stack',
+      'developer',
+      'config-source',
+    ],
+    '#fork-day/review?detail=release-pr': [
+      'fork-day',
+      'review',
+      'integration-pr',
+    ],
+    '#fork-day/template?detail=template-pr': [
+      'fork-day',
+      'sync',
+      'template-pr',
+    ],
+  };
+  for (const [href, [chapter, step, detail]] of Object.entries(retired)) {
+    const route = parseRoute(href);
+    assert.deepEqual(
+      [route.chapter, route.step, route.detail],
+      [chapter, step, detail],
+    );
+    const markup = diagramRenderers[chapters[chapter].diagram](route);
+    assert.ok(markup.includes(`data-detail="${detail}"`), href);
+  }
   for (const [id, chapter] of Object.entries(chapters))
     if (chapter.group === 'learn') assert.ok(chapter.book, `${id}: book`);
   const home = pageRenderers.home(parseRoute('#start'));

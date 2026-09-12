@@ -74,6 +74,7 @@ export function selectDetail(id, element = null) {
     link.href = source.href;
     link.textContent = `${source.label} ↗`;
   }
+  document.getElementById('diagram').dataset.selected = id;
   lastSelectedElement = element;
 }
 

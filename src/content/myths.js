@@ -173,9 +173,9 @@ export const myths = [
     theme: 'fork',
     claim: 'A release builds a fresh image for the version tag.',
     reality:
-      'Validation already pushed an immutable sha-* image for the release commit. Release Please tags the commit; the release workflow waits for that image and adds the semantic-version tag to it. The bytes that were tested are the bytes that get the version.',
+      'Validation already pushed an immutable sha-* image for the release commit. Release Please tags the commit; the release workflow waits for that image and adds the semantic-version tag to it. The bytes on the merge commit are the bytes that get the version; a PR run borrowed dev1 for its own, earlier digest.',
     check:
-      'gh api /orgs/Azure/packages/container/osdu-spi-partition/versions --jq ".[0].metadata.container.tags"',
+      'gh api /orgs/Azure/packages/container/partition/versions --jq ".[0].metadata.container.tags"',
     source: 'release',
     route: '#fork-day/release?detail=release-tag',
     routeLabel: 'The release moment',
@@ -189,8 +189,32 @@ export const myths = [
       'It opens a pull request. Sync Template compares the template commit range with the fork and proposes the difference as one PR labeled template-sync, updated in place if the template moves again. A local change you want to keep is a review comment, not a lost file.',
     check: 'gh pr list --label template-sync',
     source: 'templateSync',
-    route: '#fork-day/template?detail=template-pr',
+    route: '#fork-day?detail=template-pr',
     routeLabel: 'The template PR',
+  },
+  {
+    id: 'descriptor-comes-from-template',
+    theme: 'fork',
+    claim:
+      'Template sync will deliver .spi/service.yaml along with the workflows.',
+    reality:
+      'It is excluded by name. The service repository writes its own descriptor, and changes to it are reviewed with the code. Workflows, actions, rulesets, and the Dockerfile arrive from osdu-spi; the descriptor never does. osdu-spi-partition has not written one yet, which is why its Deploy Gate skips.',
+    check: 'jq .exclusions .github/sync-config.json   # in osdu-spi',
+    source: 'descriptor',
+    route: '#fork-shape?detail=descriptor-file',
+    routeLabel: 'The descriptor row',
+  },
+  {
+    id: 'acceptance-needs-a-release',
+    theme: 'fork',
+    claim: 'The stack only ever runs released versions of a fork.',
+    reality:
+      'Every eligible same-repository PR and every push to main pushes a sha-* digest, and Deploy Gate lets that run borrow dev1 for it. A release is a later, optional tag on one of those digests. The version PR can sit unmerged for weeks while candidates are proved daily.',
+    check:
+      'gh run list --workflow Validation --json headBranch,event,conclusion | head',
+    source: 'deployTest',
+    route: '#fork-day/prove?detail=dev1-slot',
+    routeLabel: 'The prove moment',
   },
   {
     id: 'validation-summary-means-deployed',

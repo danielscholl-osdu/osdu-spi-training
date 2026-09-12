@@ -738,11 +738,28 @@
   padding: 12px;
 }
 .tree-head,
-.tree-row {
+.tree-row,
+.tree-bands {
   display: grid;
-  grid-template-columns: minmax(0, 1.6fr) repeat(3, minmax(0, 1fr));
+  grid-template-columns: minmax(0, 1.6fr) repeat(4, minmax(0, 1fr));
   gap: 6px;
   align-items: stretch;
+}
+.tree-bands {
+  align-items: end;
+}
+.band {
+  font-size: 11.5px;
+  letter-spacing: 0.02em;
+  text-transform: uppercase;
+  color: var(--muted);
+  padding: 2px 6px 4px;
+  border-bottom: 2px solid var(--line);
+}
+.band-fork {
+  grid-column: span 3;
+  color: var(--fork);
+  border-bottom-color: var(--fork);
 }
 .tree-head {
   padding-bottom: 6px;
@@ -922,35 +939,232 @@
   margin-top: 8px;
 }
 .seam-map .spi-seam {
-  border: 2px dashed var(--fork);
-  background: var(--fork-bg);
+  border: 2px dashed var(--cli);
+  background: var(--cli-bg);
   text-align: left;
 }
 .example-strip .journey {
   grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
 }
+.cell-fork-planned {
+  color: var(--fork);
+  border: 1px dashed var(--fork);
+  background: #fff;
+}
+.tree-legend .cell-fork-planned {
+  border: 0;
+}
+.what-if {
+  display: grid;
+  gap: 8px;
+  margin-top: 4px;
+  padding: 10px 12px;
+  border: 1px dashed #e3c27a;
+  border-radius: 8px;
+  background: #fffaf0;
+}
+.what-if label {
+  display: grid;
+  grid-template-columns: auto 1fr;
+  gap: 2px 8px;
+  align-items: center;
+  font-size: 14px;
+  cursor: pointer;
+}
+.what-if label small {
+  grid-column: 2;
+  font-size: 12px;
+  color: var(--muted);
+}
+.what-if-result {
+  display: none;
+  margin: 0;
+  font-size: 14px;
+  line-height: 1.55;
+  color: var(--ink);
+}
+.tree-map:has(.what-if-switch:checked) .what-if-result {
+  display: block;
+}
+.tree-map:has(.what-if-switch:checked) .has-after > span {
+  display: none;
+}
+.tree-map:has(.what-if-switch:checked) .has-after::after {
+  content: attr(data-after);
+}
+.tree-map:has(.what-if-switch:checked) .has-after {
+  color: var(--muted);
+  border: 1px dashed var(--line);
+  background: repeating-linear-gradient(135deg, #fff 0 6px, #f1f4f7 6px 12px);
+  font-size: 12px;
+}
+
+/* Learn view 05 additions: the stack lane and the scheduled work beside the day */
+.branch-lane.lane-stack.is-active {
+  border-left-color: var(--cli);
+  background: var(--cli-bg);
+}
+.lane-link {
+  grid-column: 1 / -1;
+  font-size: 13px;
+  justify-self: start;
+  padding: 6px 10px;
+  border: 1px solid #b5cbdc;
+  border-radius: 5px;
+  background: #fff;
+  text-decoration: none;
+}
+.meanwhile {
+  margin-top: 16px;
+  padding-top: 12px;
+  border-top: 1px dashed var(--line);
+}
+.meanwhile-nodes {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 8px;
+  margin-top: 8px;
+}
+.meanwhile .node {
+  border-style: dashed;
+}
+
+/* Learn view 06 additions: the lock and the pod, step by step */
+.seam-state-panel {
+  grid-column: 1 / -1;
+  padding: 12px;
+  border-radius: 10px;
+  border: 1px solid var(--line);
+  background: #fff;
+}
+.seam-state {
+  display: none;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px 10px;
+  margin-top: 8px;
+}
+.seam-state p {
+  grid-column: 1 / -1;
+  margin: 2px 0 0;
+  font-size: 14px;
+  line-height: 1.55;
+  color: var(--ink);
+}
+.state-obj {
+  display: grid;
+  gap: 2px;
+  padding: 9px 11px;
+  border-radius: 8px;
+  border: 1px solid var(--line);
+}
+.state-obj small {
+  font-size: 11.5px;
+  color: var(--muted);
+}
+.state-obj b {
+  font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+  font-size: 22px;
+  line-height: 1.1;
+  color: var(--navy);
+}
+.state-obj span {
+  font-size: 12.5px;
+  color: var(--muted);
+}
+.state-lock {
+  border: 2px dashed var(--cli);
+  background: var(--cli-bg);
+}
+.state-pod {
+  border-color: var(--flux);
+  background: var(--flux-bg);
+}
+.state-note {
+  margin: 10px 0 0;
+  font-size: 12px;
+  color: var(--muted);
+}
+.diagram:not([data-selected]) .seam-state:first-of-type,
+.diagram[data-selected='image'] .seam-state[data-for~='image'],
+.diagram[data-selected='descriptor'] .seam-state[data-for~='descriptor'],
+.diagram[data-selected='gate'] .seam-state[data-for~='gate'],
+.diagram[data-selected='facts'] .seam-state[data-for~='facts'],
+.diagram[data-selected='trust'] .seam-state[data-for~='trust'],
+.diagram[data-selected='delivery'] .seam-state[data-for~='delivery'],
+.diagram[data-selected='verify'] .seam-state[data-for~='verify'],
+.diagram[data-selected='proof'] .seam-state[data-for~='proof'],
+.diagram[data-selected='restore'] .seam-state[data-for~='restore'],
+.diagram[data-selected='running'] .seam-state[data-for~='running'],
+.diagram[data-selected='lock-taken'] .seam-state[data-for~='lock-taken'] {
+  display: grid;
+}
+.seam-run .node.artifact {
+  margin-top: 8px;
+}
+
 @media (max-width: 760px) {
+  /* Each row becomes a card: the path, then four labeled cells. */
   .tree-head,
-  .tree-row {
-    grid-template-columns: minmax(0, 1fr) repeat(3, 56px);
-  }
-  .tree-corner {
+  .tree-bands {
     display: none;
   }
-  .tree-head .node small,
+  .tree-row {
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    gap: 4px;
+    padding-bottom: 6px;
+  }
+  .tree-row > [role='rowheader'] {
+    grid-column: 1 / -1;
+  }
   .tree-cell {
-    font-size: 11px;
+    grid-template-rows: auto 1fr;
+    gap: 2px;
+    padding: 4px 2px;
+    font-size: 12px;
+  }
+  .tree-cell::before {
+    content: attr(data-branch);
+    font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+    font-size: 9.5px;
+    font-weight: 500;
+    color: var(--muted);
+    overflow-wrap: anywhere;
   }
   .cell-doomed {
-    font-size: 9.5px;
+    font-size: 10px;
+  }
+  .tree-map:has(.what-if-switch:checked) .has-after {
+    font-size: 10px;
   }
   .tree-around-nodes,
   .seam-map,
   .seam-pair,
-  .branch-lane {
+  .branch-lane,
+  .meanwhile-nodes {
     grid-template-columns: 1fr;
+  }
+  .seam-state {
+    grid-template-columns: 1fr 1fr;
   }
   .creation-steps.steps-5 {
     grid-template-columns: repeat(5, minmax(0, 1fr));
+  }
+}
+@media (max-width: 480px) {
+  .creation-steps {
+    gap: 3px;
+  }
+  .creation-steps a {
+    padding: 6px 3px;
+    text-align: center;
+  }
+  .creation-steps span {
+    font-size: 10.5px;
+    margin-bottom: 1px;
+  }
+  .creation-steps b {
+    font-size: 11px;
+    line-height: 1.25;
+    overflow-wrap: anywhere;
   }
 }
