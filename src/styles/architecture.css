@@ -727,3 +727,230 @@
     transition: none;
   }
 }
+
+/* Learn view 04: the repository read by owner */
+.tree-map {
+  display: grid;
+  gap: 6px;
+  background: #fff;
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  padding: 12px;
+}
+.tree-head,
+.tree-row {
+  display: grid;
+  grid-template-columns: minmax(0, 1.6fr) repeat(3, minmax(0, 1fr));
+  gap: 6px;
+  align-items: stretch;
+}
+.tree-head {
+  padding-bottom: 6px;
+  border-bottom: 1px solid var(--line);
+}
+.tree-corner {
+  align-self: end;
+  font-size: 12px;
+  color: var(--muted);
+  padding: 0 4px 8px;
+}
+.tree-head .node {
+  min-height: 0;
+}
+.tree-group {
+  display: grid;
+  gap: 6px;
+  padding-top: 8px;
+}
+.tree-group .group-label {
+  margin: 0 0 2px;
+}
+.tree-row .node b {
+  font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+  font-size: 12.5px;
+  overflow-wrap: anywhere;
+}
+.tree-cell {
+  display: grid;
+  place-items: center;
+  border-radius: 6px;
+  font-size: 13px;
+  font-weight: 700;
+  border: 1px dashed var(--line);
+  color: var(--muted);
+  text-align: center;
+  padding: 4px;
+}
+.cell-kept {
+  color: var(--navy);
+  border-style: solid;
+  background: #f7fafc;
+}
+.cell-fork {
+  color: var(--fork);
+  border-style: solid;
+  border-color: var(--fork);
+  background: var(--fork-bg);
+}
+.cell-doomed {
+  color: #8a4b0a;
+  background: #fff8e6;
+  border: 1px solid #e3c27a;
+  font-size: 11.5px;
+  font-weight: 600;
+}
+.cell-absent {
+  background: repeating-linear-gradient(135deg, #fff 0 6px, #f1f4f7 6px 12px);
+}
+.tree-stripped .node {
+  opacity: 0.75;
+}
+.tree-legend {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px 18px;
+  font-size: 12.5px;
+  color: var(--muted);
+  padding-top: 8px;
+  border-top: 1px solid var(--line);
+}
+.tree-legend i {
+  font-style: normal;
+  font-weight: 700;
+  margin-right: 5px;
+  border: 0;
+  background: none;
+}
+.tree-around {
+  margin-top: 16px;
+}
+.tree-around-nodes {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 8px;
+  margin-top: 8px;
+}
+
+/* Learn view 05: the branches in time */
+.creation-steps.steps-5 {
+  grid-template-columns: repeat(5, minmax(0, 1fr));
+}
+.branch-map {
+  display: grid;
+  gap: 8px;
+  background: #fff;
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  padding: 12px;
+}
+.branch-map .boundary-crossing {
+  margin: 0 0 4px;
+}
+.branch-lane {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 2fr);
+  gap: 8px;
+  align-items: start;
+  padding: 6px 8px;
+  border-radius: 8px;
+  border-left: 4px solid var(--line);
+  transition: opacity 0.2s;
+}
+.branch-lane.is-active {
+  border-left-color: var(--navy);
+  background: #f7fafc;
+}
+.branch-lane.lane-fork.is-active {
+  border-left-color: var(--fork);
+  background: var(--fork-bg);
+}
+.branch-lane.is-idle {
+  opacity: 0.55;
+}
+.lane-artifacts {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+  gap: 8px;
+}
+.lane-artifacts:empty {
+  display: none;
+}
+.lane-flow {
+  grid-column: 1 / -1;
+  font-size: 12.5px;
+  color: #5c7b91;
+  align-self: center;
+  padding: 4px 2px;
+}
+.node.artifact {
+  border-style: dashed;
+  background: #fff;
+}
+
+/* Learn view 06: the seam */
+.seam-map {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+  gap: 14px;
+}
+.seam-inputs {
+  grid-column: 1 / -1;
+}
+.seam-pair {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px;
+  margin-top: 8px;
+}
+.seam-run,
+.seam-stack {
+  display: grid;
+  gap: 8px;
+  align-content: start;
+  padding: 12px;
+  border-radius: 10px;
+  border: 1px solid var(--line);
+  background: #fff;
+}
+.seam-run {
+  border-top: 4px solid var(--you);
+}
+.seam-stack {
+  border-top: 4px solid var(--cli);
+}
+.seam-stack .node + .node {
+  margin-top: 8px;
+}
+.seam-map .spi-seam {
+  border: 2px dashed var(--fork);
+  background: var(--fork-bg);
+  text-align: left;
+}
+.example-strip .journey {
+  grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+}
+@media (max-width: 760px) {
+  .tree-head,
+  .tree-row {
+    grid-template-columns: minmax(0, 1fr) repeat(3, 56px);
+  }
+  .tree-corner {
+    display: none;
+  }
+  .tree-head .node small,
+  .tree-cell {
+    font-size: 11px;
+  }
+  .cell-doomed {
+    font-size: 9.5px;
+  }
+  .tree-around-nodes,
+  .seam-map,
+  .seam-pair,
+  .branch-lane {
+    grid-template-columns: 1fr;
+  }
+  .creation-steps.steps-5 {
+    grid-template-columns: repeat(5, minmax(0, 1fr));
+  }
+}

@@ -13,7 +13,9 @@ import { transcript } from '../src/content/transcript.js';
 import { diagramRenderers } from '../src/components/diagrams.js';
 import { architectureMap } from '../src/components/architecture.js';
 import { infographics } from '../src/components/infographics.js';
-import { parseRoute, routeHref } from '../src/router.js';
+import { pageRenderers } from '../src/components/pages.js';
+import { parseRoute, routeHref, chapterSteps } from '../src/router.js';
+import { forkMoments } from '../src/content/fork-moments.js';
 import { zoomLevels, spiMeanings } from '../src/content/concepts.js';
 import { mythThemes } from '../src/content/myths.js';
 import { zoomLadder, spiNamesFigure } from '../src/components/infographics.js';
@@ -87,12 +89,7 @@ test('chapters connect to renderers, explanations, and named sources', () => {
     assert.equal(typeof diagramRenderers[chapter.diagram], 'function');
     assert.ok(Object.hasOwn(componentDetails, chapter.selected));
     verifyDetails(diagramRenderers[chapter.diagram](parseRoute(`#${id}`)), id);
-    const steps =
-      id === 'bring-up'
-        ? creationMoments.map((moment) => moment.id)
-        : id === 'running-stack'
-          ? ['developer', 'request']
-          : [];
+    const steps = chapterSteps(id);
     const flatten = (value, name) => {
       if (!value) return [];
       if (Array.isArray(value)) return value;
@@ -333,4 +330,26 @@ test('the familiar-things guide links every row to a component on the map', () =
   );
   assert.ok(hrefs.length >= 7);
   for (const href of hrefs) verifyRoute(href, 'familiar guide');
+});
+
+test('the fork moments and the retired engineering route keep resolving', () => {
+  for (const moment of forkMoments) {
+    assert.ok(componentDetails[moment.detail], moment.id);
+    assert.ok(moment.active.length, `${moment.id}: no active lane`);
+    const markup = diagramRenderers.forkDay(
+      parseRoute(`#fork-day/${moment.id}`),
+    );
+    assert.ok(markup.includes(`data-detail="${moment.detail}"`), moment.id);
+    verifyDetails(markup, `fork-day/${moment.id}`);
+  }
+  assert.equal(
+    parseRoute('#engineering-system?detail=delivery').chapter,
+    'handshake',
+  );
+  for (const [id, chapter] of Object.entries(chapters))
+    if (chapter.group === 'learn') assert.ok(chapter.book, `${id}: book`);
+  const home = pageRenderers.home(parseRoute('#start'));
+  assert.ok(home.includes('round-trip'));
+  for (const key of ['fork-shape', 'fork-day', 'handshake'])
+    assert.ok(home.includes(`href="#${key}`), `home links ${key}`);
 });

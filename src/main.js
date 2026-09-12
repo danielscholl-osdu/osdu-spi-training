@@ -1,6 +1,7 @@
 import { chapters } from './content/chapters.js';
 import { componentDetails } from './content/component-details.js';
 import { creationMoments } from './content/creation-moments.js';
+import { forkMoments } from './content/fork-moments.js';
 import { sources } from './content/sources.js';
 import { suppliedPosters } from './content/posters.js';
 import { diagramRenderers } from './components/diagrams.js';
@@ -89,7 +90,7 @@ function nextChapter(key) {
 function positionLabel(key) {
   const scene = chapters[key];
   if (scene.group === 'learn')
-    return `${learnOrder.indexOf(key) + 1} of ${learnOrder.length} · The Azure SPI Stack`;
+    return `${learnOrder.indexOf(key) + 1} of ${learnOrder.length} · ${scene.book}`;
   return scene.group === 'supplement' ? 'Supplement' : 'OSDU Fieldnotes';
 }
 
@@ -205,9 +206,11 @@ function render() {
   const defaultDetail =
     route.chapter === 'bring-up'
       ? creationMoments.find((moment) => moment.id === route.step).detail
-      : route.chapter === 'running-stack' && route.step === 'request'
-        ? 'client'
-        : scene.selected;
+      : route.chapter === 'fork-day'
+        ? forkMoments.find((moment) => moment.id === route.step).detail
+        : route.chapter === 'running-stack' && route.step === 'request'
+          ? 'client'
+          : scene.selected;
   const buttons = [...document.querySelectorAll('[data-detail]')];
   const element =
     buttons.find((button) => button.dataset.detail === route.detail) ||

@@ -5,7 +5,7 @@ An interactive learning site for senior engineers who know OSDU and are new to A
 Three ways in, all ending in the source documentation:
 
 - **Listen.** A one-hour generated deep dive with 22 chapter markers, source-check notes, and a transcript. It keeps playing while you move around the site.
-- **Explore.** Five views, each answering one question: **What is a stack?**, **How it comes to life**, **The SPI boundary**, **How changes arrive**, and **Things that are not true**. Every view says which of six places it works at, draws one running example as hops above its map (a partition lookup for opendes in a stack called dev1), shows one easy mistake directly under the map, and ends with what the learner can now say.
+- **Explore.** Seven views, each answering one question, in a round trip: **What is a stack?**, **How it comes to life**, and **The SPI boundary** go down the stack; **The shape of the fork** and **A day in the fork** go out to the service fork that owns the Azure code; **The handshake** comes back in through the image lock; **Things that are not true** collects the contradictions from both. Every view says which of six places it works at, draws one running example as hops above its map (a partition lookup for opendes in a stack called dev1, then a fix to the partition provider), shows one easy mistake directly under the map, and ends with what the learner can now say.
 - **Read.** Field guides: seven posters (two supplied with the training material, two adopted from the source repositories, three built for this site: namespaces and ordering, one request end to end, credentials and teardown) and six smaller infographics built in HTML (where the familiar things live, four owners, the spi up timeline, five milestones, three profiles, identity as two problems).
 
 Explanations are optional, and source documentation supplies depth. There are no quizzes, scores, or required exercises.
@@ -35,6 +35,7 @@ src/
     concepts.js                 The zoom ladder and the three meanings of SPI
     component-details.js        Component explanations
     creation-moments.js         Six lifecycle moments
+    fork-moments.js             Five moments in a service fork's day
     sources.js                  Documentation labels and source locations
     audio.js                    Deep dive file, markers, and source checks
     transcript.js               Generated transcript paragraphs
@@ -42,7 +43,7 @@ src/
     posters.js                  Supplied posters and native field guides
   components/
     architecture.js             Environment map and creation interaction
-    diagrams.js                 Chapter diagram renderers
+    diagrams.js                 SPI boundary, fork, day-in-the-fork, and seam renderers
     infographics.js             Native field guides (HTML/SVG)
     pages.js                    Home, Listen, Field guides, Not true
     player.js                   Shared audio element and dock

@@ -54,9 +54,9 @@ export const suppliedPosters = [
       { label: 'The SPI boundary', href: '#spi-boundary' },
       {
         label: 'How changes arrive',
-        href: '#engineering-system?detail=upstream',
+        href: '#fork-shape?detail=upstream',
       },
-      { label: 'The service fork', href: '#engineering-system?detail=repo' },
+      { label: 'The service fork', href: '#handshake?detail=trust' },
     ],
     sources: ['forkTiers', 'branches', 'ownership'],
   },
@@ -82,13 +82,13 @@ export const suppliedPosters = [
     explore: [
       {
         label: 'Borrow, prove, restore on the map',
-        href: '#engineering-system?detail=proof',
+        href: '#handshake?detail=proof',
       },
       {
         label: 'The image-lock handoff',
-        href: '#engineering-system?detail=delivery',
+        href: '#handshake?detail=delivery',
       },
-      { label: 'The service fork', href: '#engineering-system?detail=repo' },
+      { label: 'The service fork', href: '#handshake?detail=trust' },
     ],
     sources: ['forkDeploy', 'proof', 'ephemeralPins'],
   },
@@ -115,10 +115,10 @@ export const suppliedPosters = [
     explore: [
       {
         label: 'The shared stack on the map',
-        href: '#engineering-system?detail=running',
+        href: '#handshake?detail=running',
       },
       { label: 'What spi down keeps', href: '#bring-up/remove' },
-      { label: 'Ephemeral pins', href: '#engineering-system?detail=delivery' },
+      { label: 'Ephemeral pins', href: '#handshake?detail=delivery' },
     ],
     sources: ['envLifecycle', 'pinnedEnv', 'resetBoundary', 'deployIdentity'],
   },

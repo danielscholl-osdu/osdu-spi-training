@@ -1,18 +1,23 @@
 import { chapters } from './content/chapters.js';
 import { creationMoments } from './content/creation-moments.js';
+import { forkMoments } from './content/fork-moments.js';
+
+// Route keys that were published and later split or renamed keep resolving.
+export const chapterAliases = { 'engineering-system': 'handshake' };
+
+export function chapterSteps(chapter) {
+  if (chapter === 'bring-up') return creationMoments.map((moment) => moment.id);
+  if (chapter === 'fork-day') return forkMoments.map((moment) => moment.id);
+  if (chapter === 'running-stack') return ['developer', 'request'];
+  return [];
+}
 
 export function parseRoute(hash) {
   const [path = '', query = ''] = hash.replace(/^#/, '').split('?');
   const [requestedChapter, requestedStep] = path.split('/');
-  const chapter = Object.hasOwn(chapters, requestedChapter)
-    ? requestedChapter
-    : 'start';
-  const steps =
-    chapter === 'bring-up'
-      ? creationMoments.map((moment) => moment.id)
-      : chapter === 'running-stack'
-        ? ['developer', 'request']
-        : [];
+  const resolved = chapterAliases[requestedChapter] || requestedChapter;
+  const chapter = Object.hasOwn(chapters, resolved) ? resolved : 'start';
+  const steps = chapterSteps(chapter);
   const step = steps.includes(requestedStep) ? requestedStep : steps[0] || '';
   const params = new URLSearchParams(query);
   const seconds = Number(params.get('t'));

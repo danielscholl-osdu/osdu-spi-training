@@ -412,6 +412,34 @@ export function zoomLadder() {
   </div>`;
 }
 
+// The start page's shape: the lookup goes down the stack, the fix goes out to
+// the fork and back in through the lock. Each box links the view that draws it.
+export function roundTripFigure() {
+  const stop = (href, number, title, sub) =>
+    `<a class="loop-stop" href="${href}"><span class="loop-number">${number}</span><b>${title}</b><small>${sub}</small></a>`;
+  return `<div class="round-trip">
+    <div class="loop-side loop-stack">
+      <div class="loop-head"><b>The stack</b><small>a place · views 01 to 03</small></div>
+      ${stop('#running-stack/request', '01', 'A partition lookup', 'arrives at dev1’s gateway')}
+      <span class="loop-arrow" aria-hidden="true">↓</span>
+      ${stop('#bring-up', '02', 'The stack that answers it', 'built by one spi up')}
+      <span class="loop-arrow" aria-hidden="true">↓</span>
+      ${stop('#spi-boundary', '03', 'Inside the partition service', 'common code, the interface, the Azure provider')}
+    </div>
+    <div class="loop-cross loop-out"><span>a fix to that provider</span><span aria-hidden="true">→</span></div>
+    <div class="loop-side loop-fork">
+      <div class="loop-head"><b>The fork</b><small>a schedule · views 04 and 05</small></div>
+      ${stop('#fork-shape', '04', 'Where the provider lives', 'paths the fork owns, branches it regenerates')}
+      <span class="loop-arrow" aria-hidden="true">↓</span>
+      ${stop('#fork-day', '05', 'One day in the fork', 'sync, cascade, wait, release')}
+      <span class="loop-arrow" aria-hidden="true">↓</span>
+      <div class="loop-stop loop-digest"><b>One tagged digest</b><small>ghcr.io/…@sha256</small></div>
+    </div>
+    <div class="loop-cross loop-back"><span aria-hidden="true">←</span><span>pinned into dev1, proved, restored</span></div>
+    <a class="loop-seam" href="#handshake"><span class="loop-number">06</span><b>The handshake</b><small>the image lock, the only object both sides write</small></a>
+  </div>`;
+}
+
 export function spiNamesFigure() {
   return `<div class="spi-names">${spiMeanings
     .map(

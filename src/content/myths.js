@@ -122,6 +122,101 @@ export const myths = [
     route: '#bring-up/remove',
     routeLabel: 'Removing the stack',
   },
+  {
+    id: 'fork-is-a-snapshot',
+    theme: 'fork',
+    claim: 'A fork is a copy we took once and patch as we go.',
+    reality:
+      'The service fork keeps a relationship with upstream, not a copy of it. Every day the filter regenerates fork_upstream from the upstream tip, and the cascade carries that into the fork-owned tree. What the fork owns is a short list of paths, not the repository.',
+    check:
+      'git log -1 --format=%B fork_upstream | grep -E "Upstream-Sha|Filter-Rev"',
+    source: 'ownership',
+    route: '#fork-shape?detail=fork-upstream',
+    routeLabel: 'The generated branch',
+  },
+  {
+    id: 'merge-fork-upstream',
+    theme: 'fork',
+    claim:
+      'When the sync conflicts, I merge upstream into fork_upstream by hand.',
+    reality:
+      'fork_upstream is generated, never merged into. A conflict is resolved on fork_integration, where the generated tree meets the fork-owned code. A hand merge on fork_upstream would be overwritten by the next generation and would put Azure paths into the merge base.',
+    check: 'git branch -r --contains fork_upstream | head',
+    source: 'synchronization',
+    route: '#fork-day/cascade?detail=fork-integration',
+    routeLabel: 'The workspace branch',
+  },
+  {
+    id: 'azure-profile-alone',
+    theme: 'fork',
+    claim: 'mvn -P azure builds the Azure provider.',
+    reality:
+      'The core profile is active by default and Maven drops it as soon as any -P is passed. Bare -P azure loses the core module and the provider fails to resolve it. CI always builds -P core,azure; on a first-tier fork_upstream it builds core only, because the generated tree has no Azure module.',
+    check: 'mvn -P core,azure -DskipTests package',
+    source: 'mavenProfile',
+    route: '#fork-day/cascade?detail=cascade-run',
+    routeLabel: 'The cascade build',
+  },
+  {
+    id: 'human-required-is-a-note',
+    theme: 'fork',
+    claim: 'human-required is a note for whoever looks next.',
+    reality:
+      'It is state. While the label is on the tracking issue nothing retries. Removing it is the signal: the monitor relabels the issue cascade-active within six hours and runs the cascade again. Fixing the conflict without removing the label leaves the fork stopped.',
+    check: 'gh issue list --label human-required --label cascade-failed',
+    source: 'cascadeMonitor',
+    route: '#fork-day/review?detail=labels',
+    routeLabel: 'The labels on the map',
+  },
+  {
+    id: 'release-rebuilds-image',
+    theme: 'fork',
+    claim: 'A release builds a fresh image for the version tag.',
+    reality:
+      'Validation already pushed an immutable sha-* image for the release commit. Release Please tags the commit; the release workflow waits for that image and adds the semantic-version tag to it. The bytes that were tested are the bytes that get the version.',
+    check:
+      'gh api /orgs/Azure/packages/container/osdu-spi-partition/versions --jq ".[0].metadata.container.tags"',
+    source: 'release',
+    route: '#fork-day/release?detail=release-tag',
+    routeLabel: 'The release moment',
+  },
+  {
+    id: 'template-sync-overwrites',
+    theme: 'fork',
+    claim:
+      'Template sync will overwrite the workflow change I made in my fork.',
+    reality:
+      'It opens a pull request. Sync Template compares the template commit range with the fork and proposes the difference as one PR labeled template-sync, updated in place if the template moves again. A local change you want to keep is a review comment, not a lost file.',
+    check: 'gh pr list --label template-sync',
+    source: 'templateSync',
+    route: '#fork-day/template?detail=template-pr',
+    routeLabel: 'The template PR',
+  },
+  {
+    id: 'validation-summary-means-deployed',
+    theme: 'seam',
+    claim:
+      'Validation Summary is green, so the change ran in a real environment.',
+    reality:
+      'The deploy lane can skip with a visible reason and the summary still passes: the repository is not onboarded, there is no .spi/service.yaml, no image was pushed, or the run came from another repository. Deploy Gate reports which. Green is not evidence that the environment was borrowed.',
+    check:
+      'gh run view --job "Deploy Gate" --log | grep "Deploy and Test skipped"',
+    source: 'validation',
+    route: '#handshake?detail=gate',
+    routeLabel: 'The gate on the map',
+  },
+  {
+    id: 'restore-always-restores',
+    theme: 'seam',
+    claim: 'The restore step puts the previous image back.',
+    reality:
+      'Only while this run still owns the pin. spi service reset --if-run compares the run id in the lock annotation with its own; a newer run’s pin is left alone and the reset exits 2, which the lane treats as success. A cancelled run or a lost runner can strand a pin until the stale sweep finds it.',
+    check:
+      'kubectl -n osdu-flux get configmap osdu-image-lock -o jsonpath="{.metadata.annotations.spi-stack\.osdu\.dev/pins}"',
+    source: 'ephemeralPins',
+    route: '#handshake?detail=restore',
+    routeLabel: 'The restore step',
+  },
 ];
 
 // Grouping for the page, each pointing at the view where the concept was built.
@@ -150,5 +245,15 @@ export const mythThemes = [
     id: 'estate',
     title: 'The Azure estate',
     built: { label: '01 · What is a stack?', href: '#running-stack' },
+  },
+  {
+    id: 'fork',
+    title: 'The fork and its branches',
+    built: { label: '04 · The shape of the fork', href: '#fork-shape' },
+  },
+  {
+    id: 'seam',
+    title: 'The seam',
+    built: { label: '06 · The handshake', href: '#handshake' },
   },
 ];

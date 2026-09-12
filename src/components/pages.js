@@ -10,6 +10,7 @@ import {
   ownerLegend,
   zoomLadder,
   spiNamesFigure,
+  roundTripFigure,
 } from './infographics.js';
 import { routeHref, parseRoute } from '../router.js';
 
@@ -68,32 +69,57 @@ function pathCards() {
   return `<ol class="path-cards">${learn
     .map(
       ([key, chapter], index) =>
-        `<li><a href="${routeHref(key)}"><span class="path-number">${String(index + 1).padStart(2, '0')}</span><b>${chapter.title}</b><em>${escapeHtml(chapter.question)}</em><p><span>You leave able to say</span>${escapeHtml(chapter.outcomes[0])}</p></a></li>`,
+        `<li class="path-book-${chapter.book.toLowerCase().replace(/\s+/g, '-')}"><a href="${routeHref(key)}"><span class="path-number">${String(index + 1).padStart(2, '0')}</span><small>${chapter.book}</small><b>${chapter.title}</b><em>${escapeHtml(chapter.question)}</em><p><span>You leave able to say</span>${escapeHtml(chapter.outcomes[0])}</p></a></li>`,
     )
     .join('')}</ol>`;
 }
 
 function homePage() {
+  const learnCount = Object.values(chapters).filter(
+    (chapter) => chapter.group === 'learn',
+  ).length;
+  const words = [
+    '',
+    'One',
+    'Two',
+    'Three',
+    'Four',
+    'Five',
+    'Six',
+    'Seven',
+    'Eight',
+  ];
   return `<section class="home-start" aria-label="Where to begin">
-      <div class="home-start-copy"><span class="guide-kicker">Where to begin</span><h2>Find your request on the map. Then see what built the map, and where its Azure code lives.</h2><p>Five views, each answering one question, each ending with what you can now say. One example runs through all of them: a partition lookup for opendes in a stack called dev1.</p></div>
+      <div class="home-start-copy"><span class="guide-kicker">Where to begin</span><h2>Two repositories, one answer: a stack you can bring up in an hour, and a fork that keeps the Azure code alive.</h2><p>Follow one request down the stack to the Azure code it reaches. Then follow one fix to that code out through the fork and back in. ${words[learnCount]} views, each answering one question, each ending with what you can now say.</p></div>
       <div class="home-start-actions"><a class="home-cta" href="${routeHref('running-stack')}">Start with 01 · What is a stack? →</a><a class="home-cta-alt" href="${routeHref('running-stack', 'request')}">Or trace one API request through it first</a></div>
     </section>
     <section class="home-path" aria-label="The learning path">
-      <div class="section-heading"><span class="guide-kicker">The path</span><h2>Five views, in order</h2><p>Each builds on the one before. Take them in order the first time; after that, any of them stands alone.</p></div>
+      <div class="section-heading"><span class="guide-kicker">The path</span><h2>${words[learnCount]} views, in order</h2><p>Each builds on the one before. Take them in order the first time; after that, any of them stands alone.</p></div>
       ${pathCards()}
+    </section>
+    <section class="home-loop" id="guide-round-trip" aria-label="The round trip">
+      <div class="section-heading"><span class="guide-kicker">The shape of the site</span><h2>Down the stack, out to the fork, back in through the lock</h2><p>The stack is a place: a resource group with a cluster and data services in it. The fork is a schedule: branches that are regenerated, integrated, and released. They touch at one object, the image lock, and that is where the running example crosses from one to the other.</p></div>
+      ${roundTripFigure()}
+    </section>
+    <section class="home-doors" aria-label="Two reasons to be here">
+      <div class="section-heading"><span class="guide-kicker">Two reasons to be here</span><h2>The stack stands alone. The engineering system does not.</h2></div>
+      <div class="doors">
+        <a class="door" href="${routeHref('running-stack')}"><span class="door-kicker">Just bring up OSDU on Azure</span><b>Views 01 and 02 are enough.</b><p>spi up builds the environment and pulls every service image by digest from GHCR. Which image each service uses is a choice recorded on the resource group. You never touch a fork.</p><span class="way-cta">Start at 01 →</span></a>
+        <a class="door door-fork" href="${routeHref('spi-boundary')}"><span class="door-kicker">Maintain or mirror a service fork</span><b>Views 03 to 06, and you will need a stack.</b><p>The fork owns the Azure provider and the workflows around it. To prove a change it borrows a slot in a running stack, so the stack comes first even when the fork is your job.</p><span class="way-cta">Start at 03 →</span></a>
+      </div>
     </section>
     <section class="home-names" aria-label="One word, three things">
       <div class="section-heading"><span class="guide-kicker">The word</span><h2>SPI means three things here</h2><p>They are related, and the site says which one it means. In the order the views meet them: the environment, the interface, the engineering system.</p></div>
       ${spiNamesFigure()}
     </section>
     <section class="home-zoom" id="guide-ladder" aria-label="From the subscription to the source">
-      <div class="section-heading"><span class="guide-kicker">The mental map</span><h2>Six places, from the outside in</h2><p>Everything in this site sits at one of these places. The resource group holds the Azure data services and the cluster side by side; the cluster holds namespaces, and a namespace holds services. The sixth place is not inside any of them: it is the source a service is built from. The numbers on the right are the views that explain each place.</p></div>
+      <div class="section-heading"><span class="guide-kicker">The mental map</span><h2>Six places, from the outside in</h2><p>Everything in this site sits at one of these places. The resource group holds the Azure data services and the cluster side by side; the cluster holds namespaces, and a namespace holds services. The sixth place is not inside any of them: it is the source a service is built from, and views 04 to 06 are about it.</p></div>
       ${zoomLadder()}
       ${ownerLegend()}
     </section>
     <section class="home-ways" aria-label="Alongside the path">
       <a class="way way-listen" href="${routeHref('listen')}"><span class="way-icon" aria-hidden="true">▶</span><b>Listen</b><p>A ${Math.round(audio.duration / 60)}-minute deep dive that keeps playing while you explore. Every chapter marker opens the matching view.</p><span class="way-cta">Open the player →</span></a>
-      <a class="way way-read" href="${routeHref('field-guides')}"><span class="way-icon" aria-hidden="true">≋</span><b>Field guides</b><p>The infographics from the views, together with two supplied posters, on one page you can print.</p><span class="way-cta">See the field guides →</span></a>
+      <a class="way way-read" href="${routeHref('field-guides')}"><span class="way-icon" aria-hidden="true">≋</span><b>Field guides</b><p>The infographics from the views, together with the supplied posters, on one page you can print.</p><span class="way-cta">See the field guides →</span></a>
     </section>
     <section class="home-sources" aria-label="Documentation sets">
       <div class="section-heading"><span class="guide-kicker">Documentation</span><h2>Where the depth lives</h2><p>Three repositories, matching the three meanings above.</p></div>
@@ -254,11 +280,17 @@ export function chapterNavigation(current) {
   const groups = chapterGroups
     .map((group) => {
       let number = 0;
+      let book = null;
       const links = Object.entries(chapters)
         .filter(([, chapter]) => chapter.group === group.id)
         .map(([key, chapter]) => {
           number += 1;
-          return `<a href="${routeHref(key)}" class="chapter-link" ${key === current ? 'aria-current="page"' : ''}>${group.numbered ? `<span class="number">${String(number).padStart(2, '0')}</span>` : '<span class="number" aria-hidden="true">·</span>'}<span>${chapter.title}<small>${chapter.subtitle}</small></span></a>`;
+          const kicker =
+            group.numbered && chapter.book && chapter.book !== book
+              ? `<span class="rail-book">${chapter.book}</span>`
+              : '';
+          book = chapter.book ?? book;
+          return `${kicker}<a href="${routeHref(key)}" class="chapter-link" ${key === current ? 'aria-current="page"' : ''}>${group.numbered ? `<span class="number">${String(number).padStart(2, '0')}</span>` : '<span class="number" aria-hidden="true">·</span>'}<span>${chapter.title}<small>${chapter.subtitle}</small></span></a>`;
         })
         .join('');
       return `<div class="rail-group"><span class="rail-group-label">${group.label}</span>${links}</div>`;

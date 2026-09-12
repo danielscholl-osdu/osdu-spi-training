@@ -1886,3 +1886,220 @@ body:has(.audio-dock:not([hidden])) main {
     box-shadow: none;
   }
 }
+
+/* Chapter rail: the book each cluster of views belongs to */
+.rail-book {
+  display: block;
+  font-size: 10.5px;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: #9aafc0;
+  padding: 8px 0 3px 4px;
+}
+.rail-book:first-of-type {
+  padding-top: 2px;
+}
+.path-cards small {
+  display: block;
+  font-size: 11px;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: #8199ac;
+  margin-bottom: 2px;
+}
+
+@media (min-width: 1100px) {
+  .path-cards {
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+  }
+}
+
+/* Start page: the round trip */
+.round-trip {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr);
+  grid-template-areas:
+    'stack out fork'
+    'seam seam seam';
+  gap: 14px;
+  align-items: stretch;
+}
+.loop-side {
+  display: grid;
+  gap: 6px;
+  align-content: start;
+  padding: 14px;
+  border-radius: 10px;
+  background: #fff;
+  border: 1px solid var(--line);
+}
+.loop-stack {
+  grid-area: stack;
+  border-top: 4px solid var(--cli);
+}
+.loop-fork {
+  grid-area: fork;
+  border-top: 4px solid var(--fork);
+}
+.loop-head b {
+  display: block;
+  font-size: 15px;
+}
+.loop-head small {
+  display: block;
+  font-size: 12px;
+  color: var(--muted);
+  margin-bottom: 6px;
+}
+.loop-stop {
+  display: grid;
+  grid-template-columns: auto 1fr;
+  gap: 1px 9px;
+  padding: 9px 11px;
+  border: 1px solid var(--line);
+  border-radius: 7px;
+  color: var(--ink);
+  text-decoration: none;
+  background: #fff;
+}
+.loop-stop:hover {
+  border-color: var(--blue);
+}
+.loop-stop b {
+  font-size: 14px;
+}
+.loop-stop small {
+  grid-column: 2;
+  font-size: 12px;
+  color: var(--muted);
+}
+.loop-number {
+  grid-row: span 2;
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  background: var(--navy);
+  color: #fff;
+  display: grid;
+  place-items: center;
+  font-size: 11px;
+  font-weight: 700;
+  align-self: center;
+}
+.loop-fork .loop-number {
+  background: var(--fork);
+}
+.loop-digest {
+  border-style: dashed;
+  border-color: var(--fork);
+  background: var(--fork-bg);
+}
+.loop-arrow {
+  text-align: center;
+  color: #93abbf;
+  line-height: 1;
+}
+.loop-cross {
+  display: grid;
+  gap: 4px;
+  align-content: center;
+  justify-items: center;
+  font-size: 12.5px;
+  color: var(--fork);
+  font-weight: 600;
+  text-align: center;
+  max-width: 120px;
+}
+.loop-out {
+  grid-area: out;
+}
+.loop-back {
+  display: none;
+}
+.loop-seam {
+  grid-area: seam;
+  display: grid;
+  grid-template-columns: auto 1fr;
+  gap: 1px 10px;
+  align-items: center;
+  padding: 12px 14px;
+  border-radius: 8px;
+  border: 2px dashed var(--fork);
+  background: var(--fork-bg);
+  color: var(--ink);
+  text-decoration: none;
+}
+.loop-seam::before {
+  content: 'pinned into dev1, proved, restored ↑';
+  grid-column: 1 / -1;
+  font-size: 12.5px;
+  font-weight: 600;
+  color: var(--fork);
+  margin-bottom: 4px;
+}
+.loop-seam b {
+  font-size: 15px;
+}
+.loop-seam small {
+  grid-column: 2;
+  font-size: 12.5px;
+  color: var(--muted);
+}
+
+/* Start page: two doors */
+.doors {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 14px;
+}
+.door {
+  display: grid;
+  gap: 6px;
+  align-content: start;
+  padding: 16px 18px;
+  border-radius: 10px;
+  background: #fff;
+  border: 1px solid var(--line);
+  border-top: 4px solid var(--cli);
+  color: var(--ink);
+  text-decoration: none;
+}
+.door-fork {
+  border-top-color: var(--fork);
+}
+.door:hover {
+  border-color: var(--blue);
+}
+.door-kicker {
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: #7b93a6;
+}
+.door b {
+  font-size: 16px;
+}
+.door p {
+  margin: 0;
+  font-size: 14px;
+  color: var(--muted);
+  line-height: 1.6;
+}
+@media (max-width: 760px) {
+  .round-trip {
+    grid-template-columns: 1fr;
+    grid-template-areas:
+      'stack'
+      'out'
+      'fork'
+      'seam';
+  }
+  .loop-cross {
+    max-width: none;
+  }
+  .doors {
+    grid-template-columns: 1fr;
+  }
+}

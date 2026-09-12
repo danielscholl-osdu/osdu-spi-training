@@ -31,10 +31,10 @@ Rules for markers:
 | 39:06 | The async path that does not work            | `#running-stack/request?detail=events`        |                                                                                  |
 | 41:15 | Identity, inbound                            | `#running-stack/request?detail=gateway`       |                                                                                  |
 | 44:21 | Making an empty OSDU useful                  | `#bring-up/reconcile?detail=initialization`   |                                                                                  |
-| 47:43 | The image lock                               | `#engineering-system?detail=delivery`         |                                                                                  |
-| 48:57 | One environment, eight forks                 | `#engineering-system?detail=running`          |                                                                                  |
-| 50:40 | Pinned versions and ephemeral pins           | `#engineering-system?detail=proof`            |                                                                                  |
-| 55:20 | Trusting a repository, not its pull requests | `#engineering-system?detail=repo`             |                                                                                  |
+| 47:43 | The image lock                               | `#handshake?detail=delivery`                  |                                                                                  |
+| 48:57 | One environment, eight forks                 | `#handshake?detail=running`                   |                                                                                  |
+| 50:40 | Pinned versions and ephemeral pins           | `#handshake?detail=proof`                     |                                                                                  |
+| 55:20 | Trusting a repository, not its pull requests | `#handshake?detail=trust`                     |                                                                                  |
 | 56:46 | What the design is really about              | `#not-true`                                   |                                                                                  |
 
 ## Tighten these phrases before recording a narration

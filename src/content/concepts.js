@@ -56,10 +56,10 @@ export const zoomLevels = [
     owner: 'fork',
     name: 'Where the code comes from',
     detail:
-      'Not a place inside the stack: the repositories the service is built from. A service fork owns the provider; osdu-spi supplies the workflows; osdu-spi-stack runs the environment.',
+      'Not a place inside the stack: the repositories the service is built from. A service fork owns the provider; osdu-spi supplies the workflows; a run in the fork borrows a stack to prove a digest.',
     example: 'three repositories',
-    chapters: ['engineering-system'],
-    href: '#engineering-system',
+    chapters: ['fork-shape', 'fork-day', 'handshake'],
+    href: '#fork-shape',
   },
 ];
 
@@ -92,8 +92,8 @@ export const spiMeanings = [
     name: 'osdu-spi, the engineering system',
     copy: 'The template that gives every service fork its sync, cascade, build, and validation workflows, so the Azure code stays maintainable.',
     lives: 'Azure/osdu-spi',
-    href: '#engineering-system',
-    hrefLabel: '04 · How changes arrive',
+    href: '#fork-shape',
+    hrefLabel: '04 · The shape of the fork',
     owner: 'you',
   },
 ];
