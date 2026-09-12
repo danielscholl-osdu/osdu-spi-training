@@ -1146,7 +1146,14 @@ body:has(.audio-dock:not([hidden])) main {
 }
 .zoom-tags {
   display: flex;
+  align-items: center;
   gap: 4px;
+}
+.zoom-tags small {
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--muted);
+  margin-right: 3px;
 }
 .zoom-tags a {
   font-size: 11px;

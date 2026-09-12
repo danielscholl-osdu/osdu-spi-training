@@ -79,7 +79,7 @@ function homePage() {
       ${spiNamesFigure()}
     </section>
     <section class="home-zoom" id="guide-ladder" aria-label="From the subscription to the source">
-      <div class="section-heading"><span class="guide-kicker">The mental map</span><h2>Six places, from the outside in</h2><p>Everything in this site sits at one of these levels. The views zoom in from the resource group to the code, and every view shows where it sits on this ladder.</p></div>
+      <div class="section-heading"><span class="guide-kicker">The mental map</span><h2>Six places, from the outside in</h2><p>Everything in this site sits at one of these levels. The views zoom in from the resource group to the code; the numbers on the right are the views that explain each level, and each view says which levels it works at.</p></div>
       ${zoomLadder()}
       ${ownerLegend()}
     </section>

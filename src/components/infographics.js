@@ -362,10 +362,10 @@ const chapterNumber = (key) =>
   ).padStart(2, '0');
 
 function levelTags(level) {
-  return `<span class="zoom-tags">${level.chapters
+  return `<span class="zoom-tags"><small>${level.chapters.length > 1 ? 'Views' : 'View'}</small>${level.chapters
     .map(
       (key) =>
-        `<a href="#${key}" title="${chapters[key].title}">${chapterNumber(key)}</a>`,
+        `<a href="#${key}" title="Open ${chapterNumber(key)} · ${chapters[key].title}">${chapterNumber(key)}</a>`,
     )
     .join('')}</span>`;
 }
