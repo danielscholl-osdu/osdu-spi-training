@@ -107,7 +107,7 @@ function nextChapter(key) {
   if (key === 'start') return learnOrder[0];
   if (scene.group === 'learn') {
     const n = learnOrder.indexOf(key);
-    return n === learnOrder.length - 1 ? 'listen' : learnOrder[n + 1];
+    return n === learnOrder.length - 1 ? 'start' : learnOrder[n + 1];
   }
   return key === 'listen' ? 'field-guides' : 'start';
 }
@@ -209,6 +209,7 @@ function render() {
     } else if (chapterChanged && previousRoute) {
       window.scrollTo({ top: 0, behavior: 'instant' });
     }
+    if (chapterChanged && previousRoute) focusChapter();
     previousRoute = route;
     return;
   }
@@ -284,10 +285,24 @@ function render() {
   jumpRequested = false;
   if (chapterChanged) {
     expandInspector(false);
-    if (previousRoute) window.scrollTo({ top: 0, behavior: 'instant' });
+    if (previousRoute) {
+      window.scrollTo({ top: 0, behavior: 'instant' });
+      focusChapter();
+    }
   }
   previousRoute = route;
 }
+
+// The rail is re-rendered on every chapter change, which drops keyboard focus
+// to the body. Move it to the new chapter's headline so Tab continues from
+// the content rather than restarting at the rail.
+function focusChapter() {
+  document.getElementById('headline').focus({ preventScroll: true });
+}
+document.getElementById('skip-link').addEventListener('click', (event) => {
+  event.preventDefault();
+  focusChapter();
+});
 
 // The what-if switch in 04 swaps each affected cell's text and accessible
 // name together, so the table and its screen-reader reading agree.

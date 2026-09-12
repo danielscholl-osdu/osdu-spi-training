@@ -275,8 +275,27 @@ test('audio markers are ordered, inside the recording, and point at real views',
   }
   assert.ok(frameVideo.duration > 0 && frameVideo.notes.length);
   assert.ok(home.includes('data-listen-now'), 'home cue has a live note line');
+  assert.ok(
+    home.indexOf('class="path-cards"') < home.indexOf('class="home-frame"'),
+    'the path comes before the media on the start page',
+  );
+  assert.ok(!home.includes('Not quite'));
+  assert.ok(
+    !pageRenderers.myths(parseRoute('#not-true')).includes('Not quite'),
+  );
+  const guides = pageRenderers.guides(parseRoute('#field-guides'));
+  assert.ok(
+    guides.indexOf('class="guide-set"') < guides.indexOf('class="poster-set"'),
+    'built guides come before the supplied posters',
+  );
+  for (const entry of [...nativeGuides, ...suppliedPosters])
+    assert.ok(
+      guides.includes(`?guide=${entry.id}"`),
+      `guide index links ${entry.id}`,
+    );
   const listen = pageRenderers.listen(parseRoute('#listen?episode=branches'));
-  assert.ok(listen.includes('3D-prints'));
+  const branches = episodes.find((episode) => episode.id === 'branches');
+  assert.ok(listen.includes(branches.title));
   assert.equal(
     listen.split('data-marker-start').length - 1,
     episodes.find((episode) => episode.id === 'branches').markers.length,
@@ -309,7 +328,12 @@ test('source links use readable documentation and match a sibling checkout when 
     if (source.repo === 'osdu-spi') {
       assert.equal(url.hostname, 'azure.github.io', key);
       assert.ok(url.pathname.startsWith('/osdu-spi/'), key);
-    } else
+    } else if (source.repo === 'osdu-spi-partition')
+      assert.match(
+        source.href,
+        /^https:\/\/github.com\/Azure\/osdu-spi-partition(\/blob\/main\/|$)/,
+      );
+    else
       assert.match(
         source.href,
         /^https:\/\/github.com\/Azure\/osdu-spi-stack\/blob\/main\//,

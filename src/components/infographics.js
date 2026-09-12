@@ -428,7 +428,7 @@ export function roundTripFigure() {
     </div>
     <div class="loop-cross loop-out"><span>a fix to that provider</span><span aria-hidden="true">→</span></div>
     <div class="loop-side loop-fork">
-      <div class="loop-head"><b>The fork</b><small>a schedule · views 04 and 05</small></div>
+      <div class="loop-head"><b>The fork</b><small>a repository on a schedule · views 04 and 05</small></div>
       ${stop('#fork-shape', '04', 'Where the provider lives', 'paths the fork owns, branches it regenerates')}
       <span class="loop-arrow" aria-hidden="true">↓</span>
       ${stop('#fork-day', '05', 'One day in the fork', 'generate, integrate, propose, prove')}

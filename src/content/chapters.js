@@ -5,16 +5,16 @@ export const chapters = {
     group: 'start',
     title: 'Start here',
     subtitle: 'What this site is for',
-    headline: 'OSDU on Azure,<span>explained by boundary.</span>',
+    headline: 'Understand the Azure stack<span>behind your OSDU APIs.</span>',
     intro:
-      'You already know the OSDU APIs. Follow one request down to the Azure code it reaches, then follow a change to that code back into a running stack. By the end you can say where your request runs, what created the environment it runs in, and where a change to the Azure provider belongs.',
+      'Follow a partition lookup through the Azure stack, then follow a provider change through its service fork and back into the environment. Each view explains one part of that journey and links to the source documentation.',
     premise: 'For engineers who know OSDU and are new to SPI.',
     listen: [
       {
         episode: 'brief',
         time: 0,
         end: 112,
-        label: 'The frame in two minutes',
+        label: 'Azure SPI in two minutes',
       },
     ],
     sources: ['architecture', 'engineering', 'designs', 'decisions'],
@@ -94,7 +94,7 @@ export const chapters = {
     book: 'The stack',
     title: 'How it comes to life',
     subtitle: 'Create, use, and remove',
-    headline: 'One creation command.<span>Several kinds of work.</span>',
+    headline: 'How spi up<span>builds the environment.</span>',
     intro:
       'Follow the same environment from an empty footprint to OSDU, then remove it. Each moment shows who acts and what changes.',
     figure: 'Follow the environment',
@@ -331,7 +331,7 @@ export const chapters = {
     book: 'The fork',
     title: 'A day in the fork',
     subtitle: 'Generate, integrate, propose, prove, release',
-    headline: 'Two changes meet.<span>One digest leaves.</span>',
+    headline: 'From an upstream update<span>to a candidate image.</span>',
     intro:
       'The three branches from 04, followed through one change. Upstream is regenerated at midnight, the cascade carries it into the workspace, a person approves, every eligible commit gets a digest and a turn in dev1, and a release is an optional tag on an image that already exists.',
     premise: 'Nothing here is a merge you run by hand.',
@@ -415,9 +415,9 @@ export const chapters = {
     subtitle: 'Borrow, prove, restore',
     headline: 'Write the lock.<span>Flux rolls out the image.</span>',
     intro:
-      'The fork has a candidate digest and the stack has a running environment. One credentialed run reads what the environment publishes, pins the digest into the image lock as a pin it owns, checks the pod is running it, runs the suites the descriptor declares, and gives the slot back. Watch the lock and the pod change as you step through. The run is illustrative: it uses the lane the newer template ships, which the reference partition fork has not adopted yet.',
+      'The fork has a candidate digest and the stack has a running environment. One credentialed workflow run reads the configuration the environment reports, records its run ID and the candidate digest in osdu-image-lock, checks that the pod is running that digest, runs the suites the descriptor declares, and gives the slot back. Watch the lock and the pod change as you step through. The run is illustrative: it uses the lane the newer template ships, which the reference partition fork has not adopted yet.',
     premise:
-      'The stack publishes facts. The fork declares needs. The lock is the only thing both write.',
+      'The stack reports its configuration. The service descriptor lists the test suites and their inputs. The lock is the only thing both write.',
     figure: 'One run, one borrowed slot',
     selected: 'delivery',
     diagram: 'seam',
@@ -437,7 +437,7 @@ export const chapters = {
     guides: ['borrow-prove-restore'],
     mistakes: ['validation-summary-means-deployed', 'restore-always-restores'],
     scope:
-      'A shared environment can be borrowed by several onboarded forks, one service slot each, serialised per service. Key Vault binding materialisation, descriptor requirement checks before the borrow, and a second verify before each suite are not wired. The lane shown is the one the template ships since 10 September; osdu-spi-partition has neither adopted it nor written its descriptor yet, so this run is illustrative until it does.',
+      'A shared environment can be borrowed by several onboarded forks, one service slot each, serialised per service. The workflow does not yet load test inputs from Key Vault, check every descriptor requirement before borrowing, or verify the pod again before each suite. The lane shown is the one the template ships since 10 September; osdu-spi-partition has neither adopted it nor written its descriptor yet, so this run is illustrative until it does.',
     sources: ['forkDeploy', 'proof', 'descriptorContract', 'statusContract'],
     question:
       'How does that digest reach a running stack, what proves it, and what gives the slot back?',
@@ -478,7 +478,7 @@ export const chapters = {
     book: 'Across the path',
     title: 'Things that are not true',
     subtitle: 'Assumptions the docs contradict',
-    headline: 'Plausible assumptions.<span>Documented contradictions.</span>',
+    headline: 'Common assumptions<span>that cause trouble.</span>',
     intro:
       'Each of these is a reasonable thing to believe about a Kubernetes-and-Azure system. The project’s own documentation says otherwise, and names how to check.',
     premise:
@@ -502,9 +502,10 @@ export const chapters = {
     group: 'supplement',
     title: 'Listen',
     subtitle: 'Four recordings',
-    headline: 'Four recordings,<span>one system.</span>',
+    headline:
+      'Listen to the introduction<span>or a technical discussion.</span>',
     intro:
-      'Generated recordings: a twenty-two-minute orientation that argues why Azure SPI exists, the same frame as a two-minute brief, then the stack on its own and the fork in depth. Play one while you explore; each marker opens the matching view, and the maps carry short cues back into the recordings.',
+      'Generated recordings. The orientation spends twenty-two minutes on why Azure SPI exists; the brief covers the same ground in two. The stack episode and the fork episode go deep on their halves. Play one while you explore: each marker opens the matching view, and the maps carry short cues back into the recordings.',
     premise: 'Keeps playing while you move around the site.',
     scope:
       'The narration is generated from the guides, not from the repositories. Where it rounds a number, mishears a command, or overstates a guarantee, the marker notes say what the source documentation actually claims.',
@@ -516,12 +517,13 @@ export const chapters = {
     group: 'supplement',
     title: 'Field guides',
     subtitle: 'Posters and infographics',
-    headline: 'One idea per picture,<span>with a place to explore it.</span>',
+    headline:
+      'Diagrams built for this site,<span>then the supplied posters.</span>',
     intro:
-      'Reference posters supplied with the training material, plus infographics built for this site. Each names the sources it draws on and links to the interactive view that lets you look closer.',
+      'Infographics built for this site from the source documentation, then the reference posters supplied with the training material. Each names its sources and links to the interactive view that lets you look closer. The index below groups them by what you are trying to do.',
     premise: 'Print one, pin it up, or open it beside the map.',
     scope:
-      'Supplied posters are preserved as given. Their captions record where the wording differs from the source documentation, so a poster never becomes the authority.',
+      'Supplied posters are preserved as given, misspellings included. Their captions record where the wording differs from the source documentation, so a poster never becomes the authority; the built guides are the corrected teaching surface.',
     sources: ['architecture', 'lifecycle', 'forkTiers', 'decisions'],
   },
 };

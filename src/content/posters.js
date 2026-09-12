@@ -99,7 +99,7 @@ export const suppliedPosters = [
       'Relationship versus snapshot, the three branches on a daily cadence, borrow-prove-restore in three steps, and the two tiers of forks with a comparison table.',
     takeaways: [
       'Manual forks synchronise by hand with high conflict risk; the engineering system synchronises daily as reviewable PRs with isolated conflict resolution.',
-      'The deletion constraint is the reason for everything else: upstream deletes the Azure code, so the fork must own it while still receiving core updates.',
+      'The deletion constraint is the reason for everything else: upstream plans to remove its Azure code (community ADR 61; still present as of September 2026), so the fork must own it while still receiving core updates.',
       'The meta commit drives versioning without rewriting history.',
       'Second-tier mirror forks are true GitHub forks that sync verbatim and have template sync off, so pull requests can flow back up.',
     ],
@@ -225,6 +225,8 @@ export const suppliedPosters = [
     height: 1333,
     summary:
       'A bearer token traced to a Cosmos DB row in seven hops, crossing two identity seams. Three separate checks, and where each one fails.',
+    inline:
+      'A different example: this poster follows a storage record read to Cosmos DB. The partition lookup in the running example stops at the tables in common Storage.',
     takeaways: [
       'Caller authentication (the sidecar), OSDU authorization (entitlements), and Azure access (Workload Identity) are three checks; a pass at one proves nothing about the next.',
       'A 401 or 403 alone does not name the boundary. An empty x-app-id points at the sidecar; identity present with 403 points at entitlements.',

@@ -213,7 +213,7 @@ const orientationMarkers = [
   },
   {
     time: 424.3,
-    title: 'A relationship, not an archive',
+    title: 'The fork keeps a relationship with upstream',
     copy: 'A fork that stops tracking upstream is a dead archive. A fork that takes upstream by hand pays a compounding cost. A snapshot fails; a relationship is needed.',
     route: '#fork-day/sync',
     routeLabel: 'The daily sync',
@@ -322,8 +322,8 @@ const orientationMarkers = [
   },
   {
     time: 1245.6,
-    title: 'The skyscraper next door',
-    copy: 'The closing thought: branching as structural defense rather than collaboration, and engineers as ambassadors between systems.',
+    title: 'Closing: branches as a defence of ownership',
+    copy: 'The closing thought: the fork’s branches exist to defend an ownership line, not to collaborate, and the engineers are the people who move between the two systems.',
     route: '#not-true',
     routeLabel: 'Things that are not true',
   },
@@ -333,7 +333,7 @@ const briefMarkers = [
   {
     time: 0,
     title: 'The great codebase split',
-    copy: 'The community keeps the shared core; Microsoft owns the Azure-specific code. The chassis and the engine that drops into it.',
+    copy: 'The community keeps the shared core; Microsoft owns the Azure-specific code and the work of keeping it current.',
     route: '#start',
     routeLabel: 'Start here',
     note: 'The narration expands SPI as “software provider interfaces”. It is the service provider interface: the code boundary between shared logic and a provider.',
@@ -563,14 +563,14 @@ function withEnds(markers, duration) {
 export const episodes = [
   {
     id: 'orientation',
-    title: 'Microsoft’s architectural divorce from OSDU',
+    title: 'Why Azure OSDU needs service forks',
     short: 'The orientation',
     book: 'The frame · twenty-two minutes',
     file: 'audio/microsofts-architectural-divorce-from-osdu.m4a',
     duration: 1323,
     notebook: null,
     origin:
-      'Generated with NotebookLM from the introduction source, Azure SPI: An Introduction',
+      'Generated with NotebookLM from the introduction source, Azure SPI: An Introduction, under the title “Microsoft’s architectural divorce from OSDU”. The narration opens with a ninety-second analogy and uses a divorce metaphor the site does not; the marker notes carry the corrections',
     summary:
       'Why the Azure implementation is now Microsoft’s to own, what the service forks and the stack are for, and the six ideas that keep coming back. The argument behind the frame the six views assume.',
     markers: withEnds(orientationMarkers, 1323),
@@ -608,13 +608,14 @@ export const episodes = [
   },
   {
     id: 'branches',
-    title: 'Why Azure 3D-prints Git branches',
+    title: 'How the fork receives upstream changes',
     short: 'The fork, in depth',
     book: 'Views 04 and 05, then the seam',
     file: 'audio/why-azure-3d-prints-git-branches.m4a',
     duration: 4140,
     notebook: null,
-    origin: 'Generated with NotebookLM from the complete osdu-spi guide',
+    origin:
+      'Generated with NotebookLM from the complete osdu-spi guide, under the title “Why Azure 3D-prints Git branches”',
     summary:
       'The engineering system on its own: generated branches, labels as state, the meta commit, the Maven trap, the pull_request_target lesson, and the AI fallback that hid its own failure.',
     markers: withEnds(branchesMarkers, 4140),

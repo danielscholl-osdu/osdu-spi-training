@@ -37,6 +37,7 @@ export function posterInline(id) {
   if (!poster) return '';
   return `<figure class="field-guide is-compact is-poster" id="guide-${id}" data-guide="${id}">
     <figcaption><span class="guide-kicker">Poster</span><h3>${poster.title}</h3><p>${poster.summary}</p></figcaption>
+    ${poster.inline ? `<p class="poster-inline-note">${escapeHtml(poster.inline)}</p>` : ''}
     <a class="poster-inline" href="${routeHref('field-guides')}?guide=${id}"><img src="${poster.image}" width="${poster.width}" height="${poster.height}" alt="${escapeHtml(poster.title)}" loading="lazy" /><span>Read the poster with its notes →</span></a>
   </figure>`;
 }
@@ -55,7 +56,7 @@ function mythCard(myth, compact = false) {
   const source = sources[myth.source];
   return `<article class="myth" id="myth-${myth.id}">
     <p class="myth-claim">“${myth.claim}”</p>
-    <p class="myth-reality"><b>Not quite.</b> ${myth.reality}</p>
+    <p class="myth-reality">${myth.reality}</p>
     ${compact ? '' : `<code class="myth-check">${escapeHtml(myth.check)}</code>`}
     <p class="myth-links"><a href="${myth.route}">${myth.routeLabel} →</a><a href="${source.href}" target="_blank" rel="noopener noreferrer">${source.label} ↗</a></p>
   </article>`;
@@ -68,69 +69,55 @@ function pathCards() {
   return `<ol class="path-cards">${learn
     .map(
       ([key, chapter], index) =>
-        `<li class="path-book-${chapter.book.toLowerCase().replace(/\s+/g, '-')}"><a href="${routeHref(key)}"><span class="path-number">${String(index + 1).padStart(2, '0')}</span><small>${chapter.book}</small><b>${chapter.title}</b><em>${escapeHtml(chapter.question)}</em><p><span>You leave able to say</span>${escapeHtml(chapter.outcomes[0])}</p></a></li>`,
+        `<li class="path-book-${chapter.book.toLowerCase().replace(/\s+/g, '-')}"><a href="${routeHref(key)}"><span class="path-number">${String(index + 1).padStart(2, '0')}</span><small>${chapter.book}</small><b>${chapter.title}</b><em>${escapeHtml(chapter.question)}</em></a></li>`,
     )
     .join('')}</ol>`;
 }
 
-// The frame at three depths: a one-minute video, a two-minute audio brief,
-// and a link to the full conversation. The video plays in its own element
-// and pauses the audio dock; the brief plays through the dock like any cue.
+// The introduction at three depths: the two-minute brief as the page's cue,
+// a one-minute video in its own element, and a link to the full orientation.
+// The video pauses the audio dock and the dock pauses it.
 function frameSection() {
   const conversation = episodeById('orientation');
-  return `<section class="home-frame" aria-label="The frame, in three minutes">
+  return `<section class="home-frame" aria-label="The introduction, three minutes">
       <div class="home-frame-copy">
-        <span class="guide-kicker">Before the path</span>
+        <span class="guide-kicker">Optional · three minutes</span>
         <h2>Who maintains the Azure provider now, and where a change to it is proved.</h2>
-        <p>SPI is the Service Provider Interface, the seam in OSDU’s code between shared logic and a cloud implementation; the site also uses the name for the stack and the engineering system built around it. Three minutes gives you the frame the views assume: the community kept the shared code, the Azure provider lives in service forks that take upstream change daily, and a candidate image is proved by borrowing a slot in a real Azure stack.</p>
+        <p>SPI is the Service Provider Interface, the seam inside each OSDU service between shared code and a cloud implementation; the site also uses the name for the stack and for the engineering system built around it. Start with who maintains the Azure code and how a change to it is tested.</p>
         ${listenChips('start', {
-          kicker: 'Listen, two minutes',
-          lead: 'Plays while you read this page.',
+          kicker: 'Listen · two minutes',
+          lead: 'Plays while you read.',
         })}
-        <p class="home-frame-more"><a href="#listen?episode=${conversation.id}">${escapeHtml(conversation.short)} →</a><span>${escapeHtml(conversation.title)}, the full conversation, ${Math.round(conversation.duration / 60)} minutes: the argument behind the frame, cued from the views as you go.</span></p>
+        <p class="home-frame-more"><a href="#listen?episode=${conversation.id}">${escapeHtml(conversation.short)} →</a><span>${escapeHtml(conversation.title)}: the full conversation, ${Math.round(conversation.duration / 60)} minutes, cued from the views as you go.</span></p>
       </div>
       <figure class="home-frame-video">
         <video controls preload="metadata" playsinline poster="${frameVideo.poster}" width="${frameVideo.width}" height="${frameVideo.height}" aria-label="${escapeHtml(frameVideo.title)}" data-frame-video>
           <source src="${frameVideo.file}" type="video/mp4" />
           <track kind="captions" src="${frameVideo.captions}" srclang="en" label="English" default />
         </video>
-        <figcaption><span class="guide-kicker">Watch, one minute</span><b>${escapeHtml(frameVideo.title)}</b><p>${escapeHtml(frameVideo.summary)}</p><details class="frame-notes"><summary>Source checks (${frameVideo.notes.length})</summary><ul>${frameVideo.notes.map((note) => `<li>${escapeHtml(note)}</li>`).join('')}</ul></details></figcaption>
+        <figcaption><span class="guide-kicker">Watch · one minute</span><b>${escapeHtml(frameVideo.title)}</b><p>${escapeHtml(frameVideo.summary)}</p><details class="frame-notes"><summary>Source checks (${frameVideo.notes.length})</summary><ul>${frameVideo.notes.map((note) => `<li>${escapeHtml(note)}</li>`).join('')}</ul></details></figcaption>
       </figure>
     </section>`;
 }
 
 function homePage() {
-  const learnCount = Object.values(chapters).filter(
-    (chapter) => chapter.group === 'learn',
-  ).length;
-  const words = [
-    '',
-    'One',
-    'Two',
-    'Three',
-    'Four',
-    'Five',
-    'Six',
-    'Seven',
-    'Eight',
-  ];
   return `<section class="home-start" aria-label="Where to begin">
-      <div class="home-start-copy"><span class="guide-kicker">Where to begin</span><h2>Follow one OSDU request down to its Azure provider. Then follow a fix to that provider back into a running stack.</h2><p>Six views, each answering one question, each ending with what you can now say, then the assumptions that cost an afternoon. The running example starts real, a partition lookup and the cache fallback that keeps it answering, and turns illustrative at 04.</p></div>
+      <div class="home-start-copy"><span class="guide-kicker">Start</span><p>Six views in order, then the assumptions that cost an afternoon. The running example is a partition lookup for opendes and the cache fallback that keeps it answering; it starts real and turns illustrative at 04.</p></div>
       <div class="home-start-actions"><a class="home-cta" href="${routeHref('running-stack')}">Start with 01 · What is a stack? →</a><a class="home-cta-alt" href="${routeHref('running-stack', 'request')}">Or trace one API request through it first</a></div>
     </section>
-    ${frameSection()}
     <section class="home-path" aria-label="The learning path">
-      <div class="section-heading"><span class="guide-kicker">The path</span><h2>Six views, in order, then the checks</h2><p>Each of the six builds on the one before; 07 collects the assumptions the documentation contradicts. Take them in order the first time; after that, any of them stands alone.</p></div>
+      <div class="section-heading"><span class="guide-kicker">The path</span><h2>Six views, in order, then the checks</h2><p>Each view builds on the one before; 07 collects the assumptions the documentation contradicts. Take them in order the first time. After that, any of them stands alone.</p></div>
       ${pathCards()}
     </section>
+    ${frameSection()}
     <section class="home-loop" id="guide-round-trip" aria-label="The round trip">
-      <div class="section-heading"><span class="guide-kicker">The shape of the site</span><h2>Down the stack, out to the fork, back in through the lock</h2><p>The stack is a place: a resource group with a cluster and data services in it. The fork is a schedule: branches that are regenerated, integrated, and released. They touch at one object, the image lock, and that is where the running example crosses from one to the other.</p></div>
+      <div class="section-heading"><span class="guide-kicker">The shape of the site</span><h2>Down the stack, out to the fork, back in through the lock</h2><p>The stack is a resource group with a cluster and data services in it. The fork is a repository whose branches are regenerated, integrated, and released by scheduled workflows. They meet at one object, the image lock, and that is where the running example crosses from one to the other.</p></div>
       ${roundTripFigure()}
     </section>
     <section class="home-doors" aria-label="Two reasons to be here">
-      <div class="section-heading"><span class="guide-kicker">Two reasons to be here</span><h2>The stack stands alone. The engineering system does not.</h2></div>
+      <div class="section-heading"><span class="guide-kicker">Two reasons to be here</span><h2>You can run the stack without maintaining a fork.</h2></div>
       <div class="doors">
-        <a class="door" href="${routeHref('running-stack')}"><span class="door-kicker">Just bring up OSDU on Azure</span><b>Views 01 and 02 are enough.</b><p>spi up builds the environment and records every service image in the image lock. Every canonical image comes from the community registry today; per-service promotion to a fork (osdu-spi-stack ADR-033) is designed, not built. You never touch a fork.</p><span class="way-cta">Start at 01 →</span></a>
+        <a class="door" href="${routeHref('running-stack')}"><span class="door-kicker">Just bring up OSDU on Azure</span><b>Views 01 and 02 cover it.</b><p>spi up builds the environment and records every service image in the image lock. Every canonical image comes from the community registry today; per-service promotion to a fork (osdu-spi-stack ADR-033) is designed, not built. You never touch a fork.</p><span class="way-cta">Start at 01 →</span></a>
         <a class="door door-fork" href="${routeHref('spi-boundary')}"><span class="door-kicker">Maintain or mirror a service fork</span><b>Views 03 to 06, and you will need a stack.</b><p>The fork owns the Azure provider and the workflows around it. To prove a change it borrows a slot in a running stack, so the stack comes first even when the fork is your job.</p><span class="way-cta">Start at 03 →</span></a>
       </div>
     </section>
@@ -144,14 +131,14 @@ function homePage() {
       ${ownerLegend()}
     </section>
     <section class="home-ways" aria-label="Alongside the path">
-      <a class="way way-listen" href="${routeHref('listen')}"><span class="way-icon" aria-hidden="true">▶</span><b>Listen</b><p>Four generated recordings, from a two-minute brief to hour-long deep dives, that keep playing while you explore. Every marker opens the matching view, and the map views carry short cues into them.</p><span class="way-cta">Open the player →</span></a>
-      <a class="way way-read" href="${routeHref('field-guides')}"><span class="way-icon" aria-hidden="true">≋</span><b>Field guides</b><p>The infographics from the views, together with the supplied posters, on one page you can print.</p><span class="way-cta">See the field guides →</span></a>
+      <a class="way way-listen" href="${routeHref('listen')}"><span class="way-icon" aria-hidden="true">▶</span><b>Listen</b><p>Four generated recordings, from a two-minute brief to hour-long discussions. Playback continues while you explore, every marker opens the matching view, and the map views carry short cues.</p><span class="way-cta">Open the player →</span></a>
+      <a class="way way-read" href="${routeHref('field-guides')}"><span class="way-icon" aria-hidden="true">≋</span><b>Field guides</b><p>The infographics from the views and the supplied posters, indexed by what you are trying to do, on one page you can print.</p><span class="way-cta">See the field guides →</span></a>
     </section>
-    <section class="home-sources" aria-label="Documentation sets">
-      <div class="section-heading"><span class="guide-kicker">Documentation</span><h2>Where the depth lives</h2><p>Three repositories. The stack and the engineering system are two of the three meanings; the interface lives inside each service fork, and the partition fork is the reference.</p></div>
+    <section class="home-sources" aria-label="Source documentation">
+      <div class="section-heading"><span class="guide-kicker">Documentation</span><h2>Source documentation</h2><p>Three repositories. The stack and the engineering system are two of the three meanings of SPI; the interface lives inside each service fork, and the partition fork is the reference.</p></div>
       <div class="source-cards">
         <a href="${sources.architecture.href}" target="_blank" rel="noopener noreferrer"><b>osdu-spi-stack</b><p>Azure infrastructure, workload configuration, the spi CLI. Nine design guides and a register of decision records.</p><span>Architecture ↗</span></a>
-        <a href="${sources.ownership.href}" target="_blank" rel="noopener noreferrer"><b>osdu-spi-partition</b><p>The reference service fork: shared code, the Azure provider behind the interface, and the acceptance descriptor.</p><span>Why Azure source belongs to the fork ↗</span></a>
+        <a href="${sources.partitionRepo.href}" target="_blank" rel="noopener noreferrer"><b>osdu-spi-partition</b><p>The reference service fork: shared code regenerated from upstream, the Azure provider behind the interface, and the acceptance descriptor it has not written yet.</p><span>Repository ↗</span></a>
         <a href="${sources.engineering.href}" target="_blank" rel="noopener noreferrer"><b>osdu-spi</b><p>The engineering system behind every service fork: sync, cascade, build, validation, and fork tiers.</p><span>Architecture overview ↗</span></a>
       </div>
     </section>`;
@@ -179,7 +166,13 @@ export function chapterOutcomes(key) {
   return `<section class="outcomes" aria-label="What you can now say">
     <div class="outcomes-head"><span class="guide-kicker">Carry forward</span><h2>What you can now say</h2></div>
     <ol>${chapter.outcomes.map((line) => `<li>${escapeHtml(line)}</li>`).join('')}</ol>
-    ${next ? `<p class="outcomes-next"><b>Next, ${chapters[next].title}</b> asks: ${escapeHtml(chapters[next].question)} <span>${escapeHtml(chapters[next].builds)}</span></p>` : ''}
+    ${
+      key === 'handshake'
+        ? `<div class="outcomes-close"><p><b>That is the round trip.</b> A request went down to its Azure provider, a change to that provider went out through the fork, and a candidate image came back in through the lock. From here, choose:</p><ul><li><a href="${routeHref('not-true')}">07 · ${chapters['not-true'].title} →</a><span>The assumptions the documentation contradicts, with a command for each.</span></li><li><a href="${routeHref('listen')}">Listen →</a><span>The recordings, cued from the views you have seen.</span></li><li><a href="${routeHref('field-guides')}">Field guides →</a><span>The diagrams from the views on one printable page.</span></li></ul></div>`
+        : next
+          ? `<p class="outcomes-next"><b>Next, ${chapters[next].title}</b> asks: ${escapeHtml(chapters[next].question)} <span>${escapeHtml(chapters[next].builds)}</span></p>`
+          : ''
+    }
   </section>`;
 }
 
@@ -222,7 +215,7 @@ export function mythCallout(id, chapterKey) {
   return `<aside class="easy-mistake" aria-label="Easy mistake">
     <div class="easy-mistake-head"><span class="guide-kicker">Easy mistake</span><a href="${routeHref('not-true')}">All ${myths.length}, by theme →</a></div>
     <p class="myth-claim">“${myth.claim}”</p>
-    <p class="myth-reality"><b>Not quite.</b> ${myth.reality}</p>
+    <p class="myth-reality">${myth.reality}</p>
     <code class="myth-check">${escapeHtml(myth.check)}</code>
     <p class="myth-links"><a href="${myth.route}" ${sameView ? 'data-map-jump' : ''}>${sameView ? 'Show it on the map ↑' : `${myth.routeLabel} →`}</a><a href="${source.href}" target="_blank" rel="noopener noreferrer">${source.label} ↗</a></p>
   </aside>`;
@@ -300,9 +293,67 @@ export function listenChips(
   return `<div class="listen-chips" aria-label="${escapeHtml(kicker)}"><span class="guide-kicker">${escapeHtml(kicker)}</span>${lead ? `<p class="listen-lead">${lead}</p>` : ''}<div class="listen-chip-row">${chips}<a class="small-link" href="#listen">All episodes →</a></div><p class="listen-now" data-listen-now aria-live="polite" hidden></p></div>`;
 }
 
+// A short index by what the reader is trying to do. Native guides come first
+// on the page; the supplied posters follow as references.
+const guideIndex = [
+  {
+    need: 'Bring up a stack',
+    ids: [
+      'owners',
+      'timeline',
+      'milestones',
+      'inside-the-cluster',
+      'profiles',
+      'credentials',
+    ],
+  },
+  {
+    need: 'Identity and one request',
+    ids: ['identity', 'familiar', 'one-request', 'backing-environment'],
+  },
+  {
+    need: 'Provider code and the fork',
+    ids: [
+      'contribution-chain',
+      'clocks',
+      'labels',
+      'permanent-fork',
+      'continuous-forking',
+    ],
+  },
+  {
+    need: 'Prove a change in a stack',
+    ids: ['borrow-prove-restore', 'blueprint'],
+  },
+];
+
+function guideIndexNav() {
+  const byId = (id) =>
+    nativeGuides.find((guide) => guide.id === id) ||
+    suppliedPosters.find((poster) => poster.id === id);
+  return `<nav class="guide-index" aria-label="Field guides by need">${guideIndex
+    .map(
+      (group) =>
+        `<div><b>${group.need}</b><ul>${group.ids
+          .map((id) => {
+            const entry = byId(id);
+            const poster = suppliedPosters.some((item) => item.id === id);
+            return `<li><a href="${routeHref('field-guides')}?guide=${id}">${escapeHtml(entry.title)}</a>${poster ? '<small>poster</small>' : ''}</li>`;
+          })
+          .join('')}</ul></div>`,
+    )
+    .join('')}</nav>`;
+}
+
 function guidesPage() {
-  return `<section class="poster-set" aria-label="Supplied posters">
-      <div class="section-heading"><span class="guide-kicker">Posters</span><h2>${suppliedPosters.length} posters, one idea each</h2><p>Four supplied with the training material, two adopted from the source repositories, three built for this site. Open one at full size, or follow its links into the map. Each caption records where the poster and the documentation differ.</p></div>
+  return `${guideIndexNav()}
+    <section class="guide-set" aria-label="Field guides built for this site">
+      <div class="section-heading"><span class="guide-kicker">Built for this site</span><h2>${nativeGuides.length} field guides</h2><p>One idea each, built in HTML from the source documentation. Each also appears beside the view it explains. Print this page for the full set.</p></div>
+      ${ownerLegend()}
+      ${nativeGuides.map((guide) => guideFigure(guide.id)).join('')}
+    </section>
+    <section class="poster-set" aria-label="Supplied posters">
+      <div class="section-heading"><span class="guide-kicker">Supplied references</span><h2>${suppliedPosters.length} posters</h2><p>Four supplied with the training material, two adopted from the source repositories, three built for this site. They are kept as given, including generated labels and misspellings. Each caption records where the poster and the documentation differ; the field guides above are the corrected version.</p></div>
       ${suppliedPosters
         .map(
           (poster) => `<article class="poster" id="guide-${poster.id}">
@@ -321,11 +372,6 @@ function guidesPage() {
           </article>`,
         )
         .join('')}
-    </section>
-    <section class="guide-set" aria-label="Field guides built for this site">
-      <div class="section-heading"><span class="guide-kicker">Built for this site</span><h2>${nativeGuides.length} field guides</h2><p>Smaller, one idea each, built in HTML. Each also appears beside the view it explains. Print this page for the full set.</p></div>
-      ${ownerLegend()}
-      ${nativeGuides.map((guide) => guideFigure(guide.id)).join('')}
     </section>`;
 }
 

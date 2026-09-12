@@ -161,8 +161,8 @@ export const componentDetails = {
   },
   'shared-data': {
     label: 'Shared by the environment',
-    title: 'Entitlements uses the shared Gremlin backend.',
-    body: 'The entitlements graph lives in Cosmos DB Gremlin, shared by the environment. Common Storage is shared too, and its tables are where the partition service keeps each partition’s stored configuration: the workload identity’s table role is granted on common Storage only. Partition-specific Azure resources do not imply isolation between service identities: OSDU workloads share one managed identity.',
+    title: 'The partition table lives in common Storage.',
+    body: 'The partition service keeps each partition’s stored configuration in tables in common Storage, a Storage account shared by the whole environment; the workload identity’s table role is granted there and nowhere else. The entitlements graph is shared the same way, in Cosmos DB Gremlin. Partition-specific Azure resources do not imply isolation between service identities: OSDU workloads share one managed identity.',
     artifact: {
       label: 'Partition layout',
       code: 'opendes: SQL + Storage + Service Bus\nenvironment: Gremlin + common Storage',
@@ -270,14 +270,14 @@ export const componentDetails = {
     source: 'ownership',
   },
   azureimpl: {
-    label: 'Fork-owned source',
-    title: 'Azure source is seeded once and maintained in the fork.',
-    body: 'ADR-038 responds to upstream’s plan to remove its Azure implementations. provider/<svc>-azure and testing/<svc>-test-azure remain on fork_integration and main, outside the generated upstream tree. Late upstream Azure fixes need an explicit port.',
+    label: 'The Azure implementation',
+    title: 'The provider checks its cache, then reads Table Storage.',
+    body: 'PartitionServiceImpl.getPartition asks the cache for opendes. When the cache misses, or when the read throws, it reads the stored configuration from the partition table in common Storage; a cache failure is logged as a warning and the lookup still answers. The code lives in provider/partition-azure, which the fork owns: it stays on fork_integration and main, outside the tree regenerated from upstream (osdu-spi ADR-038), so upstream’s planned removal of its Azure implementations deletes nothing here.',
     artifact: {
-      label: 'Reference fork-owned paths',
-      code: 'provider/partition-azure/\ntesting/partition-test-azure/',
+      label: 'The fallback, with its tests',
+      code: 'PartitionServiceImpl.getPartition(id)\n  safeGet(cache, id)  → null on miss or exception (logged)\n  tableStore.getPartition(id)  when null\nPartitionServiceImplCacheTest.java',
     },
-    source: 'ownership',
+    source: 'partitionProvider',
   },
   azureclients: {
     label: 'Inside the provider',
@@ -288,7 +288,7 @@ export const componentDetails = {
       label: 'The fallback, in the provider',
       code: 'safeGet(cache, id)      // exception → null, logged\nif (pi == null) pi = tableStore.getPartition(id)',
     },
-    source: 'ownership',
+    source: 'partitionProvider',
   },
   upstream: {
     label: 'Upstream tip',
@@ -419,7 +419,7 @@ export const componentDetails = {
   'descriptor-file': {
     label: 'The descriptor',
     title: 'The one engineering file the template does not write.',
-    body: '.spi/service.yaml declares the acceptance suites the stack should run against this service and what each needs. It is excluded from template sync by name: the service repository writes it, and changes to it are reviewed with the code. Two authors, one column: the workflows above arrive from osdu-spi; this file is authored here. osdu-spi-partition has not written its descriptor yet; once it adopts the newer validation workflow, Deploy Gate will report not onboarded first, and then skip until the file exists, with the reason no .spi/service.yaml declares the suites.',
+    body: '.spi/service.yaml declares the acceptance suites the stack should run against this service and what each needs. It is excluded from template sync by name: the service repository writes it, and changes to it are reviewed with the code. Two authors, one column: the workflows above arrive from osdu-spi; this file is authored here. osdu-spi-partition has not written its descriptor yet. After onboarding, Deploy Gate skips the run while .spi/service.yaml is missing, with the reason no .spi/service.yaml declares the suites.',
     artifact: {
       label: 'Service-owned, never synced',
       code: '.spi/service.yaml    schemaVersion: 3, written in this repository\nsync-config.json     "exclusions": [".spi", "CODEOWNERS", …]',

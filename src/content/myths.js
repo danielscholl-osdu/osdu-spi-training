@@ -50,7 +50,8 @@ export const myths = [
     claim: 'Profiles save money.',
     reality:
       'bare, minimal, and core select Kubernetes workloads. All three provision the full Azure estate, including the cluster and every PaaS service. A bare deployment simply has nothing running on top.',
-    check: 'spi up --env dev1 --profile minimal   # same Azure estate',
+    check:
+      'az resource list -g spi-stack-dev1 --query "length(@)"   # same count under any profile',
     source: 'architecture',
     route: '#field-guides?guide=profiles',
     routeLabel: 'Three profiles, one estate',
@@ -107,7 +108,8 @@ export const myths = [
     claim: 'The smoke test passed, so the API works.',
     reality:
       'The scheduled smoke test defaults to the bare profile, which deploys no OSDU services at all. It proves infrastructure and GitOps readiness. Even a non-bare run proves the network and TLS path, not authenticated API behavior.',
-    check: 'gh workflow run smoke.yml --ref main -f profile=core',
+    check:
+      'gh run list --workflow smoke.yml --limit 5   # then open one: the profile input is bare unless set',
     source: 'smoke',
     route: '#bring-up/inspect?detail=caller',
     routeLabel: 'Make an authenticated call',
@@ -225,7 +227,7 @@ export const myths = [
     reality:
       'The deploy lane can skip with a visible reason and the summary still passes: the repository is not onboarded, there is no .spi/service.yaml, no image was pushed, or the run came from another repository. Deploy Gate reports which. Green is not evidence that the environment was borrowed.',
     check:
-      'gh run view --job "Deploy Gate" --log | grep "Deploy and Test skipped"',
+      'gh run view <run-id> -R Azure/osdu-spi-partition --json jobs --jq \'.jobs[] | select(.name=="Deploy Gate") | .databaseId\'\ngh run view --job <job-id> -R Azure/osdu-spi-partition --log | grep "Deploy and Test skipped"',
     source: 'validation',
     route: '#handshake?detail=gate',
     routeLabel: 'The gate on the map',
@@ -235,7 +237,7 @@ export const myths = [
     theme: 'seam',
     claim: 'The restore step puts the previous image back.',
     reality:
-      'Only while this run still owns the pin. spi service reset --if-run compares the run id in the lock annotation with its own; a newer run’s pin is left alone and the reset exits 2, which the lane treats as success. A cancelled run or a lost runner can strand a pin until the stale sweep finds it.',
+      'Only while this run still owns the pin. spi service reset --if-run compares the run id in the lock annotation with its own; a newer run’s pin is left alone and the reset exits 2, which the lane treats as success. A cancelled run or a lost runner strands the pin. An operator clears it with spi service reset --ephemeral --stale-only; the scheduled sweep that would run that command is designed, not yet wired.',
     check:
       'kubectl -n osdu-flux get configmap osdu-image-lock -o jsonpath="{.metadata.annotations.spi-stack\\.osdu\\.dev/pins}"',
     source: 'ephemeralPins',

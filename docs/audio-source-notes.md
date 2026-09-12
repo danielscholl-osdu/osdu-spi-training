@@ -8,12 +8,12 @@ All four are NotebookLM recordings, three discussions and one two-minute brief. 
 
 | Order | Episode id    | Title                                         | Source                                             | Length | Markers |
 | ----- | ------------- | --------------------------------------------- | -------------------------------------------------- | ------ | ------- |
-| 1     | `orientation` | Microsoft’s architectural divorce from OSDU   | introduction source (`azure-spi-introduction.pdf`) | 22:03  | 22      |
+| 1     | `orientation` | Why Azure OSDU needs service forks            | introduction source (`azure-spi-introduction.pdf`) | 22:03  | 22      |
 | 1a    | `brief`       | Rebuilding OSDU for real Azure infrastructure | introduction source, audio brief                   | 1:52   | 3       |
 | 2     | `stack`       | Engineering the OSDU SPI Stack on Azure       | SPI Stack guide                                    | 58:36  | 22      |
-| 3     | `branches`    | Why Azure 3D-prints Git branches              | complete osdu-spi guide                            | 69:00  | 27      |
+| 3     | `branches`    | How the fork receives upstream changes        | complete osdu-spi guide                            | 69:00  | 27      |
 
-The order is the site’s, not the recording order. The orientation is 22 minutes and argues why Azure SPI exists: the provider model, the three costs of one shared repository, ADR 61 and the Venus, CIMPL, and Mercury split, what Microsoft is left holding, the service fork as a relationship, generate not merge, real Azure not emulators, borrow-prove-restore, and the six ideas. It is the default episode and the first tab, and the learn views cue into it. The brief is the same frame in under two minutes and is the start page’s cue. A one-minute video overview from the same source, `public/video/how-microsoft-engineers-azure-osdu.mp4`, plays on the start page in its own element with captions from its transcript; it has no markers, pauses the audio dock when it plays, and its two source checks are listed under it. The stack episode and the fork episode are the deep dives their books cue into.
+Titles are the site’s, chosen to say what a recording covers; the generated titles (“Microsoft’s architectural divorce from OSDU”, “Why Azure 3D-prints Git branches”) are kept in each episode’s `origin` line and in the file names. The order is the site’s, not the recording order. The orientation is 22 minutes and argues why Azure SPI exists: the provider model, the three costs of one shared repository, ADR 61 and the Venus, CIMPL, and Mercury split, what Microsoft is left holding, the service fork as a relationship, generate not merge, real Azure not emulators, borrow-prove-restore, and the six ideas. It is the default episode and the first tab, and the learn views cue into it. The brief is the same frame in under two minutes and is the start page’s cue. A one-minute video overview from the same source, `public/video/how-microsoft-engineers-azure-osdu.mp4`, plays on the start page in its own element with captions from its transcript; it has no markers, pauses the audio dock when it plays, and its two source checks are listed under it. The stack episode and the fork episode are the deep dives their books cue into.
 
 The orientation, brief, and video were generated from `docs/azure-spi-introduction-source.md` (rendered as `azure-spi-introduction.pdf`), with the instructions in `docs/azure-spi-introduction-generation-brief.md`. That source replaced `docs/azure-spi-orientation-source.md`, whose recording, “The mechanics of Azure SPI engineering”, reproduced the mechanisms of the two deep dives at lower fidelity rather than framing them; that recording, its predecessor “The Azure SPI OSDU machinery”, and the first 56-minute round trip are all in history if a marker is ever wanted back. Transcripts have misheard names corrected (osdu-spi, osdu-spi-stack, CIMPL, partition-aws, Cosmos DB); the speech is otherwise as recognized. The orientation opens with a ninety-second analogy and closes with a speculative question, both left in; the markers say where the argument starts.
 
@@ -51,7 +51,7 @@ Rules for markers:
 | 55:20 | Trusting a repository, not its pull requests | `#handshake?detail=trust`                     |                                                                                  |
 | 56:46 | What the design is really about              | `#not-true`                                   |                                                                                  |
 
-### `orientation` · Microsoft’s architectural divorce from OSDU
+### `orientation` · Why Azure OSDU needs service forks
 
 | Time  | Narration beat                                    | Site destination                           | Source check                                                                                                                                                                                             |
 | ----- | ------------------------------------------------- | ------------------------------------------ | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
@@ -76,9 +76,11 @@ Rules for markers:
 | 17:54 | Evidence has a scope                              | `#handshake?detail=gate`                   |                                                                                                                                                                                                          |
 | 18:34 | Halt on the unknown                               | `#fork-shape?detail=filter`                |                                                                                                                                                                                                          |
 | 19:37 | A day in the fork, and who is on the hook         | `#fork-day`                                |                                                                                                                                                                                                          |
-| 20:45 | The skyscraper next door                          | `#not-true`                                |                                                                                                                                                                                                          |
+| 20:45 | Closing: branches as a defence of ownership       | `#not-true`                                |                                                                                                                                                                                                          |
 
 ### `brief` · Rebuilding OSDU for real Azure infrastructure
+
+The brief is due for re-recording from [an approved script](azure-spi-brief-script.md): it expands SPI wrongly, and the marker note is the only correction a listener gets. Until then the start page expands SPI in text before the cue plays.
 
 | Time | Narration beat                                         | Site destination                   | Source check                                                                             |
 | ---- | ------------------------------------------------------ | ---------------------------------- | ---------------------------------------------------------------------------------------- |
@@ -90,7 +92,7 @@ Rules for markers:
 
 One minute, portrait, drawn cards on paper. Its transcript is `docs/reference/how-microsoft-engineers-azure-osdu.vtt`, served as captions from `public/video/`. Two source checks sit under it on the start page: “proprietary” Azure logic (the forks are public, Apache 2.0) and “restores the environment completely” (restore is conditional on owning the pin).
 
-### `branches` · Why Azure 3D-prints Git branches
+### `branches` · How the fork receives upstream changes
 
 | Time  | Narration beat                                  | Site destination                       | Source check                                                                                                                    |
 | ----- | ----------------------------------------------- | -------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------- |

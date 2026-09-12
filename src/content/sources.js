@@ -41,6 +41,18 @@ export const sources = {
     path: 'docs/design/fork-deployment.md',
     href: 'https://github.com/Azure/osdu-spi-stack/blob/main/docs/design/fork-deployment.md',
   },
+  partitionRepo: {
+    label: 'osdu-spi-partition on GitHub',
+    repo: 'osdu-spi-partition',
+    path: 'README.md',
+    href: 'https://github.com/Azure/osdu-spi-partition',
+  },
+  partitionProvider: {
+    label: 'PartitionServiceImpl, the Azure provider',
+    repo: 'osdu-spi-partition',
+    path: 'provider/partition-azure/src/main/java/org/opengroup/osdu/partition/provider/azure/service/PartitionServiceImpl.java',
+    href: 'https://github.com/Azure/osdu-spi-partition/blob/main/provider/partition-azure/src/main/java/org/opengroup/osdu/partition/provider/azure/service/PartitionServiceImpl.java',
+  },
   ownership: {
     label: 'Why Azure source belongs to the fork',
     repo: 'osdu-spi',
