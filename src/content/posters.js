@@ -73,7 +73,7 @@ export const suppliedPosters = [
       'A permanent fork is a relationship, not a snapshot: Azure owns its subtrees and regenerates the shared code daily.',
       'Generate, do not merge: fork_upstream is computed from the upstream tip by the filter, so modify/delete conflicts never occur.',
       'The labels on the tracking issue are the state machine and the audit trail for a process that spans days.',
-      'The stack keeps no critical state in the cluster; managed Azure services hold it, with local authentication disabled.',
+      'Records, blobs, events, secrets, and the entitlements graph live in managed Azure services with local authentication disabled; Elasticsearch, Redis, and Airflow’s PostgreSQL stay in the cluster, each for a reason ADR-003 records.',
     ],
     notes: [
       'The filter table’s “Injected / Protected” row mixes two things: the Azure provider source is protected from generation, while the pom profile that points at it is injected. The engineering workflows are delivered by template sync, not by the filter.',

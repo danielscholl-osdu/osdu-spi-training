@@ -335,7 +335,7 @@ const seamStates = [
 function seamDiagram() {
   return `<div class="zoom-crumb" aria-label="Where this sits"><a href="#fork-day/prove">A candidate digest</a><span>›</span><b>the handshake</b><span>›</span><a href="#running-stack">a running stack</a></div>
   <div class="seam-map">
-    <section class="seam-inputs"><span class="group-label"><span class="lane-number">A</span>What the fork brings</span><div class="seam-pair">${node('image', 'Candidate B, by digest', 'ghcr.io/azure/partition@sha256:…')}${node('descriptor', '.spi/service.yaml', 'Which suites, and what each needs', 'fork-code')}</div></section>
+    <section class="seam-inputs"><span class="group-label"><span class="lane-number">1</span>What the fork brings</span><div class="seam-pair">${node('image', 'Candidate B, by digest', 'ghcr.io/azure/partition@sha256:…')}${node('descriptor', '.spi/service.yaml', 'Which suites, and what each needs', 'fork-code')}</div></section>
     <section class="seam-state-panel" aria-label="The lock and the pod, step by step"><span class="group-label">The lock and the pod, as the run goes</span>
       ${seamStates
         .map(
@@ -347,7 +347,7 @@ function seamDiagram() {
         .join('')}
       <p class="state-note">A and B stand for two digests. Select a step in B, or the lock in C, to move the state. Illustrative run ids.</p>
     </section>
-    <section class="seam-run"><span class="group-label"><span class="lane-number">B</span>The run, in order · validate.yml</span>
+    <section class="seam-run"><span class="group-label"><span class="lane-number">2</span>The run, in order · validate.yml</span>
       ${node('gate', 'Deploy Gate', 'No credentials · may this run borrow?')}
       <div class="spi-step" aria-hidden="true">↓ then, as the deploy identity</div>
       ${node('facts', 'Read the facts', 'spi status --json · spi info --json')}
@@ -359,7 +359,7 @@ function seamDiagram() {
       ${node('restore', 'Restore', 'spi service reset --if-run · A comes back')}
       ${node('lock-taken', 'What if another run owns the pin?', 'Optional · reset exits 2, writes nothing', 'artifact')}
     </section>
-    <section class="seam-stack"><span class="group-label"><span class="lane-number">C</span>In dev1 · stack objects</span>
+    <section class="seam-stack"><span class="group-label"><span class="lane-number">3</span>In dev1 · stack objects</span>
       ${node('trust', 'The deploy identity', 'Federated to this repository · two Roles')}
       ${node('delivery', 'osdu-image-lock', 'The one object the run writes: a pin it owns', 'spi-seam', 'The seam')}
       ${node('running', 'The partition pod', 'Flux reconciles the lock; the pod follows', 'shared-code')}

@@ -262,7 +262,7 @@ export const componentDetails = {
   core: {
     label: 'Shared OSDU code',
     title: 'The common module handles the request; it never names Azure.',
-    body: 'partition-core receives the lookup, checks the caller through the shared entitlements client, validates the partition id, and calls getPartition on the provider interface. Nothing in this module knows which cloud answers. That is what lets upstream own it: the fork takes this code as published, every day, and view 04 shows how.',
+    body: 'partition-core receives the lookup, admits the caller through an authorization filter that delegates to the provider (the Azure implementation checks for an app-only caller; this path is not an entitlements lookup), validates the partition id, and calls getPartition on the provider interface. Nothing in this module knows which cloud answers. That is what lets upstream own it: the fork takes this code as published, every day, and view 04 shows how.',
     artifact: {
       label: 'The call that crosses the seam',
       code: 'IPartitionService.getPartition(partitionId)\n// implemented by provider/partition-azure',

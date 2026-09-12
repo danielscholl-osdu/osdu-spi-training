@@ -148,7 +148,7 @@ function homePage() {
       <a class="way way-read" href="${routeHref('field-guides')}"><span class="way-icon" aria-hidden="true">≋</span><b>Field guides</b><p>The infographics from the views, together with the supplied posters, on one page you can print.</p><span class="way-cta">See the field guides →</span></a>
     </section>
     <section class="home-sources" aria-label="Documentation sets">
-      <div class="section-heading"><span class="guide-kicker">Documentation</span><h2>Where the depth lives</h2><p>Three repositories, matching the three meanings above.</p></div>
+      <div class="section-heading"><span class="guide-kicker">Documentation</span><h2>Where the depth lives</h2><p>Three repositories. The stack and the engineering system are two of the three meanings; the interface lives inside each service fork, and the partition fork is the reference.</p></div>
       <div class="source-cards">
         <a href="${sources.architecture.href}" target="_blank" rel="noopener noreferrer"><b>osdu-spi-stack</b><p>Azure infrastructure, workload configuration, the spi CLI. Nine design guides and a register of decision records.</p><span>Architecture ↗</span></a>
         <a href="${sources.ownership.href}" target="_blank" rel="noopener noreferrer"><b>osdu-spi-partition</b><p>The reference service fork: shared code, the Azure provider behind the interface, and the acceptance descriptor.</p><span>Why Azure source belongs to the fork ↗</span></a>

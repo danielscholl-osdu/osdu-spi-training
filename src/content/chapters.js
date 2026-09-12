@@ -413,7 +413,7 @@ export const chapters = {
     book: 'The seam',
     title: 'The handshake',
     subtitle: 'Borrow, prove, restore',
-    headline: 'A lock write<span>is the whole deploy.</span>',
+    headline: 'Write the lock.<span>Flux rolls out the image.</span>',
     intro:
       'The fork has a candidate digest and the stack has a running environment. One credentialed run reads what the environment publishes, pins the digest into the image lock as a pin it owns, checks the pod is running it, runs the suites the descriptor declares, and gives the slot back. Watch the lock and the pod change as you step through. The run is illustrative: it uses the lane the newer template ships, which the reference partition fork has not adopted yet.',
     premise:
@@ -466,7 +466,7 @@ export const chapters = {
       note: 'Every hop leaves something you can inspect: a gate notice, a lock annotation, a pod imageID, a Surefire report, a reset exit code. The fallback itself was proved by unit tests in the build; the suites here prove the API on the pinned pod.',
     },
     outcomes: [
-      'The lock write is the whole deploy: Flux reconciles osdu-image-lock and the pod restarts on the pinned digest. Between runs the lock holds the canonical image.',
+      'Writing the lock starts the deploy: Flux reconciles osdu-image-lock and the pod restarts on the pinned digest, and the run checks the pod before trusting any test result. Between runs the lock holds the canonical image.',
       'The run only restores what it still owns, so a green restore is a claim about this run, not about the environment.',
       'The stack publishes facts and the fork declares needs in its descriptor. Five repository settings are all that connect them.',
     ],
