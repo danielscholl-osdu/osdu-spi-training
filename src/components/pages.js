@@ -79,7 +79,7 @@ function homePage() {
       <div class="section-heading"><span class="guide-kicker">First, the word</span><h2>SPI means three things here</h2><p>They are related, and the site says which one it means. Each has its own repository and its own view.</p></div>
       ${spiNamesFigure()}
     </section>
-    <section class="home-zoom" aria-label="From the subscription to the source">
+    <section class="home-zoom" id="guide-ladder" aria-label="From the subscription to the source">
       <div class="section-heading"><span class="guide-kicker">The mental map</span><h2>Six places, from the outside in</h2><p>Everything in this site sits at one of these levels. The views zoom in from the resource group to the code, and every view shows where it sits on this ladder.</p></div>
       ${zoomLadder()}
       ${ownerLegend()}
