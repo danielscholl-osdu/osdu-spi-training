@@ -62,7 +62,8 @@ function verifyRoute(href, context) {
   }
   if (route.guide)
     assert.ok(
-      nativeGuides.some((guide) => guide.id === route.guide),
+      nativeGuides.some((guide) => guide.id === route.guide) ||
+        suppliedPosters.some((poster) => poster.id === route.guide),
       `${context}: ${href} names an unknown field guide`,
     );
 }

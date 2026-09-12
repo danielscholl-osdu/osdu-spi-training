@@ -37,7 +37,7 @@ export function posterInline(id) {
   if (!poster) return '';
   return `<figure class="field-guide is-compact is-poster" id="guide-${id}" data-guide="${id}">
     <figcaption><span class="guide-kicker">Poster</span><h3>${poster.title}</h3><p>${poster.summary}</p></figcaption>
-    <a class="poster-inline" href="${routeHref('field-guides')}#poster-${id}"><img src="${poster.image}" width="${poster.width}" height="${poster.height}" alt="${escapeHtml(poster.title)}" loading="lazy" /><span>Read the poster with its notes →</span></a>
+    <a class="poster-inline" href="${routeHref('field-guides')}?guide=${id}"><img src="${poster.image}" width="${poster.width}" height="${poster.height}" alt="${escapeHtml(poster.title)}" loading="lazy" /><span>Read the poster with its notes →</span></a>
   </figure>`;
 }
 
@@ -177,7 +177,7 @@ function guidesPage() {
       <div class="section-heading"><span class="guide-kicker">Posters</span><h2>${suppliedPosters.length} posters, one idea each</h2><p>Two supplied with the training material, two adopted from the source repositories, three built for this site. Open one at full size, or follow its links into the map. Each caption records where the poster and the documentation differ.</p></div>
       ${suppliedPosters
         .map(
-          (poster) => `<article class="poster" id="poster-${poster.id}">
+          (poster) => `<article class="poster" id="guide-${poster.id}">
             <button type="button" class="poster-image" data-lightbox="${poster.image}" data-lightbox-title="${escapeHtml(poster.title)}" aria-label="Open ${escapeHtml(poster.title)} at full size"><img src="${poster.image}" width="${poster.width}" height="${poster.height}" alt="${escapeHtml(poster.title)}" loading="lazy" /><span aria-hidden="true">View large ⤢</span></button>
             <div class="poster-text">
               <span class="guide-kicker">${poster.origin}</span>
