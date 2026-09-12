@@ -197,6 +197,16 @@ function render() {
     buttons.find((button) => button.dataset.detail === route.detail) ||
     buttons.find((button) => button.dataset.detail === defaultDetail);
   selectDetail(element?.dataset.detail || defaultDetail, element);
+  const jumpedWithinView =
+    !chapterChanged &&
+    previousRoute &&
+    route.detail &&
+    route.detail !== previousRoute.detail;
+  if (jumpedWithinView && element) {
+    element.scrollIntoView({ block: 'center' });
+    element.focus({ preventScroll: true });
+    expandInspector(true);
+  }
   if (chapterChanged) {
     expandInspector(false);
     if (previousRoute) window.scrollTo({ top: 0, behavior: 'instant' });
