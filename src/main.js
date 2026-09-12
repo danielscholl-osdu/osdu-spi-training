@@ -14,6 +14,7 @@ import {
   chapterScope,
   mythCallout,
   exampleStrip,
+  listenChips,
 } from './components/pages.js';
 import { createPlayer } from './components/player.js';
 import { parseRoute, routeHref } from './router.js';
@@ -128,6 +129,7 @@ function renderChapterFrame(route, scene) {
       ? 'Back to the start ↺'
       : `Next: ${chapters[next].title} →`;
   document.getElementById('view-scope').innerHTML = chapterScope(key);
+  document.getElementById('chapter-listen').innerHTML = listenChips(key);
   document.getElementById('chapter-outcomes').innerHTML = chapterOutcomes(key);
   document.body.dataset.page = scene.kind === 'page' ? scene.page : 'map';
 }
@@ -149,13 +151,22 @@ function render() {
 
   if (scene.kind === 'page') {
     document.getElementById('exploration').hidden = true;
+    document.getElementById('chapter-listen').innerHTML = '';
     document.getElementById('chapter-guides').innerHTML = '';
     document.getElementById('chapter-mistake').innerHTML = '';
     document.getElementById('example-strip').hidden = true;
     const page = document.getElementById('page');
     page.hidden = false;
-    if (chapterChanged) {
-      page.innerHTML = pageRenderers[scene.page](route);
+    const episodeChanged =
+      scene.page === 'listen' && previousRoute?.episode !== route.episode;
+    if (chapterChanged || episodeChanged) {
+      if (scene.page === 'listen' && route.episode)
+        player.select(route.episode);
+      page.innerHTML = pageRenderers[scene.page](
+        scene.page === 'listen'
+          ? { ...route, episode: player.episode.id }
+          : route,
+      );
       if (scene.page === 'listen' && route.time !== null)
         player.seekTo(route.time, false);
       player.reflect();

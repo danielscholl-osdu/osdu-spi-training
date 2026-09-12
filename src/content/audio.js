@@ -1,6 +1,11 @@
-// Marker times come from the transcript in docs/reference. `note` records
-// where the narration differs from the source documentation.
-const markers = [
+// Three generated audio discussions. Marker times come from the transcripts
+// in docs/reference; `note` records where the narration differs from the
+// source documentation. Nothing here navigates on its own.
+import { transcript as stackTranscript } from './transcripts/stack.js';
+import { transcript as interfaceTranscript } from './transcripts/interface.js';
+import { transcript as branchesTranscript } from './transcripts/branches.js';
+
+const stackMarkers = [
   {
     time: 0,
     title: 'Why OSDU exists',
@@ -159,14 +164,437 @@ const markers = [
   },
 ];
 
-export const audio = {
-  title: 'Engineering the OSDU SPI Stack on Azure',
-  file: 'audio/engineering-the-osdu-spi-stack-on-azure.m4a',
-  duration: 3516,
-  notebook:
-    'https://notebook.google.com/notebook/b54aaf01-b8c2-4d39-98e9-112ed9dc92b7/artifact/5c1f61ff-cf85-4a1b-813d-d80ae3d96a21',
-  markers: markers.map((marker, index) => ({
+const interfaceMarkers = [
+  {
+    time: 0,
+    title: 'A bridge to an island that will blow up its side',
+    copy: 'You are told to build a permanent bridge, the island announces it will demolish its end, and you still depend on its daily shipments. That is the fork’s constraint in one picture.',
+    route: '#start',
+    routeLabel: 'Start here',
+  },
+  {
+    time: 93,
+    title: 'The energy data problem, and OSDU',
+    copy: 'Decades of seismic, logs, and interpretations in incompatible vendor systems that cannot agree on what a well is. OSDU is the common platform and its reference implementation.',
+    route: '#start',
+    routeLabel: 'Start here',
+  },
+  {
+    time: 239,
+    title: 'The provider model',
+    copy: 'Shared business logic in a core module; cloud plumbing behind swappable provider directories in the same repository. A universal remote and its infrared codes.',
+    route: '#spi-boundary',
+    routeLabel: 'The SPI boundary',
+  },
+  {
+    time: 332,
+    title: 'SPI means three things',
+    copy: 'The interface is the community’s seam. The engineering system, osdu-spi, is the factory. The stack, osdu-spi-stack, is the deployment platform.',
+    route: '#start',
+    routeLabel: 'The three meanings',
+  },
+  {
+    time: 427,
+    title: 'Upstream will delete the Azure provider',
+    copy: 'The community keeps core logic and interfaces; cloud providers host their own implementations. The usual reason to fork is inverted: Azure must own a subtree while still taking daily upstream updates.',
+    route: '#fork-shape?detail=upstream',
+    routeLabel: 'Upstream on the map',
+  },
+  {
+    time: 572,
+    title: 'The modify/delete loop',
+    copy: 'Delete the other providers, merge upstream with -X theirs, and every upstream edit to a deleted file halts the sync. A tired engineer runs git add -A and the deleted code comes back.',
+    route: '#fork-shape?detail=fork-upstream',
+    routeLabel: 'The generated branch',
+    note: 'The narration says “-X theirs” resolves content conflicts; the fork now uses that strategy exactly once, for the one-time seed of the Azure provider at initialization.',
+  },
+  {
+    time: 804,
+    title: 'Stop merging: generate the tree',
+    copy: 'Nobody ever edits fork_upstream, so it need not be a merge. Read the upstream tip into a scratch index, filter it, and write a commit with two parents. Merge-shaped history, no merge algorithm.',
+    route: '#fork-day/sync?detail=sync-pr',
+    routeLabel: 'The sync moment',
+    note: 'The commands are git read-tree, checkout-index, and commit-tree; the transcript mishears the first. The trailers Upstream-Sha and Filter-Rev make each commit checkable.',
+  },
+  {
+    time: 953,
+    title: 'Halt on the unknown',
+    copy: 'A path the filter has never classified is neither kept nor dropped. The sync exits 2 and opens an issue, because guessing would be convenient once and wrong forever.',
+    route: '#fork-shape?detail=filter',
+    routeLabel: 'The filter',
+  },
+  {
+    time: 1093,
+    title: 'Three branches, three jobs',
+    copy: 'fork_upstream is generated input with no Azure code by construction. fork_integration is the workspace where things may break. main is protected and deployable.',
+    route: '#fork-shape?detail=fork-integration',
+    routeLabel: 'The three branches',
+  },
+  {
+    time: 1231,
+    title: 'The template, and “split what fails differently”',
+    copy: 'osdu-spi is a template repository; eight service forks receive its workflows as pull requests. Its own CI and the workflows it delivers live in different directories.',
+    route: '#fork-shape?detail=engineering',
+    routeLabel: 'The template on the map',
+  },
+  {
+    time: 1331,
+    title: 'The one-time seed',
+    copy: 'Initialization grabs the last upstream revision that still holds provider/partition-azure and merges it into the fork once. After that, upstream fixes to that directory do not arrive on their own.',
+    route: '#fork-shape?detail=provider-azure',
+    routeLabel: 'The Azure provider row',
+  },
+  {
+    time: 1479,
+    title: 'The stack, and the Azure-only bet',
+    copy: 'An image in a registry proves nothing; you need Cosmos, Service Bus, and Storage around it. The stack uses managed Azure services and states that portability is out of scope.',
+    route: '#running-stack',
+    routeLabel: 'What is a stack?',
+    note: '“About 50 minutes” is a centralus observation for provisioning, not a guarantee, and API readiness can follow the CLI exit.',
+  },
+  {
+    time: 1616,
+    title: 'What stayed in the cluster, and who runs it',
+    copy: 'Elasticsearch stays for API compatibility; Redis and PostgreSQL stay for cost. AKS Automatic runs the nodes and enforces Safeguards, which is why one local Helm chart replaces the upstream charts.',
+    route: '#running-stack/developer?detail=middleware',
+    routeLabel: 'Platform middleware',
+  },
+  {
+    time: 1768,
+    title: 'Bicep for Azure, Flux for Kubernetes',
+    copy: 'Not Terraform, because of state files; not a plain script, because it cannot preview. spi up runs Bicep, seeds the cluster, installs Flux, and gets out of the way.',
+    route: '#bring-up/provision',
+    routeLabel: 'Follow spi up',
+  },
+  {
+    time: 1959,
+    title: 'Keys turned off; identity federated',
+    copy: 'Local authentication is disabled on Cosmos, Service Bus, and Storage, so there is no connection string to leak. A pod exchanges a projected token for Azure access.',
+    route: '#running-stack/developer?detail=identity',
+    routeLabel: 'The managed identity',
+  },
+  {
+    time: 2055,
+    title: 'Inbound: the sidecar rewrites the headers',
+    copy: 'The provider trusts x-app-id and x-user-id, so the Envoy filter strips whatever arrives, validates the JWT, and writes the headers from its claims. The V1 token endpoint keeps the appid claim.',
+    route: '#running-stack/request?detail=gateway',
+    routeLabel: 'The gateway and sidecar',
+  },
+  {
+    time: 2295,
+    title: 'The shared identity trade-off',
+    copy: 'Every OSDU service uses one managed identity. The documentation names the blast-radius cost and accepts it for a development and test platform.',
+    route: '#running-stack/developer?detail=shared-data',
+    routeLabel: 'Shared resources and identity',
+  },
+  {
+    time: 2392,
+    title: 'Bootstrap as data',
+    copy: 'One-shot Jobs create the partition, root entitlement groups, and legal tags, then load about 1,300 schemas, in a dependency order Flux enforces. The legal-tag job is deliberately ungated.',
+    route: '#bring-up/reconcile?detail=initialization',
+    routeLabel: 'Initialization Jobs',
+  },
+  {
+    time: 2591,
+    title: 'The image lock, a casting board',
+    copy: 'One ConfigMap holds every service image by digest. Manifests carry placeholders; Flux substitutes the digest at apply time, so changing an image is a lock edit, not a commit.',
+    route: '#handshake?detail=delivery',
+    routeLabel: 'The image lock',
+  },
+  {
+    time: 2690,
+    title: 'The handshake: descriptor and facts',
+    copy: 'Severing upstream pipelines orphaned the tests. The fork declares what a suite needs in .spi/service.yaml; the stack publishes what it is; the run binds them at runtime.',
+    route: '#handshake?detail=descriptor',
+    routeLabel: 'The descriptor',
+  },
+  {
+    time: 2833,
+    title: 'A deploy identity that edits one object',
+    copy: 'The run assumes a federated identity whose cluster rights cover exactly one ConfigMap. Flux, already inside, performs the rollout.',
+    route: '#handshake?detail=trust',
+    routeLabel: 'The deploy identity',
+  },
+  {
+    time: 2926,
+    title: 'Borrow, prove, restore',
+    copy: 'Pin the candidate with the run id on it, poll until the pod reports that digest, mint three tokens and run the suites, then reset with --if-run even after failure.',
+    route: '#handshake?detail=proof',
+    routeLabel: 'Prove on the map',
+    note: 'The image goes to GHCR, not an Azure container registry. The three tokens are bound into the declared suites, which run once each, not three times. Restore writes the recorded canonical image back only while this run still owns the pin.',
+  },
+  {
+    time: 3074,
+    title: 'The client matches the server',
+    copy: 'Before pinning, the run reads the environment’s stack version and installs that exact spi release, so a newer script never talks to an older cluster.',
+    route: '#handshake?detail=facts',
+    routeLabel: 'Environment facts',
+  },
+  {
+    time: 3121,
+    title: 'Things that are not true',
+    copy: 'When the design document and the decision records disagree, the records govern. Ready does not mean OSDU is answering; teardown leaves identities behind on purpose.',
+    route: '#not-true',
+    routeLabel: 'Things that are not true',
+  },
+  {
+    time: 3261,
+    title: 'A fork as a living relationship',
+    copy: 'Not a snapshot you walk away from, but a system that negotiates daily with an upstream that may delete the ground under it.',
+    route: '#fork-shape',
+    routeLabel: 'The shape of the fork',
+  },
+];
+
+const branchesMarkers = [
+  {
+    time: 0,
+    title: 'The green checkmark that lied',
+    copy: 'A tool that crashed on every run for months, hidden by a fallback that looked exactly like success. The episode’s frame: a system that refuses to wear that blindfold.',
+    route: '#not-true',
+    routeLabel: 'Things that are not true',
+  },
+  {
+    time: 145,
+    title: 'The energy data problem',
+    copy: 'Petabytes across incompatible vendor systems that disagree on what a well is, and the community platform built to end that.',
+    route: '#start',
+    routeLabel: 'Start here',
+  },
+  {
+    time: 331,
+    title: 'The provider model and the seam',
+    copy: 'partition-core holds the shared rules; provider/partition-azure holds the Azure plumbing. The seam between them is the interface, and it is where the friction lives.',
+    route: '#spi-boundary',
+    routeLabel: 'The SPI boundary',
+  },
+  {
+    time: 376,
+    title: 'Upstream takes a bulldozer to the Azure code',
+    copy: 'A snapshot fork stops being OSDU; a hand-merged fork compounds in cost. The fork must own the provider directory permanently while taking shared code daily.',
+    route: '#fork-shape?detail=upstream',
+    routeLabel: 'Upstream on the map',
+  },
+  {
+    time: 571,
+    title: 'Ownership runs through the middle of the tree',
+    copy: 'In one commit, partition-core is upstream’s and must be overwritten daily; the directory beside it is the fork’s and must never be. Standard branching cannot defend that line.',
+    route: '#fork-shape',
+    routeLabel: 'The repository by owner',
+  },
+  {
+    time: 617,
+    title: 'One template for eight services',
+    copy: 'The workflows, actions, and rulesets live in osdu-spi. Eight forks are generated from it and own only their configuration. The rule: split what fails differently.',
+    route: '#fork-shape?detail=engineering',
+    routeLabel: 'The template on the map',
+  },
+  {
+    time: 807,
+    title: 'The bootstrap problem: local-actions',
+    copy: 'A fork cannot receive its machinery before it has the machinery to receive it. The bare minimum lives in .github/local-actions from the first commit; the rest arrives by sync.',
+    route: '#fork-shape?detail=engineering-files',
+    routeLabel: 'Engineering files',
+  },
+  {
+    time: 902,
+    title: 'Three branches, and why not two',
+    copy: 'With two branches, an upstream break lands in the team’s workspace and blocks everyone. fork_integration is an isolation chamber for that failure.',
+    route: '#fork-shape?detail=fork-integration',
+    routeLabel: 'The three branches',
+  },
+  {
+    time: 1041,
+    title: 'Generate the branch, do not merge into it',
+    copy: 'The naive plan: delete the other providers, then merge upstream every day. Git’s modify/delete conflict makes that fail, and fail again every day.',
+    route: '#fork-day/sync?detail=sync-pr',
+    routeLabel: 'The sync moment',
+  },
+  {
+    time: 1281,
+    title: 'From sculpting to 3D printing',
+    copy: 'fork_upstream is a pure function of the upstream tip and the filter. read-tree into a scratch index, filter, commit-tree with two parents: merge-shaped provenance, no merge algorithm.',
+    route: '#fork-shape?detail=fork-upstream',
+    routeLabel: 'The generated branch',
+  },
+  {
+    time: 1419,
+    title: 'Halt on the unknown',
+    copy: 'Generation trades a loud failure for a quiet one, so the filter classifies everything and exits 2 on anything new. Guessing would be convenient once and wrong forever.',
+    route: '#fork-shape?detail=filter',
+    routeLabel: 'The filter',
+  },
+  {
+    time: 1559,
+    title: 'Memory for an amnesiac runner',
+    copy: 'No file, no database, no hidden branch. The state lives in GitHub: a hidden comment in the tracking issue, a repository variable, and the labels.',
+    route: '#fork-day/sync?detail=sync-pr',
+    routeLabel: 'The sync PR and issue',
+  },
+  {
+    time: 1746,
+    title: 'Labels as a state machine',
+    copy: 'cascade-active means in flight. human-required means halted. Removing that label is the retry signal; no slash command, no manual run.',
+    route: '#fork-day/review?detail=labels',
+    routeLabel: 'The labels on the map',
+    note: 'The narration says removing the label fires a webhook. Cascade Monitor notices the removal on its six-hour schedule and dispatches the cascade; a person can also dispatch it by hand.',
+  },
+  {
+    time: 1846,
+    title: 'The cascade: main first',
+    copy: 'Merge main into the workspace, then fork_upstream on top, so upstream is evaluated against today’s truth. Into the workspace is cheap; into main needs checks and review.',
+    route: '#fork-day/cascade?detail=cascade-run',
+    routeLabel: 'The cascade moment',
+  },
+  {
+    time: 1985,
+    title: 'Versioning without rewriting history',
+    copy: 'Squashing would sever the link to upstream. One empty meta commit classifies the whole range: breaking over feat over fix, and anything unclassifiable is a fix.',
+    route: '#fork-day/sync?detail=meta-commit',
+    routeLabel: 'The meta commit',
+  },
+  {
+    time: 2171,
+    title: 'Never a bare -P',
+    copy: 'Passing any Maven profile deactivates the ones active by default, so -P azure silently drops core. The template always writes -P core,azure.',
+    route: '#fork-day/cascade?detail=cascade-run',
+    routeLabel: 'The cascade build',
+  },
+  {
+    time: 2315,
+    title: 'The Dockerfile that rotted',
+    copy: 'The upstream Azure Dockerfile named a Java 8 base and a JAR that no longer existed. The template now delivers one canonical Dockerfile to every fork.',
+    route: '#fork-shape?detail=engineering-files',
+    routeLabel: 'Engineering files',
+  },
+  {
+    time: 2413,
+    title: 'Credentials: app tokens and the guard clause',
+    copy: 'No personal tokens; short-lived GitHub App tokens. Credential-bearing jobs repeat the same if-guard verbatim, because the clause is the policy and a reviewer is not.',
+    route: '#fork-day/prove?detail=candidate',
+    routeLabel: 'The build and prove moment',
+  },
+  {
+    time: 2553,
+    title: 'The pull_request_target lesson',
+    copy: 'Running the trusted workflow file against untrusted checked-out code invited that code into a privileged runner. CodeQL flagged it. The fix was structural: the job that publishes never checks out PR code.',
+    route: '#handshake?detail=gate',
+    routeLabel: 'Deploy Gate',
+    note: 'The cascade now runs on workflow_dispatch, started by the monitor or by hand. The narration describes the lesson, not the current trigger.',
+  },
+  {
+    time: 2788,
+    title: 'No coverage gate',
+    copy: 'Most of the repository is generated from upstream. A coverage threshold would measure the community’s testing habits and break the sync; coverage is reported, not gated.',
+    route: '#fork-day/cascade?detail=cascade-run',
+    routeLabel: 'The cascade build',
+  },
+  {
+    time: 2932,
+    title: 'The tests are in the repository; the knowledge is not',
+    copy: 'Upstream kept the endpoints and tokens in its own pipelines; stripping them orphaned the suites. Hard-coding values in the repository goes stale within a week.',
+    route: '#handshake?detail=descriptor',
+    routeLabel: 'The descriptor',
+  },
+  {
+    time: 3124,
+    title: 'Three contracts: facts, descriptor, machinery',
+    copy: 'The stack publishes facts fresh every run. The fork declares needs symbolically. The template’s resolver binds them and hard-fails on anything it does not recognise.',
+    route: '#handshake?detail=facts',
+    routeLabel: 'Environment facts',
+  },
+  {
+    time: 3268,
+    title: 'Borrow, prove, restore',
+    copy: 'Not kubectl set image, because Flux would revert it. A compare-and-set on the image lock, a wait for the pod to report the digest, the suites, then an unconditional restore.',
+    route: '#handshake?detail=delivery',
+    routeLabel: 'The image lock',
+    note: 'Restore is unconditional in that it always runs, but it writes the canonical image back only while this run still owns the pin; a newer run’s pin is left alone.',
+  },
+  {
+    time: 3465,
+    title: 'The customer tier and mirror mode',
+    copy: 'Customers use true GitHub forks so pull requests can flow back. SYNC_MODE=mirror turns the filter off and copies the service repository’s main with the same plumbing and the same history shape.',
+    route: '#fork-shape?detail=mirror',
+    routeLabel: 'A customer mirror fork',
+  },
+  {
+    time: 3664,
+    title: 'The decision register and the derived learnings',
+    copy: 'One is the textbook: what was decided, why, what was rejected. The other is a first-person journal of what the team actually experienced.',
+    route: '#not-true',
+    routeLabel: 'Things that are not true',
+  },
+  {
+    time: 3759,
+    title: 'The AI blindfold',
+    copy: 'A summariser that never once succeeded, hidden by a seamless fallback. “A fallback that cannot be distinguished from success is not resilience. It is a blindfold.”',
+    route: '#not-true',
+    routeLabel: 'Things that are not true',
+  },
+  {
+    time: 3948,
+    title: 'Split what fails differently',
+    copy: 'Template workflows from delivered workflows, bootstrap logic by when it must exist, three branches so upstream breakage never blocks feature work.',
+    route: '#fork-shape?detail=engineering',
+    routeLabel: 'The template on the map',
+  },
+];
+
+function withEnds(markers, duration) {
+  return markers.map((marker, index) => ({
     ...marker,
-    end: markers[index + 1]?.time ?? 3516,
-  })),
-};
+    end: markers[index + 1]?.time ?? duration,
+  }));
+}
+
+export const episodes = [
+  {
+    id: 'stack',
+    title: 'Engineering the OSDU SPI Stack on Azure',
+    short: 'The stack',
+    book: 'Views 01 to 03, then the seam',
+    file: 'audio/engineering-the-osdu-spi-stack-on-azure.m4a',
+    duration: 3516,
+    notebook:
+      'https://notebook.google.com/notebook/b54aaf01-b8c2-4d39-98e9-112ed9dc92b7/artifact/5c1f61ff-cf85-4a1b-813d-d80ae3d96a21',
+    origin: 'Generated with NotebookLM from the SPI Stack guide',
+    summary:
+      'From the provider problem through identity, GitOps, and the shared environment to a full bring-up. The one to start with if the stack is your job.',
+    markers: withEnds(stackMarkers, 3516),
+    transcript: stackTranscript,
+  },
+  {
+    id: 'interface',
+    title: 'The Azure OSDU Service Provider Interface',
+    short: 'The whole round trip',
+    book: 'All six views, in order',
+    file: 'audio/the-azure-osdu-service-provider-interface.m4a',
+    duration: 3378,
+    notebook: null,
+    origin: 'Generated with NotebookLM from the complete osdu-spi guide',
+    summary:
+      'The bridge to an island that will demolish its side. The fork, its branches, the stack around it, and the handshake, told as one onboarding story.',
+    markers: withEnds(interfaceMarkers, 3378),
+    transcript: interfaceTranscript,
+  },
+  {
+    id: 'branches',
+    title: 'Why Azure 3D-prints Git branches',
+    short: 'The fork, in depth',
+    book: 'Views 04 and 05, then the seam',
+    file: 'audio/why-azure-3d-prints-git-branches.m4a',
+    duration: 4140,
+    notebook: null,
+    origin: 'Generated with NotebookLM from the complete osdu-spi guide',
+    summary:
+      'The engineering system on its own: generated branches, labels as state, the meta commit, the Maven trap, the pull_request_target lesson, and the AI fallback that hid its own failure.',
+    markers: withEnds(branchesMarkers, 4140),
+    transcript: branchesTranscript,
+  },
+];
+
+export const defaultEpisode = episodes[0];
+export const audio = defaultEpisode;
+export const episodeById = (id) =>
+  episodes.find((episode) => episode.id === id) || defaultEpisode;

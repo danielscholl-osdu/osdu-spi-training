@@ -7,7 +7,7 @@ Install the pinned tools with `npm ci`, then start `npm run dev`. Work in `src/`
 | Change                                                          | File or directory                  |
 | --------------------------------------------------------------- | ---------------------------------- |
 | Chapter titles, introductions, source keys, or navigation order | `src/content/chapters.js`          |
-| Audio markers, source-check notes, and the notebook link        | `src/content/audio.js`             |
+| Episodes, their markers, source-check notes, and notebook links | `src/content/audio.js`             |
 | Things that are not true                                        | `src/content/myths.js`             |
 | Poster captions, takeaways, and field-guide summaries           | `src/content/posters.js`           |
 | A native field guide’s content or drawing                       | `src/components/infographics.js`   |
@@ -27,7 +27,7 @@ Chapter order follows the entries in `chapters.js`, grouped by `group` (`start`,
 
 Each component detail contains `label`, `title`, `body`, `artifact: { label, code }`, and a `source` key from `src/content/sources.js`. A diagram button's `data-detail` must match a key in that content. Audio markers, field checks, and poster links use site routes; the integrity checks parse each route and confirm that a `detail` names a component on that map and a `guide` names a field guide. They also catch missing explanations, duplicate component IDs within a scene, broken chapter-to-renderer connections, missing poster and audio files, and missing source files when sibling checkouts are present.
 
-The transcript module is generated: to regenerate it, transcribe the audio to VTT/JSON, replace `docs/reference/*.vtt`, and rebuild `src/content/transcript.js` with the same paragraph grouping. Marker times in `audio.js` are read from the transcript. Content is trusted, repository-authored material; selected fields intentionally contain HTML. Do not feed external user input into those templates.
+The transcript modules are generated: to regenerate one, transcribe the audio to VTT (mlx-whisper, large-v3-turbo), replace the file in `docs/reference/`, and rebuild `src/content/transcripts/<episode>.js` with the same paragraph grouping. Marker times in `audio.js` are read from the transcript. A chapter's `listen` cues must start on a marker of the episode they name; the integrity checks enforce this. Content is trusted, repository-authored material; selected fields intentionally contain HTML. Do not feed external user input into those templates.
 
 ## Validate a change
 

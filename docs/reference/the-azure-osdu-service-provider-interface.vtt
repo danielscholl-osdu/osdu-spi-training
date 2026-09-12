@@ -1,0 +1,2867 @@
+WEBVTT
+
+00:00.000 --> 00:04.560
+Imagine being told to build this massive permanent bridge to an island.
+
+00:05.480 --> 00:11.000
+But right after you get the order, the island's owners announced they were going to blow up their side of the bridge.
+
+00:11.160 --> 00:12.680
+Right, which is already bad enough.
+
+00:12.820 --> 00:19.900
+But then, to make it worse, you still completely rely on them for daily shipments of supplies just to maintain your half of the bridge.
+
+00:19.960 --> 00:23.820
+Exactly. I mean, if you lose connection to that island, your project is dead.
+
+00:24.380 --> 00:29.440
+But if you try to force a connection the wrong way, the whole thing just collapses under its own weight.
+
+00:29.440 --> 00:33.400
+Yeah, it's an incredibly hostile architectural constraint.
+
+00:34.100 --> 00:40.400
+It really forces a complete rethinking of how we handle open source software, especially at an enterprise scale.
+
+00:40.800 --> 00:43.720
+So today we are looking at an engineering nightmare.
+
+00:44.640 --> 00:47.400
+Or, well, an engineering marvel, depending on how you look at it.
+
+00:47.800 --> 00:51.740
+If you're listening to this, I want you to put yourself in the shoes of a newly hired engineer.
+
+00:51.880 --> 00:54.820
+Oh, yeah. The ultimate onboarding mission.
+
+00:55.220 --> 00:58.680
+Right. You've just been handed the keys to this massive system.
+
+00:58.680 --> 01:04.920
+You are onboarding as a new service owner for the Azure SPI, the service provider interface.
+
+01:05.440 --> 01:07.340
+Your mission isn't just to write code.
+
+01:07.840 --> 01:10.380
+You need to understand exactly how this machine works.
+
+01:10.660 --> 01:13.140
+And why it was built the way it was.
+
+01:13.220 --> 01:17.940
+Because you have to keep it running when the upstream community decides to pull the rug out from under you.
+
+01:17.940 --> 01:19.260
+Which they will do.
+
+01:19.800 --> 01:21.180
+So welcome to the deep dive.
+
+01:21.680 --> 01:25.160
+To get you up to speed, we're extracting insights from the internal training manual.
+
+01:25.600 --> 01:26.920
+It's called the Complete Guide.
+
+01:27.280 --> 01:30.060
+From an upstream commit to a running Azure platform.
+
+01:30.220 --> 01:32.860
+We are going to analyze their architectural decision records.
+
+01:33.080 --> 01:36.680
+Look at some, frankly, incredibly brutal admissions of failure.
+
+01:36.680 --> 01:40.700
+And explore the ingenious solutions this team eventually landed on.
+
+01:40.940 --> 01:43.020
+And we aren't just looking at how code runs here.
+
+01:43.080 --> 01:44.640
+We're looking at a survival mechanism.
+
+01:45.160 --> 01:49.180
+But, you know, to really grasp why this architecture is so intensely complicated,
+
+01:49.680 --> 01:52.180
+we've got to start with the industry problem it's trying to solve.
+
+01:52.340 --> 01:56.620
+Right. Because you don't build a system this complex unless the alternative is just a total disaster.
+
+01:57.020 --> 01:57.380
+Exactly.
+
+01:57.760 --> 02:00.040
+We have to talk about the energy industry's data problem.
+
+02:00.040 --> 02:08.960
+Yeah. If you step into the energy sector, you immediately run into a data fragmentation issue that makes standard tech debt look, well, it makes it look trivial.
+
+02:09.100 --> 02:09.720
+It's massive.
+
+02:09.920 --> 02:13.320
+It is, at its core, this huge translation problem.
+
+02:13.780 --> 02:16.500
+Imagine a single major energy operator, right?
+
+02:16.520 --> 02:20.300
+They have seismic surveys, well, logs, geological interpretations.
+
+02:20.820 --> 02:24.060
+And, well, log isn't just a simple spreadsheet.
+
+02:24.060 --> 02:27.720
+We're talking about massive, multidimensional data sets, right?
+
+02:28.120 --> 02:33.220
+Showing acoustic impedance, gamma ray radiation, resistivity, all mapped against depth.
+
+02:33.380 --> 02:33.860
+Exactly.
+
+02:34.180 --> 02:36.240
+And this data has been gathered over decades.
+
+02:36.460 --> 02:40.440
+It's stored in dozens of completely incompatible proprietary systems.
+
+02:40.860 --> 02:46.860
+It's produced by competing vendors who all have radically different ideas about what a well actually is in a database schema.
+
+02:47.020 --> 02:48.000
+Wait, how different could it be?
+
+02:48.000 --> 02:57.200
+Oh, wildly different. Vendor A might define a well by its surface coordinates, while vendor B defines it by the specific wellbore trajectory underground.
+
+02:57.600 --> 03:03.000
+Wow. So if two energy companies merge, they have to merge these massive, chaotic archives.
+
+03:03.120 --> 03:13.980
+Or even if, like, a data scientist just wants to adopt a new machine learning tool to find untapped resources, they have to write yet another custom adapter for every single proprietary database.
+
+03:14.140 --> 03:15.380
+It is an absolute nightmare.
+
+03:15.380 --> 03:20.120
+You'd spend 90% of your time just reformatting data instead of analyzing it.
+
+03:20.420 --> 03:23.880
+And the industry's collective answer to this is OSDU.
+
+03:24.120 --> 03:25.760
+The open subsurface data universe.
+
+03:25.980 --> 03:33.140
+Right. It's an open standard, but more importantly for us, it's an open source reference implementation for a common data platform.
+
+03:33.360 --> 03:36.000
+It lives in GitLab. It's maintained by this vast community.
+
+03:36.260 --> 03:39.560
+And it contains all these core services to standardize the industry.
+
+03:39.860 --> 03:41.460
+So what kind of services are we talking about?
+
+03:41.460 --> 03:50.260
+You have a storage service for records, a schema service that defines what those records actually look like, a search service, legal compliance, and entitlements for authorization.
+
+03:50.800 --> 03:53.720
+So OSDU is basically the universal translator for the whole industry.
+
+03:53.880 --> 03:53.980
+Yep.
+
+03:54.160 --> 03:56.360
+But here's the massive structural constraint, right?
+
+03:56.500 --> 03:56.640
+Yeah.
+
+03:56.780 --> 03:59.160
+OSDU is designed to run on any cloud.
+
+03:59.160 --> 04:09.940
+Yes. And that creates a lot of friction because abstract logic is great, but eventually a storage service needs to actually save a file to a real hard drive.
+
+04:10.080 --> 04:16.400
+Right. An entitlement service needs to query a real graph database to see who belongs to what group.
+
+04:16.540 --> 04:21.120
+Precisely. You can't abstract away the physical reality of cloud infrastructure forever.
+
+04:21.120 --> 04:27.080
+So OSDU's answer to this multi-cloud ambition is something they call the provider model.
+
+04:27.280 --> 04:28.620
+Okay. Break that down for us.
+
+04:28.620 --> 04:33.320
+The business logic of each service, the core rules of how the energy data behaves, is shared.
+
+04:33.740 --> 04:41.720
+But the cloud-specific plumbing, the actual code that talks to a database or a storage bucket, is pushed behind swappable implementations.
+
+04:41.940 --> 04:45.220
+So if I'm looking at the source code in GitLab, what do I actually see?
+
+04:45.480 --> 04:47.820
+You'll see a shared module, for example, partition core.
+
+04:47.820 --> 04:54.500
+This contains the universal rules. And right next to it, in the exact same repository, you'll see provider directories.
+
+04:55.000 --> 04:56.540
+Like folders for each cloud.
+
+04:56.580 --> 05:03.960
+Exactly. You'll see provider partition Azure, provider partition AS, provider partition GC, one set of universal rules, but multiple sets of highly specific plumbing.
+
+05:04.240 --> 05:10.700
+You know, I always think of this like buying a universal remote control for a really complicated home theater system.
+
+05:10.800 --> 05:11.880
+That's a good way to look at it.
+
+05:11.880 --> 05:18.980
+Yeah. The remote itself, the buttons, the volume dial, the core logic, is exactly the same for everyone who buys it.
+
+05:19.500 --> 05:28.900
+But the infrared codes, like the specific signals it blasts out, those have to be meticulously programmed for your specific brand of television.
+
+05:29.060 --> 05:32.780
+Right. The provider directories are those specific infrared codes.
+
+05:32.780 --> 05:36.620
+Which brings us to this acronym that is plastered all over the documentation.
+
+05:36.940 --> 05:37.340
+SPI.
+
+05:37.960 --> 05:39.640
+Yes. The service provider interface.
+
+05:39.880 --> 05:46.820
+And we really need to untangle that acronym right now because confusing the terminology here makes the rest of the architecture impossible to follow.
+
+05:46.980 --> 05:48.600
+Because it means like three different things, right?
+
+05:48.680 --> 05:53.180
+It does. The abbreviation SPI is heavily overloaded in this ecosystem.
+
+05:53.560 --> 05:57.500
+And as a new service owner, you have to know which one you're talking about at any given time.
+
+05:57.620 --> 05:59.240
+Okay. Let's break them down for the listener.
+
+05:59.240 --> 06:03.380
+First, there's the interface itself. That's OSDU's pluggability seam.
+
+06:03.860 --> 06:08.660
+It is the literal boundary in the code between the shared logic and the cloud implementation.
+
+06:09.160 --> 06:13.440
+It's the contract. That interface belongs entirely to the open source community.
+
+06:13.560 --> 06:15.180
+Exactly. That's the shape of the plug.
+
+06:15.640 --> 06:19.500
+Second, there is the engineering system, which the team named OzDoSPI.
+
+06:19.840 --> 06:24.740
+This is the Azure-owned GitHub project that keeps the Azure provider code alive.
+
+06:24.860 --> 06:26.800
+It synchronizes it with the upstream community.
+
+06:26.800 --> 06:30.260
+Yes. And ultimately produces the deployable container images.
+
+06:30.580 --> 06:32.360
+So OSDU's PIs is essentially the factory.
+
+06:32.540 --> 06:33.640
+Exactly. It's the factory.
+
+06:34.120 --> 06:37.040
+And third, there is the stack, OSDU's PIs stack.
+
+06:37.160 --> 06:38.280
+That's the deployment platform.
+
+06:38.480 --> 06:43.260
+It's a completely separate code base that provisions the actual Azure infrastructure.
+
+06:43.480 --> 06:45.760
+The databases, the Kubernetes clusters, all that stuff.
+
+06:45.820 --> 06:49.700
+Right. And it runs the environment where those container images live.
+
+06:49.820 --> 06:52.180
+Okay. So we have the interface, which is the contract.
+
+06:52.380 --> 06:52.560
+Yeah.
+
+06:52.720 --> 06:54.380
+The engineering system, which is the factory.
+
+06:54.380 --> 06:54.860
+Yeah.
+
+06:54.860 --> 06:56.600
+And the stack, the infrastructure.
+
+06:56.700 --> 06:57.220
+We've got it.
+
+06:57.360 --> 07:02.580
+But, you know, if OSDU is an open source community project, my first instinct as an engineer is to say,
+
+07:02.640 --> 07:07.680
+well, why can't Azure just submit their remote codes, their provider implementations,
+
+07:07.900 --> 07:11.200
+directly to the main GitLab repository and be done with it?
+
+07:11.300 --> 07:12.200
+That would be the easy way.
+
+07:12.520 --> 07:12.780
+Yeah.
+
+07:12.780 --> 07:17.440
+Why do they need this massive separate engineering factory just to maintain a fork?
+
+07:17.960 --> 07:22.540
+Well, that brings us back to that existential threat that drives the entire design of this architecture.
+
+07:23.260 --> 07:28.280
+Upstream OSDU intends to delete its Azure provider implementations entirely.
+
+07:28.540 --> 07:29.120
+Wait, what?
+
+07:29.320 --> 07:29.540
+Yeah.
+
+07:29.680 --> 07:33.360
+They're removing them from the shared community repository permanently.
+
+07:34.040 --> 07:35.100
+Why would they do that?
+
+07:35.100 --> 07:41.320
+Because maintaining cloud-specific code inside a shared repository creates an enormous bottleneck.
+
+07:41.720 --> 07:48.860
+Every time AWS, Google, or Azure wants to update their specific database connector, it clutters the core repository.
+
+07:49.120 --> 07:49.580
+Oh, I see.
+
+07:49.640 --> 07:52.040
+So the community made a massive structural decision.
+
+07:52.200 --> 07:55.400
+They said, we are only going to host the core logic in the interfaces.
+
+07:56.120 --> 07:59.820
+You, the cloud providers, have to host your own implementations somewhere else.
+
+08:00.020 --> 08:00.380
+Wow.
+
+08:00.380 --> 08:06.180
+After that dilution happens, the directory provider partition Azure simply will not exist upstream at all.
+
+08:06.340 --> 08:07.960
+So they really are blowing up the bridge.
+
+08:08.040 --> 08:08.640
+That's wild.
+
+08:08.800 --> 08:09.200
+They are.
+
+08:09.340 --> 08:13.280
+And this forces Azure to invert the usual relationship you have with the code fork.
+
+08:13.580 --> 08:17.760
+Because usually, if you think about how we normally use a fork in software development,
+
+08:18.540 --> 08:24.500
+you fork a repository because you are worried about the upstream project changing code that you depend on.
+
+08:24.560 --> 08:24.800
+Right.
+
+08:24.900 --> 08:29.620
+Or because you want to build a feature in isolation without messing up the main branch.
+
+08:29.620 --> 08:29.940
+Yeah.
+
+08:30.020 --> 08:33.280
+You take a snapshot, you walk away, and maybe you occasionally pull in some bug fixes.
+
+08:33.460 --> 08:39.900
+But here, Azure must take permanent sole ownership of a specific subtree, the Azure provider code,
+
+08:40.040 --> 08:45.820
+while simultaneously continuing to receive daily mandatory updates for the shared core logic.
+
+08:45.980 --> 08:47.820
+And all the community integration tests, too.
+
+08:47.940 --> 08:48.300
+Exactly.
+
+08:48.520 --> 08:52.740
+If they stop taking upstream changes for the core logic, they drift out of compliance,
+
+08:52.960 --> 08:55.040
+and they effectively stop being OSDU.
+
+08:55.460 --> 08:58.560
+So a standard snapshot fork is completely out of the question.
+
+08:58.560 --> 09:03.460
+You are forced to maintain a permanent living relationship with the upstream code.
+
+09:03.760 --> 09:04.060
+Yes.
+
+09:04.180 --> 09:08.660
+But you can't just click sync every day because you own a piece of the code that they don't have anymore.
+
+09:08.920 --> 09:09.420
+Precisely.
+
+09:09.960 --> 09:12.540
+And if you try to merge those two realities by hand,
+
+09:12.920 --> 09:18.340
+the sheer cost of resolving code conflicts every single day across a dozen microservices will,
+
+09:18.880 --> 09:21.440
+it will eventually crush the engineering team.
+
+09:21.440 --> 09:28.720
+The documentation actually goes into great detail about how their first attempt at doing this failed spectacularly.
+
+09:29.140 --> 09:32.620
+And I think this is a perfect lesson for anyone dealing with Git at scale.
+
+09:32.740 --> 09:33.740
+Oh, it's a brutal lesson.
+
+09:33.980 --> 09:34.140
+Yeah.
+
+09:34.160 --> 09:39.160
+I was reading the architectural decision records, and ADR0001 outlines this failure.
+
+09:39.600 --> 09:41.280
+Let's talk about the modified LEET loop.
+
+09:41.640 --> 09:45.520
+It's a brilliant, albeit painful, case study in Git mechanics.
+
+09:45.520 --> 09:51.160
+When they first realized they had to maintain this permanent fork, they tried the obvious solution.
+
+09:51.300 --> 09:51.780
+Which was what?
+
+09:51.860 --> 09:53.740
+The initial naive strategy was this.
+
+09:54.340 --> 09:59.540
+Take the upstream code, manually delete the provider directories you don't need, like AWS or Google Cloud,
+
+09:59.660 --> 10:01.640
+and commit those deletions to your Azure fork.
+
+10:01.740 --> 10:03.100
+Okay, so now my fork is clean.
+
+10:03.260 --> 10:05.280
+It just has the core logic and the Azure code.
+
+10:05.360 --> 10:05.560
+Right.
+
+10:05.560 --> 10:11.600
+And then the plan was to set up an automated daily job to merge the new upstream commits into the Azure fork.
+
+10:11.920 --> 10:15.520
+They used a standard Git command, Git merge nax theirs.
+
+10:15.920 --> 10:20.620
+Which basically tells Git, hey, if there's a conflict between what I have and what upstream has,
+
+10:20.940 --> 10:23.540
+just assume upstream is right and overwrite my stuff.
+
+10:23.760 --> 10:24.180
+Exactly.
+
+10:24.680 --> 10:29.680
+The logic was, we want to blindly accept all upstream changes to the core logic.
+
+10:29.880 --> 10:32.240
+And it sounds perfectly reasonable on paper.
+
+10:32.480 --> 10:33.640
+But I'm guessing it doesn't work.
+
+10:33.640 --> 10:38.020
+It completely falls apart the moment you hit a tree-level structural conflict,
+
+10:38.540 --> 10:40.840
+specifically a modified elite conflict.
+
+10:41.220 --> 10:45.160
+Okay, walk me through a day in the life of a modified elite conflict.
+
+10:45.380 --> 10:46.340
+What actually happens?
+
+10:46.560 --> 10:47.560
+Let's say it's Tuesday.
+
+10:48.080 --> 10:54.620
+Upstream merges a pull request that modifies, I don't know, line 42 of a file inside the AWS provider directory.
+
+10:54.860 --> 10:55.100
+Okay.
+
+10:55.340 --> 11:00.180
+But remember, in your Azure fork, you explicitly deleted that entire AWS directory last week.
+
+11:00.180 --> 11:06.600
+When your automated nightly sync runs Git merge, Git's internal engine looks at the working tree and just halts.
+
+11:06.920 --> 11:08.060
+As it's confused.
+
+11:08.660 --> 11:12.500
+Git is basically saying upstream wants me to change line 42 of this file.
+
+11:12.700 --> 11:15.420
+But you, Azure, told me this file shouldn't even exist.
+
+11:15.740 --> 11:16.040
+Yes.
+
+11:16.780 --> 11:21.000
+Git doesn't know whether the correct architectural answer is to apply the modification,
+
+11:21.000 --> 11:25.140
+meaning it has to recreate the file and the directory you specifically deleted,
+
+11:25.380 --> 11:29.360
+or to respect your previous deletion and throw away the upstream modification.
+
+11:29.680 --> 11:32.280
+But wait, doesn't the ASX-THIRS flag fix that?
+
+11:32.720 --> 11:33.840
+No, that's the catch.
+
+11:34.160 --> 11:39.700
+The ASX-THIRS flag only auto-resolves content conflicts inside a file that exists in both places.
+
+11:39.700 --> 11:44.920
+It cannot resolve a structural conflict where a file exists in one reality and is deleted in the other.
+
+11:45.200 --> 11:48.080
+It halts the pipeline and asks a human to decide.
+
+11:48.080 --> 11:51.920
+And if you've ever tried to resolve a massive Git conflict on a Friday afternoon,
+
+11:52.180 --> 11:54.060
+you know exactly how painful this is.
+
+11:54.420 --> 11:57.320
+Now imagine your CI pipeline doing that to you every single day.
+
+11:57.400 --> 11:58.040
+It's exhausting.
+
+11:58.660 --> 12:00.980
+So a human engineer gets alerted, the pipeline is broken.
+
+12:01.520 --> 12:02.400
+What does the human do?
+
+12:02.840 --> 12:07.840
+Well, humans, being humans, usually just want the merge to finish so they can unblock the bill and go to lunch.
+
+12:07.940 --> 12:08.100
+Right.
+
+12:08.260 --> 12:13.680
+So they look at the conflict, they might not fully understand the context of the upstream AWS change,
+
+12:13.840 --> 12:15.840
+and they just run Git add A.
+
+12:15.840 --> 12:21.480
+Which basically says, accept whatever state is currently in my working directory and finalize the merge.
+
+12:21.660 --> 12:22.080
+Exactly.
+
+12:22.500 --> 12:26.540
+But by doing that, they silently accept the upstream modification.
+
+12:26.980 --> 12:32.780
+They accidentally restore all those unwanted AWS files right back into the Azure fork.
+
+12:32.880 --> 12:33.380
+Oh no.
+
+12:33.920 --> 12:36.440
+Completely undoing the strip they worked so hard to maintain.
+
+12:36.680 --> 12:37.060
+Yes.
+
+12:37.840 --> 12:41.760
+Suddenly, the Azure repository is bloated with AWS code again.
+
+12:41.760 --> 12:46.200
+And what's worse, this isn't just a one-time pain, is it? Because the upstream project keeps moving.
+
+12:46.580 --> 12:49.760
+That is the truly devious part of the modify-delete loop.
+
+12:50.180 --> 12:54.220
+Next week, upstream modifies a different file in the AWS directory.
+
+12:54.900 --> 12:56.760
+Or maybe they modify the same file again.
+
+12:56.880 --> 12:58.120
+Oh, I see where this is going.
+
+12:58.320 --> 13:02.080
+Because you previously resolved the conflict by either keeping it or deleting it again,
+
+13:02.080 --> 13:04.420
+the Git history is now hopelessly tangled.
+
+13:05.120 --> 13:13.420
+Every single new modification to any previously deleted file triggers this exact same unanswerable conflict on every single daily sync.
+
+13:13.540 --> 13:15.640
+It becomes an infinite loop of merge conflicts.
+
+13:15.980 --> 13:17.500
+The automation completely breaks down.
+
+13:17.820 --> 13:21.480
+So if I'm the architect looking at this burning pipeline, I have to ask,
+
+13:22.300 --> 13:24.900
+how do you fix an unresolvable merge conflict?
+
+13:24.900 --> 13:30.600
+And the team's answer, which I found incredibly elegant, was, you stop merging entirely.
+
+13:31.000 --> 13:33.000
+This was their big aha moment.
+
+13:33.380 --> 13:38.060
+They stepped back and looked at the branch that was failing the one tracking upstream, which they call fork upstream.
+
+13:38.400 --> 13:38.620
+Okay.
+
+13:38.800 --> 13:40.320
+They realized a fundamental truth.
+
+13:41.080 --> 13:44.320
+A human engineer never actually needs to edit this branch.
+
+13:44.400 --> 13:46.420
+Right. It's just a landing zone for incoming code.
+
+13:46.480 --> 13:46.800
+Exactly.
+
+13:47.020 --> 13:51.480
+It is written only by automation, and it is read only by their downstream integration branches.
+
+13:51.840 --> 13:54.760
+What's fascinating here is the conceptual shift.
+
+13:54.900 --> 13:57.100
+They reframed the problem entirely.
+
+13:57.320 --> 13:57.800
+How so?
+
+13:58.000 --> 14:03.200
+If nobody's ever committing handwritten code to it, it doesn't need to be a standard Git merge.
+
+14:03.360 --> 14:05.880
+It doesn't need to reconcile two divergent histories.
+
+14:06.220 --> 14:07.960
+It can be a generated tree.
+
+14:08.260 --> 14:09.160
+A generated tree.
+
+14:09.440 --> 14:09.600
+Okay.
+
+14:09.660 --> 14:12.920
+Let's unpack how they actually achieved that without using Git merge,
+
+14:13.040 --> 14:16.340
+because they had to dive deep into Git plumbing to pull this off, didn't they?
+
+14:16.440 --> 14:17.240
+They did.
+
+14:17.700 --> 14:20.980
+Most developers only ever use Git porcelain commands.
+
+14:20.980 --> 14:25.520
+You know, the user-friendly commands like Git pull, Git commit, Git merge.
+
+14:25.620 --> 14:26.980
+Right. The stuff we use every day.
+
+14:27.100 --> 14:32.120
+But underneath, Git is just a directed acyclic graph, a database of objects.
+
+14:32.360 --> 14:37.300
+The team bypassed the porcelain entirely and used low-level Git plumbing commands.
+
+14:37.300 --> 14:41.160
+So how does the new sync process actually work step by step?
+
+14:41.360 --> 14:43.400
+Every night, the automation wakes up.
+
+14:43.740 --> 14:46.480
+It reads the absolute tip of the upstream repository.
+
+14:46.780 --> 14:52.680
+It pulls that raw code into a temporary isolated directory outside of the normal Git working tree.
+
+14:52.780 --> 14:53.940
+So it's not even in the repo yet.
+
+14:54.140 --> 14:54.340
+Right.
+
+14:54.920 --> 14:57.240
+Then it runs a custom filter script.
+
+14:57.240 --> 15:04.560
+This script aggressively deletes the AWS provider, the Google Cloud provider, IBM, anything that isn't core logic.
+
+15:04.780 --> 15:09.000
+So it cleans the code from scratch every single time, totally outside of Git's awareness.
+
+15:09.180 --> 15:09.400
+Yes.
+
+15:09.680 --> 15:18.500
+Once the code is perfectly filtered, the automation uses a plumbing command called git read free to load this new pristine state directly into Git staging area.
+
+15:18.620 --> 15:19.180
+Okay. Wow.
+
+15:19.260 --> 15:23.000
+Then it uses git commit tree to write that staging area as a brand new commit.
+
+15:23.320 --> 15:25.360
+And here is the truly clever part.
+
+15:25.360 --> 15:31.460
+When they write that new commit, they artificially assign it to parents in the Git history.
+
+15:31.660 --> 15:31.960
+Yes.
+
+15:32.140 --> 15:38.740
+They tell Git, the parent of this commit is yesterday's fork upstream commit and d the upstream commit we just downloaded.
+
+15:39.040 --> 15:39.540
+Precisely.
+
+15:39.720 --> 15:42.780
+To anyone looking at the Git graph, it looks exactly like a merge.
+
+15:43.240 --> 15:46.660
+It acts like a merge for tracking provenance and history.
+
+15:47.340 --> 15:53.860
+But the Git merge algorithm itself, the engine that compares files and generates conflicts, never actually runs.
+
+15:53.860 --> 15:58.340
+It just slaps the heavily filtered tree directly onto the timeline is absolute truth.
+
+15:58.540 --> 15:58.900
+Exactly.
+
+15:59.440 --> 16:04.940
+The modified elite conflict is physically impossible because the system never attempts to reconcile the two states.
+
+16:05.100 --> 16:06.660
+It just overwrites reality.
+
+16:06.880 --> 16:10.360
+That is an incredible use of Git plumbing to solve a process problem.
+
+16:10.660 --> 16:13.520
+But I have to push back a little here or at least play devil's advocate.
+
+16:13.680 --> 16:13.840
+Okay.
+
+16:13.940 --> 16:14.320
+Go for it.
+
+16:14.320 --> 16:23.420
+If we are aggressively filtering this massive incoming wave of code every single day based on a script, what happens when upstream invents a completely new folder?
+
+16:23.420 --> 16:27.460
+Say they add a new cloud provider or a new shared authentication module.
+
+16:28.000 --> 16:30.620
+And our filter script has never seen that folder name before.
+
+16:30.620 --> 16:35.500
+That is the exact edge case that makes or breaks an automated system at this scale.
+
+16:35.840 --> 16:38.840
+If your filter encounters an unknown entity, what do you do?
+
+16:38.920 --> 16:40.460
+Do you keep it or do you delete it?
+
+16:40.920 --> 16:48.840
+Because if I default to keep, I might accidentally suck in an entirely new AWS implementation that bloats the repo.
+
+16:49.200 --> 16:57.980
+But if I default to drop, I might silently delete a critical new shared module that the core logic desperately needs to compile and the whole build breaks.
+
+16:57.980 --> 17:02.380
+And silent failures are the absolute enemy of engineering at this scale.
+
+17:02.900 --> 17:06.740
+Their solution is a strict architectural principle documented in the ADRs.
+
+17:07.040 --> 17:08.560
+They call it halt on the unknown.
+
+17:08.780 --> 17:09.380
+Halt on the unknown.
+
+17:09.580 --> 17:09.740
+Right.
+
+17:10.140 --> 17:14.540
+The filter engine is designed to exhaustively classify everything at the root level of the repository.
+
+17:15.280 --> 17:22.540
+If it encounters a top level directory, a testing module, or a build profile, it does not explicitly recognize as either keep or drop.
+
+17:22.740 --> 17:23.680
+It does not try to guess.
+
+17:23.740 --> 17:24.280
+It just crashes.
+
+17:24.500 --> 17:25.780
+It gracefully crashes.
+
+17:25.780 --> 17:28.860
+It immediately exits with a non-zero exit code.
+
+17:28.980 --> 17:35.620
+Usually code 2 halts the synchronization run and automatically opens a high-priority ticket for a human engineer to review.
+
+17:36.300 --> 17:37.340
+That makes total sense.
+
+17:37.700 --> 17:43.220
+Because guessing might be convenient exactly one time, but it will be wrong forever after.
+
+17:43.400 --> 17:43.860
+Exactly.
+
+17:44.040 --> 17:53.940
+By forcing a loud failure over a quiet one, they force the engineering team to explicitly update the filter script to account for the new architectural reality of the upstream project.
+
+17:53.940 --> 17:55.820
+It forces continuous alignment.
+
+17:56.320 --> 18:04.780
+So now that we understand how they safely pull this code in without destroying the CI pipeline with merge conflicts, we have to look at how the repository itself is structured.
+
+18:04.780 --> 18:05.260
+Right.
+
+18:05.260 --> 18:13.040
+Because managing this hybrid ownership where upstream owns the core and Azure owns the provider requires a very specific branching strategy.
+
+18:13.300 --> 18:13.480
+Right.
+
+18:13.700 --> 18:15.960
+And they aren't just managing one single repository.
+
+18:16.300 --> 18:20.180
+As a service owner, you are managing one of eight core OSDU services.
+
+18:20.660 --> 18:24.120
+Storage, schema, search, entitlements, legal, and so on.
+
+18:24.120 --> 18:27.240
+And across all of them, they enforce a strict three-branch design.
+
+18:27.620 --> 18:27.900
+Yes.
+
+18:28.160 --> 18:32.500
+The three branches are fork upstream, fork integration, and main.
+
+18:33.260 --> 18:35.140
+And they are not interchangeable.
+
+18:35.260 --> 18:38.780
+They serve very distinct purposes in the lifecycle of the code.
+
+18:38.860 --> 18:39.100
+Okay.
+
+18:39.200 --> 18:40.520
+So we just talked about fork upstream.
+
+18:40.880 --> 18:43.100
+That is the generated filtered tree.
+
+18:43.800 --> 18:48.500
+Crucially, if I'm an Azure engineer, I am never writing code on this branch.
+
+18:48.680 --> 18:49.000
+Never.
+
+18:49.000 --> 18:56.420
+In fact, there's absolutely no Azure source code living on this branch at all because the filter stripped the providers.
+
+18:57.240 --> 18:58.780
+It is providerless by construction.
+
+18:59.060 --> 18:59.200
+Right.
+
+18:59.320 --> 19:00.460
+Then you have fork integration.
+
+19:00.840 --> 19:01.540
+This is the workspace.
+
+19:01.780 --> 19:02.680
+This is the melting pot.
+
+19:02.780 --> 19:03.340
+The melting pot.
+
+19:03.420 --> 19:03.820
+I like that.
+
+19:03.900 --> 19:09.160
+This is where the generated upstream code from fork upstream is actually merged with the Azure-owned code.
+
+19:09.580 --> 19:13.820
+It's where the versions are stamped, the builds are run, and critically, where things are allowed to break.
+
+19:14.140 --> 19:17.180
+And finally, you have main, the protected production branch.
+
+19:17.180 --> 19:21.200
+Code only gets a main if it has been validated in the integration branch.
+
+19:21.800 --> 19:23.200
+But why three?
+
+19:23.680 --> 19:24.100
+What do you mean?
+
+19:24.440 --> 19:29.080
+If I'm trying to keep things simple, why wouldn't I just have fork upstream merge directly into main?
+
+19:29.080 --> 19:37.460
+If we connect this to the bigger picture, architectural decision record 001 explicitly rejected using just one or two branches.
+
+19:38.100 --> 19:38.340
+Why?
+
+19:38.860 --> 19:46.080
+Because you never want to put conflict resolution and build failures on the exact same branch you are trying to ship production code from.
+
+19:46.080 --> 19:46.420
+Ah.
+
+19:46.960 --> 19:55.720
+Because if upstream merges a change that breaks the Azure provider code and that merge happens directly on main, main is now broken.
+
+19:55.860 --> 19:56.320
+Exactly.
+
+19:56.660 --> 20:03.780
+Any hot fixes or feature work that other Azure engineers are trying to release are completely blocked until that upstream break is resolved.
+
+20:03.880 --> 20:04.260
+Exactly.
+
+20:04.260 --> 20:11.140
+By isolating integration into its own branch, if an upstream change breaks the build, that break is contained to fork integration.
+
+20:11.860 --> 20:16.120
+The team can take their time fixing it, while main remains pristine and deployable.
+
+20:16.420 --> 20:19.080
+Okay, so that handles the flow of code within a single service.
+
+20:19.560 --> 20:21.280
+But you mentioned there are eight of these services.
+
+20:21.640 --> 20:28.940
+If I'm the lead architect, I do not want to manually configure the CICD pipelines, the Git actions, and the branching rules for eight different repositories.
+
+20:28.980 --> 20:30.100
+No, you definitely don't.
+
+20:30.140 --> 20:31.460
+How do they keep them all synchronized?
+
+20:31.460 --> 20:34.020
+They use the template repository pattern.
+
+20:34.680 --> 20:39.120
+The repository OSDU-SPY, the main engineering system, is actually a template.
+
+20:39.800 --> 20:46.020
+All the other services, like OSDU-SPY Storage or OSDU-SPY Schema, are generated forks of this central template.
+
+20:46.200 --> 20:48.580
+I always like the franchise restaurant analogy for this.
+
+20:48.940 --> 20:50.980
+The temple repository is the corporate headquarters.
+
+20:51.460 --> 20:56.420
+They own the master recipe book, the CI pipelines, the automation scripts, the security checks.
+
+20:56.520 --> 20:56.760
+Right.
+
+20:56.760 --> 21:03.880
+If corporate discovers a more efficient way to fry a potato, they don't want to call every single franchise and hope they write it down correctly.
+
+21:04.100 --> 21:04.420
+No.
+
+21:04.680 --> 21:14.600
+Corporate updates the master recipe book once, and then an automated workflow takes that update and delivers a new instruction manual to every single franchise location.
+
+21:14.600 --> 21:22.920
+In this case, the automated workflow literally opens a pull request against all eight service repositories with the updated GitHub Actions YAML files.
+
+21:23.400 --> 21:25.240
+The service owners can review it and merge it.
+
+21:25.640 --> 21:27.160
+It enforces global consistency.
+
+21:27.160 --> 21:33.160
+And this pattern reveals a very strict rule they follow, which they call split what fails differently.
+
+21:33.480 --> 21:34.580
+Split what fails differently.
+
+21:34.700 --> 21:35.260
+What does that mean?
+
+21:35.600 --> 21:41.560
+Well, if you look at the template repository, there are two distinct workflow directories for GitHub Actions.
+
+21:41.940 --> 21:46.440
+One is .github workflows, and the other is .github template workflows.
+
+21:46.720 --> 21:47.980
+Why the physical separation?
+
+21:47.980 --> 21:58.160
+Because of the template repository's own internal CI testing, its own scripts failing, is a fundamentally different event than a downstream fork failing to synchronize.
+
+21:58.240 --> 21:58.720
+Oh, I see.
+
+21:58.900 --> 22:05.820
+If you mix them together, a failure in a service fork might accidentally trigger a failure in the template, masking the root cause.
+
+22:06.740 --> 22:10.820
+They physically separated the code so that one failure mode cannot bleed into the other.
+
+22:11.060 --> 22:13.760
+That level of isolation is just smart engineering.
+
+22:13.760 --> 22:21.200
+Now, before we move away from the code and into the infrastructure, there is one gaping hole in this narrative that we have to address.
+
+22:21.300 --> 22:22.480
+I think I know what you're going to ask.
+
+22:22.700 --> 22:25.560
+We established that Upstream is deleting the Azure code.
+
+22:26.100 --> 22:29.000
+The fork Upstream branch filters out all providers.
+
+22:29.460 --> 22:31.740
+So how does Azure get its code in the first place?
+
+22:31.820 --> 22:35.320
+If it's being deleted, where does the Azure provider code come from?
+
+22:35.580 --> 22:39.840
+This is a fantastic question, and it highlights a process they call the one-time seed.
+
+22:39.840 --> 22:50.800
+Because Upstream is deleting the code, the initialization of a new service fork performs an operation that happens exactly once in the lifetime of the repository and can never be repeated.
+
+22:51.020 --> 22:51.860
+It's a rescue mission.
+
+22:52.020 --> 22:53.580
+It is literally a rescue mission.
+
+22:54.000 --> 23:05.420
+The initialization script finds the absolute newest Upstream Git revision that still contains the provider partition Azure directory right before the commit where the community deleted it.
+
+23:05.420 --> 23:15.580
+It performs a textual merge to grab that directory, pulls it into the fork integration branch, and from that very second, that directory is permanently Azure property.
+
+23:15.840 --> 23:21.540
+It is exactly like Indiana Jones sliding under the stone door and grabbing his hat right before the temple collapses.
+
+23:21.780 --> 23:22.260
+It is.
+
+23:22.660 --> 23:27.680
+But this rescue mission comes with a very harsh reality, which is documented right in the ADRs.
+
+23:27.680 --> 23:32.160
+From that day forward, Upstream fixes to the Azure code do not arrive automatically.
+
+23:32.560 --> 23:33.200
+Think about it.
+
+23:33.600 --> 23:38.440
+The automated daily sync pulls from fork upstream, which we know strips the providers out.
+
+23:38.800 --> 23:42.940
+And the sync script is strictly forbidden from touching the directories owned by Azure.
+
+23:43.120 --> 23:53.740
+So if the community fixes a critical bug in the Azure provider code just hours before they delete it upstream, the Azure automated sync will completely ignore that fix.
+
+23:54.160 --> 23:56.840
+Because the automation is blind to that directory.
+
+23:56.840 --> 24:07.700
+So if a bug fix happens upstream, an Azure engineer has to manually read the upstream commit, figure out what changed, and manually copy, paste, or port that fix into the Azure repository.
+
+24:08.000 --> 24:12.700
+Brutal, but absolutely necessary to maintain the integrity of the split ownership model.
+
+24:13.120 --> 24:17.660
+You cannot automate the synchronization of a directory you claim sole ownership of.
+
+24:17.740 --> 24:18.220
+Exactly.
+
+24:18.220 --> 24:18.460
+Okay.
+
+24:18.860 --> 24:21.600
+So at this point, the engineering system has done its job.
+
+24:21.960 --> 24:23.820
+We have successfully maintained a living fork.
+
+24:23.960 --> 24:25.620
+We have survived the modified elite loop.
+
+24:25.880 --> 24:32.100
+We have our pristine built container image containing our Azure code merged perfectly with the upstream core code.
+
+24:32.320 --> 24:32.420
+Yeah.
+
+24:32.820 --> 24:36.620
+But a container image sitting in a registry is just a very expensive paperweight.
+
+24:36.780 --> 24:38.520
+You need a cluster to prove it actually works.
+
+24:38.960 --> 24:39.440
+Exactly.
+
+24:39.440 --> 24:46.080
+You cannot prove a distributed OSDU service is functional with a simple unit test on a developer's laptop.
+
+24:46.660 --> 24:54.260
+You need a real database, a real message best, real identity systems, and all the other core services running alongside it.
+
+24:54.300 --> 24:59.020
+Which brings us to the Stack Ausdus B-Stack, the deployment platform.
+
+24:59.180 --> 24:59.420
+Right.
+
+24:59.720 --> 25:05.660
+Once Azure takes permanent ownership of the provider code, they assume the responsibility of proving it works.
+
+25:05.840 --> 25:06.740
+And what does that entail?
+
+25:06.740 --> 25:13.800
+The Stack's entire purpose is to provision a massive, highly complex Azure environment from scratch in about 50 minutes,
+
+25:13.960 --> 25:18.380
+so that the GitHub actions can deploy the image and run integration tests against it.
+
+25:18.460 --> 25:24.340
+And the first major architectural decision they make for the Stack is what the documentation calls the Azure-only bet.
+
+25:24.840 --> 25:25.900
+This is a crucial pivot.
+
+25:26.420 --> 25:32.240
+When you look at the OSDU community, they spend a lot of time building deployment tools that are cloud-agnostic.
+
+25:32.380 --> 25:36.060
+Cool as they can spin up databases inside Kubernetes so you can run the whole Stack anywhere.
+
+25:36.060 --> 25:44.600
+But the Azure SPI team looked at all the stateful data services OSDU needs, databases, blob storage, event buses, and they made a hard rule.
+
+25:45.260 --> 25:48.420
+If Azure has a managed POS equivalent, we are using it.
+
+25:48.940 --> 25:55.080
+So instead of running a fragile MongoDB instance inside Kubernetes, OSDU records go to Cosmos DB.
+
+25:55.080 --> 25:58.860
+Entitlements go to Cosmos DB using the Gremlin API for graph queries.
+
+25:59.340 --> 26:00.980
+Blobs go straight to Azure storage.
+
+26:01.460 --> 26:03.080
+Events go to Azure service bus.
+
+26:03.240 --> 26:03.580
+Yes.
+
+26:03.780 --> 26:08.660
+And they explicitly state in the ADRs, portability is completely out of scope.
+
+26:08.980 --> 26:11.280
+That is a bold thing to write in an open source project.
+
+26:11.440 --> 26:13.260
+It is, but it clarifies the mission.
+
+26:13.260 --> 26:17.240
+And the phrase they use is, moving to AWS is a fork, not a flag.
+
+26:17.580 --> 26:21.920
+Meaning they are not going to clutter their deployment scripts with, if Oz then do this, else do that.
+
+26:22.100 --> 26:24.600
+They are not trying to build a generic deployment tool.
+
+26:24.680 --> 26:26.320
+They are building an Azure testing substrate.
+
+26:26.320 --> 26:31.920
+And by offloading the state to Pias, they reduce the operational burden on the Kubernetes cluster massively.
+
+26:31.940 --> 26:32.300
+Well, absolutely.
+
+26:32.800 --> 26:43.080
+Because if you are spinning up and tearing down environments constantly for testing, waiting for a massive distributed database to initialize inside Kubernetes takes forever and fails often.
+
+26:43.240 --> 26:43.460
+Oh.
+
+26:43.700 --> 26:46.800
+With Cosmos DB, the state lives outside the cluster.
+
+26:47.000 --> 26:47.360
+Exactly.
+
+26:47.680 --> 26:55.680
+You could literally delete the entire Kubernetes cluster, provision a new one, and your data survives because it was never inside the pods to begin with.
+
+26:55.680 --> 26:56.400
+Precisely.
+
+26:56.900 --> 26:58.520
+But they couldn't push everything out.
+
+26:58.940 --> 27:01.920
+Some stateful systems had to stay inside the Kubernetes cluster.
+
+27:02.000 --> 27:02.360
+Why?
+
+27:02.460 --> 27:06.240
+If the rule is use managed services, why did anything stay behind?
+
+27:06.560 --> 27:08.920
+Sometimes you hit a hard technical constraint.
+
+27:09.200 --> 27:11.260
+Elasticsearch, for example, stays in the cluster.
+
+27:11.460 --> 27:13.000
+Why not use Azure AI Search?
+
+27:13.280 --> 27:20.280
+Because Azure AI Search is not API compatible with the highly specific queries the OSDU search service expects.
+
+27:20.460 --> 27:21.340
+That's not a preference.
+
+27:21.420 --> 27:22.060
+It's a blocker.
+
+27:22.060 --> 27:29.480
+They have to run a three-node Elasticsearch cluster with 128 gigabytes of storage directly inside Kubernetes.
+
+27:29.640 --> 27:30.760
+Wow, that is a heavy footprint.
+
+27:31.040 --> 27:31.380
+It is.
+
+27:31.520 --> 27:35.160
+Then there's Redis and Postgresful, which is required for Apache Airflow.
+
+27:35.280 --> 27:36.620
+They kept those in cluster as well.
+
+27:36.860 --> 27:40.240
+But Azure has managed Redis and managed Postgresful.
+
+27:40.460 --> 27:41.220
+Why not use them?
+
+27:41.380 --> 27:41.760
+Cost.
+
+27:41.760 --> 27:52.600
+If you are spinning up dozens of ephemeral development environments every week, provisioning managed instances for Redis and Postgres every single time would absolutely bankrupt the development budget.
+
+27:52.960 --> 27:56.500
+It is cheaper and faster to run them ephemerally in cluster for testing.
+
+27:56.980 --> 27:59.820
+Okay, so the state is split between Pias and the cluster.
+
+28:00.080 --> 28:01.700
+Who is actually running this cluster?
+
+28:02.200 --> 28:07.140
+Because managing Kubernetes nodes, scaling them, and dealing with networking is a full-time job.
+
+28:07.140 --> 28:09.140
+They are using AKS Automatic.
+
+28:09.380 --> 28:13.240
+This means they are letting Azure handle the really tedious Kubernetes chores.
+
+28:13.960 --> 28:21.880
+AKS Automatic handles node provisioning dynamically using Carpenter, so it spins up exactly the right size virtual machine for the workload in seconds.
+
+28:22.060 --> 28:22.260
+Nice.
+
+28:22.560 --> 28:27.420
+It manages the Istio service mesh for them, and it enforces strict deployment safeguards.
+
+28:27.420 --> 28:34.640
+Let's talk about those deployment safeguards, because they actually forced the team into a very interesting decision regarding Helm charts.
+
+28:35.160 --> 28:37.600
+Helm is basically the package manager for Kubernetes.
+
+28:38.020 --> 28:43.460
+Usually if you want to deploy a community service, you just download the upstream Helm chart and run it.
+
+28:43.580 --> 28:46.320
+But the SPI team rejected the upstream charts.
+
+28:46.560 --> 28:47.120
+They had to.
+
+28:47.700 --> 28:50.620
+AKS Automatic enforces strict security profiles.
+
+28:50.620 --> 28:58.700
+It uses Azure policy to block any container that tries to run as a root user or demands elevated Linux capabilities like Capnet admin.
+
+28:59.180 --> 29:00.540
+Which is standard security best practice.
+
+29:00.760 --> 29:01.240
+It is.
+
+29:01.720 --> 29:09.100
+But if you rely on an upstream community Helm chart, the community might bump a version and accidentally drop the run as non-root.
+
+29:09.540 --> 29:10.020
+True flag.
+
+29:10.160 --> 29:10.440
+Ah.
+
+29:10.720 --> 29:12.780
+And if they drop that flag, what happens?
+
+29:12.920 --> 29:15.220
+The AKS safeguards will instantly reject the deployment.
+
+29:15.220 --> 29:21.660
+The pod will never start, and you are left debugging a cryptic Kubernetes admission error, trying to figure out why the pipeline failed.
+
+29:22.080 --> 29:28.060
+To prevent this, the stack team maintains one single, locally controlled Helm chart for all OSDU services.
+
+29:28.220 --> 29:29.840
+So they centralize the deployment logic.
+
+29:30.260 --> 29:30.740
+Exactly.
+
+29:30.980 --> 29:34.840
+They bake all the strict security compliance directly into that one chart.
+
+29:35.160 --> 29:43.680
+It guarantees that every single service drops all capabilities and runs as a non-root user, rendering the deployments immune to upstream chart drift.
+
+29:43.680 --> 29:46.700
+So we have this architecture that is heavily tied to Azure.
+
+29:47.060 --> 29:55.180
+We have 50 different resources to provision virtual networks, NAT gateways, key vaults, service buzz topics, Cosmos DB accounts.
+
+29:55.660 --> 30:03.020
+If I'm an engineer looking to automate this, my first thought is Terraform, or maybe just a giant Python script that calls the Azure CLI.
+
+30:03.320 --> 30:04.940
+How do they solve the orchestration problem?
+
+30:05.220 --> 30:10.580
+The division of labor here is very deliberate, and they rejected both of those initial ideas for very specific reasons.
+
+30:10.720 --> 30:11.660
+Let's start with Terraform.
+
+30:11.880 --> 30:12.980
+Why reject Terraform?
+
+30:12.980 --> 30:15.700
+It's the industry standard for infrastructure as code.
+
+30:16.020 --> 30:20.160
+Terraform is fantastic, but it requires maintaining statefiles.tfstate.
+
+30:20.600 --> 30:29.120
+In a fast-moving, highly automated development platform where CI pipelines are constantly spinning up and tearing down environments, dealing with state file locking is a nightmare.
+
+30:29.460 --> 30:29.640
+Right.
+
+30:29.640 --> 30:37.600
+If a CI runner gets killed due to an out-of-memory error while it holds the lock on the state file in a storage blob, the state is locked forever.
+
+30:38.340 --> 30:39.640
+The next pipeline run fails.
+
+30:40.280 --> 30:43.760
+You have to manually go in, break the lock, and hope the state isn't corrupted.
+
+30:43.940 --> 30:44.320
+Exactly.
+
+30:44.320 --> 30:47.240
+It's an operational headache they explicitly didn't want.
+
+30:47.680 --> 30:50.940
+So then you might say, what about a pure CLI orchestrator?
+
+30:51.320 --> 30:56.140
+Just a massive Python script calling as resource, create sequentially.
+
+30:56.140 --> 30:58.340
+But a Python script is imperative.
+
+30:58.660 --> 31:00.020
+It just executes commands.
+
+31:00.400 --> 31:02.000
+It lacks preview capabilities.
+
+31:02.120 --> 31:05.820
+You can't run a what-if command to see what the script is going to change before it actually does it.
+
+31:05.900 --> 31:06.140
+Right.
+
+31:06.400 --> 31:12.800
+And maintaining the dependency ordering, making sure the network exists before the database, is incredibly brittle in a pure script.
+
+31:12.800 --> 31:14.360
+So they split the problem in half.
+
+31:14.840 --> 31:18.680
+To provision the Azure resources, they use handwritten BICEP templates.
+
+31:19.000 --> 31:22.320
+BICEP being Microsoft's declarative language for Azure resources.
+
+31:22.480 --> 31:22.740
+Yes.
+
+31:23.060 --> 31:24.300
+BICEP is stateless.
+
+31:24.700 --> 31:28.440
+It queries the actual Azure control plane directly to figure out what needs to change.
+
+31:28.720 --> 31:29.780
+It integrates natively.
+
+31:29.900 --> 31:31.600
+It handles dependency graphs automatically.
+
+31:31.860 --> 31:33.700
+And it gives you a what-if dry run.
+
+31:33.960 --> 31:34.180
+Okay.
+
+31:34.280 --> 31:35.740
+So BICEP handles the cloud.
+
+31:36.220 --> 31:37.560
+What handles Kubernetes?
+
+31:38.040 --> 31:40.040
+For the Kubernetes side, they use Flux.
+
+31:40.280 --> 31:41.780
+Flux is a GitOps controller.
+
+31:41.780 --> 31:43.020
+I love GitOps.
+
+31:43.420 --> 31:45.900
+Explain how Flux changes the deployment paradigm.
+
+31:46.080 --> 31:49.340
+Normally, your CI pipeline pushes code into the cluster.
+
+31:49.680 --> 31:50.660
+That's a push model.
+
+31:51.200 --> 31:52.100
+Flux is a pull model.
+
+31:52.580 --> 31:54.640
+Flux lives inside the Kubernetes cluster.
+
+31:54.900 --> 31:57.060
+It constantly watches a specific Git repository.
+
+31:57.620 --> 32:01.260
+And it forces the cluster to match the manifest declared in that repository.
+
+32:01.920 --> 32:03.760
+It's an endless reconciliation loop.
+
+32:04.040 --> 32:11.340
+So if I manually go into the cluster and delete a deployment, Flux sees the drift from the Git repo and instantly recreates it.
+
+32:11.340 --> 32:11.780
+Exactly.
+
+32:12.500 --> 32:13.760
+So the workflow is this.
+
+32:14.080 --> 32:17.540
+The Python CLI, a command called spyup, is just a thin wrapper.
+
+32:18.020 --> 32:20.080
+It kicks off the BICEP templates to build the cloud.
+
+32:20.280 --> 32:22.100
+It sets up a few necessary configurations.
+
+32:22.460 --> 32:25.480
+It installs Flux into the cluster, points Flux at the repository.
+
+32:25.920 --> 32:27.960
+And then the CLI gets completely out of the way.
+
+32:28.260 --> 32:30.320
+Flux takes over and hydrates the cluster.
+
+32:30.460 --> 32:33.440
+Which brings us to a part of this deep dive that absolutely blew my mind.
+
+32:33.440 --> 32:39.160
+When you are deploying 50 resources and dozens of microservices, they all have to talk to each other.
+
+32:39.440 --> 32:45.680
+Normally, that means generating passwords, connection strings, and API keys and storing them in Azure Key Vault.
+
+32:46.320 --> 32:49.480
+But the SPI team made a radical security decision.
+
+32:50.560 --> 32:55.380
+How do you secure a massive distributed system without creating secrets that can leak?
+
+32:55.720 --> 32:57.160
+You turn the keys off entirely.
+
+32:57.360 --> 32:58.200
+It sounds impossible.
+
+32:58.340 --> 32:58.800
+Explain this.
+
+32:58.800 --> 33:00.740
+It is a profound security posture.
+
+33:01.100 --> 33:08.260
+When they write the BICEP templates, they explicitly disable local authentication for Cosmos DB, Service Bus, and Storage.
+
+33:08.840 --> 33:14.640
+Disabling local authentication means you literally cannot generate a password or a connection string for that database.
+
+33:15.080 --> 33:17.580
+The feature is turned off at the Azure control plane level.
+
+33:17.760 --> 33:18.240
+Exactly.
+
+33:18.580 --> 33:20.720
+This means there are no connection strings.
+
+33:21.100 --> 33:23.640
+There is no password to store in Azure Key Vault.
+
+33:23.640 --> 33:28.300
+There is no secret for a developer to accidentally print to a log file or commit to GitHub.
+
+33:28.840 --> 33:31.180
+A storm credential is a credential that can be stolen.
+
+33:31.700 --> 33:35.380
+By not having them, they eliminate an entire class of security vulnerabilities.
+
+33:35.680 --> 33:43.180
+But if there are no passwords, how does the storage service inside Kubernetes prove to Cosmos DB that it's allowed to read the data?
+
+33:43.380 --> 33:45.280
+They use Azure Workload Identity.
+
+33:45.540 --> 33:48.040
+It relies on a concept called identity federation.
+
+33:48.040 --> 33:58.220
+When a Kubernetes pod starts up, the cluster injects a short-lived, projected EnterID JSON web token, a JWT, directly into the pod's file system.
+
+33:58.340 --> 33:59.620
+Okay, so the pod has a token.
+
+33:59.840 --> 34:02.740
+But this token isn't a static secret you can easily copy and paste.
+
+34:02.960 --> 34:11.060
+It's a cryptographic assertion cryptographically bound to that specific pod's service account, and it is rotated automatically by Kubernetes every few hours.
+
+34:11.500 --> 34:15.540
+When the pod wants to talk to Cosmos DB, it presents this token.
+
+34:15.540 --> 34:26.320
+And Cosmos DB looks at the token, verifies the cryptographic signature with Microsoft's EnterID, checks its internal role assignments to see if that identity has data contributor access, and lets it in.
+
+34:26.720 --> 34:27.800
+No passwords required.
+
+34:27.980 --> 34:28.360
+Exactly.
+
+34:28.780 --> 34:31.160
+That handles how the internal services talk to Azure.
+
+34:31.400 --> 34:32.880
+But that is only half the battle.
+
+34:33.340 --> 34:34.740
+What about inbound requests?
+
+34:35.000 --> 34:40.400
+How does a user or a downstream service prove who they are when calling an OSDU API from the outside?
+
+34:40.400 --> 34:45.260
+Right, because OSDU was built years ago by the community, and it has some legacy baggage.
+
+34:46.180 --> 34:57.240
+The documentation mentions that the Azure provider code in OSDU expects legacy HTTP headers for authorization, specifically headers called xappied and xusered.
+
+34:57.360 --> 34:57.640
+Right.
+
+34:57.940 --> 35:04.160
+It expects these because it was originally built around an older Spring Boot filter chain that looked for those exact strings.
+
+35:04.160 --> 35:07.680
+And this raises a massive red flag for any security architect.
+
+35:08.260 --> 35:15.500
+If a service blindly trusts an HTTP header for authorization, what stops a malicious actor from just smoothing that header?
+
+35:15.700 --> 35:26.040
+If I open my terminal right now and use curl to send a request to the API, and I just manually add the header xuserade superadmin, does the legacy application code just grant me admin access?
+
+35:26.220 --> 35:28.660
+If the architecture were naive, yes, it absolutely would.
+
+35:28.720 --> 35:30.740
+The application would read the header and trust it.
+
+35:30.740 --> 35:34.080
+So how do they prevent that without rewriting the entire legacy application code?
+
+35:34.200 --> 35:38.640
+The solution here is incredibly elegant, and it relies on the Istio service mesh.
+
+35:38.920 --> 35:40.720
+Istio operates using a sidecar pattern.
+
+35:41.360 --> 35:47.620
+They deployed an Envoy proxy filter container into the exact same pod as every single OSDU application container.
+
+35:48.020 --> 35:49.800
+So the proxy sits right next to the app.
+
+35:49.900 --> 35:54.420
+Right, and this proxy intercepts all network traffic before it even reaches the application's port.
+
+35:54.420 --> 36:06.580
+When a request comes in from the outside, the Envoy filter completely strips away any incoming xappad or xuserade headers that a user might have maliciously tried to inject.
+
+36:06.740 --> 36:08.220
+It sanitizes the request.
+
+36:08.380 --> 36:12.660
+Okay, so the spoofed headers are gone, but the application still needs those headers to function.
+
+36:13.060 --> 36:13.840
+Where do they come from?
+
+36:14.180 --> 36:19.160
+The user is required to provide a valid JSON web token in the authorization header.
+
+36:19.160 --> 36:23.440
+The Envoy filter validates the cryptographic signature of that JWT.
+
+36:23.780 --> 36:29.360
+If the token is valid, the Envoy filter extracts the trusted cryptographic claims from inside that token,
+
+36:29.560 --> 36:37.260
+and the proxy itself repopulates the xuserade and xappad headers before passing the request to the application container over a local host.
+
+36:37.440 --> 36:38.180
+That is brilliant.
+
+36:38.340 --> 36:42.800
+The legacy application code gets the exact headers it expects, so it doesn't need to be rewritten.
+
+36:42.800 --> 36:48.880
+But those headers are guaranteed to have been cryptographically verified and injected by the infrastructure, not the user.
+
+36:49.220 --> 36:51.560
+It completely neutralizes header spoofing.
+
+36:51.960 --> 36:56.980
+It's a perfect example of infrastructure bending to accommodate the realities of legacy code securely.
+
+36:57.620 --> 36:59.880
+But the complexity doesn't stop there.
+
+37:00.240 --> 37:05.740
+Because when you are mapping claims from a token to a header, the exact name of the claim matters.
+
+37:06.180 --> 37:11.520
+And I noticed a quirky detail in the documentation about V1 versus V2 enter ID token.
+
+37:11.520 --> 37:13.720
+Yes. I saw that too. What is that about?
+
+37:14.020 --> 37:17.140
+It's a fascinating little detail about the evolution of identity standards.
+
+37:17.780 --> 37:25.000
+When the Envoy filter maps the claims to the headers, the xappad header is supposed to be populated from the token's application identifier claim.
+
+37:25.540 --> 37:30.180
+In an older V1 enter ID token, that claim is literally called APID.
+
+37:30.640 --> 37:31.160
+Makes sense.
+
+37:31.300 --> 37:33.200
+But Microsoft updated their standards.
+
+37:33.200 --> 37:41.780
+In a newer V2 token aligning with OpenID Connect specs, Microsoft changed the claim name from APID to ASP, which stands for Authorized Party.
+
+37:42.360 --> 37:48.040
+So if a user sends a V2 token, the Envoy filter looks for APID, doesn't find it, and the mapping silently fails.
+
+37:48.300 --> 37:51.380
+The legacy application gets an empty header and denies access.
+
+37:51.380 --> 37:57.180
+Precisely. And this explains a seemingly bizarre choice in the SPI team's CLI tooling.
+
+37:57.840 --> 38:06.360
+When their CLI script mints a test token for developers to use during local debugging, it deliberately hits the legacy V1 Microsoft authentication endpoint.
+
+38:06.940 --> 38:15.440
+It does this solely so the resulting token contains the APID claim, ensuring the Envoy filter mapping works exactly as the legacy OSDU code expects.
+
+38:15.440 --> 38:24.300
+It's those tiny cascading dependencies from a community standard change down to a proxy mapping rule that makes system architecture so wild.
+
+38:25.200 --> 38:28.280
+Okay, I have to pause and push back on one thing regarding identity, though.
+
+38:28.440 --> 38:32.940
+Because as much as I love the Envoy filter, I noticed something in the ADRs that alarmed me.
+
+38:33.120 --> 38:33.520
+What's that?
+
+38:33.680 --> 38:38.340
+The documentation mentions that all these different OSDU services search, storage, schema shortages,
+
+38:38.660 --> 38:43.260
+they all share a single, identical managed identity for accessing Azure resources.
+
+38:43.260 --> 38:48.820
+Wait, if one managed identity is shared by all the services, haven't they just created a massive security crater?
+
+38:49.000 --> 38:49.640
+How do you figure?
+
+38:50.000 --> 38:57.140
+If a hacker compromises the SERP service, that pod has the exact same identity and therefore the exact same permissions as the entitlement service.
+
+38:57.500 --> 38:59.120
+There is no blast radius containment.
+
+38:59.460 --> 39:05.240
+You've spotted a significant compromise, and it's the exact tradeoff they explicitly documented and accepted.
+
+39:05.460 --> 39:06.660
+Why would they accept that risk?
+
+39:06.780 --> 39:08.040
+They considered the alternative.
+
+39:08.040 --> 39:14.280
+The alternative is creating a unique, distinct, managed identity for every single microservice.
+
+39:14.840 --> 39:27.680
+But if they did that, the sheer volume of role-based access control assignments, the RBAC, and the federated credential configurations required in the BICEP templates would be an absolute nightmare to maintain and deploy.
+
+39:27.780 --> 39:27.920
+Right.
+
+39:28.000 --> 39:32.680
+You'd be deploying dozens of identities and hundreds of role assignments just to get the cluster up.
+
+39:32.680 --> 39:33.180
+Exactly.
+
+39:33.180 --> 39:40.500
+And when they looked at the actual API surface of OSDU, they realized the permissions didn't differentiate enough to justify that complexity.
+
+39:41.340 --> 39:45.420
+Almost every service needs read-write access to Cosmos DB and storage anyway.
+
+39:45.640 --> 39:47.900
+The documentation states this cost openly.
+
+39:48.400 --> 39:52.120
+This is a development and testing platform, not a production banking environment.
+
+39:52.840 --> 39:58.920
+They deliberately chose operational simplicity and deployment speed over granular service-to-service internal isolation.
+
+39:58.920 --> 39:59.880
+Fair enough.
+
+40:00.060 --> 40:00.920
+They know the risk.
+
+40:01.040 --> 40:02.860
+They documented the risk, and they accepted it.
+
+40:03.540 --> 40:04.660
+Moving on to bootstrapping.
+
+40:04.980 --> 40:07.500
+So we have our ultra-secure cluster running.
+
+40:07.740 --> 40:09.280
+The databases are provisioned.
+
+40:09.300 --> 40:10.080
+The pods are running.
+
+40:10.220 --> 40:11.980
+The envoy filters are intercepting traffic.
+
+40:12.180 --> 40:16.860
+But if you query the OSDU API right now, it returns absolutely nothing.
+
+40:16.980 --> 40:19.460
+An empty database is just a very expensive heater.
+
+40:19.600 --> 40:19.800
+Right.
+
+40:19.800 --> 40:25.600
+How does the system automatically transition from an empty state to actually being a functional data environment?
+
+40:25.860 --> 40:28.120
+Because you can't just load data randomly.
+
+40:28.480 --> 40:29.420
+There are dependencies.
+
+40:30.120 --> 40:33.000
+This is where a concept they call bootstrap as data comes in.
+
+40:33.360 --> 40:36.980
+They use one single flux-managed Helm chart called Osdu Spy Init.
+
+40:37.600 --> 40:40.180
+This chart doesn't deploy long-running application services.
+
+40:40.660 --> 40:42.800
+It deploys one-shot Kubernetes jobs.
+
+40:43.280 --> 40:49.480
+These jobs run once, execute a script to seed the initial data required for OSDU to wake up, and then terminate.
+
+40:49.480 --> 40:50.860
+What kind of data are we talking about?
+
+40:51.120 --> 40:55.560
+It creates the core partition records, which tell the system what a tenant is.
+
+40:55.880 --> 41:01.980
+It establishes the root entitlement groups in the graph database, which is required for anyone to have admin rights.
+
+41:02.340 --> 41:10.960
+And it seeds the default legal tags, because in the energy industry, you cannot ingest a piece of data unless it is tagged with a legal compliance policy.
+
+41:11.740 --> 41:15.020
+And the order of operations here must be incredibly delicate.
+
+41:15.640 --> 41:18.440
+It is a strict dependency graph enforced by flux.
+
+41:18.440 --> 41:20.740
+You can't just fire all these jobs at once.
+
+41:20.860 --> 41:31.740
+For example, you cannot load the schemas, and there are over 1,300 complex JSON schemas that define industry standards until the entitlement service is up and running and seeded with root groups.
+
+41:31.840 --> 41:32.060
+Why?
+
+41:32.380 --> 41:39.000
+Because the schema loader job has to authenticate itself against the entitlements API just to get permission to write the schemas into the database.
+
+41:39.280 --> 41:41.040
+So the dependency graph looks like this.
+
+41:41.040 --> 41:45.300
+The certificate authority bundle waits for Redis and Elasticsearch to be healthy.
+
+41:45.740 --> 41:48.880
+The core OSDU services wait for the CA bundle.
+
+41:49.380 --> 41:53.100
+The initialization jobs wait for the core services to respond to health checks.
+
+41:53.360 --> 41:57.740
+And the massive schema loader waits for the initialization jobs to finish creating the admin groups.
+
+41:57.880 --> 41:59.440
+It's a perfectly choreographed dance.
+
+41:59.440 --> 42:04.400
+But there's one fascinating exception to this strict dependency graph that I noticed in the manifests.
+
+42:05.520 --> 42:10.600
+The legal tag initialization job has a specific metadata label on it.
+
+42:11.120 --> 42:11.400
+Gating.
+
+42:12.120 --> 42:12.380
+False.
+
+42:13.060 --> 42:16.200
+Why would they explicitly ungate the legal tags?
+
+42:16.700 --> 42:21.460
+If legal tags are required to ingest data, shouldn't their failure halt the deployment?
+
+42:21.460 --> 42:26.440
+This is a very mature distinction they made between infrastructure health and application data state.
+
+42:27.060 --> 42:29.180
+A missing legal tag is a data problem.
+
+42:29.620 --> 42:31.220
+It is not a platform problem.
+
+42:31.400 --> 42:32.060
+Explain the difference.
+
+42:32.260 --> 42:37.540
+If the legal service API is up and running, the database is healthy and the networking is fine, the infrastructure is successful.
+
+42:38.100 --> 42:43.420
+If the initialization script fails to seed a specific default tag because of a typo in a JSON file,
+
+42:43.860 --> 42:48.640
+that shouldn't block the entire Kubernetes cluster from reporting that it is fundamentally ready to flex.
+
+42:48.640 --> 42:53.380
+It prevents an application-level data quirk from holding the infrastructure reporting hostage.
+
+42:53.680 --> 42:54.600
+That makes a lot of sense.
+
+42:55.020 --> 43:00.820
+You don't want a pipeline to show a red infrastructure failure when the only issue is a missing text spring in a database.
+
+43:01.380 --> 43:05.680
+Now, while all this initialization is happening, there is a fundamental mechanical question.
+
+43:06.300 --> 43:10.720
+How does the cluster actually know which specific container image to run for each service?
+
+43:11.020 --> 43:13.100
+Because remember, this is a CICD environment.
+
+43:13.100 --> 43:18.860
+The Azure SBI factory is constantly building new images with new Git commit SHAs every day.
+
+43:19.320 --> 43:21.920
+This relies on a mechanism they call the image lock.
+
+43:22.220 --> 43:24.980
+It is arguably the most important piece of state in the cluster.
+
+43:25.660 --> 43:29.260
+It is a single Kubernetes config map named Osdo image lock.
+
+43:29.640 --> 43:32.520
+It acts as the absolute source of truth for image references.
+
+43:32.780 --> 43:33.320
+What's inside it?
+
+43:33.540 --> 43:34.920
+It is a simple key value store.
+
+43:34.920 --> 43:41.800
+It holds the repository URL, the tag, and the exact cryptographic SHA-256 digest for every single service.
+
+43:42.140 --> 43:42.940
+Storage image.
+
+43:43.140 --> 43:45.100
+Shaku56.abc123.
+
+43:45.160 --> 43:46.180
+So how does Flux use that?
+
+43:46.480 --> 43:54.660
+When Flux, the GitOps controller, renders the Kubernetes manifest from the Git repository, it uses a post-build substitution step.
+
+43:55.020 --> 43:59.620
+If you look at the raw deployment manifest in Git, it doesn't contain an image tag at all.
+
+43:59.720 --> 44:01.280
+It just has a variable placeholder.
+
+44:01.280 --> 44:10.920
+Flux reads the manifest, reads the config map, and injects the exact digest found in that config map into the pod definition before applying it to the cluster.
+
+44:11.200 --> 44:11.880
+I love this.
+
+44:12.200 --> 44:14.920
+It's exactly like a master casting board at a theater.
+
+44:15.300 --> 44:20.040
+The script, which is the Kubernetes manifest in Git, just says lead actor walks on stage.
+
+44:20.280 --> 44:21.860
+The script doesn't care who the actor is.
+
+44:22.200 --> 44:27.440
+The casting board, the config map, sitting in the theater lobby is what dictates exactly who is playing that role tonight.
+
+44:27.440 --> 44:34.100
+And extending that analogy, if the lead actor gets sick and you need an understudy, you don't rewrite the script, you just update the casting board in the lobby.
+
+44:34.520 --> 44:40.120
+What's brilliant here is that changing an image doesn't require making a Git commit to modify the application manifests.
+
+44:40.580 --> 44:50.260
+You just update the config map in the cluster, and Flux instantly sees the change, realizes the running pod doesn't match the new casting board, and performs a rolling update to the new image.
+
+44:50.260 --> 44:56.980
+And this specific mechanism paves the way for the most complex part of this entire architecture, the handshake.
+
+44:57.300 --> 44:59.300
+We have finally arrived at the handshake.
+
+44:59.560 --> 45:00.580
+Okay, let's set the scene.
+
+45:00.780 --> 45:03.400
+We have our engineered code maintained in the permanent fork.
+
+45:03.740 --> 45:06.060
+The factory just built a brand new container image.
+
+45:06.340 --> 45:11.420
+We have our running Azure platform bootstrapped and secured with Envoy filters and workload identities.
+
+45:11.420 --> 45:20.920
+Now, how does a GitHub action running on a random Microsoft-hosted runner somewhere in the cloud safely test its newly built image on this live, highly secured Azure cluster?
+
+45:21.380 --> 45:24.480
+This solves what the team calls the isolated test problem.
+
+45:24.980 --> 45:34.480
+When the community ran OSDU, they kept all the testing knowledge, the API endpoints, the tenant IDs, the client secrets hidden away in their own internal private cloud pipelines.
+
+45:34.980 --> 45:40.180
+When Azure created this permanent fork and severed those pipelines, the integration tests were orphaned.
+
+45:40.180 --> 45:41.900
+The tests existed in the source code.
+
+45:41.980 --> 45:47.320
+They compiled perfectly, but nobody knew how to actually run them because the tests didn't know where to point.
+
+45:47.500 --> 45:47.960
+Exactly.
+
+45:47.960 --> 45:55.640
+The obvious answer, the way most people solve this, is just to store the cluster endpoints in GitHub secrets or variables, right?
+
+45:55.720 --> 45:55.840
+Right.
+
+45:55.900 --> 46:02.480
+You just add gateway URL is https.mycluster.azure.com into the GitHub repository settings.
+
+46:02.660 --> 46:03.960
+That approach was rejected immediately.
+
+46:04.980 --> 46:05.200
+Why?
+
+46:05.620 --> 46:07.780
+Because these environments are ephemeral.
+
+46:07.780 --> 46:09.900
+They are rebuilt weekly, sometimes daily.
+
+46:10.120 --> 46:11.400
+IP addresses change.
+
+46:11.520 --> 46:12.800
+Gateway URLs change.
+
+46:13.220 --> 46:14.600
+Tenant IDs might change.
+
+46:14.880 --> 46:19.200
+If you hardcode them in GitHub, your tests will break every single week when the infrastructure cycles.
+
+46:19.620 --> 46:21.340
+You'd spend all your time updating variables.
+
+46:21.820 --> 46:23.840
+So instead, they designed a two-sided contract.
+
+46:24.100 --> 46:26.840
+They split the knowledge into a descriptor and facts.
+
+46:27.340 --> 46:31.160
+Let's break that down because it's a beautiful pattern for decoupling CI from CD.
+
+46:31.640 --> 46:34.320
+The fork repository, the code side, owns the descriptor.
+
+46:34.320 --> 46:38.420
+This is a file called .spyservice.yamanl checked into the repo.
+
+46:38.820 --> 46:41.060
+It declares the symbolic needs of the test suite.
+
+46:41.540 --> 46:47.240
+It basically says, in order to run these tests, I need a gateway URL, I need a tenant ID, and I need a data partition.
+
+46:47.480 --> 46:49.020
+It doesn't know what the values are.
+
+46:49.200 --> 46:50.760
+It just declares what it needs.
+
+46:50.900 --> 46:51.280
+Exactly.
+
+46:51.760 --> 46:54.480
+On the other side, the platform owns the facts.
+
+46:54.480 --> 47:03.740
+The live environment can generate a JSON file via CLI command spy info.json reporting exactly what the environment actually is at that exact moment.
+
+47:04.380 --> 47:06.420
+Here is my gateway URL today.
+
+47:06.640 --> 47:08.280
+Here is my tenant ID today.
+
+47:08.580 --> 47:13.540
+And the GitHub Action Validation Lane is the mediator that joins these two sides together at runtime.
+
+47:13.540 --> 47:23.960
+It reads the symbolic needs from the descriptor, fetches the actual values from the facts by querying the cluster, and binds them together as environment variables just before running the tests.
+
+47:24.400 --> 47:25.800
+It is entirely dynamic.
+
+47:25.800 --> 47:29.320
+It completely decouples the test definitions from the infrastructure state.
+
+47:29.840 --> 47:36.960
+But to fetch those facts, and more importantly, to deploy the new image to the cluster for testing, the GitHub Action needs access to the cluster.
+
+47:37.160 --> 47:39.060
+And this is where my security alarms go off again.
+
+47:39.060 --> 47:45.860
+If the GitHub test runner needs to deploy a brand new image to the cluster, doesn't GitHub need right access to Kubernetes?
+
+47:46.600 --> 47:52.200
+If someone compromises that GitHub token or injects malicious code into a pull request, they own the cluster.
+
+47:52.480 --> 47:56.140
+It would be a terrifying risk, which is why the security boundary here is rigorous.
+
+47:57.360 --> 47:59.780
+The GitHub token does not have cluster admin rights.
+
+48:00.120 --> 48:01.260
+Then how does it do anything?
+
+48:01.440 --> 48:03.200
+It uses workload identity federation.
+
+48:03.200 --> 48:10.000
+The GitHub Action runner is only granted permission to assume a very specific lockdown deploy identity in Azure.
+
+48:10.700 --> 48:17.100
+And that deploy identity has absolutely zero kubektal delete or Kubernetes secret read access.
+
+48:17.260 --> 48:17.600
+None.
+
+48:18.100 --> 48:19.660
+Then how does it deploy the image?
+
+48:19.900 --> 48:23.000
+It relies entirely on the image lock config map we discussed earlier.
+
+48:23.560 --> 48:30.480
+The deploy identity is granted Kubernetes RBAC permissions to edit exactly one single object in the entire cluster.
+
+48:30.480 --> 48:33.300
+The OSDU image lock config map, that's it.
+
+48:33.360 --> 48:34.520
+It cannot touch anything else.
+
+48:34.640 --> 48:36.660
+Oh, it just updates the casting board.
+
+48:36.940 --> 48:46.600
+And because Flux, which lives inside the cluster and already has the necessary admin permissions, is constantly watching that casting board, Flux is the one that actually performs the pod rollout.
+
+48:46.740 --> 48:47.140
+Exactly.
+
+48:47.400 --> 48:48.460
+GitOps stays alive.
+
+48:48.700 --> 48:51.640
+The external caller GitHub just asks for a change in the lock.
+
+48:51.820 --> 48:54.240
+And the internal system Flux annexes it safely.
+
+48:54.400 --> 48:58.980
+Which brings us to the exact chronological execution of this handshake transaction.
+
+48:58.980 --> 49:01.980
+The documentation breaks this down into three phases.
+
+49:02.220 --> 49:04.780
+The borrow, the proof, and the restore.
+
+49:05.260 --> 49:07.860
+Walk me through exactly what happens when I open a pull request.
+
+49:08.040 --> 49:09.460
+Step one is the borrow.
+
+49:10.180 --> 49:15.420
+The GitHub Action lane builds your new candidate image and pushes it to an Azure container registry.
+
+49:16.160 --> 49:19.560
+Then it runs a CLI command spy service pin.
+
+49:20.080 --> 49:20.700
+What does that do?
+
+49:20.920 --> 49:27.940
+It authenticates using the federated identity, reaches into the cluster, and writes an ephemeral pin to that image lock config map.
+
+49:27.940 --> 49:33.960
+It says, for the storage service, ignore the stable git manifest for a moment and run my new candidate image digest instead.
+
+49:34.520 --> 49:40.300
+And it notes the GitHub run ID directly on the pin, so everyone knows exactly which CI pipeline requested the change.
+
+49:40.460 --> 49:45.440
+As we said, Flux sees this change to the config map and instantly rolls the cluster pod to the new image.
+
+49:45.580 --> 49:45.760
+Right.
+
+49:46.040 --> 49:47.600
+Step two is the proof.
+
+49:47.900 --> 49:50.780
+But the GitHub lane can't just assume the pod started successfully, right?
+
+49:51.080 --> 49:52.760
+A bad image might crash loop.
+
+49:52.760 --> 49:53.320
+Exactly.
+
+49:53.740 --> 49:57.000
+So the lane pulls the cluster using spy service verify.
+
+49:57.580 --> 50:05.880
+It continually checks the live pod in the cluster until the pod actually reports back that its running image ID matches the newly built digest.
+
+50:06.400 --> 50:10.800
+Once the pod is verified as running the new code, it has to test the API.
+
+50:11.180 --> 50:13.080
+And testing an API requires authentication.
+
+50:13.080 --> 50:13.560
+Yes.
+
+50:13.920 --> 50:18.340
+So the lane mints three distinct UNTRA ID tokens using the environment fax.
+
+50:18.680 --> 50:24.820
+It mints one token with full resolve or admin access, one as a standard member, and one with no access whatsoever.
+
+50:25.120 --> 50:26.500
+Why three different tokens?
+
+50:26.660 --> 50:29.700
+Why not just use the admin token to prove the endpoints work?
+
+50:29.940 --> 50:38.060
+To prove that the endpoints not only work, but that the authorization rules are correctly enforced by the Envoy filter and the application across different permission levels.
+
+50:38.060 --> 50:40.320
+It runs the test suite three times.
+
+50:40.520 --> 50:43.500
+It proves that the no access token actually gets rejected.
+
+50:43.860 --> 50:45.360
+It validates the security boundary.
+
+50:45.620 --> 50:47.280
+And then step three, the restore.
+
+50:47.460 --> 50:51.840
+Crucially, after the tests run, the lane executes spy service reset, if run.
+
+50:52.060 --> 50:57.000
+And it runs this command always, even if the tests failed, even if the workflow crashed halfway through.
+
+50:57.180 --> 50:58.400
+The system cleans up its own loan.
+
+50:58.800 --> 50:59.320
+It does.
+
+50:59.460 --> 51:02.020
+It removes the ephemeral pin from the config map.
+
+51:02.020 --> 51:14.140
+And because the pin is gone, Flux automatically kicks in again, sees that the config map no longer overrides the git manifest, and rolls the cluster back to the canonical stable community image.
+
+51:14.260 --> 51:17.020
+It is exactly like a scientific peer review process.
+
+51:17.140 --> 51:17.340
+Yeah.
+
+51:17.480 --> 51:19.500
+You submit your paper, the new candidate image.
+
+51:20.060 --> 51:25.280
+The environment sets up the exact lab conditions by dynamically joining the descriptor and the fax.
+
+51:25.280 --> 51:28.780
+It runs the rigorous experiment with the three distinct tokens.
+
+51:29.100 --> 51:37.020
+And then, regardless of whether the experiment succeeded or the beaker exploded, it meticulously cleans the lab bench and restores the baseline for the next scientist.
+
+51:37.440 --> 51:42.820
+There is one critical detail in this step that ensures the whole system doesn't collapse over time due to drift.
+
+51:43.260 --> 51:50.220
+Before the GitHub Action Lane does any of this pinning and verifying, it checks the environment's stack version, say, v1.2.3.
+
+51:50.220 --> 51:55.560
+It then ensures that the Python CLI tooling running inside the GitHub Action is that exact same version.
+
+51:55.820 --> 51:58.600
+It forces the client version to match the server version.
+
+51:58.860 --> 52:00.600
+It matches the client to the server.
+
+52:01.020 --> 52:10.060
+This prevents tooling drift, ensuring the contract between the two repositories, the factory and the infrastructure, is truly versioned in practice, not just in theory.
+
+52:10.320 --> 52:13.440
+You never have a v2 script trying to talk to a v1 cluster.
+
+52:13.840 --> 52:14.400
+Amazing.
+
+52:15.100 --> 52:16.480
+Okay, we're in the homestretch.
+
+52:16.480 --> 52:28.100
+We have explored the entire life cycle, but no system is perfect, and one of the things I love most about this source material is how refreshingly honest the documentation is about its own flaws and failures.
+
+52:28.540 --> 52:30.580
+We have to look at the hard lessons they learned.
+
+52:30.980 --> 52:33.920
+First off, the documentation clearly states a golden rule.
+
+52:34.340 --> 52:39.100
+If the design document and the architectural decision records disagree, the ADRs govern.
+
+52:39.320 --> 52:42.000
+That is a profound statement about engineering reality.
+
+52:42.000 --> 52:44.100
+The design document describes intentions.
+
+52:44.400 --> 52:47.160
+It describes idealized capabilities from before the code was written.
+
+52:47.380 --> 52:50.140
+The ADRs are the actual state machine of the architecture.
+
+52:50.360 --> 52:56.080
+They record what was actually built, what compromises were forced by reality, and why they abandoned their initial designs.
+
+52:56.360 --> 53:01.700
+And then they have a whole list of things that are explicitly not true, despite what a new engineer might assume.
+
+53:02.520 --> 53:04.940
+For instance, fork upstream is not a mirror.
+
+53:05.400 --> 53:07.360
+We cover this as a computer-generated tree.
+
+53:07.360 --> 53:10.460
+Upstream bug fixes to Azure will not arrive automatically.
+
+53:11.000 --> 53:12.340
+But here's the one that caught my eye.
+
+53:12.860 --> 53:16.680
+Ready true does not mean OSDU is answering requests.
+
+53:17.240 --> 53:17.500
+Wait.
+
+53:17.840 --> 53:23.020
+So the documentation openly admits that some green status checks in their automation are basically lying.
+
+53:23.660 --> 53:27.180
+And they also admit that tearing down an environment leaves orphan resources behind.
+
+53:27.580 --> 53:29.680
+If you know it's broken, why not just fix the script?
+
+53:29.680 --> 53:33.240
+This speaks to the maturity of the engineering team and their documentation.
+
+53:33.980 --> 53:37.780
+Admitting a failure mode is far safer than pretending edge cases don't exist.
+
+53:38.220 --> 53:39.600
+Let's take the ready true status.
+
+53:39.900 --> 53:43.860
+That status just means that Flux finished reconciling the Kubernetes manifests.
+
+53:44.120 --> 53:45.260
+The infrastructure is deployed.
+
+53:45.640 --> 53:45.920
+Yes.
+
+53:46.360 --> 53:47.920
+But remember the schema loader.
+
+53:48.040 --> 53:51.460
+It has to load 1,300 schemas into Cosmos DB.
+
+53:51.900 --> 53:55.760
+That might take another hour to actually populate the database after Flux reports ready.
+
+53:55.760 --> 54:00.340
+If the documentation pretended that ready meant the API is fully functional,
+
+54:00.860 --> 54:04.440
+engineers would waste hours debugging phantom networking issues,
+
+54:04.520 --> 54:06.860
+trying to figure out why their queries are returning empty,
+
+54:07.040 --> 54:10.140
+when the reality is just that the database is still loading.
+
+54:10.320 --> 54:12.560
+Setting expectations prevents wild goose choices.
+
+54:12.980 --> 54:14.000
+And the teardown issue.
+
+54:14.340 --> 54:15.780
+Why do they leave resources behind?
+
+54:16.320 --> 54:20.820
+Azure ARM deployments and bicep teardowns aren't perfect atomic transactions.
+
+54:21.320 --> 54:24.560
+A teardown might fail halfway through due to a lock or a timeout,
+
+54:24.560 --> 54:28.420
+but specifically they document exactly what gets left behind deliberately,
+
+54:28.740 --> 54:30.000
+like certain managed identities.
+
+54:30.560 --> 54:34.620
+They keep those identities around to avoid breaking downstream onboarded repositories
+
+54:34.620 --> 54:36.180
+that might still be referencing them.
+
+54:36.640 --> 54:37.960
+By documenting this reality,
+
+54:38.100 --> 54:42.180
+they train service owners to troubleshoot the actual system as it behaves in the real world,
+
+54:42.460 --> 54:45.040
+not an idealized theoretical version of it.
+
+54:45.240 --> 54:47.340
+Brutal honesty is an engineering virtue.
+
+54:47.480 --> 54:47.920
+I love it.
+
+54:48.000 --> 54:49.160
+Okay, let's bring this all together.
+
+54:49.500 --> 54:51.540
+We have gone on a massive journey today.
+
+54:51.540 --> 54:56.420
+We started with a permanent generated fork that actively avoids Git merge conflicts
+
+54:56.420 --> 55:00.940
+by leveraging low-level plumbing to act like a filter rather than a snapshot.
+
+55:01.500 --> 55:03.460
+We explored a securely bootstrapped,
+
+55:03.600 --> 55:07.380
+pennish-heavy Azure cluster that relies entirely on workload identity
+
+55:07.380 --> 55:09.460
+and refuses to hold on to static secrets.
+
+55:09.980 --> 55:12.360
+And we unpacked a brilliant headless handshake
+
+55:12.360 --> 55:17.260
+that tests new code on live infrastructure without ever leaking cluster admin rights.
+
+55:17.260 --> 55:21.080
+It is a remarkable synthesis of Git mechanics, Kubernetes state management,
+
+55:21.240 --> 55:22.260
+and identity architecture.
+
+55:22.620 --> 55:26.780
+It represents hundreds of hours of trial and error distilled into a highly resilient system.
+
+55:27.040 --> 55:27.780
+It really is.
+
+55:28.440 --> 55:32.400
+And I want to leave you with a final thought to mull over as you begin your work as a service owner.
+
+55:33.200 --> 55:36.960
+Think about how this architecture completely redefines the concept of a fork.
+
+55:37.840 --> 55:40.700
+We are so used to thinking of code forks as snapshots,
+
+55:41.120 --> 55:43.500
+a frozen moment in time where we copy a project,
+
+55:43.860 --> 55:46.100
+change a few lines, and walk away to build our own thing.
+
+55:46.100 --> 55:50.400
+But the engineering system we looked at today turned a fork into a living relationship.
+
+55:51.420 --> 55:53.140
+It forces us to ask a tough question.
+
+55:54.080 --> 55:58.080
+In our own projects, are we just blindly copying dependencies and hoping for the best?
+
+55:58.580 --> 56:03.100
+Or are we engineering resilient systems that can continuously negotiate with an upstream world
+
+56:03.100 --> 56:05.900
+that might literally delete the ground we walk on tomorrow?
+
+56:06.720 --> 56:10.780
+When you get handed the keys to a complex system, you want it to be built like this one,
+
+56:11.300 --> 56:13.940
+honest about its flaws, relentless in its automation,
+
+56:13.940 --> 56:16.380
+and prepared for the upstream temple to collapse.
+
+56:16.760 --> 56:17.940
+Thanks for diving deep with us.
+
+56:17.940 --> 56:17.940
+
+
+56:17.940 --> 56:17.940
+
+
+56:17.940 --> 56:17.940
+
+
+56:17.940 --> 56:17.940
+
+
+56:17.940 --> 56:17.940
+
+
+56:17.940 --> 56:17.940
+
+
+56:17.940 --> 56:17.940
+
+
+56:17.940 --> 56:17.940
+
+
+56:17.940 --> 56:17.940
+
+
+56:17.940 --> 56:17.940
+
+
+56:17.940 --> 56:17.940
+
+
+56:17.940 --> 56:17.940
+
+
+56:17.940 --> 56:17.940
+
+
+56:17.940 --> 56:17.940
+
+
+56:17.940 --> 56:17.940
+
+
+56:17.940 --> 56:17.940
+
+
+56:17.940 --> 56:17.940
+
+
+56:17.940 --> 56:17.940
+
+
+56:17.940 --> 56:17.940
+
+
+56:17.940 --> 56:17.940
+
+
+56:17.940 --> 56:17.940
+
+
+56:17.940 --> 56:17.940
+
+
+56:17.940 --> 56:17.940
+
+
+56:17.940 --> 56:17.940
+
+
+56:17.940 --> 56:17.940
+
+
+56:17.940 --> 56:17.940
+
+
+56:17.940 --> 56:17.940
+
+
+56:17.940 --> 56:17.940
+
+
+56:17.940 --> 56:17.940
+
+
+56:17.940 --> 56:17.940
+
+
+56:17.940 --> 56:17.940
+
+
+56:17.940 --> 56:17.940
+
+
+56:17.940 --> 56:17.940
+
+
+56:17.940 --> 56:17.940
+
+
+56:17.940 --> 56:17.940
+
+
+56:17.940 --> 56:19.940
+Thank you.
+
+56:19.940 --> 56:19.940
+
+
+56:19.940 --> 56:19.940
+
+
+56:19.940 --> 56:19.940
+
+
+56:19.940 --> 56:21.940
+Thank you.
+

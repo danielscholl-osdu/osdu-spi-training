@@ -8,8 +8,7 @@ import { creationMoments } from '../src/content/creation-moments.js';
 import { sources } from '../src/content/sources.js';
 import { myths } from '../src/content/myths.js';
 import { suppliedPosters, nativeGuides } from '../src/content/posters.js';
-import { audio } from '../src/content/audio.js';
-import { transcript } from '../src/content/transcript.js';
+import { episodes } from '../src/content/audio.js';
 import { diagramRenderers } from '../src/components/diagrams.js';
 import { architectureMap } from '../src/components/architecture.js';
 import { infographics } from '../src/components/infographics.js';
@@ -213,27 +212,50 @@ test('field checks name a source, a command, and a place on the site', () => {
 });
 
 test('audio markers are ordered, inside the recording, and point at real views', () => {
-  assert.ok(audio.duration > 0);
-  assert.match(audio.file, /^audio\/.+\.m4a$/);
-  assert.equal(new URL(audio.notebook).protocol, 'https:');
-  const publicFile = new URL(`../public/${audio.file}`, import.meta.url);
-  assert.ok(existsSync(publicFile), `missing ${fileURLToPath(publicFile)}`);
-  let previous = -1;
-  for (const marker of audio.markers) {
-    assert.ok(marker.time > previous, `${marker.title}: out of order`);
-    assert.ok(marker.end > marker.time && marker.end <= audio.duration);
-    for (const field of ['title', 'copy', 'routeLabel'])
-      assert.ok(marker[field]?.trim(), `${marker.title}: ${field}`);
-    verifyRoute(marker.route, marker.title);
-    previous = marker.time;
+  assert.equal(
+    new Set(episodes.map((episode) => episode.id)).size,
+    episodes.length,
+  );
+  for (const audio of episodes) {
+    assert.ok(audio.duration > 0);
+    assert.match(audio.file, /^audio\/.+\.m4a$/);
+    if (audio.notebook)
+      assert.equal(new URL(audio.notebook).protocol, 'https:');
+    const publicFile = new URL(`../public/${audio.file}`, import.meta.url);
+    assert.ok(existsSync(publicFile), `missing ${fileURLToPath(publicFile)}`);
+    let previous = -1;
+    for (const marker of audio.markers) {
+      assert.ok(marker.time > previous, `${marker.title}: out of order`);
+      assert.ok(marker.end > marker.time && marker.end <= audio.duration);
+      for (const field of ['title', 'copy', 'routeLabel'])
+        assert.ok(marker[field]?.trim(), `${marker.title}: ${field}`);
+      verifyRoute(marker.route, `${audio.id}: ${marker.title}`);
+      previous = marker.time;
+    }
+    assert.ok(audio.transcript.length > 50, `${audio.id}: transcript`);
+    let last = -1;
+    for (const segment of audio.transcript) {
+      assert.ok(segment.start >= last && segment.start < audio.duration);
+      assert.ok(segment.text.trim());
+      last = segment.start;
+    }
   }
-  assert.ok(transcript.length > 50, 'transcript is present');
-  let last = -1;
-  for (const segment of transcript) {
-    assert.ok(segment.start >= last && segment.start < audio.duration);
-    assert.ok(segment.text.trim());
-    last = segment.start;
+  for (const [id, chapter] of mapChapters) {
+    for (const cue of chapter.listen || []) {
+      const episode = episodes.find((entry) => entry.id === cue.episode);
+      assert.ok(episode, `${id}: unknown episode ${cue.episode}`);
+      assert.ok(
+        episode.markers.some((marker) => marker.time === cue.time),
+        `${id}: cue ${cue.label} does not start on a marker`,
+      );
+    }
   }
+  const listen = pageRenderers.listen(parseRoute('#listen?episode=branches'));
+  assert.ok(listen.includes('3D-prints'));
+  assert.equal(
+    listen.split('data-marker-start').length - 1,
+    episodes[2].markers.length,
+  );
 });
 
 test('posters and field guides resolve their images, renderers, sources, and links', () => {

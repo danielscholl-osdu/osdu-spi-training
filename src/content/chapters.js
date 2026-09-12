@@ -24,6 +24,10 @@ export const chapters = {
     figure: 'Follow the boundaries',
     selected: 'environment',
     diagram: 'overview',
+    listen: [
+      { episode: 'stack', time: 764, label: 'Four owners, four boundaries' },
+      { episode: 'interface', time: 1479, label: 'The Azure-only bet' },
+    ],
     guides: ['familiar', 'inside-the-cluster', 'profiles'],
     mistakes: {
       developer: 'profiles-save-money',
@@ -83,6 +87,14 @@ export const chapters = {
     figure: 'Follow the environment',
     selected: 'workstation',
     diagram: 'creation',
+    listen: [
+      {
+        episode: 'stack',
+        time: 915,
+        label: 'The CLI leaves; Flux keeps working',
+      },
+      { episode: 'interface', time: 2392, label: 'Bootstrap as data' },
+    ],
     guides: {
       provision: ['owners'],
       bootstrap: ['owners'],
@@ -158,6 +170,14 @@ export const chapters = {
     figure: 'One service, two source owners',
     selected: 'azureimpl',
     diagram: 'spi',
+    listen: [
+      { episode: 'interface', time: 239, label: 'The provider model' },
+      {
+        episode: 'branches',
+        time: 331,
+        label: 'The seam is where the friction lives',
+      },
+    ],
     guides: ['one-request', 'identity'],
     mistakes: ['token-accepted-means-authorized'],
     scope:
@@ -217,6 +237,19 @@ export const chapters = {
     figure: 'One repository, read by owner',
     selected: 'provider-azure',
     diagram: 'fork',
+    listen: [
+      {
+        episode: 'interface',
+        time: 427,
+        label: 'Upstream will delete the Azure provider',
+      },
+      {
+        episode: 'branches',
+        time: 1281,
+        label: 'From sculpting to 3D printing',
+      },
+      { episode: 'interface', time: 1331, label: 'The one-time seed' },
+    ],
     guides: ['contribution-chain'],
     mistakes: ['fork-is-a-snapshot', 'descriptor-comes-from-template'],
     scope:
@@ -279,6 +312,12 @@ export const chapters = {
     figure: 'The branches, in time',
     selected: 'sync-pr',
     diagram: 'forkDay',
+    guides: { sync: ['clocks'], review: ['labels'] },
+    listen: [
+      { episode: 'branches', time: 1746, label: 'Labels as a state machine' },
+      { episode: 'branches', time: 1846, label: 'The cascade: main first' },
+      { episode: 'branches', time: 1985, label: 'The meta commit' },
+    ],
     mistakes: {
       sync: 'merge-fork-upstream',
       cascade: 'azure-profile-alone',
@@ -351,6 +390,15 @@ export const chapters = {
     figure: 'One run, one borrowed slot',
     selected: 'delivery',
     diagram: 'seam',
+    listen: [
+      { episode: 'interface', time: 2926, label: 'Borrow, prove, restore' },
+      {
+        episode: 'branches',
+        time: 3124,
+        label: 'Facts, descriptor, machinery',
+      },
+      { episode: 'stack', time: 3040, label: 'Ephemeral pins' },
+    ],
     guides: ['borrow-prove-restore'],
     mistakes: ['validation-summary-means-deployed', 'restore-always-restores'],
     scope:
@@ -417,14 +465,13 @@ export const chapters = {
     page: 'listen',
     group: 'supplement',
     title: 'Listen',
-    subtitle: 'The one-hour deep dive',
-    headline:
-      'Engineering the OSDU SPI Stack<span>on Azure, in 59 minutes.</span>',
+    subtitle: 'Three conversations',
+    headline: 'Three conversations,<span>one system.</span>',
     intro:
-      'A generated audio discussion of the SPI Stack guide. It moves from the provider problem through identity, GitOps, and the shared environment to a full bring-up. Play it while you explore; each chapter marker opens the matching view.',
+      'Generated audio discussions of the two guides: one on the stack, one on the whole round trip, one on the fork in depth. Play one while you explore; each marker opens the matching view, and the maps carry short cues back into the recordings.',
     premise: 'Keeps playing while you move around the site.',
     scope:
-      'The narration is generated from the guide, not from the repositories. Where it rounds a number or overstates a guarantee, the marker notes say what the source documentation actually claims.',
+      'The narration is generated from the guides, not from the repositories. Where it rounds a number, mishears a command, or overstates a guarantee, the marker notes say what the source documentation actually claims.',
     sources: ['architecture', 'lifecycle', 'identity', 'flux'],
   },
   'field-guides': {

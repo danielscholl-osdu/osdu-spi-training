@@ -3,8 +3,7 @@ import { chapters, chapterGroups } from '../content/chapters.js';
 import { myths, mythThemes } from '../content/myths.js';
 import { suppliedPosters, nativeGuides } from '../content/posters.js';
 import { sources } from '../content/sources.js';
-import { audio } from '../content/audio.js';
-import { transcript } from '../content/transcript.js';
+import { episodes, episodeById } from '../content/audio.js';
 import {
   infographics,
   ownerLegend,
@@ -118,7 +117,7 @@ function homePage() {
       ${ownerLegend()}
     </section>
     <section class="home-ways" aria-label="Alongside the path">
-      <a class="way way-listen" href="${routeHref('listen')}"><span class="way-icon" aria-hidden="true">▶</span><b>Listen</b><p>A ${Math.round(audio.duration / 60)}-minute deep dive that keeps playing while you explore. Every chapter marker opens the matching view.</p><span class="way-cta">Open the player →</span></a>
+      <a class="way way-listen" href="${routeHref('listen')}"><span class="way-icon" aria-hidden="true">▶</span><b>Listen</b><p>Three generated conversations, about ${Math.round(episodes.reduce((sum, episode) => sum + episode.duration, 0) / 3600)} hours in all, that keep playing while you explore. Every marker opens the matching view, and the fork views carry short cues into them.</p><span class="way-cta">Open the player →</span></a>
       <a class="way way-read" href="${routeHref('field-guides')}"><span class="way-icon" aria-hidden="true">≋</span><b>Field guides</b><p>The infographics from the views, together with the supplied posters, on one page you can print.</p><span class="way-cta">See the field guides →</span></a>
     </section>
     <section class="home-sources" aria-label="Documentation sets">
@@ -202,24 +201,33 @@ export function mythCallout(id, chapterKey) {
 }
 
 function listenPage(route) {
+  const episode = episodeById(route?.episode);
   const startAt = route?.time ?? null;
-  return `<section class="listen-hero">
+  const tabs = episodes
+    .map(
+      (entry) =>
+        `<a class="episode-tab" href="#listen?episode=${entry.id}" ${entry === episode ? 'aria-current="page"' : ''}><b>${entry.short}</b><small>${entry.book} · ${Math.round(entry.duration / 60)} min</small></a>`,
+    )
+    .join('');
+  return `<nav class="episode-tabs" aria-label="Episodes">${tabs}</nav>
+    <p class="listen-episode-summary"><b>${episode.title}.</b> ${episode.summary}</p>
+    <section class="listen-hero">
       <div class="listen-controls" id="listen-controls">
-        <button type="button" class="listen-play" data-player="toggle" aria-label="Play the deep dive"><span class="play-glyph" aria-hidden="true">▶</span><span data-player="label">Play</span></button>
-        <div class="listen-meta"><b>${audio.title}</b><span><span data-player="current">${formatTime(startAt || 0)}</span> / ${formatTime(audio.duration)}</span></div>
+        <button type="button" class="listen-play" data-player="toggle" data-episode="${episode.id}" aria-label="Play ${episode.title}"><span class="play-glyph" aria-hidden="true">▶</span><span data-player="label">Play</span></button>
+        <div class="listen-meta"><b data-player="episode">${episode.title}</b><span><span data-player="current">${formatTime(startAt || 0)}</span> / <span data-player="total">${formatTime(episode.duration)}</span></span></div>
         <label class="listen-speed">Speed <select data-player="rate"><option value="0.8">0.8×</option><option value="1" selected>1×</option><option value="1.25">1.25×</option><option value="1.5">1.5×</option><option value="2">2×</option></select></label>
       </div>
-      <input type="range" class="listen-seek" data-player="seek" min="0" max="${Math.floor(audio.duration)}" value="${startAt || 0}" step="1" aria-label="Seek" />
-      <p class="listen-origin">Generated with NotebookLM from the SPI Stack guide · <a href="${audio.notebook}" target="_blank" rel="noopener noreferrer">Open the notebook ↗</a> · <a href="${audio.file}" download>Download audio ↗</a></p>
+      <input type="range" class="listen-seek" data-player="seek" min="0" max="${Math.floor(episode.duration)}" value="${startAt || 0}" step="1" aria-label="Seek" />
+      <p class="listen-origin">${episode.origin}${episode.notebook ? ` · <a href="${episode.notebook}" target="_blank" rel="noopener noreferrer">Open the notebook ↗</a>` : ''} · <a href="${episode.file}" download>Download audio ↗</a></p>
     </section>
     <section class="listen-markers" aria-label="Chapter markers">
-      <div class="section-heading"><span class="guide-kicker">Markers</span><h2>Where the conversation goes, and where to look</h2><p>Each marker seeks the audio. The link beside it opens the matching view without stopping playback.</p></div>
-      <ol class="marker-list">${audio.markers
+      <div class="section-heading"><span class="guide-kicker">Markers</span><h2>Where the conversation goes, and where to look</h2><p>Each marker seeks the audio. The link beside it opens the matching view without stopping playback. A source check says where the narration and the documentation part ways.</p></div>
+      <ol class="marker-list">${episode.markers
         .map(
           (
             marker,
-          ) => `<li data-marker-start="${marker.time}" data-marker-end="${marker.end}">
-            <button type="button" data-seek="${marker.time}"><span class="marker-time">${formatTime(marker.time)}</span><b>${marker.title}</b></button>
+          ) => `<li data-marker-start="${marker.time}" data-marker-end="${marker.end}" data-episode="${episode.id}">
+            <button type="button" data-seek="${marker.time}" data-episode="${episode.id}"><span class="marker-time">${formatTime(marker.time)}</span><b>${marker.title}</b></button>
             <p>${marker.copy}</p>
             ${marker.note ? `<p class="marker-note"><b>Source check.</b> ${marker.note}</p>` : ''}
             <a class="small-link" href="${marker.route}">${marker.routeLabel} →</a>
@@ -230,18 +238,35 @@ function listenPage(route) {
     <section class="listen-transcript" aria-label="Transcript">
       <div class="section-heading"><span class="guide-kicker">Transcript</span><h2>Read along</h2><p>Machine transcription; timestamps seek the audio. Read it with the marker notes in mind.</p></div>
       <details class="transcript-details"><summary>Show the transcript <span aria-hidden="true">+</span></summary>
-      <div class="transcript" id="transcript">${transcript
+      <div class="transcript" id="transcript">${episode.transcript
         .map(
           (segment) =>
-            `<p data-start="${segment.start}"><button type="button" data-seek="${segment.start}" aria-label="Play from ${formatTime(segment.start)}">${formatTime(segment.start)}</button>${escapeHtml(segment.text)}</p>`,
+            `<p data-start="${segment.start}"><button type="button" data-seek="${segment.start}" data-episode="${episode.id}" aria-label="Play from ${formatTime(segment.start)}">${formatTime(segment.start)}</button>${escapeHtml(segment.text)}</p>`,
         )
         .join('')}</div></details>
     </section>`;
 }
 
+// Short cues into the recordings, beside a map. Playing one never leaves the
+// view; the dock appears and keeps playing while the reader explores.
+export function listenChips(key) {
+  const cues = chapters[key].listen;
+  if (!cues?.length) return '';
+  return `<div class="listen-chips" aria-label="Hear it explained"><span class="guide-kicker">Hear it explained</span>${cues
+    .map((cue) => {
+      const episode = episodeById(cue.episode);
+      const marker = episode.markers.find((entry) => entry.time === cue.time);
+      const end = marker?.end ?? cue.time + 60;
+      return `<button type="button" class="listen-chip" data-seek="${cue.time}" data-listen-episode="${episode.id}" data-listen-end="${end}"><span class="play-glyph" aria-hidden="true">▶</span><b>${escapeHtml(cue.label)}</b><small>${episode.short} · ${formatTime(cue.time)} · ${Math.max(1, Math.round((end - cue.time) / 60))} min</small></button>`;
+    })
+    .join(
+      '',
+    )}<a class="small-link" href="#listen">All three episodes →</a></div>`;
+}
+
 function guidesPage() {
   return `<section class="poster-set" aria-label="Supplied posters">
-      <div class="section-heading"><span class="guide-kicker">Posters</span><h2>${suppliedPosters.length} posters, one idea each</h2><p>Two supplied with the training material, two adopted from the source repositories, three built for this site. Open one at full size, or follow its links into the map. Each caption records where the poster and the documentation differ.</p></div>
+      <div class="section-heading"><span class="guide-kicker">Posters</span><h2>${suppliedPosters.length} posters, one idea each</h2><p>Four supplied with the training material, two adopted from the source repositories, three built for this site. Open one at full size, or follow its links into the map. Each caption records where the poster and the documentation differ.</p></div>
       ${suppliedPosters
         .map(
           (poster) => `<article class="poster" id="guide-${poster.id}">

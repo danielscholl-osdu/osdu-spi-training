@@ -454,6 +454,99 @@ export function spiNamesFigure() {
     .join('')}</div>`;
 }
 
+// The labels on a sync tracking issue, drawn as the state machine they are.
+const labelStates = [
+  [
+    'upstream-sync + human-required',
+    'Sync Upstream opened the PR and the issue',
+    'wait',
+  ],
+  [
+    'cascade-active',
+    'The cascade is running, or the monitor dispatched it',
+    'active',
+  ],
+  ['validated', 'The integration PR is open; a person approves', 'done'],
+];
+const labelExits = [
+  [
+    'cascade-blocked',
+    'A conflict, or validation failed on the workspace',
+    'Resolve on fork_integration, push, then remove human-required if it is set',
+  ],
+  [
+    'cascade-failed + human-required',
+    'The run itself failed',
+    'Fix the cause; removing human-required is the retry signal',
+  ],
+];
+function labelsGuide() {
+  return `<div class="labels-machine">
+    <ol class="labels-happy">${labelStates
+      .map(
+        ([label, meaning, kind], i) =>
+          `<li class="label-state is-${kind}"><code>${label}</code><span>${meaning}</span>${i < labelStates.length - 1 ? '<i aria-hidden="true">→</i>' : ''}</li>`,
+      )
+      .join('')}</ol>
+    <div class="labels-exits">${labelExits
+      .map(
+        ([label, meaning, action]) =>
+          `<div class="label-exit"><code>${label}</code><span>${meaning}</span><small>${action}</small></div>`,
+      )
+      .join('')}</div>
+    <p class="labels-note">Cascade Monitor reads these every six hours: it dispatches a merged sync, retries an issue whose human-required label a person removed, and escalates anything blocked longer than 48 hours. The labels are the audit trail; nothing else remembers.</p>
+  </div>`;
+}
+
+// The fork's recurring work, on its own clocks. None of these cause each other.
+const clocks = [
+  [
+    'Sync Upstream',
+    '00:00 UTC daily',
+    'Regenerates fork_upstream; one PR and one tracking issue',
+    '#fork-day/sync',
+  ],
+  [
+    'Sync Template',
+    '08:00 UTC daily',
+    'Workflow and Dockerfile changes arrive as one PR',
+    '#fork-day?detail=template-pr',
+  ],
+  [
+    'Cascade Monitor',
+    'every 6 hours',
+    'Dispatches, retries, escalates, heals stale drift',
+    '#fork-day?detail=monitor',
+  ],
+  [
+    'Settings Apply',
+    'Mondays 04:00 UTC',
+    'Labels, rulesets, required checks reconciled',
+    '#fork-day?detail=settings-apply',
+  ],
+  [
+    'GHCR Retention',
+    'Mondays 05:00 UTC',
+    'sha-* tags older than 30 days pruned; version tags kept',
+    '#fork-day/release?detail=release-tag',
+  ],
+  [
+    'Validation',
+    'on push and PR',
+    'Builds, pushes a digest, and may borrow the stack',
+    '#fork-day/prove',
+  ],
+];
+function clocksGuide() {
+  return `<ol class="clock-strip">${clocks
+    .map(
+      ([name, when, copy, href]) =>
+        `<li><a href="${href}"><b>${name}</b><span class="clock-when">${when}</span><small>${copy}</small></a></li>`,
+    )
+    .join('')}</ol>
+  <p class="labels-note">A cascade follows a sync PR merge, and a release follows a version PR merge. Everything else here runs on its own schedule and does not wait for the day view’s moments.</p>`;
+}
+
 export const infographics = {
   familiar: familiarGuide,
   owners: ownersGuide,
@@ -461,6 +554,8 @@ export const infographics = {
   profiles: profilesGuide,
   identity: identityGuide,
   timeline: timelineGuide,
+  labels: labelsGuide,
+  clocks: clocksGuide,
 };
 
 export function ownerLegend() {
