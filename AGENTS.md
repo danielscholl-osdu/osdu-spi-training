@@ -9,12 +9,12 @@ This repository owns the learning site. Keep its files separate from `osdu-spi`,
 - Keep prose short and use documentation links for depth. Preserve the established visual direction while the prototype is being reviewed.
 - Distinguish the workstation, Azure, the complete deployed stack, AKS, and the provider code inside each OSDU service.
 - Examples are illustrative. The site must not execute Azure or SPI commands or imply it reports live environment state.
-- Keep the site local unless publishing is explicitly requested.
+- The site publishes to GitHub Pages from `main`. Keep commits on `main` deployable; work on branches otherwise.
 
 ## Source and workflow
 
 - Edit `src/`; `dist/` is generated build output and must not be committed.
-- Chapter copy and navigation live in `src/content/chapters.js`; explanations and creation moments have separate files in that directory.
+- Chapter copy and navigation live in `src/content/chapters.js`; explanations, creation moments, audio markers, field checks, and posters have separate files in that directory. Page renderers live in `src/components/pages.js`; native field guides in `src/components/infographics.js`.
 - Diagram markup and behavior live in `src/components/`; shared navigation and detail handling live in `src/main.js`, with URL state in `src/router.js`.
 - Keep the vanilla JavaScript module structure. Add dependencies only for a concrete need.
 - Use `npm ci`, `npm run dev`, and `npm run check`. Use `npm run format` after editing.
@@ -26,7 +26,10 @@ This repository owns the learning site. Keep its files separate from `osdu-spi`,
 - Every component explanation must add a concrete operational fact and name an artifact, command, resource, number, or failure mode. Its source reference must resolve. Do not repeat the paragraph beside the map.
 - Start from familiar OSDU APIs and partitions, then introduce the new SPI and environment boundaries. Explain the acronym once; do not assume prior SPI knowledge.
 - Keep one architecture renderer for the overview and lifecycle. Use unique detail IDs within each scene, select the clicked element, and make its explanation visible on both desktop and phone.
-- Reserve orange for fork-owned source. Use the same colors in a legend as in its diagram.
+- Reserve orange for fork-owned source. The owner colors (CLI + Bicep, Flux, controllers, operator) are tokens in `base.css`; use the same colors in a legend as in its diagram.
+- The audio plays from one element in the page frame and never navigates on its own. Every marker links a site view; where the narration differs from the repositories, the marker carries a source-check note.
+- Supplied posters are reference artifacts: serve a web-sized copy, keep the original in `docs/reference/`, and record wording that differs from the documentation in the poster caption rather than editing the image.
+- A native field guide states one idea, names its sources, and links the view where it can be explored. Timing graphics label observations, ordered steps, continuing work, and deadlines separately.
 - Store chapter, moment, and selected component in the URL. Preserve stable routes, browser history, and keyboard focus when rerendering a moment.
 - Distinguish measured component time, total provisioning time, timeout, and API readiness. Do not invent timings or sum overlapping phases.
 - Use comparison tables for ownership. Use hand-built diagrams where interaction teaches a relationship; prefer Mermaid for future static supplementary diagrams.

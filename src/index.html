@@ -5,9 +5,9 @@
     <meta name="viewport" content="width=device-width,initial-scale=1" />
     <meta
       name="description"
-      content="Explore the Azure OSDU stack, the SPI boundary, and the engineering system behind it."
+      content="Explore the Azure OSDU SPI Stack: the environment, the SPI boundary, and the engineering system behind it. Listen, explore, and read."
     />
-    <title>Inside the Azure stack · OSDU Fieldnotes</title>
+    <title>OSDU Fieldnotes · The Azure SPI Stack</title>
     <link
       rel="icon"
       type="image/svg+xml"
@@ -15,25 +15,29 @@
     />
     <link rel="stylesheet" href="./styles/base.css" />
     <link rel="stylesheet" href="./styles/architecture.css" />
+    <link rel="stylesheet" href="./styles/pages.css" />
     <script type="module" src="./main.js"></script>
   </head>
   <body>
     <header class="masthead">
-      <a
-        href="#running-stack"
-        class="brand"
-        aria-label="OSDU Fieldnotes, first chapter"
+      <a href="#start" class="brand" aria-label="OSDU Fieldnotes, start here"
         ><span class="brand-mark" aria-hidden="true">≋</span
         ><span>OSDU <strong>FIELDNOTES</strong></span></a
       >
+      <nav class="masthead-nav" aria-label="Site">
+        <a href="#running-stack">Explore</a>
+        <a href="#listen" class="masthead-listen"
+          ><span aria-hidden="true">▶</span> Listen</a
+        >
+        <a href="#field-guides">Field guides</a>
+      </nav>
       <div class="header-meta">
-        <span>AZURE ENGINEERING</span
-        ><span class="edition">Concept prototype</span>
+        <span>AZURE ENGINEERING</span><span class="edition">Prototype</span>
       </div>
     </header>
     <div class="shell">
       <aside class="rail" aria-label="Guide navigation">
-        <div class="rail-label">Inside the Azure stack</div>
+        <div class="rail-label">The Azure SPI Stack</div>
         <nav aria-label="Chapters" id="chapter-navigation"></nav>
         <p class="rail-note">
           Explore a component.<br />Follow a lifecycle.<br />Keep a useful link.
@@ -46,7 +50,11 @@
           <h1 id="headline"></h1>
           <p id="introduction"></p>
         </div>
-        <section class="exploration" aria-label="Interactive architecture">
+        <section
+          class="exploration"
+          id="exploration"
+          aria-label="Interactive architecture"
+        >
           <header class="visual-header">
             <h2 id="figure-title"></h2>
             <span>Select a component to look closer ↗</span>
@@ -90,7 +98,9 @@
             </aside>
           </div>
         </section>
+        <div id="page" class="page" hidden></div>
         <div id="chapter-reference"></div>
+        <div id="chapter-guides" class="chapter-guides"></div>
         <div class="below-figure">
           <p id="scope-note"></p>
           <details id="source-details">
@@ -105,5 +115,49 @@
         </footer>
       </main>
     </div>
+    <div id="audio-dock" class="audio-dock" hidden data-dismissed="false">
+      <audio id="deep-dive"></audio>
+      <button
+        type="button"
+        class="dock-toggle"
+        data-player="toggle"
+        aria-label="Play the deep dive"
+      >
+        <span class="play-glyph" aria-hidden="true">▶</span>
+      </button>
+      <div class="dock-meta">
+        <span class="dock-kicker">Listening</span>
+        <b data-player="now"></b>
+        <span
+          ><span data-player="current">0:00</span>
+          <a href="#listen" data-player="now-link">Open the player →</a></span
+        >
+      </div>
+      <input
+        type="range"
+        class="dock-seek"
+        data-player="seek"
+        min="0"
+        max="3516"
+        value="0"
+        step="1"
+        aria-label="Seek"
+      />
+      <button
+        type="button"
+        class="dock-dismiss"
+        data-player="dismiss"
+        aria-label="Stop and hide the player"
+      >
+        ×
+      </button>
+    </div>
+    <dialog id="lightbox" class="lightbox" aria-label="Poster at full size">
+      <div class="lightbox-bar">
+        <span id="lightbox-title"></span>
+        <button type="button" id="lightbox-close">Close ×</button>
+      </div>
+      <div class="lightbox-scroll"><img id="lightbox-image" alt="" /></div>
+    </dialog>
   </body>
 </html>

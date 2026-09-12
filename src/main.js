@@ -3,12 +3,23 @@ import { componentDetails } from './content/component-details.js';
 import { creationMoments } from './content/creation-moments.js';
 import { sources } from './content/sources.js';
 import { diagramRenderers, ownershipTable } from './components/diagrams.js';
+import {
+  pageRenderers,
+  chapterNavigation,
+  guideFigure,
+} from './components/pages.js';
+import { createPlayer } from './components/player.js';
 import { parseRoute, routeHref } from './router.js';
 
 const order = Object.keys(chapters);
+const learnOrder = order.filter((key) => chapters[key].group === 'learn');
 let previousRoute = null;
 let lastSelectedElement = null;
 const inspector = document.getElementById('inspector');
+const player = createPlayer(
+  document.getElementById('deep-dive'),
+  document.getElementById('audio-dock'),
+);
 
 function expandInspector(expanded) {
   inspector.classList.toggle('is-expanded', expanded);
@@ -59,46 +70,101 @@ export function selectDetail(id, element = null) {
   lastSelectedElement = element;
 }
 
+function nextChapter(key) {
+  const scene = chapters[key];
+  if (key === 'start') return learnOrder[0];
+  if (scene.group === 'learn') {
+    const n = learnOrder.indexOf(key);
+    return n === learnOrder.length - 1 ? 'listen' : learnOrder[n + 1];
+  }
+  return key === 'listen' ? 'field-guides' : 'start';
+}
+
+function positionLabel(key) {
+  const scene = chapters[key];
+  if (scene.group === 'learn')
+    return `${learnOrder.indexOf(key) + 1} of ${learnOrder.length} · The Azure SPI Stack`;
+  return scene.group === 'supplement' ? 'Supplement' : 'OSDU Fieldnotes';
+}
+
+function renderChapterFrame(route, scene) {
+  const key = route.chapter;
+  document.getElementById('chapter-navigation').innerHTML =
+    chapterNavigation(key);
+  document.getElementById('chapter-kicker').textContent =
+    scene.group === 'learn'
+      ? `${String(learnOrder.indexOf(key) + 1).padStart(2, '0')} · ${scene.title}`
+      : scene.title;
+  document.getElementById('premise').textContent = scene.premise || '';
+  document.getElementById('premise').hidden = !scene.premise;
+  document.getElementById('headline').innerHTML = scene.headline;
+  document.getElementById('introduction').textContent = scene.intro;
+  document.getElementById('scope-note').textContent = scene.scope || '';
+  document.getElementById('scope-note').hidden = !scene.scope;
+  document.getElementById('sources').innerHTML = scene.sources
+    .map(
+      (sourceKey) =>
+        `<a href="${sources[sourceKey].href}" target="_blank" rel="noopener noreferrer">${sources[sourceKey].label} ↗</a>`,
+    )
+    .join('');
+  document.getElementById('source-details').open = false;
+  document.getElementById('chapter-position').textContent = positionLabel(key);
+  const next = nextChapter(key);
+  const link = document.getElementById('next-link');
+  link.href = routeHref(next);
+  link.textContent =
+    next === 'start'
+      ? 'Back to the start ↺'
+      : `Next: ${chapters[next].title} →`;
+  document.body.dataset.page = scene.kind === 'page' ? scene.page : 'map';
+}
+
 function render() {
   const route = parseRoute(location.hash);
   const scene = chapters[route.chapter];
   const chapterChanged = previousRoute?.chapter !== route.chapter;
   const mapChanged = chapterChanged || previousRoute?.step !== route.step;
   const focusedKey = document.activeElement?.dataset.routeKey;
-  const n = order.indexOf(route.chapter);
   document.title = `${scene.title} · OSDU Fieldnotes`;
+  if (chapterChanged) renderChapterFrame(route, scene);
+
+  if (scene.kind === 'page') {
+    document.getElementById('exploration').hidden = true;
+    document.getElementById('chapter-reference').innerHTML = '';
+    document.getElementById('chapter-guides').innerHTML = '';
+    const page = document.getElementById('page');
+    page.hidden = false;
+    if (chapterChanged) {
+      page.innerHTML = pageRenderers[scene.page](route);
+      if (scene.page === 'listen' && route.time !== null)
+        player.seekTo(route.time, false);
+      player.reflect();
+    }
+    if (route.guide) {
+      document
+        .getElementById(`guide-${route.guide}`)
+        ?.scrollIntoView({ block: 'start' });
+    } else if (chapterChanged && previousRoute) {
+      window.scrollTo({ top: 0, behavior: 'instant' });
+    }
+    previousRoute = route;
+    return;
+  }
+
+  document.getElementById('page').hidden = true;
+  document.getElementById('page').innerHTML = '';
+  document.getElementById('exploration').hidden = false;
   if (chapterChanged) {
-    document.getElementById('chapter-navigation').innerHTML = order
-      .map(
-        (key, index) =>
-          `<a href="${routeHref(key)}" class="chapter-link" ${key === route.chapter ? 'aria-current="page"' : ''}><span class="number">${String(index + 1).padStart(2, '0')}</span><span>${chapters[key].title}<small>${chapters[key].subtitle}</small></span></a>`,
-      )
-      .join('');
-    document.getElementById('chapter-kicker').textContent =
-      `${String(n + 1).padStart(2, '0')} · ${scene.title}`;
-    document.getElementById('premise').textContent = scene.premise || '';
-    document.getElementById('premise').hidden = !scene.premise;
-    document.getElementById('headline').innerHTML = scene.headline;
-    document.getElementById('introduction').textContent = scene.intro;
     document.getElementById('figure-title').textContent = scene.figure;
-    document.getElementById('scope-note').textContent = scene.scope;
     document.getElementById('chapter-reference').innerHTML =
       route.chapter === 'running-stack' ? ownershipTable() : '';
-    document.getElementById('sources').innerHTML = scene.sources
-      .map(
-        (key) =>
-          `<a href="${sources[key].href}" target="_blank" rel="noopener noreferrer">${sources[key].label} ↗</a>`,
+    document.getElementById('chapter-guides').innerHTML = (scene.guides || [])
+      .map((guide) =>
+        guide === 'contribution-chain'
+          ? `<figure class="field-guide is-compact"><figcaption><span class="guide-kicker">Field guide</span><h3>The Contribution Chain</h3><p>Code flows down from the OSDU community by sync and climbs back up by pull request. Every change has one home tier.</p></figcaption><a class="poster-inline" href="${routeHref('field-guides')}#poster-contribution-chain"><img src="posters/contribution-chain.jpg" width="2000" height="1467" alt="The Contribution Chain: three tiers of one service and where a change belongs" loading="lazy" /><span>Read the poster →</span></a></figure>`
+          : guideFigure(guide, { compact: true }),
       )
       .join('');
-    document.getElementById('source-details').open = false;
-    document.getElementById('chapter-position').textContent =
-      `${n + 1} of ${order.length} · Inside the Azure stack`;
-    const next = document.getElementById('next-link');
-    next.href = routeHref(order[(n + 1) % order.length]);
-    next.textContent =
-      n === order.length - 1
-        ? 'Return to the stack ↗'
-        : `Next: ${chapters[order[n + 1]].title} →`;
   }
   if (mapChanged) {
     document.getElementById('diagram').innerHTML =
@@ -141,6 +207,25 @@ document
   .addEventListener('click', () =>
     expandInspector(!inspector.classList.contains('is-expanded')),
   );
+
+const lightbox = document.getElementById('lightbox');
+document.addEventListener('click', (event) => {
+  const opener = event.target.closest('[data-lightbox]');
+  if (!opener) return;
+  const image = document.getElementById('lightbox-image');
+  image.src = opener.dataset.lightbox;
+  image.alt = opener.dataset.lightboxTitle;
+  document.getElementById('lightbox-title').textContent =
+    opener.dataset.lightboxTitle;
+  lightbox.showModal();
+});
+document
+  .getElementById('lightbox-close')
+  .addEventListener('click', () => lightbox.close());
+lightbox.addEventListener('click', (event) => {
+  if (event.target === lightbox) lightbox.close();
+});
+
 document.addEventListener('keydown', (event) => {
   if (event.key === 'Escape' && inspector.classList.contains('is-expanded')) {
     expandInspector(false);

@@ -2,7 +2,13 @@
 
 An interactive learning site for senior engineers who know OSDU and are new to Azure SPI Stack and the engineering system behind the service forks.
 
-The prototype follows four views: **What is a stack?**, **How it comes to life**, **The SPI boundary**, and **How changes arrive**. Learners explore architecture and follow the same environment as it is assembled. Explanations are optional, and source documentation supplies depth. There are no quizzes, scores, or required exercises.
+Three ways in, all ending in the source documentation:
+
+- **Listen.** A one-hour generated deep dive with 22 chapter markers, source-check notes, and a transcript. It keeps playing while you move around the site.
+- **Explore.** One architecture map through five views: **What is a stack?**, **How it comes to life**, **The SPI boundary**, **How changes arrive**, and **Things that are not true**. Learners select components and follow the same environment as it is assembled.
+- **Read.** Field guides: two supplied posters, preserved as given, and five infographics built for the site (four owners, the spi up timeline, five milestones, three profiles, identity as two problems).
+
+Explanations are optional, and source documentation supplies depth. There are no quizzes, scores, or required exercises.
 
 ## Local development
 
@@ -21,25 +27,38 @@ The original review preview at http://127.0.0.1:8875 can continue serving `dist/
 
 ```text
 src/
-  index.html                    Page frame
-  main.js                       Navigation and shared interaction
-  router.js                     Chapter, moment, and selection URLs
+  index.html                    Page frame, audio dock, lightbox
+  main.js                       Navigation, map and page rendering
+  router.js                     Chapter, moment, selection, guide, and time URLs
   content/
-    chapters.js                 Chapter copy, order, and source references
+    chapters.js                 Chapter copy, order, kind, and source references
     component-details.js        Component explanations
     creation-moments.js         Six lifecycle moments
     sources.js                  Documentation labels and source locations
+    audio.js                    Deep dive file, markers, and source checks
+    transcript.js               Generated transcript paragraphs
+    myths.js                    Things that are not true
+    posters.js                  Supplied posters and native field guides
   components/
     architecture.js             Environment map and creation interaction
     diagrams.js                 Chapter diagram renderers
+    infographics.js             Native field guides (HTML/SVG)
+    pages.js                    Home, Listen, Field guides, Not true
+    player.js                   Shared audio element and dock
     node.js                     Shared component markup
   styles/
     base.css                    Shared visual design
     architecture.css            Architecture and walkthrough layout
+    pages.css                   Pages, field guides, player, lightbox
+public/
+  audio/                        Deep dive audio (26 MB, mono AAC)
+  posters/                      Web-sized poster copies
 docs/
   concept-review.html           Review of the first concept
-  feedback-response.md          Changes and review disposition
-  audio-source-notes.md         Guide-to-site mapping and narration corrections
+  feedback-response.md          First iteration: changes and review disposition
+  iteration-2.md                Second iteration: listen, explore, read
+  audio-source-notes.md         Marker map and narration corrections
+  reference/                    Supplied posters and the transcript, unchanged
 tests/                         Content integrity checks
 vite.config.js                 Local servers and static build
 dist/                          Generated output; ignored by Git
@@ -68,12 +87,12 @@ This is an illustrative development and test environment, not live Azure status.
 
 Technical content comes from the `osdu-spi-stack` architecture, deployment, identity, and fork-deployment guides and the `osdu-spi` concepts and engineering-system documentation. Each chapter links to its sources. The diagrams group examples; every service does not use every backend shown.
 
-The site executes no Azure commands, requires no Azure credentials, and remains separate from the source repositories it explains. Google Fonts is optional; system-font fallbacks are provided. Nothing is published by the development or build commands.
+The site executes no Azure commands, requires no Azure credentials, and remains separate from the source repositories it explains. Google Fonts is optional; system-font fallbacks are provided. Nothing is published by the development or build commands. The site is published to GitHub Pages from `main` by `.github/workflows/pages.yml`: https://danielscholl-osdu.github.io/osdu-spi-training/
 
-## Current iteration and overview audio
+## Iterations
 
-The next iteration keeps the same architecture map through six lifecycle moments, from local preparation through teardown. Component explanations sit beside the map on a wide screen and open in a bottom panel on a phone. Deep links preserve a specific moment and component, for example `#bring-up/inspect?detail=connect`.
+The architecture map runs through six lifecycle moments, from local preparation through teardown. Component explanations sit beside the map on a wide screen and open in a bottom panel on a phone. Deep links preserve a specific moment and component, for example `#bring-up/inspect?detail=connect`; `#listen?t=764` opens the deep dive at a marker, and `#field-guides?guide=profiles` opens a field guide.
 
-[The feedback response](docs/feedback-response.md) records the changes, verification, and remaining scope. The original review remains unchanged.
+[The feedback response](docs/feedback-response.md) records the first iteration. [Iteration 2](docs/iteration-2.md) records the home page, audio, field guides, and field checks. The original review remains unchanged.
 
-The supplied [OSDU SPI Stack guide](osdu-spi-stack-guide.pdf) is useful overview material. [Audio source notes](docs/audio-source-notes.md) map it to the four website views and identify wording to correct before narration. When the audio is available, add a native player with a transcript and optional links to these diagram states. No audio file has been supplied or included in the build yet.
+The supplied [OSDU SPI Stack guide](osdu-spi-stack-guide.pdf) is the narrative source for the generated deep dive. [Audio source notes](docs/audio-source-notes.md) list every marker, its site destination, and the wording the narration should correct. The deep dive is a NotebookLM artifact; the [notebook](https://notebook.google.com/notebook/b54aaf01-b8c2-4d39-98e9-112ed9dc92b7/artifact/5c1f61ff-cf85-4a1b-813d-d80ae3d96a21) is linked from the Listen page.

@@ -6,7 +6,7 @@ export function parseRoute(hash) {
   const [requestedChapter, requestedStep] = path.split('/');
   const chapter = Object.hasOwn(chapters, requestedChapter)
     ? requestedChapter
-    : 'running-stack';
+    : 'start';
   const steps =
     chapter === 'bring-up'
       ? creationMoments.map((moment) => moment.id)
@@ -14,7 +14,18 @@ export function parseRoute(hash) {
         ? ['developer', 'request']
         : [];
   const step = steps.includes(requestedStep) ? requestedStep : steps[0] || '';
-  return { chapter, step, detail: new URLSearchParams(query).get('detail') };
+  const params = new URLSearchParams(query);
+  const seconds = Number(params.get('t'));
+  return {
+    chapter,
+    step,
+    detail: params.get('detail'),
+    guide: params.get('guide'),
+    time:
+      params.has('t') && Number.isFinite(seconds) && seconds >= 0
+        ? seconds
+        : null,
+  };
 }
 
 export function routeHref(chapter, step = '', detail = null) {
