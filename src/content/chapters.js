@@ -7,13 +7,22 @@ export const chapters = {
     subtitle: 'What this site is for',
     headline: 'OSDU on Azure,<span>explained by boundary.</span>',
     intro:
-      'You already know the OSDU APIs. SPI stands for Service Provider Interface, and this site uses the word for three related things: the Azure environment the services run in, the interface inside each service, and the engineering system that keeps the Azure code maintainable. By the end you can say where your request runs, what created the environment it runs in, and where a change to the Azure provider belongs.',
+      'You already know the OSDU APIs. Follow one request down to the Azure code it reaches, then follow a change to that code back into a running stack. By the end you can say where your request runs, what created the environment it runs in, and where a change to the Azure provider belongs.',
     premise: 'For engineers who know OSDU and are new to SPI.',
+    listen: [
+      {
+        episode: 'machinery',
+        time: 0,
+        end: 180,
+        label: 'The problem, and the three meanings of SPI',
+      },
+    ],
     sources: ['architecture', 'engineering', 'designs', 'decisions'],
   },
   'running-stack': {
     kind: 'map',
     group: 'learn',
+    book: 'The stack',
     title: 'What is a stack?',
     subtitle: 'Place familiar OSDU concepts',
     headline: 'AKS is one part<span>of the stack.</span>',
@@ -23,6 +32,10 @@ export const chapters = {
     figure: 'Follow the boundaries',
     selected: 'environment',
     diagram: 'overview',
+    listen: [
+      { episode: 'stack', time: 764, label: 'Four owners, four boundaries' },
+      { episode: 'machinery', time: 609, label: 'The Azure-only bet' },
+    ],
     guides: ['familiar', 'inside-the-cluster', 'profiles'],
     mistakes: {
       developer: 'profiles-save-money',
@@ -73,6 +86,7 @@ export const chapters = {
   'bring-up': {
     kind: 'map',
     group: 'learn',
+    book: 'The stack',
     title: 'How it comes to life',
     subtitle: 'Create, use, and remove',
     headline: 'One creation command.<span>Several kinds of work.</span>',
@@ -81,6 +95,14 @@ export const chapters = {
     figure: 'Follow the environment',
     selected: 'workstation',
     diagram: 'creation',
+    listen: [
+      {
+        episode: 'stack',
+        time: 915,
+        label: 'The CLI leaves; Flux keeps working',
+      },
+      { episode: 'stack', time: 2661, label: 'Making an empty OSDU useful' },
+    ],
     guides: {
       provision: ['owners'],
       bootstrap: ['owners'],
@@ -147,18 +169,27 @@ export const chapters = {
   'spi-boundary': {
     kind: 'map',
     group: 'learn',
+    book: 'One service',
     title: 'The SPI boundary',
     subtitle: 'Find the code Azure owns',
     headline: 'Shared OSDU behavior.<span>Fork-owned Azure code.</span>',
     intro:
-      'The partition and storage APIs stay familiar. Inside each service, a Service Provider Interface connects common behavior to its Azure implementation. The important change is who maintains that implementation.',
+      'Inside each service, a Service Provider Interface connects common behavior to its Azure implementation. Follow the same lookup through the partition service, then watch what the provider does when its cache is down.',
     figure: 'One service, two source owners',
     selected: 'azureimpl',
     diagram: 'spi',
+    listen: [
+      { episode: 'machinery', time: 180, label: 'The provider model' },
+      {
+        episode: 'branches',
+        time: 331,
+        label: 'The seam is where the friction lives',
+      },
+    ],
     guides: ['one-request', 'identity'],
     mistakes: ['token-accepted-means-authorized'],
     scope:
-      'ADR-038 anticipates upstream removing its Azure implementations. The fork seeds Azure source once and keeps it outside the generated shared-code branch.',
+      'ADR-038 anticipates upstream removing its Azure implementations. The fork seeds Azure source once and keeps it outside the generated shared-code branch. The cache fallback is real: commit fc2dfbf in osdu-spi-partition, 30 July 2026, with regression tests.',
     sources: ['ownership', 'concepts', 'engineering'],
     question: 'Where inside a service does OSDU stop and Azure begin?',
     builds:
@@ -166,11 +197,15 @@ export const chapters = {
     where:
       'One service inside the osdu namespace. Everything from the first two views is still around it; only the scale changed.',
     example: {
-      title: 'The same lookup, inside the partition service',
+      title: 'The same lookup, with the cache down',
       code: 'GET /api/partition/v1/partitions/opendes',
       hops: [
         { detail: 'client', label: 'OSDU API', copy: 'The contract you know' },
-        { detail: 'core', label: 'Common code', copy: 'Validates the request' },
+        {
+          detail: 'core',
+          label: 'Common code',
+          copy: 'Caller check, then the interface',
+        },
         {
           detail: 'contract',
           label: 'The interface',
@@ -179,78 +214,245 @@ export const chapters = {
         {
           detail: 'azureimpl',
           label: 'Azure implementation',
-          copy: 'Cache first',
+          copy: 'Asks the cache; it throws',
         },
         {
           detail: 'azureclients',
           label: 'Table Storage',
-          copy: 'On a cache miss',
+          copy: 'Answers anyway',
         },
       ],
-      note: 'The provider returns stored configuration for opendes. It does not call Cosmos, Storage, or Service Bus; other services use the answer to do that.',
+      note: 'The provider treats a broken cache as a miss and reads the row from common Storage. That fallback is the fix the next three views follow out through the fork and back.',
     },
     outcomes: [
-      'Common service code calls a provider interface; the Azure implementation behind it does the Azure work with Workload Identity. For the partition service that is a cache, then a Table Storage read.',
+      'Common service code calls a provider interface; the Azure implementation behind it does the Azure work with Workload Identity. For the partition service that is a cache, then a Table Storage read, and the read still happens when the cache throws.',
       'The interface and its implementation ship in one image. There is no network hop between them.',
       'Upstream may delete its Azure implementations; the fork owns provider/<svc>-azure and keeps it outside the generated upstream tree.',
     ],
   },
-  'engineering-system': {
+  'fork-shape': {
     kind: 'map',
     group: 'learn',
-    title: 'How changes arrive',
-    subtitle: 'Follow a change to its owner',
-    headline: 'Provider code belongs<span>in its service fork.</span>',
+    book: 'The fork',
+    title: 'The shape of the fork',
+    subtitle: 'Who owns which paths',
+    headline:
+      'Upstream will delete the Azure code.<span>The fork is where it lives.</span>',
     intro:
-      'Shared automation comes from osdu-spi. Runtime infrastructure and configuration come from osdu-spi-stack. A service fork builds an image that a running stack can test.',
-    figure: 'Source → image → environment',
-    selected: 'repo',
-    diagram: 'engineering',
-    guides: ['contribution-chain', 'borrow-prove-restore'],
-    mistakes: ['smoke-proves-api'],
+      'A service fork is a short list of paths the fork owns, beside a tree regenerated from upstream every day. Read the repository by owner: each row is a path, each column is a branch, and the cells say where the path exists.',
+    premise:
+      'The cache fallback from 03 has to live somewhere upstream cannot delete.',
+    figure: 'One repository, read by owner',
+    selected: 'provider-azure',
+    diagram: 'fork',
+    listen: [
+      {
+        episode: 'machinery',
+        time: 221,
+        label: 'Upstream deletes the vendor code',
+      },
+      {
+        episode: 'branches',
+        time: 1281,
+        label: 'From sculpting to 3D printing',
+      },
+      {
+        episode: 'machinery',
+        time: 288,
+        label: 'Ownership runs through the tree',
+      },
+    ],
+    guides: ['contribution-chain'],
+    mistakes: ['fork-is-a-snapshot', 'descriptor-comes-from-template'],
     scope:
-      'One service fork per service; customer mirror forks form a further tier. Eligible onboarded runs can deploy-test. A skipped deploy gate is not live acceptance evidence.',
-    sources: ['forkDeploy', 'proof', 'branches', 'forkTiers'],
+      'osdu-spi-partition is the reference fork; the other service forks follow the same filter with their own service name. Customer mirror forks form a second tier and copy the service repository, not upstream. The descriptor row is fork-owned by rule; the partition fork has not written its file yet.',
+    sources: ['ownership', 'branches', 'forkTiers', 'workflowSystem'],
     question:
-      'Where does a change to that Azure code go, and how does it reach a running stack?',
+      'Who owns that provider code, and how does it survive upstream deleting it?',
     builds:
-      'Uses the fork-owned paths from 03 and the shared environment from 01.',
+      'Uses the fork-owned paths from 03 and the image the stack pulls in 01.',
     where:
-      'Outside the running stack: the service fork, the shared engineering system, and the stack repository that runs the environment.',
+      'Outside the stack entirely: the service repository on GitHub, the community upstream it is generated from, and the template that gives it its workflows.',
     example: {
-      title: 'A fix to that provider',
-      code: 'provider/partition-azure/',
+      title: 'The cache fallback fix, at rest',
+      code: 'provider/partition-azure/…/PartitionServiceImpl.java',
       hops: [
-        { detail: 'repo', label: 'Service fork', copy: 'osdu-spi-partition' },
-        { detail: 'image', label: 'GHCR digest', copy: 'Built and published' },
         {
-          detail: 'delivery',
-          label: 'osdu-image-lock',
-          copy: 'Pinned into dev1',
+          detail: 'provider-azure',
+          label: 'The fix',
+          copy: 'In the fork-owned directory, with its tests',
         },
         {
-          detail: 'running',
-          label: 'Running pod',
-          copy: 'Flux reconciles the lock',
+          detail: 'engineering-files',
+          label: 'Checked',
+          copy: 'By the workflows the template delivered',
         },
         {
-          detail: 'proof',
-          label: 'Acceptance result',
-          copy: 'Prove, then restore',
+          detail: 'main-branch',
+          label: 'On main',
+          copy: 'CodeQL · Validation Summary · approved',
+        },
+        {
+          detail: 'upstream',
+          label: 'Meanwhile, upstream moves',
+          copy: 'A change to partition-core',
+        },
+        {
+          detail: 'fork-upstream',
+          label: 'Regenerated',
+          copy: 'Tonight at 00:00 UTC',
         },
       ],
-      note: 'Every hop leaves something you can inspect.',
+      note: 'Two changes are now waiting to meet: the fix on main, upstream’s on fork_upstream. The next view is the day they do.',
     },
     outcomes: [
-      'Three repositories, three jobs: a service fork owns provider code, osdu-spi supplies the workflows, osdu-spi-stack runs the environment.',
-      'A candidate travels fork → GHCR digest → osdu-image-lock → running pod, and every hop leaves something I can inspect.',
-      'A deploy lane borrows a shared environment, proves the digest, and restores the pin only while it still owns it.',
+      'The fork owns provider/partition-azure, its Azure tests, its descriptor, and the engineering files the template delivers. Everything else is upstream’s, regenerated daily.',
+      'The fork has three branches with three jobs: fork_upstream is generated input, fork_integration is the workspace, main is the protected result. Upstream is outside all three.',
+      'fork_upstream is generated with the Azure paths absent by construction, so an upstream deletion has nothing to delete on the fork side.',
+    ],
+  },
+  'fork-day': {
+    kind: 'map',
+    group: 'learn',
+    book: 'The fork',
+    title: 'A day in the fork',
+    subtitle: 'Generate, integrate, propose, prove, release',
+    headline: 'Two changes meet.<span>One digest leaves.</span>',
+    intro:
+      'The three branches from 04, followed through one change. Upstream is regenerated at midnight, the cascade carries it into the workspace, a person approves, every eligible commit gets a digest and a turn in dev1, and a release is an optional tag on an image that already exists.',
+    premise: 'Nothing here is a merge you run by hand.',
+    figure: 'The branches, in time',
+    selected: 'sync-pr',
+    diagram: 'forkDay',
+    guides: { sync: ['clocks'], review: ['labels'] },
+    listen: [
+      { episode: 'branches', time: 1746, label: 'Labels as a state machine' },
+      { episode: 'branches', time: 1846, label: 'The cascade: main first' },
+      { episode: 'branches', time: 1985, label: 'The meta commit' },
+    ],
+    mistakes: {
+      sync: 'merge-fork-upstream',
+      cascade: 'azure-profile-alone',
+      review: 'human-required-is-a-note',
+      prove: 'acceptance-needs-a-release',
+      release: 'release-rebuilds-image',
+    },
+    scope:
+      'Times are the scheduled triggers in the template workflows, not measurements. Template sync, the monitor, and Settings Apply run on their own clocks and are drawn below the map, not as steps. The mirror tier runs the same day with fork_upstream copied rather than generated.',
+    sources: ['synchronization', 'cascade', 'release', 'cascadeMonitor'],
+    question:
+      'What happens to the fix, and to upstream’s change, between midnight and a digest?',
+    builds: 'Uses the three branches and the ownership rows from 04.',
+    where:
+      'The same repository as 04, followed through five moments. dev1 appears at the fourth, when a candidate digest borrows it.',
+    example: {
+      title: 'The fix meets the upstream change',
+      code: 'provider/partition-azure + partition-core',
+      hops: [
+        {
+          step: 'sync',
+          detail: 'sync-pr',
+          label: 'Sync PR',
+          copy: 'Upstream’s change, generated',
+        },
+        {
+          step: 'cascade',
+          detail: 'cascade-run',
+          label: 'Cascade',
+          copy: 'Both compile together',
+        },
+        {
+          step: 'review',
+          detail: 'integration-pr',
+          label: 'Integration PR',
+          copy: 'A person approves',
+        },
+        {
+          step: 'prove',
+          detail: 'candidate',
+          label: 'Candidate digest',
+          copy: 'Pushed by Validation',
+        },
+        {
+          step: 'prove',
+          detail: 'dev1-slot',
+          label: 'A turn in dev1',
+          copy: 'What 06 follows',
+        },
+      ],
+      note: 'The cache fix and its unit tests are real. From here the example follows an illustrative acceptance run using the newer template; the reference partition fork has not adopted that lane or written its descriptor yet. The release moment is optional and comes after all of this.',
+    },
+    outcomes: [
+      'A sync is a generated tree plus one PR and one tracking issue, never a merge into fork_upstream. The cascade merges main first, then fork_upstream, into the workspace.',
+      'The labels on the tracking issue are the state: cascade-active, cascade-blocked, cascade-failed, validated. Removing human-required is how I retry.',
+      'The integration PR and the version PR are different PRs. Validation pushes a digest for every eligible commit and dev1 is borrowed for it before any release exists.',
+    ],
+  },
+  handshake: {
+    kind: 'map',
+    group: 'learn',
+    book: 'The seam',
+    title: 'The handshake',
+    subtitle: 'Borrow, prove, restore',
+    headline: 'A lock write<span>is the whole deploy.</span>',
+    intro:
+      'The fork has a candidate digest and the stack has a running environment. One credentialed run reads what the environment publishes, pins the digest into the image lock as a pin it owns, checks the pod is running it, runs the suites the descriptor declares, and gives the slot back. Watch the lock and the pod change as you step through. The run is illustrative: it uses the lane the newer template ships, which the reference partition fork has not adopted yet.',
+    premise:
+      'The stack publishes facts. The fork declares needs. The lock is the only thing both write.',
+    figure: 'One run, one borrowed slot',
+    selected: 'delivery',
+    diagram: 'seam',
+    listen: [
+      { episode: 'machinery', time: 791, label: 'Borrow, prove, restore' },
+      {
+        episode: 'branches',
+        time: 3124,
+        label: 'Facts, descriptor, machinery',
+      },
+      { episode: 'stack', time: 3040, label: 'Ephemeral pins' },
+    ],
+    guides: ['borrow-prove-restore'],
+    mistakes: ['validation-summary-means-deployed', 'restore-always-restores'],
+    scope:
+      'A shared environment can be borrowed by several onboarded forks, one service slot each, serialised per service. Key Vault binding materialisation, descriptor requirement checks before the borrow, and a second verify before each suite are not wired. The lane shown is the one the template ships since 10 September; osdu-spi-partition has neither adopted it nor written its descriptor yet, so this run is illustrative until it does.',
+    sources: ['forkDeploy', 'proof', 'descriptorContract', 'statusContract'],
+    question:
+      'How does that digest reach a running stack, what proves it, and what gives the slot back?',
+    builds: 'Uses the candidate digest from 05 and the environment from 01.',
+    where:
+      'Both maps at once: a GitHub Actions run on the fork side, and dev1’s image lock, pod, and deploy identity on the stack side.',
+    example: {
+      title: 'Candidate B borrows the partition slot in dev1',
+      code: 'ghcr.io/azure/partition@sha256:…',
+      hops: [
+        { detail: 'image', label: 'Candidate B', copy: 'Pushed by Validation' },
+        { detail: 'gate', label: 'Gate', copy: 'May this run borrow?' },
+        {
+          detail: 'delivery',
+          label: 'Pin',
+          copy: 'Lock: A → B, owned by this run',
+        },
+        { detail: 'verify', label: 'Verify', copy: 'Pod imageID is B' },
+        { detail: 'proof', label: 'Prove', copy: 'Declared suites, reports' },
+        {
+          detail: 'restore',
+          label: 'Restore',
+          copy: 'Lock: B → A, if still the owner',
+        },
+      ],
+      note: 'Every hop leaves something you can inspect: a gate notice, a lock annotation, a pod imageID, a Surefire report, a reset exit code. The fallback itself was proved by unit tests in the build; the suites here prove the API on the pinned pod.',
+    },
+    outcomes: [
+      'The lock write is the whole deploy: Flux reconciles osdu-image-lock and the pod restarts on the pinned digest. Between runs the lock holds the canonical image.',
+      'The run only restores what it still owns, so a green restore is a claim about this run, not about the environment.',
+      'The stack publishes facts and the fork declares needs in its descriptor. Five repository settings are all that connect them.',
     ],
   },
   'not-true': {
     kind: 'page',
     page: 'myths',
     group: 'learn',
+    book: 'Both',
     title: 'Things that are not true',
     subtitle: 'Assumptions the docs contradict',
     headline: 'Plausible assumptions.<span>Documented contradictions.</span>',
@@ -275,14 +477,13 @@ export const chapters = {
     page: 'listen',
     group: 'supplement',
     title: 'Listen',
-    subtitle: 'The one-hour deep dive',
-    headline:
-      'Engineering the OSDU SPI Stack<span>on Azure, in 59 minutes.</span>',
+    subtitle: 'Three conversations',
+    headline: 'Three conversations,<span>one system.</span>',
     intro:
-      'A generated audio discussion of the SPI Stack guide. It moves from the provider problem through identity, GitOps, and the shared environment to a full bring-up. Play it while you explore; each chapter marker opens the matching view.',
+      'Generated audio discussions of the guides: a seventeen-minute orientation first, then the stack on its own, then the fork in depth. Play one while you explore; each marker opens the matching view, and the maps carry short cues back into the recordings.',
     premise: 'Keeps playing while you move around the site.',
     scope:
-      'The narration is generated from the guide, not from the repositories. Where it rounds a number or overstates a guarantee, the marker notes say what the source documentation actually claims.',
+      'The narration is generated from the guides, not from the repositories. Where it rounds a number, mishears a command, or overstates a guarantee, the marker notes say what the source documentation actually claims.',
     sources: ['architecture', 'lifecycle', 'identity', 'flux'],
   },
   'field-guides': {

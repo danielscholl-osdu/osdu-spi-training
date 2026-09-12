@@ -54,11 +54,70 @@ export const suppliedPosters = [
       { label: 'The SPI boundary', href: '#spi-boundary' },
       {
         label: 'How changes arrive',
-        href: '#engineering-system?detail=upstream',
+        href: '#fork-shape?detail=upstream',
       },
-      { label: 'The service fork', href: '#engineering-system?detail=repo' },
+      { label: 'The service fork', href: '#handshake?detail=trust' },
     ],
     sources: ['forkTiers', 'branches', 'ownership'],
+  },
+  {
+    id: 'permanent-fork',
+    title: 'OSDU SPI: The Architecture of a Permanent Azure Fork',
+    origin: 'Generated poster supplied with the training material',
+    image: 'posters/permanent-fork.jpg',
+    width: 2000,
+    height: 1116,
+    summary:
+      'The whole round trip on one sheet: the engineering system on the left, the handshake in the middle, the deployment platform on the right. Three branches leave the filter and reach the stack through the seam.',
+    takeaways: [
+      'A permanent fork is a relationship, not a snapshot: Azure owns its subtrees and regenerates the shared code daily.',
+      'Generate, do not merge: fork_upstream is computed from the upstream tip by the filter, so modify/delete conflicts never occur.',
+      'The labels on the tracking issue are the state machine and the audit trail for a process that spans days.',
+      'The stack keeps no critical state in the cluster; managed Azure services hold it, with local authentication disabled.',
+    ],
+    notes: [
+      'The filter table’s “Injected / Protected” row mixes two things: the Azure provider source is protected from generation, while the pom profile that points at it is injected. The engineering workflows are delivered by template sync, not by the filter.',
+      'The sync cadence box describes template sync; the daily 00:00 UTC job is Sync Upstream. Template sync runs at 08:00 UTC and reaches forks as pull requests.',
+      '“Fifty minutes to OSDU” and “under an hour” round a centralus provisioning observation; API readiness can follow the CLI exit, and 1,306 is the poster’s schema count where the guide says about 1,386.',
+      'The label chain contains generated misspellings (“processr-required”, “cevdlreahte”). The real labels are upstream-sync, cascade-active, cascade-blocked, cascade-failed, human-required, and validated.',
+    ],
+    explore: [
+      { label: 'The three branches on the map', href: '#fork-shape' },
+      { label: 'The labels', href: '#fork-day/review?detail=labels' },
+      { label: 'The handshake', href: '#handshake' },
+    ],
+    sources: ['branches', 'cascadeMonitor', 'deployTest', 'architecture'],
+  },
+  {
+    id: 'continuous-forking',
+    title: 'OSDU SPI: The Engineering System for Continuous Forking',
+    origin: 'Generated poster supplied with the training material',
+    image: 'posters/continuous-forking.jpg',
+    width: 2000,
+    height: 1116,
+    summary:
+      'Relationship versus snapshot, the three branches on a daily cadence, borrow-prove-restore in three steps, and the two tiers of forks with a comparison table.',
+    takeaways: [
+      'Manual forks synchronise by hand with high conflict risk; the engineering system synchronises daily as reviewable PRs with isolated conflict resolution.',
+      'The deletion constraint is the reason for everything else: upstream deletes the Azure code, so the fork must own it while still receiving core updates.',
+      'The meta commit drives versioning without rewriting history.',
+      'Second-tier mirror forks are true GitHub forks that sync verbatim and have template sync off, so pull requests can flow back up.',
+    ],
+    notes: [
+      'The Step 1 box labels the lock “CITOPS LOCK-FILE”; it is the osdu-image-lock ConfigMap in the osdu-flux namespace, written by spi service pin --ephemeral.',
+      'Step 3 restores the canonical image only while the run still owns the pin; a newer run’s pin is left alone and the reset exits 2.',
+      'The cascade merges main into fork_integration first, then fork_upstream; the poster shows only the second half of that order.',
+      'The poster says the pull request “opens automatically if changes exist”; one PR per upstream state is updated in place, never a second one.',
+    ],
+    explore: [
+      {
+        label: 'The generated branch',
+        href: '#fork-shape?detail=fork-upstream',
+      },
+      { label: 'The cascade', href: '#fork-day/cascade?detail=cascade-run' },
+      { label: 'A customer mirror fork', href: '#fork-shape?detail=mirror' },
+    ],
+    sources: ['forkTiers', 'synchronization', 'cascade', 'ephemeralPins'],
   },
   {
     id: 'borrow-prove-restore',
@@ -82,13 +141,13 @@ export const suppliedPosters = [
     explore: [
       {
         label: 'Borrow, prove, restore on the map',
-        href: '#engineering-system?detail=proof',
+        href: '#handshake?detail=proof',
       },
       {
         label: 'The image-lock handoff',
-        href: '#engineering-system?detail=delivery',
+        href: '#handshake?detail=delivery',
       },
-      { label: 'The service fork', href: '#engineering-system?detail=repo' },
+      { label: 'The service fork', href: '#handshake?detail=trust' },
     ],
     sources: ['forkDeploy', 'proof', 'ephemeralPins'],
   },
@@ -115,10 +174,10 @@ export const suppliedPosters = [
     explore: [
       {
         label: 'The shared stack on the map',
-        href: '#engineering-system?detail=running',
+        href: '#handshake?detail=running',
       },
       { label: 'What spi down keeps', href: '#bring-up/remove' },
-      { label: 'Ephemeral pins', href: '#engineering-system?detail=delivery' },
+      { label: 'Ephemeral pins', href: '#handshake?detail=delivery' },
     ],
     sources: ['envLifecycle', 'pinnedEnv', 'resetBoundary', 'deployIdentity'],
   },
@@ -272,6 +331,22 @@ export const nativeGuides = [
       'Profiles select Kubernetes workloads. Every profile provisions the same cluster and PaaS services.',
     appearsIn: { label: 'What is a stack?', href: '#running-stack' },
     sources: ['architecture', 'profiles'],
+  },
+  {
+    id: 'labels',
+    title: 'The labels are the state machine',
+    summary:
+      'A sync tracking issue moves through four labels; two exits need a person. Removing human-required is the retry signal, and the monitor reads it every six hours.',
+    appearsIn: { label: 'A day in the fork', href: '#fork-day/review' },
+    sources: ['cascadeMonitor', 'humanRequired'],
+  },
+  {
+    id: 'clocks',
+    title: 'The fork’s recurring work, on its own clocks',
+    summary:
+      'Six scheduled or event-driven workflows keep a service fork current. Only two of them are caused by the moments in the day view.',
+    appearsIn: { label: 'A day in the fork', href: '#fork-day/sync' },
+    sources: ['workflowSystem', 'synchronization', 'cascadeMonitor'],
   },
   {
     id: 'identity',

@@ -8,12 +8,13 @@ import { creationMoments } from '../src/content/creation-moments.js';
 import { sources } from '../src/content/sources.js';
 import { myths } from '../src/content/myths.js';
 import { suppliedPosters, nativeGuides } from '../src/content/posters.js';
-import { audio } from '../src/content/audio.js';
-import { transcript } from '../src/content/transcript.js';
+import { episodes } from '../src/content/audio.js';
 import { diagramRenderers } from '../src/components/diagrams.js';
 import { architectureMap } from '../src/components/architecture.js';
 import { infographics } from '../src/components/infographics.js';
-import { parseRoute, routeHref } from '../src/router.js';
+import { pageRenderers } from '../src/components/pages.js';
+import { parseRoute, routeHref, chapterSteps } from '../src/router.js';
+import { forkMoments } from '../src/content/fork-moments.js';
 import { zoomLevels, spiMeanings } from '../src/content/concepts.js';
 import { mythThemes } from '../src/content/myths.js';
 import { zoomLadder, spiNamesFigure } from '../src/components/infographics.js';
@@ -87,12 +88,7 @@ test('chapters connect to renderers, explanations, and named sources', () => {
     assert.equal(typeof diagramRenderers[chapter.diagram], 'function');
     assert.ok(Object.hasOwn(componentDetails, chapter.selected));
     verifyDetails(diagramRenderers[chapter.diagram](parseRoute(`#${id}`)), id);
-    const steps =
-      id === 'bring-up'
-        ? creationMoments.map((moment) => moment.id)
-        : id === 'running-stack'
-          ? ['developer', 'request']
-          : [];
+    const steps = chapterSteps(id);
     const flatten = (value, name) => {
       if (!value) return [];
       if (Array.isArray(value)) return value;
@@ -165,7 +161,7 @@ test('every lifecycle state and request path has unambiguous component selection
 });
 
 test('deep links recover chapter, lifecycle moment, and component without module state', () => {
-  const base = { guide: null, time: null };
+  const base = { guide: null, episode: null, time: null };
   for (const moment of creationMoments) {
     assert.deepEqual(
       parseRoute(routeHref('bring-up', moment.id, moment.detail)),
@@ -189,6 +185,7 @@ test('deep links recover chapter, lifecycle moment, and component without module
     step: '',
     detail: null,
     guide: null,
+    episode: null,
     time: 1234,
   });
   assert.equal(parseRoute('#listen?t=-5').time, null);
@@ -215,27 +212,60 @@ test('field checks name a source, a command, and a place on the site', () => {
 });
 
 test('audio markers are ordered, inside the recording, and point at real views', () => {
-  assert.ok(audio.duration > 0);
-  assert.match(audio.file, /^audio\/.+\.m4a$/);
-  assert.equal(new URL(audio.notebook).protocol, 'https:');
-  const publicFile = new URL(`../public/${audio.file}`, import.meta.url);
-  assert.ok(existsSync(publicFile), `missing ${fileURLToPath(publicFile)}`);
-  let previous = -1;
-  for (const marker of audio.markers) {
-    assert.ok(marker.time > previous, `${marker.title}: out of order`);
-    assert.ok(marker.end > marker.time && marker.end <= audio.duration);
-    for (const field of ['title', 'copy', 'routeLabel'])
-      assert.ok(marker[field]?.trim(), `${marker.title}: ${field}`);
-    verifyRoute(marker.route, marker.title);
-    previous = marker.time;
+  assert.equal(
+    new Set(episodes.map((episode) => episode.id)).size,
+    episodes.length,
+  );
+  for (const audio of episodes) {
+    assert.ok(audio.duration > 0);
+    assert.match(audio.file, /^audio\/.+\.m4a$/);
+    if (audio.notebook)
+      assert.equal(new URL(audio.notebook).protocol, 'https:');
+    const publicFile = new URL(`../public/${audio.file}`, import.meta.url);
+    assert.ok(existsSync(publicFile), `missing ${fileURLToPath(publicFile)}`);
+    let previous = -1;
+    for (const marker of audio.markers) {
+      assert.ok(marker.time > previous, `${marker.title}: out of order`);
+      assert.ok(marker.end > marker.time && marker.end <= audio.duration);
+      for (const field of ['title', 'copy', 'routeLabel'])
+        assert.ok(marker[field]?.trim(), `${marker.title}: ${field}`);
+      verifyRoute(marker.route, `${audio.id}: ${marker.title}`);
+      previous = marker.time;
+    }
+    assert.ok(
+      audio.transcript.length > audio.duration / 60,
+      `${audio.id}: transcript`,
+    );
+    let last = -1;
+    for (const segment of audio.transcript) {
+      assert.ok(segment.start >= last && segment.start < audio.duration);
+      assert.ok(segment.text.trim());
+      last = segment.start;
+    }
   }
-  assert.ok(transcript.length > 50, 'transcript is present');
-  let last = -1;
-  for (const segment of transcript) {
-    assert.ok(segment.start >= last && segment.start < audio.duration);
-    assert.ok(segment.text.trim());
-    last = segment.start;
+  for (const [id, chapter] of Object.entries(chapters)) {
+    for (const cue of chapter.listen || []) {
+      const episode = episodes.find((entry) => entry.id === cue.episode);
+      assert.ok(episode, `${id}: unknown episode ${cue.episode}`);
+      assert.ok(
+        episode.markers.some((marker) => marker.time === cue.time),
+        `${id}: cue ${cue.label} does not start on a marker`,
+      );
+    }
   }
+  assert.equal(episodes[0].id, 'machinery', 'the orientation frames the rest');
+  const home = pageRenderers.home(parseRoute('#start'));
+  assert.ok(
+    home.includes('data-listen-stop="180"'),
+    'home carries the frame cue',
+  );
+  assert.ok(home.includes('data-listen-now'), 'home cue has a live note line');
+  const listen = pageRenderers.listen(parseRoute('#listen?episode=branches'));
+  assert.ok(listen.includes('3D-prints'));
+  assert.equal(
+    listen.split('data-marker-start').length - 1,
+    episodes[2].markers.length,
+  );
 });
 
 test('posters and field guides resolve their images, renderers, sources, and links', () => {
@@ -333,4 +363,51 @@ test('the familiar-things guide links every row to a component on the map', () =
   );
   assert.ok(hrefs.length >= 7);
   for (const href of hrefs) verifyRoute(href, 'familiar guide');
+});
+
+test('the fork moments and the retired engineering route keep resolving', () => {
+  for (const moment of forkMoments) {
+    assert.ok(componentDetails[moment.detail], moment.id);
+    assert.ok(moment.active.length, `${moment.id}: no active lane`);
+    const markup = diagramRenderers.forkDay(
+      parseRoute(`#fork-day/${moment.id}`),
+    );
+    assert.ok(markup.includes(`data-detail="${moment.detail}"`), moment.id);
+    verifyDetails(markup, `fork-day/${moment.id}`);
+  }
+  const retired = {
+    '#engineering-system?detail=delivery': ['handshake', '', 'delivery'],
+    '#engineering-system?detail=repo': ['fork-shape', '', 'main-branch'],
+    '#engineering-system?detail=image': ['fork-day', 'prove', 'candidate'],
+    '#engineering-system?detail=stack-source': [
+      'running-stack',
+      'developer',
+      'config-source',
+    ],
+    '#fork-day/review?detail=release-pr': [
+      'fork-day',
+      'review',
+      'integration-pr',
+    ],
+    '#fork-day/template?detail=template-pr': [
+      'fork-day',
+      'sync',
+      'template-pr',
+    ],
+  };
+  for (const [href, [chapter, step, detail]] of Object.entries(retired)) {
+    const route = parseRoute(href);
+    assert.deepEqual(
+      [route.chapter, route.step, route.detail],
+      [chapter, step, detail],
+    );
+    const markup = diagramRenderers[chapters[chapter].diagram](route);
+    assert.ok(markup.includes(`data-detail="${detail}"`), href);
+  }
+  for (const [id, chapter] of Object.entries(chapters))
+    if (chapter.group === 'learn') assert.ok(chapter.book, `${id}: book`);
+  const home = pageRenderers.home(parseRoute('#start'));
+  assert.ok(home.includes('round-trip'));
+  for (const key of ['fork-shape', 'fork-day', 'handshake'])
+    assert.ok(home.includes(`href="#${key}`), `home links ${key}`);
 });

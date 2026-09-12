@@ -1071,6 +1071,27 @@
   grid-area: seek;
   margin: 0;
 }
+.dock-note {
+  grid-column: 1 / -1;
+  font-size: 12.5px;
+  line-height: 1.5;
+  color: #dbe7f0;
+}
+.dock-note summary {
+  display: block;
+  list-style: none;
+  cursor: pointer;
+  color: #ffd98a;
+  font-weight: 600;
+}
+.dock-note summary::before {
+  content: '⚑ ';
+}
+.dock-note p {
+  margin: 4px 0 0;
+  max-height: 6em;
+  overflow: auto;
+}
 .dock-dismiss {
   grid-area: dismiss;
   border: 0;
@@ -1821,9 +1842,6 @@ body:has(.audio-dock:not([hidden])) main {
     font-size: 13px;
     padding: 7px 8px;
   }
-  .header-meta {
-    display: none;
-  }
   .page {
     gap: 32px;
   }
@@ -1884,5 +1902,457 @@ body:has(.audio-dock:not([hidden])) main {
   .poster {
     break-inside: avoid;
     box-shadow: none;
+  }
+}
+
+/* Chapter rail: the book each cluster of views belongs to */
+.rail-book {
+  display: block;
+  font-size: 10.5px;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: #9aafc0;
+  padding: 8px 0 3px 4px;
+}
+.rail-book:first-of-type {
+  padding-top: 2px;
+}
+.path-cards small {
+  display: block;
+  font-size: 11px;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: #8199ac;
+  margin-bottom: 2px;
+}
+
+@media (min-width: 1100px) {
+  .path-cards {
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+  }
+}
+
+/* Start page: the round trip */
+.round-trip {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr);
+  grid-template-areas:
+    'stack out fork'
+    'seam seam seam';
+  gap: 14px;
+  align-items: stretch;
+}
+.loop-side {
+  display: grid;
+  gap: 6px;
+  align-content: start;
+  padding: 14px;
+  border-radius: 10px;
+  background: #fff;
+  border: 1px solid var(--line);
+}
+.loop-stack {
+  grid-area: stack;
+  border-top: 4px solid var(--cli);
+}
+.loop-fork {
+  grid-area: fork;
+  border-top: 4px solid var(--fork);
+}
+.loop-head b {
+  display: block;
+  font-size: 15px;
+}
+.loop-head small {
+  display: block;
+  font-size: 12px;
+  color: var(--muted);
+  margin-bottom: 6px;
+}
+.loop-stop {
+  display: grid;
+  grid-template-columns: auto 1fr;
+  gap: 1px 9px;
+  padding: 9px 11px;
+  border: 1px solid var(--line);
+  border-radius: 7px;
+  color: var(--ink);
+  text-decoration: none;
+  background: #fff;
+}
+.loop-stop:hover {
+  border-color: var(--blue);
+}
+.loop-stop b {
+  font-size: 14px;
+}
+.loop-stop small {
+  grid-column: 2;
+  font-size: 12px;
+  color: var(--muted);
+}
+.loop-number {
+  grid-row: span 2;
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  background: var(--navy);
+  color: #fff;
+  display: grid;
+  place-items: center;
+  font-size: 11px;
+  font-weight: 700;
+  align-self: center;
+}
+.loop-fork .loop-number {
+  background: var(--fork);
+}
+.loop-digest {
+  border-style: dashed;
+  border-color: var(--fork);
+  background: var(--fork-bg);
+}
+.loop-arrow {
+  text-align: center;
+  color: #93abbf;
+  line-height: 1;
+}
+.loop-cross {
+  display: grid;
+  gap: 4px;
+  align-content: center;
+  justify-items: center;
+  font-size: 12.5px;
+  color: var(--fork);
+  font-weight: 600;
+  text-align: center;
+  max-width: 120px;
+}
+.loop-out {
+  grid-area: out;
+}
+.loop-back {
+  display: none;
+}
+.loop-seam {
+  grid-area: seam;
+  display: grid;
+  grid-template-columns: auto 1fr;
+  gap: 1px 10px;
+  align-items: center;
+  padding: 12px 14px;
+  border-radius: 8px;
+  border: 2px dashed var(--fork);
+  background: var(--fork-bg);
+  color: var(--ink);
+  text-decoration: none;
+}
+.loop-seam::before {
+  content: 'pinned into dev1, proved, restored ↑';
+  grid-column: 1 / -1;
+  font-size: 12.5px;
+  font-weight: 600;
+  color: var(--fork);
+  margin-bottom: 4px;
+}
+.loop-seam b {
+  font-size: 15px;
+}
+.loop-seam small {
+  grid-column: 2;
+  font-size: 12.5px;
+  color: var(--muted);
+}
+
+/* Start page: two doors */
+.doors {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 14px;
+}
+.door {
+  display: grid;
+  gap: 6px;
+  align-content: start;
+  padding: 16px 18px;
+  border-radius: 10px;
+  background: #fff;
+  border: 1px solid var(--line);
+  border-top: 4px solid var(--cli);
+  color: var(--ink);
+  text-decoration: none;
+}
+.door-fork {
+  border-top-color: var(--fork);
+}
+.door:hover {
+  border-color: var(--blue);
+}
+.door-kicker {
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: #7b93a6;
+}
+.door b {
+  font-size: 16px;
+}
+.door p {
+  margin: 0;
+  font-size: 14px;
+  color: var(--muted);
+  line-height: 1.6;
+}
+@media (max-width: 760px) {
+  .round-trip {
+    grid-template-columns: 1fr;
+    grid-template-areas:
+      'stack'
+      'out'
+      'fork'
+      'seam';
+  }
+  .loop-cross {
+    max-width: none;
+  }
+  .doors {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* Listen: episodes and cues */
+.episode-tabs {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 8px;
+  margin-bottom: 16px;
+}
+.episode-tab {
+  display: grid;
+  gap: 2px;
+  padding: 10px 12px;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: #fff;
+  text-decoration: none;
+  color: var(--ink);
+}
+.episode-tab b {
+  font-size: 15px;
+}
+.episode-tab small {
+  font-size: 12px;
+  color: var(--muted);
+}
+.episode-tab[aria-current] {
+  border-color: var(--navy);
+  background: var(--navy);
+  color: #fff;
+}
+.episode-tab[aria-current] small {
+  color: #b3deef;
+}
+.listen-episode-summary {
+  margin: 0 0 12px;
+  font-size: 15px;
+  line-height: 1.6;
+  color: var(--muted);
+}
+.listen-episode-summary b {
+  color: var(--ink);
+}
+.listen-chips {
+  display: grid;
+  gap: 8px;
+  margin: 14px 0 0;
+}
+.listen-chip-row {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px 10px;
+}
+.listen-chips .guide-kicker {
+  margin: 0;
+}
+.listen-lead {
+  margin: 0;
+  font-size: 14px;
+  line-height: 1.55;
+  color: var(--muted);
+}
+.listen-now {
+  margin: 0;
+  padding: 8px 12px;
+  border-left: 3px solid var(--navy);
+  background: #eef4f8;
+  font-size: 13.5px;
+  line-height: 1.55;
+}
+.listen-check {
+  display: block;
+  margin-top: 2px;
+}
+.listen-check b {
+  color: #8a5a00;
+}
+.chip-check {
+  font-style: normal;
+  color: #8a5a00;
+}
+.listen-chip {
+  display: grid;
+  grid-template-columns: auto 1fr;
+  grid-template-rows: auto auto;
+  column-gap: 8px;
+  align-items: center;
+  text-align: left;
+  padding: 7px 12px 7px 10px;
+  border: 1px solid #b5cbdc;
+  border-radius: 999px;
+  background: #fff;
+  color: var(--ink);
+  font: inherit;
+  cursor: pointer;
+}
+.listen-chip .play-glyph {
+  grid-row: 1 / 3;
+  font-size: 11px;
+  color: var(--blue);
+}
+.listen-chip b {
+  font-size: 13.5px;
+  font-weight: 600;
+}
+.listen-chip small {
+  font-size: 11.5px;
+  color: var(--muted);
+}
+.listen-chip:hover {
+  border-color: var(--navy);
+}
+.listen-chip.is-current {
+  border-color: var(--navy);
+  background: #e9f2f8;
+}
+@media (max-width: 760px) {
+  .episode-tabs {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* Field guides: labels state machine and the fork's clocks */
+.labels-machine {
+  display: grid;
+  gap: 12px;
+}
+.labels-happy {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 8px;
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+.label-state {
+  position: relative;
+  display: grid;
+  gap: 4px;
+  padding: 10px 12px;
+  border-radius: 8px;
+  border: 1px solid var(--line);
+  background: #fff;
+}
+.label-state code,
+.label-exit code {
+  font-size: 12.5px;
+  font-weight: 700;
+  color: var(--navy);
+}
+.label-state span,
+.label-exit span {
+  font-size: 13px;
+  line-height: 1.45;
+  color: var(--muted);
+}
+.label-state i {
+  position: absolute;
+  right: -12px;
+  top: 12px;
+  font-style: normal;
+  color: var(--muted);
+  z-index: 1;
+}
+.label-state.is-active {
+  border-color: var(--navy);
+}
+.label-state.is-done {
+  border-color: var(--flux);
+  background: var(--flux-bg);
+}
+.labels-exits {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 8px;
+}
+.label-exit {
+  display: grid;
+  gap: 4px;
+  padding: 10px 12px;
+  border-radius: 8px;
+  border: 1px dashed var(--fork);
+  background: var(--fork-bg);
+}
+.label-exit small {
+  font-size: 12.5px;
+  color: var(--ink);
+}
+.labels-note {
+  margin: 0;
+  font-size: 13px;
+  line-height: 1.55;
+  color: var(--muted);
+}
+.clock-strip {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 8px;
+  list-style: none;
+  margin: 0 0 10px;
+  padding: 0;
+}
+.clock-strip a {
+  display: grid;
+  gap: 3px;
+  padding: 10px 12px;
+  border-radius: 8px;
+  border: 1px solid var(--line);
+  background: #fff;
+  text-decoration: none;
+  color: var(--ink);
+}
+.clock-strip b {
+  font-size: 14px;
+}
+.clock-when {
+  font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+  font-size: 12px;
+  color: var(--blue);
+}
+.clock-strip small {
+  font-size: 12.5px;
+  line-height: 1.45;
+  color: var(--muted);
+}
+@media (max-width: 760px) {
+  .labels-happy,
+  .labels-exits,
+  .clock-strip {
+    grid-template-columns: 1fr;
+  }
+  .label-state i {
+    display: none;
   }
 }

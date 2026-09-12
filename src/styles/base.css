@@ -121,20 +121,6 @@ summary:focus-visible {
   font-size: 28px;
   line-height: 1;
 }
-.header-meta {
-  display: flex;
-  gap: 20px;
-  align-items: center;
-  font-size: 12px;
-  letter-spacing: 0.06em;
-  color: #b9cfe0;
-}
-.edition {
-  color: #8fb0c8;
-  border-left: 1px solid #ffffff2e;
-  padding-left: 20px;
-  letter-spacing: 0;
-}
 .shell {
   display: grid;
   grid-template-columns: 190px minmax(0, 1fr);
@@ -695,13 +681,6 @@ details[open] summary span {
   .masthead {
     padding: 14px 24px;
   }
-  .header-meta > span:first-child {
-    display: none;
-  }
-  .edition {
-    border-left: 0;
-    padding-left: 0;
-  }
   .visual-workspace {
     grid-template-columns: minmax(0, 1fr) 270px;
   }
@@ -726,9 +705,6 @@ details[open] summary span {
   .brand strong {
     font-size: 11px;
     margin-left: 5px;
-  }
-  .edition {
-    font-size: 12px;
   }
   .rail {
     padding: 0 14px;

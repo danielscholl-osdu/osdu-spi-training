@@ -7,7 +7,7 @@
       name="description"
       content="Explore the Azure OSDU SPI Stack: the environment, the SPI boundary, and the engineering system behind it. Listen, explore, and read."
     />
-    <title>OSDU Fieldnotes · The Azure SPI Stack</title>
+    <title>OSDU Azure SPI · Fieldnotes</title>
     <link
       rel="icon"
       type="image/svg+xml"
@@ -20,9 +20,12 @@
   </head>
   <body>
     <header class="masthead">
-      <a href="#start" class="brand" aria-label="OSDU Fieldnotes, start here"
+      <a
+        href="#start"
+        class="brand"
+        aria-label="OSDU Azure SPI Fieldnotes, start here"
         ><span class="brand-mark" aria-hidden="true">≋</span
-        ><span>OSDU <strong>FIELDNOTES</strong></span></a
+        ><span>OSDU Azure SPI <strong>FIELDNOTES</strong></span></a
       >
       <nav class="masthead-nav" aria-label="Site">
         <a href="#running-stack">Explore</a>
@@ -31,13 +34,10 @@
         >
         <a href="#field-guides">Field guides</a>
       </nav>
-      <div class="header-meta">
-        <span>AZURE ENGINEERING</span><span class="edition">Prototype</span>
-      </div>
     </header>
     <div class="shell">
       <aside class="rail" aria-label="Guide navigation">
-        <div class="rail-label">The Azure SPI Stack</div>
+        <div class="rail-label">The guide, in order</div>
         <button
           type="button"
           class="rail-toggle"
@@ -91,6 +91,7 @@
                   Read explanation ↑
                 </button>
               </div>
+              <div id="detail-state" class="detail-state" hidden></div>
               <div
                 id="detail-body"
                 class="detail-body"
@@ -111,6 +112,7 @@
             </aside>
           </div>
         </section>
+        <div id="chapter-listen"></div>
         <div id="chapter-mistake"></div>
         <div id="page" class="page" hidden></div>
         <div id="chapter-guides" class="chapter-guides"></div>
@@ -140,19 +142,24 @@
         <span class="play-glyph" aria-hidden="true">▶</span>
       </button>
       <div class="dock-meta">
-        <span class="dock-kicker">Listening</span>
+        <span class="dock-kicker" data-player="kicker">Listening</span>
         <b data-player="now"></b>
         <span
-          ><span data-player="current">0:00</span>
+          ><span data-player="current">0:00</span> /
+          <span data-player="total">0:00</span>
           <a href="#listen" data-player="now-link">Open the player →</a></span
         >
       </div>
+      <details class="dock-note" data-player="note-box" hidden>
+        <summary>Source check</summary>
+        <p data-player="note"></p>
+      </details>
       <input
         type="range"
         class="dock-seek"
         data-player="seek"
         min="0"
-        max="3516"
+        max="1016"
         value="0"
         step="1"
         aria-label="Seek"

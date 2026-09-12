@@ -1,6 +1,7 @@
 import { chapters } from './content/chapters.js';
 import { componentDetails } from './content/component-details.js';
 import { creationMoments } from './content/creation-moments.js';
+import { forkMoments } from './content/fork-moments.js';
 import { sources } from './content/sources.js';
 import { suppliedPosters } from './content/posters.js';
 import { diagramRenderers } from './components/diagrams.js';
@@ -13,6 +14,7 @@ import {
   chapterScope,
   mythCallout,
   exampleStrip,
+  listenChips,
 } from './components/pages.js';
 import { createPlayer } from './components/player.js';
 import { parseRoute, routeHref } from './router.js';
@@ -26,6 +28,19 @@ const player = createPlayer(
   document.getElementById('deep-dive'),
   document.getElementById('audio-dock'),
 );
+
+// On wide screens the sticky inspector can be pushed above the fold when the
+// selected control sits near the bottom of a tall map. Nudge the page so the
+// top of the explanation, where the state repeats, is visible while the
+// control stays on screen.
+function revealInspector(element) {
+  if (getComputedStyle(inspector).position !== 'sticky') return;
+  const top = inspector.getBoundingClientRect().top - 84;
+  const slack =
+    window.innerHeight - 24 - element.getBoundingClientRect().bottom;
+  if (top < 0 && slack > 0)
+    window.scrollBy({ top: Math.max(top, -slack), behavior: 'instant' });
+}
 
 function expandInspector(expanded) {
   inspector.classList.toggle('is-expanded', expanded);
@@ -73,6 +88,17 @@ export function selectDetail(id, element = null) {
     link.href = source.href;
     link.textContent = `${source.label} ↗`;
   }
+  document.getElementById('diagram').dataset.selected = id;
+  // The seam's state panel can sit above the fold; repeat its lock and pod
+  // for the selected step where the explanation opens.
+  const state = document.querySelector(`.seam-state[data-for~="${id}"]`);
+  const compact = document.getElementById('detail-state');
+  compact.hidden = !state;
+  compact.innerHTML = state
+    ? [...state.querySelectorAll('.state-obj')]
+        .map((object) => object.outerHTML)
+        .join('')
+    : '';
   lastSelectedElement = element;
 }
 
@@ -89,8 +115,10 @@ function nextChapter(key) {
 function positionLabel(key) {
   const scene = chapters[key];
   if (scene.group === 'learn')
-    return `${learnOrder.indexOf(key) + 1} of ${learnOrder.length} · The Azure SPI Stack`;
-  return scene.group === 'supplement' ? 'Supplement' : 'OSDU Fieldnotes';
+    return `${learnOrder.indexOf(key) + 1} of ${learnOrder.length} · ${scene.book}`;
+  return scene.group === 'supplement'
+    ? 'Supplement'
+    : 'OSDU Azure SPI Fieldnotes';
 }
 
 function renderChapterFrame(route, scene) {
@@ -126,6 +154,7 @@ function renderChapterFrame(route, scene) {
       ? 'Back to the start ↺'
       : `Next: ${chapters[next].title} →`;
   document.getElementById('view-scope').innerHTML = chapterScope(key);
+  document.getElementById('chapter-listen').innerHTML = listenChips(key);
   document.getElementById('chapter-outcomes').innerHTML = chapterOutcomes(key);
   document.body.dataset.page = scene.kind === 'page' ? scene.page : 'map';
 }
@@ -142,22 +171,37 @@ function render() {
   const chapterChanged = previousRoute?.chapter !== route.chapter;
   const mapChanged = chapterChanged || previousRoute?.step !== route.step;
   const focusedKey = document.activeElement?.dataset.routeKey;
-  document.title = `${scene.title} · OSDU Fieldnotes`;
+  document.title = `${scene.title} · OSDU Azure SPI Fieldnotes`;
   if (chapterChanged) renderChapterFrame(route, scene);
 
   if (scene.kind === 'page') {
     document.getElementById('exploration').hidden = true;
+    document.getElementById('chapter-listen').innerHTML = '';
     document.getElementById('chapter-guides').innerHTML = '';
     document.getElementById('chapter-mistake').innerHTML = '';
     document.getElementById('example-strip').hidden = true;
     const page = document.getElementById('page');
     page.hidden = false;
-    if (chapterChanged) {
-      page.innerHTML = pageRenderers[scene.page](route);
-      if (scene.page === 'listen' && route.time !== null)
-        player.seekTo(route.time, false);
+    const episodeChanged =
+      scene.page === 'listen' && previousRoute?.episode !== route.episode;
+    if (chapterChanged || episodeChanged) {
+      if (scene.page === 'listen' && route.episode)
+        player.select(route.episode);
+      page.innerHTML = pageRenderers[scene.page](
+        scene.page === 'listen'
+          ? { ...route, episode: player.episode.id }
+          : route,
+      );
       player.reflect();
     }
+    // A timestamp in the hash seeks whether or not the page re-rendered;
+    // a bare #listen leaves the current position alone.
+    if (
+      scene.page === 'listen' &&
+      route.time !== null &&
+      (chapterChanged || episodeChanged || previousRoute?.time !== route.time)
+    )
+      player.seekTo(route.time, false);
     if (route.guide) {
       document
         .getElementById(`guide-${route.guide}`)
@@ -205,9 +249,11 @@ function render() {
   const defaultDetail =
     route.chapter === 'bring-up'
       ? creationMoments.find((moment) => moment.id === route.step).detail
-      : route.chapter === 'running-stack' && route.step === 'request'
-        ? 'client'
-        : scene.selected;
+      : route.chapter === 'fork-day'
+        ? forkMoments.find((moment) => moment.id === route.step).detail
+        : route.chapter === 'running-stack' && route.step === 'request'
+          ? 'client'
+          : scene.selected;
   const buttons = [...document.querySelectorAll('[data-detail]')];
   const element =
     buttons.find((button) => button.dataset.detail === route.detail) ||
@@ -233,6 +279,7 @@ function render() {
     element.scrollIntoView({ block: 'center' });
     element.focus({ preventScroll: true });
     expandInspector(true);
+    revealInspector(element);
   }
   jumpRequested = false;
   if (chapterChanged) {
@@ -241,6 +288,25 @@ function render() {
   }
   previousRoute = route;
 }
+
+// The what-if switch in 04 swaps each affected cell's text and accessible
+// name together, so the table and its screen-reader reading agree.
+document.addEventListener('change', (event) => {
+  const toggle = event.target.closest('.what-if-switch');
+  if (!toggle) return;
+  const map = toggle.closest('.tree-map');
+  map.dataset.whatIf = String(toggle.checked);
+  map.querySelectorAll('.has-after').forEach((cell) => {
+    const after = toggle.checked;
+    cell.querySelector('span').textContent = after
+      ? cell.dataset.after
+      : cell.dataset.now;
+    cell.setAttribute(
+      'aria-label',
+      after ? cell.dataset.afterLabel : cell.dataset.nowLabel,
+    );
+  });
+});
 
 let jumpRequested = false;
 document.addEventListener('click', (event) => {
@@ -255,6 +321,7 @@ document.getElementById('diagram').addEventListener('click', (event) => {
   if (location.hash === href) selectDetail(button.dataset.detail, button);
   else location.hash = href;
   expandInspector(true);
+  revealInspector(button);
 });
 document
   .getElementById('detail-toggle')

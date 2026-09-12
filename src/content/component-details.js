@@ -101,8 +101,8 @@ export const componentDetails = {
   },
   provider: {
     label: 'Inside an OSDU service',
-    title: 'The Azure provider resolves the backend work.',
-    body: 'Shared service code calls a Service Provider Interface. The Azure implementation uses the partition service to resolve the requested partition’s backends and accesses Azure through Workload Identity. This implementation ships inside the service image, not as a separate network hop.',
+    title: 'The Azure provider does the Azure work for this service.',
+    body: 'Shared service code calls a Service Provider Interface; the Azure implementation behind it ships in the same image. For the partition service that work is a cache read and a Table Storage read in common Storage. It does not visit the partition’s own Cosmos DB, blob Storage, or Service Bus; other services use the answer it returns to find those.',
     artifact: {
       label: 'Reference provider source',
       code: 'provider/partition-azure/',
@@ -261,11 +261,11 @@ export const componentDetails = {
   },
   core: {
     label: 'Shared OSDU code',
-    title: 'Upstream still owns the common service behavior.',
-    body: 'Sync regenerates fork_upstream from the shared upstream tree and injects references to the Azure modules. Azure source is absent on that branch, so its validation builds core only. Azure compilation happens when the trees meet on fork_integration.',
+    title: 'The common module handles the request; it never names Azure.',
+    body: 'partition-core receives the lookup, checks the caller through the shared entitlements client, validates the partition id, and calls getPartition on the provider interface. Nothing in this module knows which cloud answers. That is what lets upstream own it: the fork takes this code as published, every day, and view 04 shows how.',
     artifact: {
-      label: 'Integration path',
-      code: 'fork_upstream → fork_integration → main',
+      label: 'The call that crosses the seam',
+      code: 'IPartitionService.getPartition(partitionId)\n// implemented by provider/partition-azure',
     },
     source: 'ownership',
   },
@@ -281,92 +281,406 @@ export const componentDetails = {
   },
   azureclients: {
     label: 'Inside the provider',
-    title: 'Azure client compatibility is part of the implementation.',
-    body: 'Workload Identity provides tokens, but each backend client must support identity-based authentication. DISABLED key placeholders expose clients that still require keys or SAS; infrastructure does not supply a working connection-string fallback.',
+    title:
+      'Cache first. Table Storage when the cache misses, or when it throws.',
+    body: 'The Azure implementation asks a Redis cache for opendes. On a miss it reads the partition row from Table Storage in common Storage, using a Workload Identity token rather than a stored key, and writes the answer back to the cache. Since commit fc2dfbf a cache that throws is treated as a miss too: the lookup still answers from the table, and a warning is logged. That fallback is the running example for the rest of the site.',
     artifact: {
-      label: 'A concrete compatibility check',
-      code: 'indexer-queue → Service Bus subscription client',
+      label: 'The fallback, in the provider',
+      code: 'safeGet(cache, id)      // exception → null, logged\nif (pi == null) pi = tableStore.getPartition(id)',
     },
-    source: 'identity',
+    source: 'ownership',
   },
   upstream: {
-    label: 'OSDU community',
-    title: 'Shared changes enter through a generated branch.',
-    body: 'Filtered sync keeps shared code and removes provider implementations from fork_upstream. Cascade merges into fork_integration with fork-owned Azure source and stamps upstream-derived Maven versions. Customer mirror forks consume the service fork’s main verbatim, using a different sync mode.',
+    label: 'Upstream tip',
+    title:
+      'The community repository, including the providers the fork does not want.',
+    body: 'community.opengroup.org publishes the whole partition service: core, acceptance tests, and one provider per cloud, including an Azure one that upstream plans to remove. The fork never checks this tree out as a branch. Sync Upstream reads it with git plumbing and generates fork_upstream from it, so upstream’s Azure directory and the fork’s never share a merge base.',
     artifact: {
-      label: 'Read the branch roles',
-      code: 'fork_upstream: generated shared tree\nfork_integration: shared + Azure\nmain: reviewed release line',
+      label: 'Where the sync reads from',
+      code: 'https://community.opengroup.org/osdu/platform/system/partition\nUPSTREAM_REPO_URL  (repository variable, set at initialization)',
+    },
+    source: 'synchronization',
+  },
+  engineering: {
+    label: 'osdu-spi, the template',
+    title:
+      'The workflows come from one repository and reach every fork as pull requests.',
+    body: 'Azure/osdu-spi is a template repository. Its own .github/workflows/ run only in the template; .github/template-workflows/ is what a fork receives into its .github/workflows/, along with build/Dockerfile, the label and ruleset files, and the Release Please configuration. Sync Template delivers changes daily at 08:00 UTC as a PR. It never touches .spi/, which the service repository owns.',
+    artifact: {
+      label: 'Two directories, two audiences',
+      code: '.github/workflows/            runs in the template only\n.github/template-workflows/   delivered to every service fork\n.spi/                         excluded from sync',
+    },
+    source: 'workflowSystem',
+  },
+  image: {
+    label: 'The image, by digest',
+    title: 'One Dockerfile, one public package, addressed by digest.',
+    body: 'Validation builds build/Dockerfile on the Microsoft OpenJDK 17 Azure Linux base with the provider JAR and pushes it as ghcr.io/azure/partition tagged sha-<commit>. The package takes the short service name from SERVICE_NAME, not the repository name, because that is the name the stack pins under. The stack pins by digest, never by tag, so a retag cannot change what runs. The package must stay public: if its visibility flips, pods fail with ErrImagePull and Settings Apply can only report it.',
+    artifact: {
+      label: 'What leaves the fork',
+      code: 'ghcr.io/azure/partition:sha-<commit>\nghcr.io/azure/partition@sha256:<digest>\nSERVICE_NAME=partition   (repository variable)',
+    },
+    source: 'ghcr',
+  },
+  running: {
+    label: 'The partition pod',
+    title: 'Flux reconciles the lock; the pod follows it.',
+    body: 'dev1 is a stack like any other: spi up made it, Flux assembles it, and its deploy identity survives spi down. While partition is pinned to a candidate, the other services keep running their canonical images, so a broken-but-ready candidate can fail a sibling’s suite. Several onboarded forks can share the environment, one service slot each, and a concurrency group serialises runs per service.',
+    artifact: {
+      label: 'What the run may read',
+      code: 'Role spi-fork-verifier (namespace osdu):\n  deployments get/list/watch · pods get/list/watch',
+    },
+    source: 'envLifecycle',
+  },
+  delivery: {
+    label: 'osdu-image-lock',
+    title:
+      'One ConfigMap names every service image. A deploy is an edit to it.',
+    body: 'The lock is a stack object in osdu-flux with one key per service, PARTITION_IMAGE_DIGEST among them, and Flux substitutes the values at apply time. A fork run writes its digest with spi service pin --ephemeral, which also records the run id, the source commit, and the canonical image to restore, in the spi-stack.osdu.dev/pins annotation. The write is a compare-and-set: two runs cannot both own the partition slot. Between runs the lock holds the canonical image, which is the community image unless the service was promoted to its fork.',
+    artifact: {
+      label: 'The pin',
+      code: 'spi service pin partition --image ghcr.io/azure/partition@sha256:… \\\n  --ephemeral --run-id $GITHUB_RUN_ID --source-repo Azure/osdu-spi-partition --source-sha …',
+    },
+    source: 'imageLock',
+  },
+  proof: {
+    label: 'Prove',
+    title:
+      'The suites the descriptor declares, run from an image, against the pinned pod.',
+    body: 'The resolver binds each suite’s inputs from environment facts and three tokens the run mints. Each suite runs as docker run --env-file <suite>.env from the acceptance image under its own timeout. The verdict is the Surefire and Failsafe reports: exit zero, at least one test that was not skipped, no failures. For the cache fallback, be precise about what this proves: the acceptance suite exercises the partition API against a pod whose cache is healthy. The fallback itself is proved by the provider’s unit tests in the build, which mock a cache that throws.',
+    artifact: {
+      label: 'What counts as passing',
+      code: 'exit 0  AND  tests run > 0  AND  failures + errors = 0\nreports uploaded as suite-reports',
+    },
+    source: 'deployTest',
+  },
+  // View 04: the shape of the fork. Rows are paths; columns are branches.
+  'core-tree': {
+    label: 'Shared code and tests',
+    title: 'Upstream owns these, and the fork takes them every day.',
+    body: 'partition-core, partition-acceptance-test, and testing/partition-test-core are kept by the filter exactly as upstream publishes them. The fork never edits them; a change here is an upstream contribution. On fork_upstream they are the whole build, which is why that branch compiles with the core profile alone.',
+    artifact: {
+      label: 'Filter classification',
+      code: 'partition-core: keep\npartition-acceptance-test: keep\ntesting/partition-test-core: keep',
+    },
+    source: 'ownership',
+  },
+  pom: {
+    label: 'Root pom.xml',
+    title: 'Kept from upstream, with one Azure profile injected.',
+    body: 'The root POM comes from upstream, but the generated tree has no Azure module for it to reference. The filter injects an azure profile that points at provider/partition-azure, so the fork-owned module resolves once the two trees meet on fork_integration. The cascade also stamps the Azure POM version from the upstream one.',
+    artifact: {
+      label: 'Filter classification',
+      code: 'pom.xml: keep\nprofiles.azure: inject',
+    },
+    source: 'ownership',
+  },
+  'provider-azure': {
+    label: 'The Azure provider',
+    title: 'Upstream will delete this directory. The fork holds it.',
+    body: 'provider/partition-azure implements the interface from view 03. It exists on main and fork_integration and is absent from fork_upstream by construction, so an upstream deletion has nothing to delete on the fork side. It was seeded once at initialization, the only -X theirs merge in the system, and has been fork-owned since.',
+    artifact: {
+      label: 'Where it is and is not',
+      code: 'upstream tip:      present, scheduled for removal\nfork_upstream:     absent (never enters the merge base)\nmain:              provider/partition-azure/  fork-owned',
+    },
+    source: 'ownership',
+  },
+  'test-azure': {
+    label: 'Azure integration tests',
+    title: 'The tests for the provider live beside it, under the same rule.',
+    body: 'testing/partition-test-azure is classified fork, so the generated branch leaves it out and the fork keeps it. The descriptor’s integration suite runs it from the acceptance image with -pl partition-test-azure. Community acceptance tests, by contrast, are upstream-owned and kept.',
+    artifact: {
+      label: 'Filter classification',
+      code: 'testing/partition-test-azure: fork\ntesting/partition-test-core: keep',
+    },
+    source: 'ownership',
+  },
+  stripped: {
+    label: 'Stripped paths',
+    title: 'Other providers never reach the fork at all.',
+    body: 'AWS, GC, GCP, and IBM providers and tests, partition-core-plus, devops/, .gitlab-ci.yml, and the other GitLab CI files are stripped when fork_upstream is generated. They are not deleted from a copy; they are never written. A new upstream path with no classification halts the sync with exit 2 and the labels sync-failed and human-required.',
+    artifact: {
+      label: 'Filter classification',
+      code: 'provider/*-aws, -gc, -gcp, -ibm: strip\npartition-core-plus: strip\n.gitlab, .gitlab-ci.yml, devops: strip\nunknown path: halt',
+    },
+    source: 'ownership',
+  },
+  'engineering-files': {
+    label: 'Engineering files',
+    title:
+      'The workflows and the Dockerfile are the fork’s, delivered by the template.',
+    body: '.github/ holds the workflows, actions, labels, and rulesets the template delivers; build/Dockerfile is the one canonical service image recipe. None of them exist upstream, so the filter protects them from generation. They arrive and change through Sync Template pull requests, at most one open at a time. The cache fallback fix was checked by exactly these workflows before it reached main.',
+    artifact: {
+      label: 'Template-delivered, fork-held',
+      code: '.github/workflows/    from .github/template-workflows/\nbuild/Dockerfile      mcr.microsoft.com/openjdk/jdk:17-azurelinux\n.release-please-config.json',
+    },
+    source: 'workflowSystem',
+  },
+  'descriptor-file': {
+    label: 'The descriptor',
+    title: 'The one engineering file the template does not write.',
+    body: '.spi/service.yaml declares the acceptance suites the stack should run against this service and what each needs. It is excluded from template sync by name: the service repository writes it, and changes to it are reviewed with the code. Two authors, one column: the workflows above arrive from osdu-spi; this file is authored here. osdu-spi-partition has not written its descriptor yet; once it adopts the newer validation workflow, Deploy Gate will skip until the file exists, with the reason no .spi/service.yaml declares the suites.',
+    artifact: {
+      label: 'Service-owned, never synced',
+      code: '.spi/service.yaml    schemaVersion: 3, written in this repository\nsync-config.json     "exclusions": [".spi", "CODEOWNERS", …]',
+    },
+    source: 'descriptor',
+  },
+  'fork-upstream': {
+    label: 'fork_upstream',
+    title: 'A generated tree with two parents and no Azure code.',
+    body: 'Every sync writes the filtered upstream tip as a new commit whose parents are the previous fork_upstream and the upstream commit. Two trailers make it checkable: Upstream-Sha names the upstream commit and Filter-Rev names the filter configuration. Nobody merges into this branch; if the filter changes, the branch is regenerated.',
+    artifact: {
+      label: 'What a sync commit carries',
+      code: 'git commit-tree <tree> -p fork_upstream -p <upstream-sha>\nUpstream-Sha: <sha>\nFilter-Rev: <revision>',
     },
     source: 'branches',
   },
-  repo: {
-    label: 'One fork per service',
-    title: 'The partition fork is a concrete place to begin.',
-    body: 'osdu-spi-partition is the reference service fork. Each service repository has its own branch topology, Azure source, acceptance descriptor, and GHCR package. Provider changes belong in that service repository; the engineering-system repository supplies shared automation.',
+  'fork-integration': {
+    label: 'fork_integration',
+    title: 'The workspace where the two trees meet.',
+    body: 'The cascade merges main into this branch first, so everything the fork already accepted is here, then merges fork_upstream on top, stamps versions, and builds -P core,azure. Conflicts are resolved here, by a person, and pushed directly; its protection is relaxed for that reason. A hard reset to main happens only when the monitor finds the branch ahead of main with no open integration PR and no conflict issue, which it treats as stale and heals.',
     artifact: {
-      label: 'Reference fork and descriptor',
-      code: 'Azure/osdu-spi-partition\n.spi/service.yaml',
+      label: 'Order of merges',
+      code: '1. fork_integration ← main           (the fix is here)\n2. fork_integration ← fork_upstream  (upstream’s change)\n3. mvn -P core,azure verify',
+    },
+    source: 'cascade',
+  },
+  'main-branch': {
+    label: 'main',
+    title: 'Protected. Two required checks, named exactly.',
+    body: 'main receives the fork-owned fix through an ordinary pull request and the upstream change through the integration PR the cascade opens from release/upstream-*. Both need CodeQL and Validation Summary to pass and a person to approve. Auto-merge is armed with a merge commit, never a squash, because a squash breaks the ancestry check the monitor relies on. The rulesets that say so are reconciled every Monday.',
+    artifact: {
+      label: 'Required status checks',
+      code: 'CodeQL\nValidation Summary',
+    },
+    source: 'threeBranchDecision',
+  },
+  filter: {
+    label: 'The filter',
+    title: 'One YAML file says what upstream is allowed to be here.',
+    body: 'upstream-filter.yml classifies every top-level path, test module, Maven profile, and FOSSA module as keep, strip, fork, or inject. It also lists what must be present and what must be absent after generation, so a wrong classification fails the sync rather than shipping. The engine runs in generate, verify, stamp, and seed modes.',
+    artifact: {
+      label: 'Post-conditions the engine checks',
+      code: 'expected_kept:   pom.xml, partition-core, testing/partition-test-core\nexpected_absent: provider, devops, partition-core-plus, .gitlab-ci.yml',
+    },
+    source: 'ownership',
+  },
+  mirror: {
+    label: 'A customer mirror fork',
+    title: 'The second tier copies the service repository, not upstream.',
+    body: 'A customer forks osdu-spi-partition on GitHub and runs Adopt Fork instead of initialization. SYNC_MODE=mirror makes fork_upstream a verbatim copy of the service repository’s main, with Filter-Rev: mirror; template sync is off, because the service repository already carried it. A customer fix travels back as a pull request whose head is in the fork network.',
+    artifact: {
+      label: 'Two tiers, one difference',
+      code: 'service repo:  upstream = community GitLab, SYNC_MODE=filter\nmirror fork:   upstream = Azure/osdu-spi-partition, SYNC_MODE=mirror',
+    },
+    source: 'forkTiers',
+  },
+  // View 05: a day in the fork.
+  'sync-pr': {
+    label: 'The sync PR',
+    title: 'One PR per upstream state, never two.',
+    body: 'Sync Upstream pushes a branch named sync/upstream-<timestamp> and opens a PR titled “Sync with upstream <version>” with a tracking issue labeled upstream-sync and human-required. If upstream moves before the PR merges, the workflow updates the same PR rather than opening another. The last evaluated upstream commit is remembered in a repository variable.',
+    artifact: {
+      label: 'What the run leaves behind',
+      code: 'branch  sync/upstream-YYYYMMDD-HHMMSS\nPR      ⬆️ Sync with upstream <version>\nissue   <!-- upstream-sha: … -->  labels: upstream-sync, human-required\nvar     SYNC_LAST_EVALUATED_SHA=<sha>:<generation>',
+    },
+    source: 'synchronization',
+  },
+  'meta-commit': {
+    label: 'The meta commit',
+    title: 'One empty commit tells Release Please how big the change is.',
+    body: 'Upstream commits are not conventional commits, so nothing in them says whether a sync is a patch or a feature. The sync classifies the whole range by rule, breaking over feat over fix, defaulting to fix, and writes an empty commit with that subject on the generated tree. Release Please reads that commit; the upstream history is not rewritten.',
+    artifact: {
+      label: 'The rule',
+      code: 'breaking > feat > fix\nno conventional marker → fix:',
+    },
+    source: 'metaCommit',
+  },
+  'cascade-run': {
+    label: 'Cascade Integration',
+    title: 'The first build of the provider against the new shared code.',
+    body: 'The cascade is where the fork-owned fix, already on main, and the upstream change, on fork_upstream, compile together. It is a workflow_dispatch run: Cascade Monitor starts it with the tracking issue number when the sync PR merges, and a person can start it the same way. It merges main first, then fork_upstream, builds -P core,azure with Java 17, and opens the integration PR when the build and tests pass. Coverage is reported, not gated.',
+    artifact: {
+      label: 'Cascade build',
+      code: "mvn -P ${{ vars.MAVEN_PROFILE || 'core,azure' }} verify",
+    },
+    source: 'cascade',
+  },
+  labels: {
+    label: 'The labels',
+    title: 'The labels are the state machine, and the audit trail.',
+    body: 'The cascade removes human-required and adds cascade-active when it starts. A conflict or a failed validation swaps that for cascade-blocked; a failed run leaves cascade-failed plus human-required. Success removes all three and adds validated to the tracking issue as it opens the integration PR. Every six hours Cascade Monitor escalates anything blocked longer than 48 hours and retries anything whose human-required label a person has removed.',
+    artifact: {
+      label: 'Transitions',
+      code: 'upstream-sync + human-required → cascade-active → validated\ncascade-active → cascade-blocked        (conflict or failed validation)\ncascade-active → cascade-failed + human-required\nremove human-required → cascade-active   (retry)',
+    },
+    source: 'cascadeMonitor',
+  },
+  'integration-pr': {
+    label: 'The integration PR',
+    title: 'The cascade proposes; a person approves.',
+    body: 'A clean cascade opens a PR from release/upstream-<timestamp> into main, titled Upstream Integration to Main, carrying the combined tree. Review is asymmetric on purpose: the sync PR into fork_upstream is generated and needs no reading, while this PR gets the same checks as any other change to main. It is not the release. Release Please opens a separate version PR after the merge.',
+    artifact: {
+      label: 'Two different PRs into main',
+      code: 'release/upstream-<timestamp>  → main   the integration PR (cascade)\nrelease-please--branches--main → main  the version PR (Release Please)',
+    },
+    source: 'cascade',
+  },
+  'version-pr': {
+    label: 'The version PR',
+    title:
+      'Release Please proposes a version; nothing ships until a person merges it.',
+    body: 'Every push to main makes Release Please read the conventional commits since the last release, choose the bump from them, and open or update one PR with the new version and changelog. A fix: commit means a patch, a feat: commit a minor bump; the meta commit on a sync says how big the upstream part is. The cache fallback itself was titled “[Azure] Fixes for High API Error Count”, so the bump below is illustrative. This PR is separate from the integration PR and can wait as long as the team likes; the candidate digests already exist and dev1 has already been borrowed for them.',
+    artifact: {
+      label: 'What decides the bump',
+      code: 'fix:   → patch   (illustrative)\nfeat:  → minor\nfeat!: → major\nchore:, docs: → no bump',
+    },
+    source: 'release',
+  },
+  conflict: {
+    label: 'A blocked cascade',
+    title: 'When the shared interface changes, the provider has to follow.',
+    body: 'Suppose upstream renamed a method on the partition provider interface. fork_upstream generates cleanly, because it carries no provider. The cascade then fails to compile provider/partition-azure against the new interface: the tracking issue gets cascade-failed and human-required, no integration PR opens, and main is untouched. The fix is a provider change on fork_integration by the fork’s owner. Removing human-required tells the monitor to run the cascade again.',
+    artifact: {
+      label: 'Who acts, and the retry',
+      code: 'labels: cascade-failed, human-required\nfix on: fork_integration (provider/partition-azure)\nretry:  gh issue edit <n> --remove-label human-required',
+    },
+    source: 'humanRequired',
+  },
+  candidate: {
+    label: 'The candidate digest',
+    title:
+      'Every eligible commit gets an immutable image before anyone talks about releases.',
+    body: 'Validation runs on the PR and again on the push to main. Each run builds build/Dockerfile and pushes ghcr.io/azure/partition:sha-<commit>, which resolves to one digest. That digest, not a version, is what the stack borrows a slot for in view 06. Release tags are added to a sha-* image later, if a release happens at all; the digest tested on the PR and the digest on the merge commit are two different builds.',
+    artifact: {
+      label: 'One commit, one digest',
+      code: 'docker-push: ghcr.io/azure/partition:sha-<commit>\n             → sha256:<digest>   (the candidate)',
+    },
+    source: 'validation',
+  },
+  'dev1-slot': {
+    label: 'A slot in dev1',
+    title: 'The stack is borrowed for the candidate, not for the release.',
+    body: 'After the push, Deploy Gate decides without credentials whether this run may borrow the environment: only push and pull_request events, only same-repository PRs, not Dependabot, not fork_upstream, and only when the five onboarding values, the descriptor, and a pushed image exist. If it may, the run pins the candidate digest into dev1’s image lock, checks the pod runs it, runs the declared suites, and restores the canonical image. View 06 follows that run step by step. The lane is the newer template’s; the reference partition fork has not adopted it or written its descriptor yet, so from here the example is illustrative.',
+    artifact: {
+      label: 'Who may borrow',
+      code: 'push | pull_request (same repository)\nnot dependabot[bot], not fork_upstream\nonboarded + .spi/service.yaml + image pushed',
+    },
+    source: 'deployTest',
+  },
+  monitor: {
+    label: 'Cascade Monitor',
+    title: 'The scheduler that dispatches, retries, and escalates.',
+    body: 'Every six hours the monitor looks at the tracking issues. A merged sync PR with no cascade yet is dispatched; a human-required label that a person removed is retried; anything blocked longer than 48 hours is escalated with a comment. It also heals a fork_integration that drifted ahead of main with nothing in flight. It is why the day view has no step called wait for the monitor.',
+    artifact: {
+      label: 'What it looks for',
+      code: 'schedule: every 6 hours\nissue labels: upstream-sync, cascade-blocked, cascade-failed, human-required',
+    },
+    source: 'cascadeMonitor',
+  },
+  'release-tag': {
+    label: 'The release tag',
+    title: 'The version lands on an image that already exists.',
+    body: 'Merging the version PR makes Release Please tag main and publish the release. The workflow adds <release-tag>-upstream-<upstream-version> so the fork release can always be traced to the upstream version it carries, then polls GHCR for the sha-* image validation pushed for that commit and adds the semantic-version tag to it. No new build runs. The digest with the version tag is the merge commit’s build, which may differ from the digest a PR run borrowed dev1 for.',
+    artifact: {
+      label: 'Tags on one digest',
+      code: 'ghcr.io/azure/partition:sha-<commit>\nghcr.io/azure/partition:v1.4.0\ngit tag v1.4.0-upstream-0.29.0',
+    },
+    source: 'release',
+  },
+  'template-pr': {
+    label: 'The template-sync PR',
+    title:
+      'Workflow changes arrive as a reviewable diff, at most one at a time.',
+    body: 'Sync Template compares the template commit recorded in .github/.template-sync-commit with the template’s main, and opens a PR titled chore(template-sync): sync template updates <date> for the configured paths. A later template change updates the same PR. The conventional title is required because validation gates PR titles.',
+    artifact: {
+      label: 'What arrives',
+      code: 'PR    chore(template-sync): sync template updates <date>\nlabel template-sync\nfile  .github/.template-sync-commit',
+    },
+    source: 'templateSync',
+  },
+  'settings-apply': {
+    label: 'Settings Apply',
+    title: 'Repository settings are reconciled, not remembered.',
+    body: 'Every Monday at 04:00 UTC the fork reapplies its labels, rulesets, and required checks from the JSON files the template delivered. A ruleset someone loosened is tightened again; a label someone renamed comes back. It cannot fix everything: a GHCR package flipped to private is reported, not repaired, and the pods see ErrImagePull until a person flips it back.',
+    artifact: {
+      label: 'What it reconciles',
+      code: '.github/labels.json\n.github/branch-protection.json\n.github/security-on.json',
+    },
+    source: 'workflowSystem',
+  },
+  // View 06: the handshake.
+  gate: {
+    label: 'Deploy Gate',
+    title:
+      'Decides whether this run may borrow the environment, without credentials.',
+    body: 'The gate runs before any Azure login. Only push and pull_request events pass; it refuses PRs from other repositories, Dependabot, and fork_upstream, and it checks that the five onboarding values exist, .spi/service.yaml is present, Docker Push succeeded, and the descriptor declares a suite. A refusal is a visible notice and the summary stays green, which is why green is not deployment evidence.',
+    artifact: {
+      label: 'Skip reasons, verbatim',
+      code: '<event> runs never borrow the environment\npull request from another repository carries no deploy identity\nfork_upstream builds no Azure image\nrepository is not onboarded to a stack (missing: …)\nno .spi/service.yaml declares the suites\nno image was pushed',
+    },
+    source: 'validation',
+  },
+  trust: {
+    label: 'The deploy identity',
+    title: 'The environment trusts a repository, never its pull requests.',
+    body: 'spi onboard adds a federated credential on the environment’s deploy identity for the subject repo:<org>/<fork>:environment:spi-stack, at most 19 per identity. In the cluster the identity holds two Roles: spi-fork-deployer in osdu-flux may patch the image lock and nothing else; spi-fork-verifier in osdu may only read Deployments and Pods. Identities survive spi down so onboarded forks keep working across a rebuild.',
+    artifact: {
+      label: 'One command, five repository settings',
+      code: 'spi onboard partition --repo <org>/osdu-spi-partition\n→ AZURE_CLIENT_ID, AZURE_TENANT_ID, AZURE_SUBSCRIPTION_ID\n→ SPI_STACK_RESOURCE_GROUP, SPI_STACK_CLUSTER',
+    },
+    source: 'forkRbac',
+  },
+  facts: {
+    label: 'Environment facts',
+    title:
+      'The stack publishes what the run needs. Nothing is pushed into the repository.',
+    body: 'spi status --json says whether the environment is deployable and, if not, exactly why, from a closed set of reasons. spi info --json supplies the gateway URL, the partition, the legal tag, and secret references. The run reads both every time, and reinstalls the exact spi release the environment records, so the client always matches the environment it is talking to.',
+    artifact: {
+      label: 'Reasons the run can see',
+      code: 'deployable: false\nreason.code: kustomization_not_ready | maintenance |\n             missing_deploy_record | bootstrap_failed | bootstrap_pending',
+    },
+    source: 'statusContract',
+  },
+  descriptor: {
+    label: 'The descriptor',
+    title: 'The fork declares what its suites need; it never says where.',
+    body: '.spi/service.yaml names each suite, the image that runs it, its timeout, and the bindings it wants: a gateway URL, a partition, a token. The resolver in the run binds those from environment facts and minted tokens. The service repository owns this file; template sync excludes it. osdu-spi-partition has not written one yet, and its checkout does not carry the gate either, so the run shown here is illustrative for that fork. The example below is the shape the runbook gives.',
+    artifact: {
+      label: 'One suite, declared',
+      code: 'tests:\n  acceptance:\n    path: partition-acceptance-test\n    timeoutMinutes: 15\n    bindings:\n      HOST: { source: gateway }\n      DATA_PARTITION_ID: { source: partition }\n      PRIVILEGED_USER_TOKEN: { source: token }',
+    },
+    source: 'descriptor',
+  },
+  verify: {
+    label: 'Verify',
+    title: 'The pod is running the digest, or the run stops here.',
+    body: 'After the pin, the run polls spi service verify for up to 15 minutes. The CLI checks the Deployment template, a running pod’s imageID, and rollout completion. lock_mismatch fails immediately: somebody else changed the lock. There is no second verify before each suite, so a replacement after this point is not caught by it.',
+    artifact: {
+      label: 'What verify compares',
+      code: 'lock:  PARTITION_IMAGE_DIGEST=sha256:…\npod:   status.containerStatuses[].imageID\nrollout: complete',
     },
     source: 'forkDeploy',
   },
-  engineering: {
-    label: 'osdu-spi',
-    title: 'Shared workflows keep the service forks maintainable.',
-    body: 'The template distributes synchronization, cascade, build, and validation machinery. Its upstream filter is in .github/actions/upstream-filter; fork validation is supplied from .github/template-workflows/validate.yml. Changes to that machinery belong in osdu-spi.',
+  restore: {
+    label: 'Restore',
+    title: 'Give the slot back, but only if it is still yours.',
+    body: 'The last step runs even after a failure. spi service reset --if-run <run-id> writes the recorded canonical image back into the lock only while the annotation still names this run; a newer run’s pin is left alone and the reset exits 2, treated as success. A push test does not leave its candidate installed; advancing the canonical image is the environment’s refresh policy, not the lane’s.',
     artifact: {
-      label: 'Engineering-system source',
-      code: '.github/actions/upstream-filter/\n.github/template-workflows/validate.yml',
+      label: 'Ownership-aware restore',
+      code: 'spi service reset partition --if-run $GITHUB_RUN_ID\nexit 0  restored\nexit 2  not the owner, or no pin: treated as success',
     },
-    source: 'engineering',
+    source: 'ephemeralPins',
   },
-  image: {
-    label: 'Build artifact',
-    title: 'A fork build publishes a GHCR image by digest.',
-    body: 'The package uses the short service name: ghcr.io/<owner>/partition, even if the repository is osdu-spi-partition. Publishing an image does not install it into a stack. The deploy lane must pin and verify that digest.',
+  'lock-taken': {
+    label: 'Another run owns the pin',
+    title: 'Restore is a claim about this run, not about the environment.',
+    body: 'Suppose a second partition run pinned its own candidate while this one was still proving. The lock annotation now names the newer run id. This run’s reset --if-run compares ids, finds it is not the owner, writes nothing, and exits 2, which the lane treats as success. The newer run will restore the canonical image when it finishes. The concurrency group makes this rare, but the rule is what makes a lost runner safe: no run can put back an image over someone else’s pin.',
     artifact: {
-      label: 'Example image identity',
-      code: 'ghcr.io/azure/partition@sha256:<digest>',
+      label: 'The comparison',
+      code: 'annotation spi-stack.osdu.dev/pins: {"partition": {"runId": "9902", …}}\nthis run:  --if-run 9901   → exit 2, nothing written',
     },
-    source: 'forkDeploy',
-  },
-  'stack-source': {
-    label: 'osdu-spi-stack',
-    title: 'This repository owns the runtime mechanism.',
-    body: 'infra/ defines Azure provisioning. software/ defines charts and workload configuration. The CLI owns the image-lock pin, verify, and reset operations used by fork validation. A shared environment runs a selected stack release independently of a candidate service image.',
-    artifact: {
-      label: 'Two kinds of desired state',
-      code: 'infra/ → Azure resources\nsoftware/ → Kubernetes workloads',
-    },
-    source: 'architecture',
-  },
-  running: {
-    label: 'Shared running environment',
-    title: 'Several service forks can use the same stack.',
-    body: 'Eligible deploy lanes wait for the environment’s deployable verdict before pinning an image. The lane then verifies rollout and the running digest. A green workflow with a skipped deploy gate does not establish live acceptance coverage.',
-    artifact: {
-      label: 'Read deployment eligibility',
-      code: 'spi status --json',
-    },
-    source: 'forkDeploy',
-  },
-  delivery: {
-    label: 'Deploy handoff',
-    title: 'The image lock connects a build to the runtime.',
-    body: 'An ephemeral pin records the candidate digest and its owning workflow run in osdu-image-lock. Flux reconciles the changed lock. Verification checks the Deployment template, the running pod imageID, and rollout completion.',
-    artifact: {
-      label: 'The handoff artifact',
-      code: 'kubectl get configmap osdu-image-lock -n osdu-flux -o yaml',
-    },
-    source: 'forkDeploy',
-  },
-  proof: {
-    label: 'Borrow → prove → restore',
-    title: 'A successful test run should return the borrowed environment.',
-    body: 'The deploy lane runs the suites declared in .spi/service.yaml, then attempts reset with --if-run. Restoration changes the pin only while that run still owns it. A lost runner can strand a pin, so restoration is an operation to inspect, not a guarantee.',
-    artifact: {
-      label: 'Ownership-aware restoration',
-      code: 'spi service reset <service> --if-run <run-id>',
-    },
-    source: 'proof',
+    source: 'ephemeralPins',
   },
 };

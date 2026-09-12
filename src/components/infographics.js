@@ -412,6 +412,34 @@ export function zoomLadder() {
   </div>`;
 }
 
+// The start page's shape: the lookup goes down the stack, the fix goes out to
+// the fork and back in through the lock. Each box links the view that draws it.
+export function roundTripFigure() {
+  const stop = (href, number, title, sub) =>
+    `<a class="loop-stop" href="${href}"><span class="loop-number">${number}</span><b>${title}</b><small>${sub}</small></a>`;
+  return `<div class="round-trip">
+    <div class="loop-side loop-stack">
+      <div class="loop-head"><b>The stack</b><small>a place · views 01 to 03</small></div>
+      ${stop('#running-stack/request', '01', 'A partition lookup', 'arrives at dev1’s gateway')}
+      <span class="loop-arrow" aria-hidden="true">↓</span>
+      ${stop('#bring-up', '02', 'The stack that answers it', 'built by one spi up')}
+      <span class="loop-arrow" aria-hidden="true">↓</span>
+      ${stop('#spi-boundary', '03', 'Inside the partition service', 'common code, the interface, the Azure provider')}
+    </div>
+    <div class="loop-cross loop-out"><span>a fix to that provider</span><span aria-hidden="true">→</span></div>
+    <div class="loop-side loop-fork">
+      <div class="loop-head"><b>The fork</b><small>a schedule · views 04 and 05</small></div>
+      ${stop('#fork-shape', '04', 'Where the provider lives', 'paths the fork owns, branches it regenerates')}
+      <span class="loop-arrow" aria-hidden="true">↓</span>
+      ${stop('#fork-day', '05', 'One day in the fork', 'sync, cascade, wait, release')}
+      <span class="loop-arrow" aria-hidden="true">↓</span>
+      <div class="loop-stop loop-digest"><b>One tagged digest</b><small>ghcr.io/…@sha256</small></div>
+    </div>
+    <div class="loop-cross loop-back"><span aria-hidden="true">←</span><span>pinned into dev1, proved, restored</span></div>
+    <a class="loop-seam" href="#handshake"><span class="loop-number">06</span><b>The handshake</b><small>the image lock, the only object both sides write</small></a>
+  </div>`;
+}
+
 export function spiNamesFigure() {
   return `<div class="spi-names">${spiMeanings
     .map(
@@ -426,6 +454,99 @@ export function spiNamesFigure() {
     .join('')}</div>`;
 }
 
+// The labels on a sync tracking issue, drawn as the state machine they are.
+const labelStates = [
+  [
+    'upstream-sync + human-required',
+    'Sync Upstream opened the PR and the issue',
+    'wait',
+  ],
+  [
+    'cascade-active',
+    'The cascade is running, or the monitor dispatched it',
+    'active',
+  ],
+  ['validated', 'The integration PR is open; a person approves', 'done'],
+];
+const labelExits = [
+  [
+    'cascade-blocked',
+    'A conflict, or validation failed on the workspace',
+    'Resolve on fork_integration, push, then remove human-required if it is set',
+  ],
+  [
+    'cascade-failed + human-required',
+    'The run itself failed',
+    'Fix the cause; removing human-required is the retry signal',
+  ],
+];
+function labelsGuide() {
+  return `<div class="labels-machine">
+    <ol class="labels-happy">${labelStates
+      .map(
+        ([label, meaning, kind], i) =>
+          `<li class="label-state is-${kind}"><code>${label}</code><span>${meaning}</span>${i < labelStates.length - 1 ? '<i aria-hidden="true">→</i>' : ''}</li>`,
+      )
+      .join('')}</ol>
+    <div class="labels-exits">${labelExits
+      .map(
+        ([label, meaning, action]) =>
+          `<div class="label-exit"><code>${label}</code><span>${meaning}</span><small>${action}</small></div>`,
+      )
+      .join('')}</div>
+    <p class="labels-note">Cascade Monitor reads these every six hours: it dispatches a merged sync, retries an issue whose human-required label a person removed, and escalates anything blocked longer than 48 hours. The labels are the audit trail; nothing else remembers.</p>
+  </div>`;
+}
+
+// The fork's recurring work, on its own clocks. None of these cause each other.
+const clocks = [
+  [
+    'Sync Upstream',
+    '00:00 UTC daily',
+    'Regenerates fork_upstream; one PR and one tracking issue',
+    '#fork-day/sync',
+  ],
+  [
+    'Sync Template',
+    '08:00 UTC daily',
+    'Workflow and Dockerfile changes arrive as one PR',
+    '#fork-day?detail=template-pr',
+  ],
+  [
+    'Cascade Monitor',
+    'every 6 hours',
+    'Dispatches, retries, escalates, heals stale drift',
+    '#fork-day?detail=monitor',
+  ],
+  [
+    'Settings Apply',
+    'Mondays 04:00 UTC',
+    'Labels, rulesets, required checks reconciled',
+    '#fork-day?detail=settings-apply',
+  ],
+  [
+    'GHCR Retention',
+    'Mondays 05:00 UTC',
+    'sha-* tags older than 30 days pruned; version tags kept',
+    '#fork-day/release?detail=release-tag',
+  ],
+  [
+    'Validation',
+    'on push and PR',
+    'Builds, pushes a digest, and may borrow the stack',
+    '#fork-day/prove',
+  ],
+];
+function clocksGuide() {
+  return `<ol class="clock-strip">${clocks
+    .map(
+      ([name, when, copy, href]) =>
+        `<li><a href="${href}"><b>${name}</b><span class="clock-when">${when}</span><small>${copy}</small></a></li>`,
+    )
+    .join('')}</ol>
+  <p class="labels-note">A cascade follows a sync PR merge, and a release follows a version PR merge. Everything else here runs on its own schedule and does not wait for the day view’s moments.</p>`;
+}
+
 export const infographics = {
   familiar: familiarGuide,
   owners: ownersGuide,
@@ -433,6 +554,8 @@ export const infographics = {
   profiles: profilesGuide,
   identity: identityGuide,
   timeline: timelineGuide,
+  labels: labelsGuide,
+  clocks: clocksGuide,
 };
 
 export function ownerLegend() {
