@@ -14,6 +14,13 @@ import { diagramRenderers } from '../src/components/diagrams.js';
 import { architectureMap } from '../src/components/architecture.js';
 import { infographics } from '../src/components/infographics.js';
 import { parseRoute, routeHref } from '../src/router.js';
+import { zoomLevels, spiMeanings } from '../src/content/concepts.js';
+import { mythThemes } from '../src/content/myths.js';
+import {
+  zoomLadder,
+  zoomStrip,
+  spiNamesFigure,
+} from '../src/components/infographics.js';
 
 const mapChapters = Object.entries(chapters).filter(
   ([, chapter]) => chapter.kind === 'map',
@@ -83,7 +90,16 @@ test('chapters connect to renderers, explanations, and named sources', () => {
     assert.equal(typeof diagramRenderers[chapter.diagram], 'function');
     assert.ok(Object.hasOwn(componentDetails, chapter.selected));
     verifyDetails(diagramRenderers[chapter.diagram](parseRoute(`#${id}`)), id);
-    for (const guide of chapter.guides || [])
+    const guides = Array.isArray(chapter.guides)
+      ? chapter.guides
+      : Object.values(chapter.guides || {}).flat();
+    if (!Array.isArray(chapter.guides))
+      for (const step of Object.keys(chapter.guides || {}))
+        assert.ok(
+          creationMoments.some((moment) => moment.id === step),
+          `${id}: guides keyed by unknown step ${step}`,
+        );
+    for (const guide of guides)
       assert.ok(
         guide === 'contribution-chain' ||
           nativeGuides.some((entry) => entry.id === guide),
@@ -229,4 +245,57 @@ test('source links use readable documentation and match a sibling checkout when 
       assert.ok(existsSync(target), `${key}: missing ${fileURLToPath(target)}`);
     }
   }
+});
+
+test('learn views state a question, what they build on, outcomes, and zoom levels', () => {
+  const learn = Object.entries(chapters).filter(
+    ([, chapter]) => chapter.group === 'learn',
+  );
+  for (const [id, chapter] of learn) {
+    assert.ok(chapter.question?.trim(), `${id}: question`);
+    assert.ok(chapter.builds?.trim(), `${id}: builds`);
+    assert.ok(chapter.outcomes?.length >= 2, `${id}: outcomes`);
+    assert.ok(chapter.zoom?.length, `${id}: zoom levels`);
+    for (const level of chapter.zoom)
+      assert.ok(
+        zoomLevels.some((entry) => entry.id === level),
+        `${id}: unknown zoom level ${level}`,
+      );
+  }
+  for (const level of zoomLevels) {
+    verifyRoute(level.href, `zoom level ${level.id}`);
+    for (const key of level.chapters)
+      assert.equal(chapters[key]?.group, 'learn', `${level.id}: ${key}`);
+    assert.ok(
+      level.chapters.some((key) => chapters[key].zoom.includes(level.id)),
+      `${level.id}: no listed chapter works at this level`,
+    );
+  }
+  for (const meaning of spiMeanings)
+    verifyRoute(meaning.href, `SPI meaning ${meaning.id}`);
+  assert.ok(zoomLadder().includes('zoom-source'));
+  assert.match(zoomStrip(['service'], 'spi-boundary'), /is-active/);
+  assert.ok(spiNamesFigure().split('<article').length === 4);
+});
+
+test('field checks are grouped by a theme that points back to a learn view', () => {
+  for (const myth of myths)
+    assert.ok(
+      mythThemes.some((theme) => theme.id === myth.theme),
+      `${myth.id}: unknown theme ${myth.theme}`,
+    );
+  for (const theme of mythThemes) {
+    assert.ok(
+      myths.some((myth) => myth.theme === theme.id),
+      theme.id,
+    );
+    verifyRoute(theme.built.href, `theme ${theme.id}`);
+  }
+});
+
+test('the familiar-things guide links every row to a component on the map', () => {
+  const markup = infographics.familiar();
+  const hrefs = [...markup.matchAll(/href="([^"]+)"/g)].map((m) => m[1]);
+  assert.ok(hrefs.length >= 7);
+  for (const href of hrefs) verifyRoute(href, 'familiar guide');
 });

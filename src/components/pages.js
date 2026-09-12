@@ -1,11 +1,17 @@
 import { escapeHtml } from './node.js';
 import { chapters, chapterGroups } from '../content/chapters.js';
-import { myths } from '../content/myths.js';
+import { myths, mythThemes } from '../content/myths.js';
 import { suppliedPosters, nativeGuides } from '../content/posters.js';
 import { sources } from '../content/sources.js';
 import { audio } from '../content/audio.js';
 import { transcript } from '../content/transcript.js';
-import { infographics, spineGuide, ownerLegend } from './infographics.js';
+import {
+  infographics,
+  ownerLegend,
+  zoomLadder,
+  zoomStrip,
+  spiNamesFigure,
+} from './infographics.js';
 import { routeHref } from '../router.js';
 
 export function formatTime(seconds) {
@@ -47,49 +53,75 @@ function mythCard(myth, compact = false) {
   </article>`;
 }
 
-function homePage() {
+function pathCards() {
   const learn = Object.entries(chapters).filter(
     ([, chapter]) => chapter.group === 'learn',
   );
-  return `<section class="home-spine" aria-label="From an empty subscription to an OSDU API">
-      <div class="section-heading"><span class="guide-kicker">The whole picture</span><h2>From an empty subscription to an OSDU API</h2><p>Five places to stand. Each one is a view in this site.</p></div>
-      ${spineGuide()}
+  return `<ol class="path-cards">${learn
+    .map(
+      ([key, chapter], index) =>
+        `<li><a href="${routeHref(key)}"><span class="path-number">${String(index + 1).padStart(2, '0')}</span><b>${chapter.title}</b><em>${escapeHtml(chapter.question)}</em><p><span>You leave able to say</span>${escapeHtml(chapter.outcomes[0])}</p></a></li>`,
+    )
+    .join('')}</ol>`;
+}
+
+function homePage() {
+  return `<section class="home-names" aria-label="One word, three things">
+      <div class="section-heading"><span class="guide-kicker">First, the word</span><h2>SPI means three things here</h2><p>They are related, and the site says which one it means. Each has its own repository and its own view.</p></div>
+      ${spiNamesFigure()}
+    </section>
+    <section class="home-zoom" aria-label="From the subscription to the source">
+      <div class="section-heading"><span class="guide-kicker">The mental map</span><h2>Six places, from the outside in</h2><p>Everything in this site sits at one of these levels. The views zoom in from the resource group to the code, and every view shows where it sits on this ladder.</p></div>
+      ${zoomLadder()}
       ${ownerLegend()}
     </section>
-    <section class="home-ways" aria-label="Three ways in">
-      <a class="way way-listen" href="${routeHref('listen')}"><span class="way-icon" aria-hidden="true">▶</span><b>Listen</b><p>A ${formatTime(audio.duration).replace(/^(\d+):(\d+):\d+$/, '$1 h $2 min')} deep dive that keeps playing while you explore.</p><span class="way-cta">Open the player →</span></a>
-      <a class="way way-explore" href="${routeHref('running-stack')}"><span class="way-icon" aria-hidden="true">⌘</span><b>Explore</b><p>One architecture map, selectable component by component, through the whole lifecycle.</p><span class="way-cta">Start at the stack →</span></a>
-      <a class="way way-read" href="${routeHref('field-guides')}"><span class="way-icon" aria-hidden="true">≋</span><b>Read</b><p>Field guides you can pin up, with the design guides and decision records behind them.</p><span class="way-cta">See the field guides →</span></a>
-    </section>
     <section class="home-path" aria-label="The learning path">
-      <div class="section-heading"><span class="guide-kicker">The path</span><h2>Five views, in order or not</h2><p>Each view ends with what you can now say, and where the documentation goes deeper.</p></div>
-      <ol class="path-cards">${learn
-        .map(
-          ([key, chapter], index) =>
-            `<li><a href="${routeHref(key)}"><span class="path-number">${String(index + 1).padStart(2, '0')}</span><b>${chapter.title}</b><small>${chapter.subtitle}</small><p>${chapter.headline.replace(/<span>/, ' ').replace(/<\/span>/, '')}</p></a></li>`,
-        )
-        .join('')}</ol>
+      <div class="section-heading"><span class="guide-kicker">The path</span><h2>Five views, each answering one question</h2><p>Take them in order the first time. Each builds on the one before and ends with what you can now say.</p></div>
+      ${pathCards()}
     </section>
-    <section class="home-myths" aria-label="Three things that are not true">
-      <div class="section-heading"><span class="guide-kicker">Field checks</span><h2>Three things that are not true</h2><p>Plausible assumptions the documentation contradicts. There are ${myths.length}.</p></div>
-      <div class="myth-grid">${myths
-        .slice(0, 3)
-        .map((myth) => mythCard(myth, true))
-        .join('')}</div>
-      <a class="small-link" href="${routeHref('not-true')}">Read all ${myths.length} →</a>
+    <section class="home-ways" aria-label="Alongside the path">
+      <a class="way way-listen" href="${routeHref('listen')}"><span class="way-icon" aria-hidden="true">▶</span><b>Listen</b><p>A ${Math.round(audio.duration / 60)}-minute deep dive that keeps playing while you explore. Every chapter marker opens the matching view.</p><span class="way-cta">Open the player →</span></a>
+      <a class="way way-read" href="${routeHref('field-guides')}"><span class="way-icon" aria-hidden="true">≋</span><b>Field guides</b><p>The infographics from the views, together with two supplied posters, on one page you can print.</p><span class="way-cta">See the field guides →</span></a>
     </section>
     <section class="home-sources" aria-label="Documentation sets">
-      <div class="section-heading"><span class="guide-kicker">Documentation</span><h2>Where the depth lives</h2></div>
+      <div class="section-heading"><span class="guide-kicker">Documentation</span><h2>Where the depth lives</h2><p>Three repositories, matching the three meanings above.</p></div>
       <div class="source-cards">
         <a href="${sources.architecture.href}" target="_blank" rel="noopener noreferrer"><b>osdu-spi-stack</b><p>Azure infrastructure, workload configuration, the spi CLI. Nine design guides and a register of decision records.</p><span>Architecture ↗</span></a>
+        <a href="${sources.ownership.href}" target="_blank" rel="noopener noreferrer"><b>osdu-spi-partition</b><p>The reference service fork: shared code, the Azure provider behind the interface, and the acceptance descriptor.</p><span>Why Azure source belongs to the fork ↗</span></a>
         <a href="${sources.engineering.href}" target="_blank" rel="noopener noreferrer"><b>osdu-spi</b><p>The engineering system behind every service fork: sync, cascade, build, validation, and fork tiers.</p><span>Architecture overview ↗</span></a>
-        <a href="${sources.forkDeploy.href}" target="_blank" rel="noopener noreferrer"><b>Fork deployment</b><p>How a service fork borrows a shared environment, proves a candidate image, and restores the pin.</p><span>Deployment contract ↗</span></a>
       </div>
     </section>`;
 }
 
 function mythsPage() {
-  return `<div class="myth-grid is-full">${myths.map((myth) => mythCard(myth)).join('')}</div>`;
+  return mythThemes
+    .map((theme) => {
+      const entries = myths.filter((myth) => myth.theme === theme.id);
+      return `<section class="myth-theme" aria-label="${theme.title}">
+        <div class="myth-theme-head"><h2>${theme.title}</h2><a href="${theme.built.href}">Built in ${theme.built.label} →</a></div>
+        <div class="myth-grid is-full">${entries.map((myth) => mythCard(myth)).join('')}</div>
+      </section>`;
+    })
+    .join('');
+}
+
+export function chapterOutcomes(key) {
+  const chapter = chapters[key];
+  if (!chapter.outcomes) return '';
+  const learn = Object.keys(chapters).filter(
+    (id) => chapters[id].group === 'learn',
+  );
+  const next = learn[learn.indexOf(key) + 1];
+  return `<section class="outcomes" aria-label="What you can now say">
+    <div class="outcomes-head"><span class="guide-kicker">Carry forward</span><h2>What you can now say</h2></div>
+    <ol>${chapter.outcomes.map((line) => `<li>${escapeHtml(line)}</li>`).join('')}</ol>
+    ${next ? `<p class="outcomes-next"><b>Next, ${chapters[next].title}</b> asks: ${escapeHtml(chapters[next].question)} <span>${escapeHtml(chapters[next].builds)}</span></p>` : ''}
+  </section>`;
+}
+
+export function chapterZoom(key) {
+  const chapter = chapters[key];
+  return chapter.zoom ? zoomStrip(chapter.zoom, key) : '';
 }
 
 function listenPage(route) {

@@ -14,7 +14,7 @@ This repository owns the learning site. Keep its files separate from `osdu-spi`,
 ## Source and workflow
 
 - Edit `src/`; `dist/` is generated build output and must not be committed.
-- Chapter copy and navigation live in `src/content/chapters.js`; explanations, creation moments, audio markers, field checks, and posters have separate files in that directory. Page renderers live in `src/components/pages.js`; native field guides in `src/components/infographics.js`.
+- Chapter copy and navigation live in `src/content/chapters.js`; the zoom ladder and the three meanings of SPI live in `src/content/concepts.js`; explanations, creation moments, audio markers, field checks, and posters have separate files in that directory. Page renderers live in `src/components/pages.js`; native field guides in `src/components/infographics.js`.
 - Diagram markup and behavior live in `src/components/`; shared navigation and detail handling live in `src/main.js`, with URL state in `src/router.js`.
 - Keep the vanilla JavaScript module structure. Add dependencies only for a concrete need.
 - Use `npm ci`, `npm run dev`, and `npm run check`. Use `npm run format` after editing.
@@ -24,7 +24,9 @@ This repository owns the learning site. Keep its files separate from `osdu-spi`,
 ## Learning-content standards
 
 - Every component explanation must add a concrete operational fact and name an artifact, command, resource, number, or failure mode. Its source reference must resolve. Do not repeat the paragraph beside the map.
-- Start from familiar OSDU APIs and partitions, then introduce the new SPI and environment boundaries. Explain the acronym once; do not assume prior SPI knowledge.
+- Start from familiar OSDU APIs and partitions, then introduce the new SPI and environment boundaries. Explain the acronym once; do not assume prior SPI knowledge. Say which of the three meanings of SPI (the interface, the Stack, the engineering system) a sentence uses when it is not obvious.
+- Every learn view answers one stated question, names what it builds on, works at named levels of the zoom ladder, and ends with two or three things the learner can now say. New content must fit a level; if it does not, the ladder is wrong or the content belongs in a supplement.
+- A field guide beside a map view must explain what is on screen at that moment. In the lifecycle view, guides are keyed by moment.
 - Keep one architecture renderer for the overview and lifecycle. Use unique detail IDs within each scene, select the clicked element, and make its explanation visible on both desktop and phone.
 - Reserve orange for fork-owned source. The owner colors (CLI + Bicep, Flux, controllers, operator) are tokens in `base.css`; use the same colors in a legend as in its diagram.
 - The audio plays from one element in the page frame and never navigates on its own. Every marker links a site view; where the narration differs from the repositories, the marker carries a source-check note.

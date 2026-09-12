@@ -518,89 +518,6 @@ details[open] summary span {
   text-decoration: none;
   font-weight: 600;
 }
-.ownership-reference {
-  margin-top: 27px;
-}
-.ownership-reference h2 {
-  margin-bottom: 13px;
-}
-.table-scroll {
-  overflow-x: auto;
-  border: 1px solid var(--line);
-  border-radius: 7px;
-  background: white;
-}
-.ownership-reference table {
-  width: 100%;
-  border-collapse: collapse;
-  text-align: left;
-  table-layout: fixed;
-  font-size: 14px;
-  line-height: 1.55;
-}
-.ownership-reference th,
-.ownership-reference td {
-  padding: 13px 15px;
-  border-bottom: 1px solid var(--line);
-  vertical-align: top;
-}
-.ownership-reference thead th {
-  background: #eaf1f7;
-  font-size: 13px;
-  color: #476277;
-}
-.ownership-reference th:first-child {
-  width: 24%;
-}
-.ownership-reference tbody th {
-  font-weight: 600;
-}
-.ownership-reference tr:last-child > * {
-  border-bottom: 0;
-}
-.code-boundary {
-  border: 1px solid #afc4d5;
-  border-radius: 8px;
-  background: #f3f7fa;
-  padding: 17px;
-}
-.code-columns {
-  display: grid;
-  grid-template-columns: 1fr 28px 1fr;
-  margin: 16px 0 22px;
-  gap: 10px;
-  align-items: stretch;
-}
-.code-columns section {
-  min-width: 0;
-}
-.code-columns h3 {
-  font-size: 16px;
-  margin-bottom: 4px;
-}
-.code-columns p {
-  font-size: 13px;
-  color: var(--muted);
-  margin: 0 0 15px;
-}
-.code-columns .node + .node {
-  margin-top: 10px;
-}
-.fork-owner h3 {
-  color: var(--orange);
-}
-.shared-owner h3 {
-  color: var(--navy);
-}
-.code-connector {
-  width: 28px;
-  justify-self: center;
-  pointer-events: none;
-  font-size: 26px;
-  align-self: center;
-  text-align: center;
-  color: #7694aa;
-}
 .ownership-legend {
   display: flex;
   justify-content: center;
@@ -608,6 +525,9 @@ details[open] summary span {
   flex-wrap: wrap;
   margin: 17px 0;
   font-size: 13px;
+}
+.ownership-legend span:last-child:not(:first-child) {
+  color: var(--muted);
 }
 .ownership-legend span {
   display: flex;
@@ -939,17 +859,6 @@ details[open] summary span {
   .ownership-reference td {
     padding: 12px;
   }
-  .code-columns {
-    grid-template-columns: 1fr;
-    gap: 13px;
-  }
-  .code-connector {
-    width: 28px;
-    justify-self: center;
-    pointer-events: none;
-    transform: rotate(90deg);
-    font-size: 24px;
-  }
   .engineering-grid {
     grid-template-columns: 1fr;
     gap: 25px;
@@ -968,9 +877,6 @@ details[open] summary span {
   }
   .engineering-grid .node {
     min-height: 0;
-  }
-  .code-boundary {
-    padding: 14px;
   }
   .route-strip {
     display: block;

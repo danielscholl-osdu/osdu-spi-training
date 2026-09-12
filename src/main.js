@@ -2,11 +2,13 @@ import { chapters } from './content/chapters.js';
 import { componentDetails } from './content/component-details.js';
 import { creationMoments } from './content/creation-moments.js';
 import { sources } from './content/sources.js';
-import { diagramRenderers, ownershipTable } from './components/diagrams.js';
+import { diagramRenderers } from './components/diagrams.js';
 import {
   pageRenderers,
   chapterNavigation,
   guideFigure,
+  chapterOutcomes,
+  chapterZoom,
 } from './components/pages.js';
 import { createPlayer } from './components/player.js';
 import { parseRoute, routeHref } from './router.js';
@@ -116,7 +118,14 @@ function renderChapterFrame(route, scene) {
     next === 'start'
       ? 'Back to the start ↺'
       : `Next: ${chapters[next].title} →`;
+  document.getElementById('zoom-strip').innerHTML = chapterZoom(key);
+  document.getElementById('chapter-outcomes').innerHTML = chapterOutcomes(key);
   document.body.dataset.page = scene.kind === 'page' ? scene.page : 'map';
+}
+
+function guidesFor(scene, route) {
+  const guides = scene.guides || [];
+  return Array.isArray(guides) ? guides : guides[route.step] || [];
 }
 
 function render() {
@@ -130,7 +139,6 @@ function render() {
 
   if (scene.kind === 'page') {
     document.getElementById('exploration').hidden = true;
-    document.getElementById('chapter-reference').innerHTML = '';
     document.getElementById('chapter-guides').innerHTML = '';
     const page = document.getElementById('page');
     page.hidden = false;
@@ -156,9 +164,12 @@ function render() {
   document.getElementById('exploration').hidden = false;
   if (chapterChanged) {
     document.getElementById('figure-title').textContent = scene.figure;
-    document.getElementById('chapter-reference').innerHTML =
-      route.chapter === 'running-stack' ? ownershipTable() : '';
-    document.getElementById('chapter-guides').innerHTML = (scene.guides || [])
+  }
+  if (mapChanged) {
+    document.getElementById('chapter-guides').innerHTML = guidesFor(
+      scene,
+      route,
+    )
       .map((guide) =>
         guide === 'contribution-chain'
           ? `<figure class="field-guide is-compact"><figcaption><span class="guide-kicker">Field guide</span><h3>The Contribution Chain</h3><p>Code flows down from the OSDU community by sync and climbs back up by pull request. Every change has one home tier.</p></figcaption><a class="poster-inline" href="${routeHref('field-guides')}#poster-contribution-chain"><img src="posters/contribution-chain.jpg" width="2000" height="1467" alt="The Contribution Chain: three tiers of one service and where a change belongs" loading="lazy" /><span>Read the poster →</span></a></figure>`

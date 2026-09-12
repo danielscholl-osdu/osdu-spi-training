@@ -5,8 +5,8 @@ An interactive learning site for senior engineers who know OSDU and are new to A
 Three ways in, all ending in the source documentation:
 
 - **Listen.** A one-hour generated deep dive with 22 chapter markers, source-check notes, and a transcript. It keeps playing while you move around the site.
-- **Explore.** One architecture map through five views: **What is a stack?**, **How it comes to life**, **The SPI boundary**, **How changes arrive**, and **Things that are not true**. Learners select components and follow the same environment as it is assembled.
-- **Read.** Field guides: two supplied posters, preserved as given, and five infographics built for the site (four owners, the spi up timeline, five milestones, three profiles, identity as two problems).
+- **Explore.** Five views, each answering one question: **What is a stack?**, **How it comes to life**, **The SPI boundary**, **How changes arrive**, and **Things that are not true**. Every view shows where it sits on a six-level ladder from the subscription down to the source, and ends with what the learner can now say.
+- **Read.** Field guides: two supplied posters, preserved as given, and six infographics built for the site (where the familiar things live, four owners, the spi up timeline, five milestones, three profiles, identity as two problems).
 
 Explanations are optional, and source documentation supplies depth. There are no quizzes, scores, or required exercises.
 
@@ -31,7 +31,8 @@ src/
   main.js                       Navigation, map and page rendering
   router.js                     Chapter, moment, selection, guide, and time URLs
   content/
-    chapters.js                 Chapter copy, order, kind, and source references
+    chapters.js                 Chapter copy, questions, outcomes, zoom levels
+    concepts.js                 The zoom ladder and the three meanings of SPI
     component-details.js        Component explanations
     creation-moments.js         Six lifecycle moments
     sources.js                  Documentation labels and source locations
@@ -93,6 +94,6 @@ The site executes no Azure commands, requires no Azure credentials, and remains 
 
 The architecture map runs through six lifecycle moments, from local preparation through teardown. Component explanations sit beside the map on a wide screen and open in a bottom panel on a phone. Deep links preserve a specific moment and component, for example `#bring-up/inspect?detail=connect`; `#listen?t=764` opens the deep dive at a marker, and `#field-guides?guide=profiles` opens a field guide.
 
-[The feedback response](docs/feedback-response.md) records the first iteration. [Iteration 2](docs/iteration-2.md) records the home page, audio, field guides, and field checks. The original review remains unchanged.
+[The feedback response](docs/feedback-response.md) records the first iteration. [Iteration 2](docs/iteration-2.md) records the home page, audio, field guides, and field checks. [Iteration 3](docs/iteration-3.md) records the concept flow: the zoom ladder, the three meanings of SPI, and per-view outcomes. The original review remains unchanged.
 
 The supplied [OSDU SPI Stack guide](osdu-spi-stack-guide.pdf) is the narrative source for the generated deep dive. [Audio source notes](docs/audio-source-notes.md) list every marker, its site destination, and the wording the narration should correct. The deep dive is a NotebookLM artifact; the [notebook](https://notebook.google.com/notebook/b54aaf01-b8c2-4d39-98e9-112ed9dc92b7/artifact/5c1f61ff-cf85-4a1b-813d-d80ae3d96a21) is linked from the Listen page.

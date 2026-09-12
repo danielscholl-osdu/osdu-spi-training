@@ -1,4 +1,6 @@
 import { escapeHtml } from './node.js';
+import { zoomLevels, spiMeanings } from '../content/concepts.js';
+import { chapters } from '../content/chapters.js';
 
 // Owner colors are shared with the legend in pages.css; orange stays reserved
 // for fork-owned source.
@@ -10,6 +12,7 @@ const owners = [
     detail:
       'Resource group, AKS, networking, identities, Cosmos DB, Service Bus, Storage, Key Vault, and the inputs seeded into the cluster.',
     runs: 'Only when a human or a CI job runs it.',
+    boundary: 'Flux does not reconcile Azure infrastructure.',
     tool: 'spi up --env dev1',
   },
   {
@@ -19,6 +22,8 @@ const owners = [
     detail:
       'Reads manifests from Git and applies them in dependency order: operators, middleware, OSDU services, initialization Jobs.',
     runs: 'Continuously, without anyone asking.',
+    boundary:
+      'Keeps applying the cached Git revision when fetching is suspended.',
     tool: 'kubectl get kustomizations -n osdu-flux',
   },
   {
@@ -28,6 +33,7 @@ const owners = [
     detail:
       'Scheduling pods, keeping Elasticsearch and PostgreSQL clusters healthy, issuing certificates, distributing trust bundles.',
     runs: 'Regardless of what Flux or the CLI are doing.',
+    boundary: 'Continue independently of Git polling.',
     tool: 'kubectl get pods -n foundation',
   },
   {
@@ -37,6 +43,7 @@ const owners = [
     detail:
       'When to pull new changes, when to refresh images, when to delete the environment, and how to diagnose it.',
     runs: 'When something needs a judgment call.',
+    boundary: 'A successful CLI exit is not an API-readiness check.',
     tool: 'spi reconcile --refresh-images',
   },
 ];
@@ -49,6 +56,7 @@ function ownersGuide() {
         <b>owns ${owner.owns}</b>
         <p>${owner.detail}</p>
         <small>${owner.runs}</small>
+        <span class="owner-boundary">${owner.boundary}</span>
         <code>${escapeHtml(owner.tool)}</code>
       </article>`,
     )
@@ -267,53 +275,156 @@ function timelineGuide() {
   <p class="guide-thesis">Overlapping phases must not be added. The CLI’s default region is westus3; the observations came from centralus.</p>`;
 }
 
-export function spineGuide() {
-  const stops = [
-    {
-      owner: 'you',
-      kicker: 'Workstation',
-      title: 'spi up --env dev1',
-      copy: 'One command. You sign in and choose a subscription.',
-      href: '#bring-up/start',
-    },
-    {
-      owner: 'cli',
-      kicker: 'Azure',
-      title: 'AKS + PaaS',
-      copy: 'Bicep provisions the cluster, then the data services that need its OIDC issuer.',
-      href: '#bring-up/provision',
-    },
-    {
-      owner: 'flux',
-      kicker: 'Inside the cluster',
-      title: 'Flux assembles',
-      copy: 'Operators, middleware, OSDU services, initialization Jobs, in dependency order.',
-      href: '#bring-up/reconcile',
-    },
-    {
-      owner: 'fork',
-      kicker: 'Inside each service',
-      title: 'Shared code + Azure provider',
-      copy: 'The SPI connects familiar OSDU behavior to fork-owned Azure code.',
-      href: '#spi-boundary',
-    },
-    {
-      owner: 'you',
-      kicker: 'Your client',
-      title: 'Bearer + data-partition-id',
-      copy: 'The same headers you already send. Authorization is still OSDU’s.',
-      href: '#running-stack/request',
-    },
-  ];
-  return `<ol class="spine">${stops
+const familiar = [
+  {
+    known: 'A data partition',
+    example: 'opendes',
+    lives:
+      'Its own Cosmos DB SQL account, Storage account, and Service Bus namespace',
+    owner: 'cli',
+    where: 'Azure · per partition',
+    href: '#running-stack/developer?detail=cosmos',
+  },
+  {
+    known: 'Entitlements groups',
+    example: 'users.datalake.viewers',
+    lives: 'A Cosmos DB Gremlin graph shared by the whole environment',
+    owner: 'cli',
+    where: 'Azure · shared',
+    href: '#running-stack/developer?detail=shared-data',
+  },
+  {
+    known: 'Search',
+    example: 'POST /api/search/v2/query',
+    lives: 'Elasticsearch running inside the cluster, managed by an operator',
+    owner: 'k8s',
+    where: 'AKS · platform namespace',
+    href: '#running-stack/developer?detail=middleware',
+  },
+  {
+    known: 'Schemas',
+    example: 'osdu:wks:master-data--Well:1.0.0',
+    lives: 'Loaded by a Job into the primary partition’s system database',
+    owner: 'flux',
+    where: 'AKS · osdu namespace',
+    href: '#running-stack/developer?detail=initialization',
+  },
+  {
+    known: 'The services',
+    example: 'partition · storage · indexer',
+    lives:
+      'Deployments in the osdu namespace, one image each, shared code plus Azure provider',
+    owner: 'flux',
+    where: 'AKS · osdu namespace',
+    href: '#running-stack/developer?detail=service',
+  },
+  {
+    known: 'Your API call',
+    example: 'Bearer + data-partition-id',
+    lives:
+      'Istio gateway, then a sidecar that identifies the caller, then the service',
+    owner: 'you',
+    where: 'AKS · aks-istio-ingress',
+    href: '#running-stack/request?detail=gateway',
+  },
+  {
+    known: 'Credentials',
+    example: 'connection strings',
+    lives:
+      'Workload Identity for Azure; middleware passwords in Secrets mirrored to Key Vault',
+    owner: 'cli',
+    where: 'Azure · shared',
+    href: '#running-stack/developer?detail=vault',
+  },
+];
+
+function familiarGuide() {
+  return `<div class="guide-familiar">
+    <div class="familiar-head"><span>You know</span><span>In the stack it is</span><span>Look</span></div>
+    ${familiar
+      .map(
+        (row) => `<div class="familiar-row owner-${row.owner}">
+        <div class="familiar-known"><b>${row.known}</b><code>${escapeHtml(row.example)}</code></div>
+        <div class="familiar-lives"><small>${row.where}</small><p>${row.lives}</p></div>
+        <a href="${row.href}" aria-label="Look at ${row.known} on the map">On the map →</a>
+      </div>`,
+      )
+      .join('')}
+  </div>
+  <p class="guide-thesis">Nothing about the OSDU contract changed. What changed is where each familiar thing lives and who keeps it running.</p>`;
+}
+
+const chapterNumber = (key) =>
+  String(
+    Object.keys(chapters)
+      .filter((id) => chapters[id].group === 'learn')
+      .indexOf(key) + 1,
+  ).padStart(2, '0');
+
+function levelTags(level) {
+  return `<span class="zoom-tags">${level.chapters
     .map(
-      (stop) =>
-        `<li class="owner-${stop.owner}"><a href="${stop.href}"><small>${stop.kicker}</small><b>${escapeHtml(stop.title)}</b><p>${stop.copy}</p><span aria-hidden="true">Explore ↗</span></a></li>`,
+      (key) =>
+        `<a href="#${key}" title="${chapters[key].title}">${chapterNumber(key)}</a>`,
     )
-    .join('')}</ol>`;
+    .join('')}</span>`;
+}
+
+// Nested boxes for the start page. Levels 1–5 nest; level 6 stands beside
+// them because source is where a service comes from, not somewhere inside it.
+export function zoomLadder() {
+  const nested = zoomLevels.slice(0, 5);
+  const source = zoomLevels[5];
+  const open = nested
+    .map(
+      (
+        level,
+        i,
+      ) => `<div class="zoom-box owner-${level.owner} zoom-depth-${i}" id="zoom-${level.id}">
+        <div class="zoom-bar"><span class="zoom-index">${i + 1}</span><a href="${level.href}"><b>${level.name}</b><small>${level.detail}</small></a>${levelTags(level)}</div>`,
+    )
+    .join('');
+  const close = '</div>'.repeat(nested.length);
+  return `<div class="zoom-ladder">
+    <div class="zoom-nest">${open}${close}</div>
+    <div class="zoom-aside">
+      <div class="zoom-arrow" aria-hidden="true"><span>built from</span>←</div>
+      <div class="zoom-box owner-${source.owner} zoom-source" id="zoom-${source.id}">
+        <div class="zoom-bar"><span class="zoom-index">6</span><a href="${source.href}"><b>${source.name}</b><small>${source.detail}</small></a>${levelTags(source)}</div>
+      </div>
+    </div>
+  </div>`;
+}
+
+// A compact "you are here" for the top of every learn view.
+export function zoomStrip(activeIds = [], current = null) {
+  return `<nav class="zoom-strip" aria-label="Where this view sits">
+    <span class="zoom-strip-label">You are here</span>
+    <ol>${zoomLevels
+      .map(
+        (level, i) =>
+          `<li class="owner-${level.owner} ${activeIds.includes(level.id) ? 'is-active' : ''}"><a href="${level.chapters.includes(current) ? level.href : `#${level.chapters[0]}`}"><span>${i + 1}</span>${level.name}</a></li>`,
+      )
+      .join('')}</ol>
+  </nav>`;
+}
+
+export function spiNamesFigure() {
+  return `<div class="spi-names">${spiMeanings
+    .map(
+      (meaning) => `<article class="spi-name owner-${meaning.owner}">
+      <span class="spi-name-kicker">${meaning.kicker}</span>
+      <h3>${meaning.name}</h3>
+      <p>${meaning.copy}</p>
+      <code>${escapeHtml(meaning.lives)}</code>
+      <a href="${meaning.href}">${meaning.hrefLabel} →</a>
+    </article>`,
+    )
+    .join('')}</div>`;
 }
 
 export const infographics = {
+  familiar: familiarGuide,
   owners: ownersGuide,
   milestones: milestonesGuide,
   profiles: profilesGuide,

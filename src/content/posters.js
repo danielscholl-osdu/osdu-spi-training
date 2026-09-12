@@ -65,11 +65,19 @@ export const suppliedPosters = [
 // Infographics rendered by src/components/infographics.js.
 export const nativeGuides = [
   {
+    id: 'familiar',
+    title: 'Where the familiar things live',
+    summary:
+      'Seven OSDU concepts you already use, and the place in the stack each one turns into. Start here before learning anything new.',
+    appearsIn: { label: 'What is a stack?', href: '#running-stack' },
+    sources: ['architecture', 'identity'],
+  },
+  {
     id: 'owners',
     title: 'Four owners, four boundaries',
     summary:
       'Most of the design exists to keep these boundaries clean. Knowing which owner you are looking at tells you which tool can change what you see.',
-    appearsIn: { label: 'What is a stack?', href: '#running-stack' },
+    appearsIn: { label: 'How it comes to life', href: '#bring-up/provision' },
     sources: ['architecture', 'lifecycle'],
   },
   {
