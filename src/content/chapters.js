@@ -11,10 +11,10 @@ export const chapters = {
     premise: 'For engineers who know OSDU and are new to SPI.',
     listen: [
       {
-        episode: 'orientation',
-        time: 94,
-        end: 243,
-        label: 'One request, and the three meanings of SPI',
+        episode: 'brief',
+        time: 0,
+        end: 112,
+        label: 'The frame in two minutes',
       },
     ],
     sources: ['architecture', 'engineering', 'designs', 'decisions'],
@@ -36,8 +36,9 @@ export const chapters = {
       { episode: 'stack', time: 764, label: 'Four owners, four boundaries' },
       {
         episode: 'orientation',
-        time: 329,
-        label: 'The stack is larger than the cluster',
+        time: 770.9,
+        end: 912.8,
+        label: 'Real Azure, on demand, and what the stack is not',
       },
     ],
     guides: ['familiar', 'inside-the-cluster', 'profiles'],
@@ -108,7 +109,7 @@ export const chapters = {
       { episode: 'stack', time: 2661, label: 'Making an empty OSDU useful' },
       {
         episode: 'orientation',
-        time: 443,
+        time: 1014.5,
         label: 'Declared state, observed state',
       },
     ],
@@ -188,7 +189,11 @@ export const chapters = {
     selected: 'azureimpl',
     diagram: 'spi',
     listen: [
-      { episode: 'orientation', time: 576, label: 'The provider takes over' },
+      {
+        episode: 'orientation',
+        time: 175.9,
+        label: 'The provider model and the seam',
+      },
       {
         episode: 'branches',
         time: 331,
@@ -257,8 +262,8 @@ export const chapters = {
     listen: [
       {
         episode: 'orientation',
-        time: 749,
-        label: 'Fork-owned source',
+        time: 496.1,
+        label: 'Ownership runs through the tree',
       },
       {
         episode: 'branches',
@@ -267,8 +272,8 @@ export const chapters = {
       },
       {
         episode: 'orientation',
-        time: 848,
-        label: 'What the generated branch leaves out',
+        time: 612,
+        label: 'Generate; do not merge',
       },
     ],
     guides: ['contribution-chain'],
@@ -340,8 +345,8 @@ export const chapters = {
       { episode: 'branches', time: 1985, label: 'The meta commit' },
       {
         episode: 'orientation',
-        time: 909,
-        label: 'Protection is not compatibility',
+        time: 567.8,
+        label: 'Why daily, not monthly',
       },
     ],
     mistakes: {
@@ -419,8 +424,8 @@ export const chapters = {
     listen: [
       {
         episode: 'orientation',
-        time: 1089,
-        label: 'Restore only while you own the pin',
+        time: 912.8,
+        label: 'Borrow, prove, restore',
       },
       {
         episode: 'branches',
@@ -495,10 +500,10 @@ export const chapters = {
     page: 'listen',
     group: 'supplement',
     title: 'Listen',
-    subtitle: 'Three conversations',
-    headline: 'Three conversations,<span>one system.</span>',
+    subtitle: 'Four recordings',
+    headline: 'Four recordings,<span>one system.</span>',
     intro:
-      'Generated audio discussions of the guides: a twenty-five-minute orientation first, then the stack on its own, then the fork in depth. Play one while you explore; each marker opens the matching view, and the maps carry short cues back into the recordings.',
+      'Generated recordings: a twenty-two-minute orientation that argues why Azure SPI exists, the same frame as a two-minute brief, then the stack on its own and the fork in depth. Play one while you explore; each marker opens the matching view, and the maps carry short cues back into the recordings.',
     premise: 'Keeps playing while you move around the site.',
     scope:
       'The narration is generated from the guides, not from the repositories. Where it rounds a number, mishears a command, or overstates a guarantee, the marker notes say what the source documentation actually claims.',

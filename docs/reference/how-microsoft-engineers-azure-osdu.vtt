@@ -1,0 +1,50 @@
+WEBVTT
+
+00:00.000 --> 00:05.640
+How do you maintain cloud-specific code for an open-source platform that changes every single day?
+
+00:06.120 --> 00:11.880
+Welcome to Azure SPI, the engineering engine that keeps Microsoft's OSDU data platform running.
+
+00:12.400 --> 00:17.720
+Historically, shared repositories held updates back, so the community stripped out all cloud-specific code,
+
+00:18.100 --> 00:21.620
+leaving Microsoft as the sole owner and maintainer of the Azure implementation.
+
+00:22.080 --> 00:23.800
+But the community code keeps moving.
+
+00:23.800 --> 00:30.300
+To stay synchronized, Microsoft uses isolated repositories that automatically pull in those daily community updates.
+
+00:30.700 --> 00:32.020
+These are the service forks.
+
+00:32.360 --> 00:38.060
+They compile those open-source updates alongside Microsoft's proprietary Azure logic into a single container image.
+
+00:38.380 --> 00:40.100
+But a compiled image is just a candidate.
+
+00:40.480 --> 00:42.760
+You can't prove cloud code with simple unit tests.
+
+00:43.080 --> 00:44.360
+You need real infrastructure.
+
+00:44.920 --> 00:48.260
+Enter the stack, an on-demand, fully-provisioned Azure environment.
+
+00:48.260 --> 00:56.520
+The new container image temporarily borrows a slot in this live stack, executes its API-level acceptance tests directly against real Azure data services,
+
+00:56.780 --> 00:58.720
+and then restores the environment completely.
+
+00:59.200 --> 01:02.220
+By testing isolated cloud code against live infrastructure daily,
+
+01:02.580 --> 01:06.200
+Microsoft ensures its OSDU platform never falls behind the community standard.
+

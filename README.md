@@ -4,7 +4,7 @@ An interactive learning site for senior engineers who know OSDU and are new to A
 
 Three ways in, all ending in the source documentation:
 
-- **Listen.** Three generated conversations, about three hours in all, each with chapter markers, source-check notes, and a transcript. Playback keeps going while you move around the site, and the fork views carry short cues into the recordings.
+- **Listen.** A one-minute video and a two-minute brief give the frame on the start page. Three generated conversations, a 22-minute orientation and two hour-long deep dives, each carry chapter markers, source-check notes, and a transcript. Playback keeps going while you move around the site, and the learn views carry short cues into the recordings.
 - **Explore.** Seven views, each answering one question, in a round trip: **What is a stack?**, **How it comes to life**, and **The SPI boundary** go down the stack; **The shape of the fork** and **A day in the fork** go out to the service fork that owns the Azure code; **The handshake** comes back in through the image lock; **Things that are not true** collects the contradictions from both. Every view says which of six places it works at, draws one running example as hops above its map (a partition lookup for opendes in a stack called dev1, then a fix to the partition provider), shows one easy mistake directly under the map, and ends with what the learner can now say.
 - **Read.** Field guides: seven posters (two supplied with the training material, two adopted from the source repositories, three built for this site: namespaces and ordering, one request end to end, credentials and teardown) and six smaller infographics built in HTML (where the familiar things live, four owners, the spi up timeline, five milestones, three profiles, identity as two problems).
 
@@ -37,7 +37,7 @@ src/
     creation-moments.js         Six lifecycle moments
     fork-moments.js             Five moments in a service fork's day
     sources.js                  Documentation labels and source locations
-    audio.js                    Three episodes: files, markers, source checks
+    audio.js                    Four episodes and the video: files, markers, source checks
     transcripts/                Generated transcript paragraphs, one per episode
     myths.js                    Things that are not true
     posters.js                  Supplied posters and native field guides
@@ -53,7 +53,8 @@ src/
     architecture.css            Architecture and walkthrough layout
     pages.css                   Pages, field guides, player, lightbox
 public/
-  audio/                        Episode audio (three files, 25–30 MB each, mono AAC)
+  audio/                        Episode audio (mono AAC; the deep dives are 25–30 MB each)
+  video/                        The one-minute overview, its poster, and its captions
   posters/                      Web-sized poster copies
 docs/
   concept-review.html           Review of the first concept
@@ -97,4 +98,4 @@ The architecture map runs through six lifecycle moments, from local preparation 
 
 [The feedback response](docs/feedback-response.md) records the first iteration. [Iteration 2](docs/iteration-2.md) records the home page, audio, field guides, and field checks. [Iteration 3](docs/iteration-3.md) records the concept flow: the zoom ladder, the three meanings of SPI, and per-view outcomes. [Iteration 4](docs/iteration-4.md) records the response to the external review: the shorter landing page, the corrected ladder geometry, the running example, easy-mistake callouts, and the phone chapter menu. [Iteration 5](docs/iteration-5.md) records the fork and seam views, the cache fallback example, the two new episodes, and the response to the [fork feature review](docs/fork-feature-review-2026-09-12.md). The original reviews remain unchanged.
 
-The orientation episode was generated from [a bounded source written for it](docs/azure-spi-orientation-source.md); the supplied [OSDU SPI Stack guide](osdu-spi-stack-guide.pdf) is the narrative source for the stack episode and the [complete osdu-spi guide](osdu-spi-complete-guide.pdf) for the fork episode. [Audio source notes](docs/audio-source-notes.md) list every marker, its site destination, and the wording the narration should correct. The episodes are NotebookLM artifacts; the stack episode's [notebook](https://notebook.google.com/notebook/b54aaf01-b8c2-4d39-98e9-112ed9dc92b7/artifact/5c1f61ff-cf85-4a1b-813d-d80ae3d96a21) is linked from the Listen page.
+The orientation episode, the brief, and the video were generated from [an introduction written for them](docs/azure-spi-introduction-source.md) with [its brief](docs/azure-spi-introduction-generation-brief.md), which replaced [an earlier orientation source](docs/azure-spi-orientation-source.md); the supplied [OSDU SPI Stack guide](osdu-spi-stack-guide.pdf) is the narrative source for the stack episode and the [complete osdu-spi guide](osdu-spi-complete-guide.pdf) for the fork episode. [Audio source notes](docs/audio-source-notes.md) list every marker, its site destination, and the wording the narration should correct. The episodes are NotebookLM artifacts; the stack episode's [notebook](https://notebook.google.com/notebook/b54aaf01-b8c2-4d39-98e9-112ed9dc92b7/artifact/5c1f61ff-cf85-4a1b-813d-d80ae3d96a21) is linked from the Listen page.
