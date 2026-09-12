@@ -29,7 +29,8 @@ export const chapters = {
     sources: ['architecture', 'identity', 'images'],
     question: 'What did spi up actually give me?',
     builds: 'Starts from what you already know: OSDU APIs and data partitions.',
-    zoom: ['subscription', 'resources', 'cluster', 'workloads'],
+    where:
+      'This view stays wide: the resource group, the Azure resources in it, the AKS cluster, and the namespaces inside the cluster. It does not open a service yet.',
     outcomes: [
       'A stack is a resource group: AKS plus the Azure data services around it, not the cluster alone.',
       'My partition’s records, blobs, and events each have their own Azure resource; entitlements, identities, and Key Vault are shared by the environment.',
@@ -60,7 +61,8 @@ export const chapters = {
     question: 'How does one command become all of that, and when is it usable?',
     builds:
       'Uses the boundaries from 01: the stack, AKS, and the resources outside it.',
-    zoom: ['subscription', 'cluster', 'workloads'],
+    where:
+      'This view follows the same wide picture through time: the resource group filling with Azure resources, then the cluster, then the namespaces Flux assembles inside it.',
     outcomes: [
       'The CLI and Bicep create Azure and seed the cluster; Flux assembles the workloads; controllers keep them healthy. Different owners, different clocks.',
       'A successful spi up exit is the first of five milestones, not readiness. spi status --watch is how I follow the rest.',
@@ -85,7 +87,8 @@ export const chapters = {
     question: 'Where inside a service does OSDU stop and Azure begin?',
     builds:
       'Zooms into the service node from 01 and uses its per-partition resources and managed identity.',
-    zoom: ['service'],
+    where:
+      'This view zooms into one service inside the osdu namespace. Everything around it from the first two views is still there; only the scale changed.',
     outcomes: [
       'Common service code calls a provider interface; the Azure implementation resolves the partition’s backends and calls them with Workload Identity.',
       'The interface and its implementation ship in one image. There is no network hop between them.',
@@ -111,7 +114,8 @@ export const chapters = {
       'Where does a change to that Azure code go, and how does it reach a running stack?',
     builds:
       'Uses the fork-owned paths from 03 and the shared environment from 01.',
-    zoom: ['source'],
+    where:
+      'This view steps outside the running stack to where the code comes from: the service fork, the shared engineering system, and the stack repository that runs the environment.',
     outcomes: [
       'Three repositories, three jobs: a service fork owns provider code, osdu-spi supplies the workflows, osdu-spi-stack runs the environment.',
       'A candidate travels fork → GHCR digest → osdu-image-lock → running pod, and every hop leaves something I can inspect.',
@@ -134,14 +138,8 @@ export const chapters = {
     question: 'Which reasonable assumptions will cost me an afternoon?',
     builds:
       'Each contradiction points back to the view where the concept was built.',
-    zoom: [
-      'subscription',
-      'resources',
-      'cluster',
-      'workloads',
-      'service',
-      'source',
-    ],
+    where:
+      'These checks range across every level, from the resource group to the source repositories. Each one names the view where its concept was built.',
     outcomes: [
       'When something looks wrong, I know which owner to ask and which command shows its view of the world.',
       'Provisioning, convergence, readiness, and proof are different signals, and I check the one I actually need.',

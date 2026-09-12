@@ -10,7 +10,7 @@ import {
   guideFigure,
   posterInline,
   chapterOutcomes,
-  chapterZoom,
+  chapterScope,
 } from './components/pages.js';
 import { createPlayer } from './components/player.js';
 import { parseRoute, routeHref } from './router.js';
@@ -120,7 +120,7 @@ function renderChapterFrame(route, scene) {
     next === 'start'
       ? 'Back to the start ↺'
       : `Next: ${chapters[next].title} →`;
-  document.getElementById('zoom-strip').innerHTML = chapterZoom(key);
+  document.getElementById('view-scope').innerHTML = chapterScope(key);
   document.getElementById('chapter-outcomes').innerHTML = chapterOutcomes(key);
   document.body.dataset.page = scene.kind === 'page' ? scene.page : 'map';
 }

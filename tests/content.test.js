@@ -16,11 +16,7 @@ import { infographics } from '../src/components/infographics.js';
 import { parseRoute, routeHref } from '../src/router.js';
 import { zoomLevels, spiMeanings } from '../src/content/concepts.js';
 import { mythThemes } from '../src/content/myths.js';
-import {
-  zoomLadder,
-  zoomStrip,
-  spiNamesFigure,
-} from '../src/components/infographics.js';
+import { zoomLadder, spiNamesFigure } from '../src/components/infographics.js';
 
 const mapChapters = Object.entries(chapters).filter(
   ([, chapter]) => chapter.kind === 'map',
@@ -247,7 +243,7 @@ test('source links use readable documentation and match a sibling checkout when 
   }
 });
 
-test('learn views state a question, what they build on, outcomes, and zoom levels', () => {
+test('learn views state a question, what they build on, their scope, and outcomes', () => {
   const learn = Object.entries(chapters).filter(
     ([, chapter]) => chapter.group === 'learn',
   );
@@ -255,26 +251,16 @@ test('learn views state a question, what they build on, outcomes, and zoom level
     assert.ok(chapter.question?.trim(), `${id}: question`);
     assert.ok(chapter.builds?.trim(), `${id}: builds`);
     assert.ok(chapter.outcomes?.length >= 2, `${id}: outcomes`);
-    assert.ok(chapter.zoom?.length, `${id}: zoom levels`);
-    for (const level of chapter.zoom)
-      assert.ok(
-        zoomLevels.some((entry) => entry.id === level),
-        `${id}: unknown zoom level ${level}`,
-      );
+    assert.ok(chapter.where?.trim(), `${id}: where`);
   }
   for (const level of zoomLevels) {
     verifyRoute(level.href, `zoom level ${level.id}`);
     for (const key of level.chapters)
       assert.equal(chapters[key]?.group, 'learn', `${level.id}: ${key}`);
-    assert.ok(
-      level.chapters.some((key) => chapters[key].zoom.includes(level.id)),
-      `${level.id}: no listed chapter works at this level`,
-    );
   }
   for (const meaning of spiMeanings)
     verifyRoute(meaning.href, `SPI meaning ${meaning.id}`);
   assert.ok(zoomLadder().includes('zoom-source'));
-  assert.match(zoomStrip(['service'], 'spi-boundary'), /is-active/);
   assert.ok(spiNamesFigure().split('<article').length === 4);
 });
 

@@ -396,25 +396,6 @@ export function zoomLadder() {
   </div>`;
 }
 
-// A compact "you are here" for the top of every learn view. Lit levels are
-// where this view works and are not links; every other level links to the one
-// view that explains it.
-export function zoomStrip(activeIds = [], current = null) {
-  return `<nav class="zoom-strip" aria-label="Where this view sits on the ladder">
-    <div class="zoom-strip-head"><span class="zoom-strip-label">You are here</span><a class="zoom-strip-help" href="#start?guide=ladder">The six levels, explained on the start page →</a></div>
-    <ol>${zoomLevels
-      .map((level, i) => {
-        const here = activeIds.includes(level.id);
-        const target = level.chapters[0];
-        const number = chapterNumber(target);
-        return here
-          ? `<li class="owner-${level.owner} is-active" aria-current="location"><span class="zoom-chip"><span class="zoom-n">${i + 1}</span>${level.name}<em>here</em></span></li>`
-          : `<li class="owner-${level.owner}"><a class="zoom-chip" href="#${target}" title="Go to ${number} · ${chapters[target].title}"><span class="zoom-n">${i + 1}</span>${level.name}<em>${number} →</em></a></li>`;
-      })
-      .join('')}</ol>
-  </nav>`;
-}
-
 export function spiNamesFigure() {
   return `<div class="spi-names">${spiMeanings
     .map(

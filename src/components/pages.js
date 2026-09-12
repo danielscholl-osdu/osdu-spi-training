@@ -9,7 +9,6 @@ import {
   infographics,
   ownerLegend,
   zoomLadder,
-  zoomStrip,
   spiNamesFigure,
 } from './infographics.js';
 import { routeHref } from '../router.js';
@@ -128,9 +127,11 @@ export function chapterOutcomes(key) {
   </section>`;
 }
 
-export function chapterZoom(key) {
+export function chapterScope(key) {
   const chapter = chapters[key];
-  return chapter.zoom ? zoomStrip(chapter.zoom, key) : '';
+  return chapter.where
+    ? `<p class="view-scope"><span>In this view</span>${escapeHtml(chapter.where)} <a href="#start?guide=ladder">See the six levels →</a></p>`
+    : '';
 }
 
 function listenPage(route) {
