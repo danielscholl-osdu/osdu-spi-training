@@ -1,0 +1,128 @@
+WEBVTT
+
+00:00.000 --> 00:04.280
+This is the brief on onboarding to the Azure SPI system.
+
+00:04.820 --> 00:08.860
+So this field note breaks down a massive shift in OSDU,
+
+00:09.320 --> 00:12.200
+the open subsurface data universe for energy data,
+
+00:12.420 --> 00:16.100
+and reveals exactly how Microsoft rebuilt its SPI,
+
+00:16.440 --> 00:18.020
+or software provider interfaces,
+
+00:18.520 --> 00:21.520
+so engineers can seamlessly integrate community code
+
+00:21.520 --> 00:23.440
+with real-world Azure infrastructure.
+
+00:24.040 --> 00:26.180
+First, we've got the great code base split.
+
+00:26.660 --> 00:29.940
+You know, the community stopped keeping everyone's cloud-specific code
+
+00:29.940 --> 00:31.280
+in one giant repository.
+
+00:31.900 --> 00:33.600
+Now they just maintain the shared core,
+
+00:33.840 --> 00:37.000
+and Microsoft completely owns the Azure-specific code.
+
+00:37.420 --> 00:39.020
+It's kind of like a car, right?
+
+00:39.420 --> 00:41.440
+The community builds the universal chassis,
+
+00:41.860 --> 00:43.660
+but Microsoft is solely on the hook
+
+00:43.660 --> 00:46.260
+for building the custom Azure engine that drops into it.
+
+00:46.760 --> 00:49.400
+Now, that split necessitates a daily sync system.
+
+00:50.060 --> 00:52.860
+Second, because that community chassis is constantly updating,
+
+00:53.260 --> 00:55.020
+the Azure code lives in service forks
+
+00:55.020 --> 00:57.160
+that pull in new shared code every single day.
+
+00:57.740 --> 00:58.880
+So how do you keep the community
+
+00:58.880 --> 01:01.580
+from accidentally deleting the Azure code during these syncs?
+
+01:02.100 --> 01:04.040
+Well, the system generates branches daily
+
+01:04.040 --> 01:06.360
+that deliberately exclude the Azure provider,
+
+01:06.800 --> 01:08.020
+creating structural protection
+
+01:08.020 --> 01:10.600
+so nobody has to constantly rescue deleted files.
+
+01:10.960 --> 01:14.060
+And naturally, that sync system requires the actual testing stack.
+
+01:14.540 --> 01:15.840
+Finally, the proving ground.
+
+01:16.260 --> 01:19.500
+Look, a successful build doesn't mean the code actually works on Azure.
+
+01:20.040 --> 01:22.520
+Engineers use the stack to spin up a disposable,
+
+01:22.980 --> 01:24.160
+real Azure environment,
+
+01:24.160 --> 01:27.140
+using real services like Cosmos DB and Key Vault
+
+01:27.140 --> 01:30.120
+to run a borrow, prove, and restore testing cycle.
+
+01:30.860 --> 01:31.420
+You might ask,
+
+01:31.740 --> 01:33.700
+why not just use fake simulated services
+
+01:33.700 --> 01:35.120
+to save an hour of spin-up time?
+
+01:35.540 --> 01:38.160
+Well, because testing Azure code on non-Azure substitutes
+
+01:38.160 --> 01:41.380
+completely bypasses the very code the environment exists to prove.
+
+01:41.380 --> 01:43.700
+You absolutely have to use the real deal.
+
+01:44.440 --> 01:47.140
+Ultimately, Azure SPI is the critical bridge
+
+01:47.140 --> 01:49.460
+connecting fast-moving open-source innovation
+
+01:49.460 --> 01:51.940
+with hard, dependable cloud reality.
+

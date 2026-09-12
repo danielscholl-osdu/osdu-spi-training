@@ -11,10 +11,10 @@ export const chapters = {
     premise: 'For engineers who know OSDU and are new to SPI.',
     listen: [
       {
-        episode: 'machinery',
+        episode: 'brief',
         time: 0,
-        end: 180,
-        label: 'The problem, and the three meanings of SPI',
+        end: 112,
+        label: 'The frame in two minutes',
       },
     ],
     sources: ['architecture', 'engineering', 'designs', 'decisions'],
@@ -34,7 +34,12 @@ export const chapters = {
     diagram: 'overview',
     listen: [
       { episode: 'stack', time: 764, label: 'Four owners, four boundaries' },
-      { episode: 'machinery', time: 609, label: 'The Azure-only bet' },
+      {
+        episode: 'orientation',
+        time: 770.9,
+        end: 912.8,
+        label: 'Real Azure, on demand, and what the stack is not',
+      },
     ],
     guides: ['familiar', 'inside-the-cluster', 'profiles'],
     mistakes: {
@@ -102,6 +107,11 @@ export const chapters = {
         label: 'The CLI leaves; Flux keeps working',
       },
       { episode: 'stack', time: 2661, label: 'Making an empty OSDU useful' },
+      {
+        episode: 'orientation',
+        time: 1014.5,
+        label: 'Declared state, observed state',
+      },
     ],
     guides: {
       provision: ['owners'],
@@ -179,7 +189,11 @@ export const chapters = {
     selected: 'azureimpl',
     diagram: 'spi',
     listen: [
-      { episode: 'machinery', time: 180, label: 'The provider model' },
+      {
+        episode: 'orientation',
+        time: 175.9,
+        label: 'The provider model and the seam',
+      },
       {
         episode: 'branches',
         time: 331,
@@ -247,9 +261,9 @@ export const chapters = {
     diagram: 'fork',
     listen: [
       {
-        episode: 'machinery',
-        time: 221,
-        label: 'Upstream deletes the vendor code',
+        episode: 'orientation',
+        time: 496.1,
+        label: 'Ownership runs through the tree',
       },
       {
         episode: 'branches',
@@ -257,9 +271,9 @@ export const chapters = {
         label: 'From sculpting to 3D printing',
       },
       {
-        episode: 'machinery',
-        time: 288,
-        label: 'Ownership runs through the tree',
+        episode: 'orientation',
+        time: 612,
+        label: 'Generate; do not merge',
       },
     ],
     guides: ['contribution-chain'],
@@ -329,6 +343,11 @@ export const chapters = {
       { episode: 'branches', time: 1746, label: 'Labels as a state machine' },
       { episode: 'branches', time: 1846, label: 'The cascade: main first' },
       { episode: 'branches', time: 1985, label: 'The meta commit' },
+      {
+        episode: 'orientation',
+        time: 567.8,
+        label: 'Why daily, not monthly',
+      },
     ],
     mistakes: {
       sync: 'merge-fork-upstream',
@@ -403,7 +422,11 @@ export const chapters = {
     selected: 'delivery',
     diagram: 'seam',
     listen: [
-      { episode: 'machinery', time: 791, label: 'Borrow, prove, restore' },
+      {
+        episode: 'orientation',
+        time: 912.8,
+        label: 'Borrow, prove, restore',
+      },
       {
         episode: 'branches',
         time: 3124,
@@ -477,10 +500,10 @@ export const chapters = {
     page: 'listen',
     group: 'supplement',
     title: 'Listen',
-    subtitle: 'Three conversations',
-    headline: 'Three conversations,<span>one system.</span>',
+    subtitle: 'Four recordings',
+    headline: 'Four recordings,<span>one system.</span>',
     intro:
-      'Generated audio discussions of the guides: a seventeen-minute orientation first, then the stack on its own, then the fork in depth. Play one while you explore; each marker opens the matching view, and the maps carry short cues back into the recordings.',
+      'Generated recordings: a twenty-two-minute orientation that argues why Azure SPI exists, the same frame as a two-minute brief, then the stack on its own and the fork in depth. Play one while you explore; each marker opens the matching view, and the maps carry short cues back into the recordings.',
     premise: 'Keeps playing while you move around the site.',
     scope:
       'The narration is generated from the guides, not from the repositories. Where it rounds a number, mishears a command, or overstates a guarantee, the marker notes say what the source documentation actually claims.',

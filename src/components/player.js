@@ -185,6 +185,20 @@ export function createPlayer(element, dock) {
       for (const rate of byRole('rate')) rate.value = control.value;
     }
   });
+  // A video on a page (the start page's one-minute overview) and the audio
+  // dock never play at once: whichever starts pauses the other.
+  document.addEventListener(
+    'play',
+    (event) => {
+      if (event.target.tagName === 'VIDEO' && !element.paused) element.pause();
+    },
+    true,
+  );
+  element.addEventListener('play', () => {
+    for (const video of document.querySelectorAll('video'))
+      if (!video.paused) video.pause();
+  });
+
   for (const type of [
     'play',
     'pause',

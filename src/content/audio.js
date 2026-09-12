@@ -2,7 +2,8 @@
 // in docs/reference; `note` records where the narration differs from the
 // source documentation. Nothing here navigates on its own.
 import { transcript as stackTranscript } from './transcripts/stack.js';
-import { transcript as machineryTranscript } from './transcripts/machinery.js';
+import { transcript as orientationTranscript } from './transcripts/orientation.js';
+import { transcript as briefTranscript } from './transcripts/brief.js';
 import { transcript as branchesTranscript } from './transcripts/branches.js';
 
 const stackMarkers = [
@@ -164,137 +165,192 @@ const stackMarkers = [
   },
 ];
 
-const machineryMarkers = [
+const orientationMarkers = [
   {
     time: 0,
-    title: 'Your orientation',
-    copy: 'A short map of the territory before the details: the code, the system that synchronizes it, and the platform that runs it, drawn from the three guides.',
+    title: 'The overcrowded skyscraper',
+    copy: 'An open-source project pictured as a community garden, then as a building where every tenant shares the plumbing. The image the rest of the conversation argues against.',
     route: '#start',
     routeLabel: 'Start here',
   },
   {
-    time: 36,
-    title: 'An archive the size of a city',
-    copy: 'Decades of subsurface records, every aisle in a different language. OSDU is the industry agreeing on what a well is and which APIs find it.',
+    time: 92.7,
+    title: 'A document called Azure SPI, an introduction',
+    copy: 'OSDU is built to run on any cloud. The mission is the Azure half of it: what Microsoft took over, and what it had to build to carry that.',
     route: '#start',
-    routeLabel: 'What this site is for',
+    routeLabel: 'Start here',
   },
   {
-    time: 123,
-    title: 'SPI means three things',
-    copy: 'The interface is the seam in the community code. The stack is the Azure deployment system. The engineering system keeps the Azure code synchronized with upstream.',
-    route: '#start',
-    routeLabel: 'One word, three things',
-  },
-  {
-    time: 180,
-    title: 'The provider model',
-    copy: 'Shared business logic, such as the partition service deciding which tenant is asking, above swappable cloud plumbing. The Azure provider is real code, not configuration.',
+    time: 175.9,
+    title: 'The provider model and the seam',
+    copy: 'partition-core beside partition-azure, partition-aws, and partition-gc: one set of rules, several sets of plumbing, and a service provider interface between them.',
     route: '#spi-boundary',
     routeLabel: 'The SPI boundary',
   },
   {
-    time: 221,
-    title: 'Upstream deletes the vendor code',
-    copy: 'The normal fork problem is upstream changing what you depend on. Here upstream is deleting it, so stopping the sync means stopping being OSDU.',
+    time: 238.5,
+    title: 'Three costs of one shared repository',
+    copy: 'A shared dependency waits for the slowest provider’s SDK. Every community change pays for provider lanes it does not use. Two kinds of owner share one permission model.',
+    route: '#fork-shape?detail=upstream',
+    routeLabel: 'The upstream tree',
+  },
+  {
+    time: 313.1,
+    title: 'ADR 61: Venus, CIMPL, Mercury',
+    copy: 'The codebase splits into the Venus community line, proved on CIMPL, and the Mercury provider line, which moves to maintenance. Cloud-provider code leaves the community repositories.',
+    route: '#start',
+    routeLabel: 'Start here',
+    note: 'The narration frames the split as an eviction. The community record frames it as a decision the Forum took, with cloud-provider code moving to the providers’ own subprojects, and Microsoft contributed cimpl-stack, the tool CIMPL runs on.',
+  },
+  {
+    time: 384.3,
+    title: 'What Microsoft is left holding',
+    copy: 'The Azure directories no longer exist upstream. What Microsoft holds is what it maintains, and Azure Data Manager for Energy depends on that code.',
+    route: '#fork-shape?detail=provider-azure',
+    routeLabel: 'The fork-owned provider',
+    note: '“Proprietary” is the narration’s word. The service forks and both Microsoft projects are public repositories under the Apache 2.0 license. What changed is ownership and responsibility, not visibility.',
+  },
+  {
+    time: 424.3,
+    title: 'A relationship, not an archive',
+    copy: 'A fork that stops tracking upstream is a dead archive. A fork that takes upstream by hand pays a compounding cost. A snapshot fails; a relationship is needed.',
+    route: '#fork-day/sync',
+    routeLabel: 'The daily sync',
+  },
+  {
+    time: 453.1,
+    title: 'Three things called SPI',
+    copy: 'The interface is the seam in the code. The engineering system, osdu-spi, syncs and builds. The stack, osdu-spi-stack, is where the code is proved.',
+    route: '#start',
+    routeLabel: 'The three meanings',
+  },
+  {
+    time: 496.1,
+    title: 'Eight forks; ownership runs through the tree',
+    copy: 'One directory structure, two owners at the same commit: upstream-owned core and build configuration beside fork-owned provider and tests that synchronization never touches.',
     route: '#fork-shape',
     routeLabel: 'The shape of the fork',
   },
   {
-    time: 288,
-    title: 'Ownership runs through the tree',
-    copy: 'In one repository at one commit, Azure owns the provider directories and upstream owns the shared modules.',
-    route: '#fork-shape?detail=provider-azure',
-    routeLabel: 'The fork-owned provider',
-  },
-  {
-    time: 329,
-    title: 'The modify/delete conflict',
-    copy: 'A textual merge stops on files one side changed and the other deleted, and a tired engineer forcing it through restores what upstream meant to remove.',
+    time: 567.8,
+    title: 'Why daily, not monthly',
+    copy: 'A monthly sync buries the one interface change that broke the provider under hundreds of others. Daily arrival keeps each break small and findable.',
     route: '#fork-day/sync',
-    routeLabel: 'Why the sync is not a merge',
-    note: 'The narration says “-X theirs” fails here; the fork uses that strategy exactly once, for the one-time seed of the Azure provider at initialization, never for the daily sync.',
+    routeLabel: 'A day in the fork',
   },
   {
-    time: 381,
-    title: 'Generate the branch, do not merge',
-    copy: 'fork_upstream is a function of the upstream tip and a filter, written with Git plumbing as a new tree and a new commit. No merge algorithm runs, so the conflict cannot occur.',
-    route: '#fork-day/sync?detail=sync-pr',
-    routeLabel: 'The sync PR',
+    time: 612,
+    title: 'Generate; do not merge',
+    copy: 'A merge would faithfully carry upstream’s deletion of its Azure directory into the fork. A generated branch that never contained the provider has nothing to delete.',
+    route: '#fork-shape?detail=fork-upstream',
+    routeLabel: 'The generated branch',
+    note: 'The generated branch holds shared code and references to the Azure modules, not the Azure source; the provider joins it on the integration branch. Upstream’s removal of its Azure directories is the planned consequence of ADR 61, and the fork is built for it whether or not that deletion has landed.',
   },
   {
-    time: 453,
-    title: 'Three branches, three jobs',
-    copy: 'fork_upstream is generated and never edited. fork_integration is the workspace and is allowed to break. main is the protected result.',
-    route: '#fork-shape?detail=fork-integration',
-    routeLabel: 'The workspace branch',
+    time: 727.9,
+    title: 'The testing knowledge left with the code',
+    copy: 'The community pipelines knew how to run the Azure tests. CIMPL runs on RabbitMQ and MinIO, which cannot prove a provider written against Cosmos DB, Service Bus, and Entra ID.',
+    route: '#handshake?detail=descriptor',
+    routeLabel: 'What a suite needs',
   },
   {
-    time: 508,
-    title: 'Halt on the unknown',
-    copy: 'The filter classifies every top-level path. An unrecognized one stops the sync and asks a person, because guessing is convenient once and costly after.',
-    route: '#fork-shape?detail=filter',
-    routeLabel: 'The filter',
-  },
-  {
-    time: 558,
-    title: 'The stack: spi up',
-    copy: 'Proving the Azure provider needs the Azure services running. One command turns an empty subscription into an OSDU environment with seeded data.',
+    time: 770.9,
+    title: 'From an empty subscription to a running OSDU',
+    copy: 'One command turns a subscription into a running platform, most of the time spent on Azure building the cluster.',
     route: '#bring-up/start',
     routeLabel: 'Follow spi up',
-    note: '“Roughly 50 minutes” is a centralus observation, not a guarantee, and API readiness can follow the CLI exit.',
+    note: '“About fifty minutes” is an observation from earlier smoke runs, dominated by AKS provisioning, not a guarantee. API readiness can follow the CLI exit.',
   },
   {
-    time: 609,
-    title: 'The Azure-only bet, and not production',
-    copy: 'Managed Azure services instead of portable in-cluster substitutes, because the substitutes would prove nothing about the code under test. One shared identity, no disaster recovery: a test target.',
+    time: 797.9,
+    title: 'Why not emulators',
+    copy: 'Testing the Azure provider against substitutes bypasses the very code the environment exists to prove. The stack is Azure-only by design, not by preference.',
     route: '#running-stack/developer?detail=cosmos',
-    routeLabel: 'Per-partition Azure resources',
+    routeLabel: 'Real Azure resources',
   },
   {
-    time: 694,
-    title: 'One shared environment, eight forks',
-    copy: 'A standing environment that every service fork borrows a slot in, proves its image, and gives back, instead of a 50-minute bring-up per pull request.',
+    time: 859.6,
+    title: 'What the stack is not',
+    copy: 'Disposable, no backup or disaster recovery, one shared Azure identity across the OSDU services. Not production, and not Azure Data Manager for Energy.',
+    route: '#running-stack/developer?detail=identity',
+    routeLabel: 'The shared identity',
+  },
+  {
+    time: 912.8,
+    title: 'The handshake: borrow, prove, restore',
+    copy: 'A fork borrows a service’s slot in a shared stack, runs its candidate against live Azure, and puts the environment back.',
     route: '#handshake',
     routeLabel: 'The handshake',
-    note: 'The narration gives two different service counts. The image lock names every service the stack deploys; a run pins exactly one of them.',
+    note: 'Restoration is conditional: the run writes the canonical image back only while it still owns the pin, and a lost runner can leave a pin for a person to clear. “Regardless of pass, fail, or timeout” describes the intent, not a guarantee.',
   },
   {
-    time: 751,
-    title: 'Flux and the image lock',
-    copy: 'A run writes one ConfigMap, osdu-image-lock. Flux notices and rolls out the new image for that service only; the others are untouched.',
-    route: '#handshake?detail=delivery',
-    routeLabel: 'The seam',
+    time: 965.7,
+    title: 'No environment values in the repository',
+    copy: 'The environment publishes facts about itself, the fork declares what its tests need, and the two are joined at the moment of the run. A copied value is stale by construction.',
+    route: '#handshake?detail=facts',
+    routeLabel: 'What the environment publishes',
   },
   {
-    time: 791,
-    title: 'Borrow, prove, restore',
-    copy: 'Pin the candidate digest, run the suites against the live APIs, put the canonical image back.',
-    route: '#handshake?detail=restore',
-    routeLabel: 'Restore on the map',
-    note: 'Restore always runs, but it writes the canonical image back only while this run still owns the pin; a newer run’s pin is left alone.',
+    time: 1014.5,
+    title: 'Declared state, observed state',
+    copy: 'A command finishing and an environment being ready are different events with different clocks. A successful exit is never a readiness check.',
+    route: '#bring-up/reconcile',
+    routeLabel: 'Assemble OSDU',
+    note: '“Five minutes” and “another ten” are illustrations. The documentation records component observations separately and treats CLI exit and API readiness as different events.',
   },
   {
-    time: 842,
-    title: 'No stored credentials',
-    copy: 'Eight repositories deploy into one cluster with no secret to steal: OIDC, a federated credential per fork, and Roles that can patch one ConfigMap and read pods.',
-    route: '#handshake?detail=trust',
-    routeLabel: 'The deploy identity',
-    note: 'The federated credential’s subject names the fork and its spi-stack environment. That environment protects identity and admits every branch; no reviewer approves the job, and write access to the fork is the boundary. The Roles also read deployments, pods, and logs.',
+    time: 1074.9,
+    title: 'Evidence has a scope',
+    copy: 'A skipped lane is also green. A passing summary may have answered a narrower question than the one asked. Ask which question a check answered.',
+    route: '#handshake?detail=gate',
+    routeLabel: 'The gate',
   },
   {
-    time: 928,
-    title: 'Strict boundaries, not more parts',
-    copy: 'Generated branches instead of merges, a shared environment borrowed through one object, and strictness up front so there is no chaos later.',
+    time: 1114.4,
+    title: 'Halt on the unknown',
+    copy: 'A default that is wrong looks exactly like a default that is right. A fallback that cannot be distinguished from success is a blindfold.',
+    route: '#fork-shape?detail=filter',
+    routeLabel: 'The filter that halts',
+  },
+  {
+    time: 1177.6,
+    title: 'A day in the fork, and who is on the hook',
+    copy: 'Integration conflicts arrive daily, a change is proved on a stack of your own, and Microsoft, not the community, owns whether the Azure implementation survives.',
     route: '#fork-day',
     routeLabel: 'A day in the fork',
   },
   {
-    time: 973,
-    title: 'Loud failures over quiet assumptions',
-    copy: 'The filter refuses to guess. The archive got messy because systems quietly assumed what the data meant. Ask where your own code guesses to keep moving.',
+    time: 1245.6,
+    title: 'The skyscraper next door',
+    copy: 'The closing thought: branching as structural defense rather than collaboration, and engineers as ambassadors between systems.',
     route: '#not-true',
     routeLabel: 'Things that are not true',
+  },
+];
+
+const briefMarkers = [
+  {
+    time: 0,
+    title: 'The great codebase split',
+    copy: 'The community keeps the shared core; Microsoft owns the Azure-specific code. The chassis and the engine that drops into it.',
+    route: '#start',
+    routeLabel: 'Start here',
+    note: 'The narration expands SPI as “software provider interfaces”. It is the service provider interface: the code boundary between shared logic and a provider.',
+  },
+  {
+    time: 46.8,
+    title: 'A daily sync, and branches that exclude the Azure code',
+    copy: 'The forks pull shared code every day into generated branches that never contain the Azure provider, so nobody rescues deleted files by hand.',
+    route: '#fork-shape?detail=fork-upstream',
+    routeLabel: 'The generated branch',
+  },
+  {
+    time: 74.5,
+    title: 'The proving ground',
+    copy: 'A successful build does not mean the code works on Azure. A disposable real environment runs borrow, prove, restore, because substitutes bypass the code under test.',
+    route: '#handshake',
+    routeLabel: 'The handshake',
+    note: 'Restore is conditional on the run still owning its pin; a lost runner can leave work for a person.',
   },
 ];
 
@@ -505,18 +561,34 @@ function withEnds(markers, duration) {
 // depth.
 export const episodes = [
   {
-    id: 'machinery',
-    title: 'The Azure SPI OSDU machinery',
+    id: 'orientation',
+    title: 'Microsoft’s architectural divorce from OSDU',
     short: 'The orientation',
-    book: 'The frame · seventeen minutes',
-    file: 'audio/the-azure-spi-osdu-machinery.m4a',
-    duration: 1016,
+    book: 'The frame · twenty-two minutes',
+    file: 'audio/microsofts-architectural-divorce-from-osdu.m4a',
+    duration: 1323,
     notebook: null,
-    origin: 'Generated with NotebookLM from the three guides',
+    origin:
+      'Generated with NotebookLM from the introduction source, Azure SPI: An Introduction',
     summary:
-      'The data problem OSDU answers, the three things SPI means, why upstream deleting the Azure code inverts the fork problem, and how one shared stack is borrowed safely. The one to hear first.',
-    markers: withEnds(machineryMarkers, 1016),
-    transcript: machineryTranscript,
+      'Why the Azure implementation is now Microsoft’s to own, what the service forks and the stack are for, and the six ideas that keep coming back. The argument behind the frame the six views assume.',
+    markers: withEnds(orientationMarkers, 1323),
+    transcript: orientationTranscript,
+  },
+  {
+    id: 'brief',
+    title: 'Rebuilding OSDU for real Azure infrastructure',
+    short: 'The brief',
+    book: 'The frame · two minutes',
+    file: 'audio/rebuilding-osdu-for-real-azure-infrastructure.m4a',
+    duration: 112,
+    notebook: null,
+    origin:
+      'Generated with NotebookLM as an audio brief from the introduction source, Azure SPI: An Introduction',
+    summary:
+      'The split, the daily sync, and the proving ground, in under two minutes. The shortest way to hear the frame.',
+    markers: withEnds(briefMarkers, 112),
+    transcript: briefTranscript,
   },
   {
     id: 'stack',
@@ -548,6 +620,26 @@ export const episodes = [
     transcript: branchesTranscript,
   },
 ];
+
+// The one-minute video overview shown on the start page. It is not an episode:
+// it has no markers, plays in its own element, and pauses the audio dock.
+export const frameVideo = {
+  title: 'How Microsoft engineers Azure OSDU',
+  file: 'video/how-microsoft-engineers-azure-osdu.mp4',
+  poster: 'video/how-microsoft-engineers-azure-osdu.jpg',
+  captions: 'video/how-microsoft-engineers-azure-osdu.vtt',
+  duration: 71,
+  width: 720,
+  height: 1280,
+  origin:
+    'Generated with NotebookLM as a video overview from the introduction source, Azure SPI: An Introduction',
+  summary:
+    'The split, the service forks, the candidate image, and the borrowed slot in a live stack, drawn in one minute.',
+  notes: [
+    'The narration calls the Azure logic proprietary. The service forks are public repositories under the Apache 2.0 license; what changed is ownership, not visibility.',
+    'Restore is conditional: the run puts the environment back only while it still owns its pin, and a lost runner can leave work for a person.',
+  ],
+};
 
 export const defaultEpisode = episodes[0];
 export const audio = defaultEpisode;

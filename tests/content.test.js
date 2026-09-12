@@ -8,7 +8,7 @@ import { creationMoments } from '../src/content/creation-moments.js';
 import { sources } from '../src/content/sources.js';
 import { myths } from '../src/content/myths.js';
 import { suppliedPosters, nativeGuides } from '../src/content/posters.js';
-import { episodes } from '../src/content/audio.js';
+import { episodes, frameVideo } from '../src/content/audio.js';
 import { diagramRenderers } from '../src/components/diagrams.js';
 import { architectureMap } from '../src/components/architecture.js';
 import { infographics } from '../src/components/infographics.js';
@@ -253,18 +253,33 @@ test('audio markers are ordered, inside the recording, and point at real views',
       );
     }
   }
-  assert.equal(episodes[0].id, 'machinery', 'the orientation frames the rest');
+  assert.equal(
+    episodes[0].id,
+    'orientation',
+    'the orientation frames the rest',
+  );
   const home = pageRenderers.home(parseRoute('#start'));
   assert.ok(
-    home.includes('data-listen-stop="180"'),
-    'home carries the frame cue',
+    home.includes('data-listen-episode="brief"') &&
+      home.includes('data-listen-stop="112"'),
+    'home carries the two-minute brief as its cue',
   );
+  assert.ok(home.includes('data-frame-video'), 'home carries the video');
+  for (const file of [
+    frameVideo.file,
+    frameVideo.poster,
+    frameVideo.captions,
+  ]) {
+    const publicFile = new URL(`../public/${file}`, import.meta.url);
+    assert.ok(existsSync(publicFile), `missing ${fileURLToPath(publicFile)}`);
+  }
+  assert.ok(frameVideo.duration > 0 && frameVideo.notes.length);
   assert.ok(home.includes('data-listen-now'), 'home cue has a live note line');
   const listen = pageRenderers.listen(parseRoute('#listen?episode=branches'));
   assert.ok(listen.includes('3D-prints'));
   assert.equal(
     listen.split('data-marker-start').length - 1,
-    episodes[2].markers.length,
+    episodes.find((episode) => episode.id === 'branches').markers.length,
   );
 });
 
