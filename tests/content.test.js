@@ -232,7 +232,10 @@ test('audio markers are ordered, inside the recording, and point at real views',
       verifyRoute(marker.route, `${audio.id}: ${marker.title}`);
       previous = marker.time;
     }
-    assert.ok(audio.transcript.length > 50, `${audio.id}: transcript`);
+    assert.ok(
+      audio.transcript.length > audio.duration / 60,
+      `${audio.id}: transcript`,
+    );
     let last = -1;
     for (const segment of audio.transcript) {
       assert.ok(segment.start >= last && segment.start < audio.duration);
@@ -250,10 +253,10 @@ test('audio markers are ordered, inside the recording, and point at real views',
       );
     }
   }
-  assert.equal(episodes[0].id, 'interface', 'the round trip frames the rest');
+  assert.equal(episodes[0].id, 'machinery', 'the orientation frames the rest');
   const home = pageRenderers.home(parseRoute('#start'));
   assert.ok(
-    home.includes('data-listen-stop="427"'),
+    home.includes('data-listen-stop="180"'),
     'home carries the frame cue',
   );
   assert.ok(home.includes('data-listen-now'), 'home cue has a live note line');

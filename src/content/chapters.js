@@ -11,10 +11,10 @@ export const chapters = {
     premise: 'For engineers who know OSDU and are new to SPI.',
     listen: [
       {
-        episode: 'interface',
+        episode: 'machinery',
         time: 0,
-        end: 427,
-        label: 'Why a fork, why a stack, what SPI means',
+        end: 180,
+        label: 'The problem, and the three meanings of SPI',
       },
     ],
     sources: ['architecture', 'engineering', 'designs', 'decisions'],
@@ -34,7 +34,7 @@ export const chapters = {
     diagram: 'overview',
     listen: [
       { episode: 'stack', time: 764, label: 'Four owners, four boundaries' },
-      { episode: 'interface', time: 1479, label: 'The Azure-only bet' },
+      { episode: 'machinery', time: 609, label: 'The Azure-only bet' },
     ],
     guides: ['familiar', 'inside-the-cluster', 'profiles'],
     mistakes: {
@@ -101,7 +101,7 @@ export const chapters = {
         time: 915,
         label: 'The CLI leaves; Flux keeps working',
       },
-      { episode: 'interface', time: 2392, label: 'Bootstrap as data' },
+      { episode: 'stack', time: 2661, label: 'Making an empty OSDU useful' },
     ],
     guides: {
       provision: ['owners'],
@@ -179,7 +179,7 @@ export const chapters = {
     selected: 'azureimpl',
     diagram: 'spi',
     listen: [
-      { episode: 'interface', time: 239, label: 'The provider model' },
+      { episode: 'machinery', time: 180, label: 'The provider model' },
       {
         episode: 'branches',
         time: 331,
@@ -247,16 +247,20 @@ export const chapters = {
     diagram: 'fork',
     listen: [
       {
-        episode: 'interface',
-        time: 427,
-        label: 'Upstream will delete the Azure provider',
+        episode: 'machinery',
+        time: 221,
+        label: 'Upstream deletes the vendor code',
       },
       {
         episode: 'branches',
         time: 1281,
         label: 'From sculpting to 3D printing',
       },
-      { episode: 'interface', time: 1331, label: 'The one-time seed' },
+      {
+        episode: 'machinery',
+        time: 288,
+        label: 'Ownership runs through the tree',
+      },
     ],
     guides: ['contribution-chain'],
     mistakes: ['fork-is-a-snapshot', 'descriptor-comes-from-template'],
@@ -399,7 +403,7 @@ export const chapters = {
     selected: 'delivery',
     diagram: 'seam',
     listen: [
-      { episode: 'interface', time: 2926, label: 'Borrow, prove, restore' },
+      { episode: 'machinery', time: 791, label: 'Borrow, prove, restore' },
       {
         episode: 'branches',
         time: 3124,
@@ -476,7 +480,7 @@ export const chapters = {
     subtitle: 'Three conversations',
     headline: 'Three conversations,<span>one system.</span>',
     intro:
-      'Generated audio discussions of the two guides: the whole round trip first, then the stack on its own, then the fork in depth. Play one while you explore; each marker opens the matching view, and the maps carry short cues back into the recordings.',
+      'Generated audio discussions of the guides: a seventeen-minute orientation first, then the stack on its own, then the fork in depth. Play one while you explore; each marker opens the matching view, and the maps carry short cues back into the recordings.',
     premise: 'Keeps playing while you move around the site.',
     scope:
       'The narration is generated from the guides, not from the repositories. Where it rounds a number, mishears a command, or overstates a guarantee, the marker notes say what the source documentation actually claims.',
