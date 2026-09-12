@@ -983,20 +983,54 @@
   line-height: 1.55;
   color: var(--ink);
 }
-.tree-map:has(.what-if-switch:checked) .what-if-result {
-  display: block;
+.tree-map[data-what-if='true'] .what-if-result,
+.tree-map[data-what-if='true'] .what-if-strip {
+  display: grid;
 }
-.tree-map:has(.what-if-switch:checked) .has-after > span {
-  display: none;
-}
-.tree-map:has(.what-if-switch:checked) .has-after::after {
-  content: attr(data-after);
-}
-.tree-map:has(.what-if-switch:checked) .has-after {
+.tree-map[data-what-if='true'] .has-after {
   color: var(--muted);
   border: 1px dashed var(--line);
   background: repeating-linear-gradient(135deg, #fff 0 6px, #f1f4f7 6px 12px);
   font-size: 12px;
+}
+.what-if-strip {
+  display: none;
+  gap: 6px;
+  padding: 8px 10px;
+  border-radius: 8px;
+  border: 1px solid var(--line);
+  background: #fff;
+}
+.what-if-row {
+  display: grid;
+  grid-template-columns: minmax(0, 1.6fr) repeat(4, minmax(0, 1fr));
+  gap: 6px;
+  align-items: center;
+  font-size: 12.5px;
+}
+.what-if-row code {
+  font-size: 11.5px;
+  overflow-wrap: anywhere;
+}
+.what-if-cell {
+  display: grid;
+  gap: 1px;
+  text-align: center;
+}
+.what-if-cell::before {
+  content: attr(data-branch);
+  font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+  font-size: 9.5px;
+  color: var(--muted);
+  overflow-wrap: anywhere;
+}
+.what-if-cell s {
+  color: var(--muted);
+}
+.what-if-cell b.cell-absent {
+  background: none;
+  border: 0;
+  font-size: 11px;
 }
 
 /* Learn view 05 additions: the stack lane and the scheduled work beside the day */
@@ -1101,12 +1135,29 @@
 .seam-run .node.artifact {
   margin-top: 8px;
 }
+.detail-state {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 6px;
+  margin: 8px 0 2px;
+}
+.detail-state .state-obj b {
+  font-size: 18px;
+}
 
 @media (max-width: 760px) {
-  /* Each row becomes a card: the path, then four labeled cells. */
-  .tree-head,
+  /* Each row becomes a card: the path, then four labeled cells. The branch
+     nodes stay reachable as a row of buttons above the cards. */
   .tree-bands {
     display: none;
+  }
+  .tree-head {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 4px;
+    margin-bottom: 8px;
+  }
+  .tree-head .tree-corner {
+    grid-column: 1 / -1;
   }
   .tree-row {
     grid-template-columns: repeat(4, minmax(0, 1fr));
@@ -1133,8 +1184,14 @@
   .cell-doomed {
     font-size: 10px;
   }
-  .tree-map:has(.what-if-switch:checked) .has-after {
+  .tree-map[data-what-if='true'] .has-after {
     font-size: 10px;
+  }
+  .what-if-row {
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+  }
+  .what-if-row code {
+    grid-column: 1 / -1;
   }
   .tree-around-nodes,
   .seam-map,

@@ -240,7 +240,7 @@ test('audio markers are ordered, inside the recording, and point at real views',
       last = segment.start;
     }
   }
-  for (const [id, chapter] of mapChapters) {
+  for (const [id, chapter] of Object.entries(chapters)) {
     for (const cue of chapter.listen || []) {
       const episode = episodes.find((entry) => entry.id === cue.episode);
       assert.ok(episode, `${id}: unknown episode ${cue.episode}`);
@@ -250,6 +250,13 @@ test('audio markers are ordered, inside the recording, and point at real views',
       );
     }
   }
+  assert.equal(episodes[0].id, 'interface', 'the round trip frames the rest');
+  const home = pageRenderers.home(parseRoute('#start'));
+  assert.ok(
+    home.includes('data-listen-stop="427"'),
+    'home carries the frame cue',
+  );
+  assert.ok(home.includes('data-listen-now'), 'home cue has a live note line');
   const listen = pageRenderers.listen(parseRoute('#listen?episode=branches'));
   assert.ok(listen.includes('3D-prints'));
   assert.equal(

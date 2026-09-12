@@ -91,6 +91,7 @@
                   Read explanation ↑
                 </button>
               </div>
+              <div id="detail-state" class="detail-state" hidden></div>
               <div
                 id="detail-body"
                 class="detail-body"
@@ -141,7 +142,7 @@
         <span class="play-glyph" aria-hidden="true">▶</span>
       </button>
       <div class="dock-meta">
-        <span class="dock-kicker">Listening</span>
+        <span class="dock-kicker" data-player="kicker">Listening</span>
         <b data-player="now"></b>
         <span
           ><span data-player="current">0:00</span> /
@@ -149,12 +150,16 @@
           <a href="#listen" data-player="now-link">Open the player →</a></span
         >
       </div>
+      <details class="dock-note" data-player="note-box" hidden>
+        <summary>Source check</summary>
+        <p data-player="note"></p>
+      </details>
       <input
         type="range"
         class="dock-seek"
         data-player="seek"
         min="0"
-        max="3516"
+        max="3378"
         value="0"
         step="1"
         aria-label="Seek"

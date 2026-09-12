@@ -6,18 +6,20 @@ Two supplied guides are the narrative sources: `osdu-spi-stack-guide.pdf` for th
 
 All three are NotebookLM discussions. They are served from `public/audio/` as mono AAC at about 57 kb/s, played by the Listen page (`#listen?episode=<id>`) and the persistent dock, and cued from the learn views by short `listen` entries in `src/content/chapters.js`. Markers, target views, and source-check notes live in `src/content/audio.js`; transcript paragraphs in `src/content/transcripts/` are generated from the VTT files in `docs/reference/` (mlx-whisper, large-v3-turbo).
 
-| Episode id  | Title                                     | Source                  | Length | Markers |
-| ----------- | ----------------------------------------- | ----------------------- | ------ | ------- |
-| `stack`     | Engineering the OSDU SPI Stack on Azure   | SPI Stack guide         | 58:36  | 22      |
-| `interface` | The Azure OSDU Service Provider Interface | complete osdu-spi guide | 56:18  | 26      |
-| `branches`  | Why Azure 3D-prints Git branches          | complete osdu-spi guide | 69:00  | 27      |
+| Order | Episode id  | Title                                     | Source                  | Length | Markers |
+| ----- | ----------- | ----------------------------------------- | ----------------------- | ------ | ------- |
+| 1     | `interface` | The Azure OSDU Service Provider Interface | complete osdu-spi guide | 56:18  | 26      |
+| 2     | `stack`     | Engineering the OSDU SPI Stack on Azure   | SPI Stack guide         | 58:36  | 22      |
+| 3     | `branches`  | Why Azure 3D-prints Git branches          | complete osdu-spi guide | 69:00  | 27      |
+
+The order is the site’s, not the recording order. The round trip surveys all six views and sets the frame the others assume, so it is the default episode and the first tab; the start page cues its first seven minutes (through “SPI means three things”). The stack episode and the fork episode are the deep dives their books cue into. The three were kept deliberately: dropping the round trip would leave nothing that frames, and dropping the fork episode would leave view 05 cueing into survey-level sections.
 
 Rules for markers:
 
 - Marker times come from the transcript, not from the guide’s page order.
 - Every marker links a site view. It never navigates automatically; the learner chooses.
 - Where the narration rounds a number, mishears a command, or overstates a guarantee, the marker carries a `note` that says what the source documentation claims, with the same wording standard as the map explanations.
-- A learn view’s `listen` cues start on a marker of the episode they name and play in place; the dock appears and playback continues while the reader explores.
+- A learn view’s `listen` cues start on a marker of the episode they name and play in place; the dock appears and playback stops at the end of the cued section (a cue may name its own `end`). While a cue plays, the line under the chips and a disclosure in the dock show the current marker’s source check, so a correction is read where the claim is heard.
 
 ### `stack` · Engineering the OSDU SPI Stack on Azure
 

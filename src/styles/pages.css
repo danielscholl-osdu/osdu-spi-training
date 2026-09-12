@@ -1071,6 +1071,27 @@
   grid-area: seek;
   margin: 0;
 }
+.dock-note {
+  grid-column: 1 / -1;
+  font-size: 12.5px;
+  line-height: 1.5;
+  color: #dbe7f0;
+}
+.dock-note summary {
+  display: block;
+  list-style: none;
+  cursor: pointer;
+  color: #ffd98a;
+  font-weight: 600;
+}
+.dock-note summary::before {
+  content: '⚑ ';
+}
+.dock-note p {
+  margin: 4px 0 0;
+  max-height: 6em;
+  overflow: auto;
+}
 .dock-dismiss {
   grid-area: dismiss;
   border: 0;
@@ -2146,14 +2167,43 @@ body:has(.audio-dock:not([hidden])) main {
   color: var(--ink);
 }
 .listen-chips {
+  display: grid;
+  gap: 8px;
+  margin: 14px 0 0;
+}
+.listen-chip-row {
   display: flex;
   flex-wrap: wrap;
   align-items: center;
   gap: 8px 10px;
-  margin: 14px 0 0;
 }
 .listen-chips .guide-kicker {
-  margin: 0 4px 0 0;
+  margin: 0;
+}
+.listen-lead {
+  margin: 0;
+  font-size: 14px;
+  line-height: 1.55;
+  color: var(--muted);
+}
+.listen-now {
+  margin: 0;
+  padding: 8px 12px;
+  border-left: 3px solid var(--navy);
+  background: #eef4f8;
+  font-size: 13.5px;
+  line-height: 1.55;
+}
+.listen-check {
+  display: block;
+  margin-top: 2px;
+}
+.listen-check b {
+  color: #8a5a00;
+}
+.chip-check {
+  font-style: normal;
+  color: #8a5a00;
 }
 .listen-chip {
   display: grid;

@@ -419,7 +419,7 @@ export const componentDetails = {
   'descriptor-file': {
     label: 'The descriptor',
     title: 'The one engineering file the template does not write.',
-    body: '.spi/service.yaml declares the acceptance suites the stack should run against this service and what each needs. It is excluded from template sync by name: the service repository writes it, and changes to it are reviewed with the code. Two authors, one column: the workflows above arrive from osdu-spi; this file is authored here. osdu-spi-partition has not written its descriptor yet, so Deploy Gate skips for it today with the reason no .spi/service.yaml declares the suites.',
+    body: '.spi/service.yaml declares the acceptance suites the stack should run against this service and what each needs. It is excluded from template sync by name: the service repository writes it, and changes to it are reviewed with the code. Two authors, one column: the workflows above arrive from osdu-spi; this file is authored here. osdu-spi-partition has not written its descriptor yet; once it adopts the newer validation workflow, Deploy Gate will skip until the file exists, with the reason no .spi/service.yaml declares the suites.',
     artifact: {
       label: 'Service-owned, never synced',
       code: '.spi/service.yaml    schemaVersion: 3, written in this repository\nsync-config.json     "exclusions": [".spi", "CODEOWNERS", …]',
@@ -531,10 +531,10 @@ export const componentDetails = {
     label: 'The version PR',
     title:
       'Release Please proposes a version; nothing ships until a person merges it.',
-    body: 'Every push to main makes Release Please read the conventional commits since the last release, choose the bump from them, and open or update one PR with the new version and changelog. The fix: prefix on the cache fallback means a patch; the meta commit on a sync says how big the upstream part is. This PR is separate from the integration PR and can wait as long as the team likes; the candidate digests already exist and dev1 has already been borrowed for them.',
+    body: 'Every push to main makes Release Please read the conventional commits since the last release, choose the bump from them, and open or update one PR with the new version and changelog. A fix: commit means a patch, a feat: commit a minor bump; the meta commit on a sync says how big the upstream part is. The cache fallback itself was titled “[Azure] Fixes for High API Error Count”, so the bump below is illustrative. This PR is separate from the integration PR and can wait as long as the team likes; the candidate digests already exist and dev1 has already been borrowed for them.',
     artifact: {
       label: 'What decides the bump',
-      code: 'fix:   → patch   (the cache fallback)\nfeat:  → minor\nfeat!: → major\nchore:, docs: → no bump',
+      code: 'fix:   → patch   (illustrative)\nfeat:  → minor\nfeat!: → major\nchore:, docs: → no bump',
     },
     source: 'release',
   },
@@ -562,7 +562,7 @@ export const componentDetails = {
   'dev1-slot': {
     label: 'A slot in dev1',
     title: 'The stack is borrowed for the candidate, not for the release.',
-    body: 'After the push, Deploy Gate decides without credentials whether this run may borrow the environment: only push and pull_request events, only same-repository PRs, not Dependabot, not fork_upstream, and only when the five onboarding values, the descriptor, and a pushed image exist. If it may, the run pins the candidate digest into dev1’s image lock, checks the pod runs it, runs the declared suites, and restores the canonical image. View 06 follows that run step by step.',
+    body: 'After the push, Deploy Gate decides without credentials whether this run may borrow the environment: only push and pull_request events, only same-repository PRs, not Dependabot, not fork_upstream, and only when the five onboarding values, the descriptor, and a pushed image exist. If it may, the run pins the candidate digest into dev1’s image lock, checks the pod runs it, runs the declared suites, and restores the canonical image. View 06 follows that run step by step. The lane is the newer template’s; the reference partition fork has not adopted it or written its descriptor yet, so from here the example is illustrative.',
     artifact: {
       label: 'Who may borrow',
       code: 'push | pull_request (same repository)\nnot dependabot[bot], not fork_upstream\nonboarded + .spi/service.yaml + image pushed',
@@ -646,7 +646,7 @@ export const componentDetails = {
   descriptor: {
     label: 'The descriptor',
     title: 'The fork declares what its suites need; it never says where.',
-    body: '.spi/service.yaml names each suite, the image that runs it, its timeout, and the bindings it wants: a gateway URL, a partition, a token. The resolver in the run binds those from environment facts and minted tokens. The service repository owns this file; template sync excludes it. osdu-spi-partition has not written one yet, so for that fork the gate skips today. The example below is the shape the runbook gives.',
+    body: '.spi/service.yaml names each suite, the image that runs it, its timeout, and the bindings it wants: a gateway URL, a partition, a token. The resolver in the run binds those from environment facts and minted tokens. The service repository owns this file; template sync excludes it. osdu-spi-partition has not written one yet, and its checkout does not carry the gate either, so the run shown here is illustrative for that fork. The example below is the shape the runbook gives.',
     artifact: {
       label: 'One suite, declared',
       code: 'tests:\n  acceptance:\n    path: partition-acceptance-test\n    timeoutMinutes: 15\n    bindings:\n      HOST: { source: gateway }\n      DATA_PARTITION_ID: { source: partition }\n      PRIVILEGED_USER_TOKEN: { source: token }',

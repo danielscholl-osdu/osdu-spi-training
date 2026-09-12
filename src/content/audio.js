@@ -548,7 +548,24 @@ function withEnds(markers, duration) {
   }));
 }
 
+// Ordered as the site frames them, not as they were recorded: the round trip
+// first, because it sets the frame the views assume; then the stack alone;
+// then the fork in depth.
 export const episodes = [
+  {
+    id: 'interface',
+    title: 'The Azure OSDU Service Provider Interface',
+    short: 'The whole round trip',
+    book: 'The frame · all six views',
+    file: 'audio/the-azure-osdu-service-provider-interface.m4a',
+    duration: 3378,
+    notebook: null,
+    origin: 'Generated with NotebookLM from the complete osdu-spi guide',
+    summary:
+      'The bridge to an island that will demolish its side. Why the fork exists, what SPI means, the stack around it, and the handshake, told as one onboarding story. The one to hear first.',
+    markers: withEnds(interfaceMarkers, 3378),
+    transcript: interfaceTranscript,
+  },
   {
     id: 'stack',
     title: 'Engineering the OSDU SPI Stack on Azure',
@@ -563,20 +580,6 @@ export const episodes = [
       'From the provider problem through identity, GitOps, and the shared environment to a full bring-up. The one to start with if the stack is your job.',
     markers: withEnds(stackMarkers, 3516),
     transcript: stackTranscript,
-  },
-  {
-    id: 'interface',
-    title: 'The Azure OSDU Service Provider Interface',
-    short: 'The whole round trip',
-    book: 'All six views, in order',
-    file: 'audio/the-azure-osdu-service-provider-interface.m4a',
-    duration: 3378,
-    notebook: null,
-    origin: 'Generated with NotebookLM from the complete osdu-spi guide',
-    summary:
-      'The bridge to an island that will demolish its side. The fork, its branches, the stack around it, and the handshake, told as one onboarding story.',
-    markers: withEnds(interfaceMarkers, 3378),
-    transcript: interfaceTranscript,
   },
   {
     id: 'branches',

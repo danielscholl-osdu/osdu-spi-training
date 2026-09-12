@@ -26,6 +26,20 @@ This iteration added the engineering system to the site as three learn views, th
 
 `npm run check` passes: formatting, twelve content-integrity tests, and the production build. The tests now cover three episodes, every listen cue starting on a marker, and retired routes resolving to a named component. Playwright drove the built site to confirm the handshake state panel follows the selection, the what-if toggle empties only the upstream column, a listen chip switches episodes and shows the dock, the Listen page shows the episode being played, the retired `repo` link lands on `main` in 04, and at 390 pixels the moment buttons fit and the page does not scroll sideways. No console errors.
 
+## Follow-up · action, result, and explanation together
+
+The [follow-up review](fork-feature-followup-2026-09-12.md) found five things after the corrections above. All five are addressed on the same branch.
+
+- **The changed state is visible where the learner acts.** The lock and pod objects for the selected step are repeated at the top of the explanation, so on a phone the sheet that opens over the Restore control shows A restored and the pod returning, and on a wide screen the page nudges so the sticky explanation’s top stays in view when a control near the bottom of a tall map is selected. The what-if switch in 04 has a compact before-and-after strip for the two affected rows directly under it; the full table still changes.
+- **Source checks travel with the audio.** A cue now plays its section and stops at the end of it, with the dock saying so. While it plays, a line under the chips names the current marker and shows its source check, and the dock carries the same note in a disclosure. Chips say up front how many source checks their section has. The Restore cue on 06 therefore shows the GHCR, once-per-suite, and conditional-restore corrections without leaving the map.
+- **The real fix and the illustrative run are separated once, at the handoff.** The fork-day example note and the dev1 slot explanation say the cache fix and its unit tests are real and that the acceptance run uses the newer template, which the reference partition fork has not adopted or written a descriptor for. View 06 repeats that in one sentence. “Its gate skips today” is gone; the descriptor entries now say the gate will skip once the fork adopts the workflow. The version PR no longer attributes a `fix:` prefix to commit `fc2dfbf`.
+- **Timestamp-only Listen links seek.** A change of `t` on the same episode seeks even though the page does not re-render; a bare `#listen` leaves the position alone. Verified across two links, Back, and Forward.
+- **Accessible names follow the cells.** The what-if switch swaps each affected cell’s text and `aria-label` together, and every cell’s name starts with its branch, since the phone layout has no column headings. The branch nodes are no longer hidden on phones; they sit as a row of buttons above the cards.
+
+The episodes were also reordered: the round trip first as the frame, with a seven-minute cue on the start page, then the stack, then the fork. See [audio-source-notes.md](audio-source-notes.md) for the reasoning.
+
+Playwright re-ran at 1440 and 390 pixels: the repeated state is inside the viewport and uncovered after selecting Restore; the before-and-after strip is in view after flipping the switch and the two cells read “Upstream tip: absent, gone”; the 06 cue plays the round trip at 48:46 on `#handshake`, shows the source check beside the chip and in the dock, and pauses at the section end with the marker still current; timestamp links seek to 2926, back to 239, and forward again; the start-page cue plays the round trip from 0:00. No console errors.
+
 ## Not done, on purpose
 
 - No recorded narration segments. The cues reuse the generated episodes; a short narrated segment per moment would need a voice the team chooses.

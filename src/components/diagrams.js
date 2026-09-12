@@ -133,9 +133,35 @@ const cellClass = (cell) =>
           ? 'doomed'
           : 'kept';
 
+const cellName = (cell) => cellNames[cell] || cell.replace(/^— /, 'absent, ');
+
+// Every cell names its branch, since the phone layout has no column headings
+// beside the cells. A what-if pair carries both readings as data attributes.
 function treeCell(cell, column) {
   const [now, after] = Array.isArray(cell) ? cell : [cell, null];
-  return `<span class="tree-cell cell-${cellClass(now)} ${after ? 'has-after' : ''}" role="cell" data-branch="${column[1]}" ${after ? `data-after="${after}"` : ''} aria-label="${cellNames[now] || now}"><span>${now}</span></span>`;
+  const pair = after
+    ? ` data-now="${now}" data-after="${after}" data-now-label="${column[1]}: ${cellName(now)}" data-after-label="${column[1]}: ${cellName(after)}"`
+    : '';
+  return `<span class="tree-cell cell-${cellClass(now)} ${after ? 'has-after' : ''}" role="cell" data-branch="${column[1]}"${pair} aria-label="${column[1]}: ${cellName(now)}"><span>${now}</span></span>`;
+}
+
+// The two rows the what-if changes, repeated beside the switch so the
+// comparison is visible where the reader flips it.
+function whatIfStrip() {
+  const affected = treeRows
+    .flatMap((group) => group.rows)
+    .filter(([, , , cells]) => cells.some(Array.isArray));
+  return `<div class="what-if-strip" aria-label="Before and after, for the affected rows">${affected
+    .map(
+      ([, path, , cells]) =>
+        `<div class="what-if-row"><code>${path}</code>${cells
+          .map((cell, i) => {
+            const [now, after] = Array.isArray(cell) ? cell : [cell, null];
+            return `<span class="what-if-cell cell-${cellClass(now)}" data-branch="${treeColumns[i][1]}">${after ? `<s>${now}</s> <b class="cell-absent">${after}</b>` : `<b>${now}</b>`}</span>`;
+          })
+          .join('')}</div>`,
+    )
+    .join('')}</div>`;
 }
 
 function forkShapeDiagram() {
@@ -158,6 +184,7 @@ function forkShapeDiagram() {
       .join('')}
     <div class="what-if">
       <label><input type="checkbox" class="what-if-switch" /> <b>What if upstream deletes its Azure directory tomorrow?</b><small>Optional. Toggles the upstream column only.</small></label>
+      ${whatIfStrip()}
       <p class="what-if-result" aria-live="polite">Upstream’s copy is gone. fork_upstream never had it, so tonight’s generation is identical there, and the cascade merges nothing about it. fork_integration and main keep the fork’s provider, cache fallback included. The deletion has nothing to delete on the fork side.</p>
     </div>
     <div class="tree-legend"><span><i class="cell-kept">●</i> present, from upstream</span><span><i class="cell-fork">◆</i> fork-owned</span><span><i class="cell-fork-planned">◇</i> fork-owned, not yet written</span><span><i class="cell-absent">—</i> absent by construction</span><span><i class="cell-kept">+</i> profile injected by the filter</span></div>

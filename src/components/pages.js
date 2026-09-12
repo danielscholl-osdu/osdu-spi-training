@@ -91,6 +91,10 @@ function homePage() {
   return `<section class="home-start" aria-label="Where to begin">
       <div class="home-start-copy"><span class="guide-kicker">Where to begin</span><h2>Follow one OSDU request down to its Azure provider. Then follow a fix to that provider back into a running stack.</h2><p>${words[learnCount]} views, each answering one question, each ending with what you can now say. The running example is real: a partition lookup, and the cache fallback that keeps it answering.</p></div>
       <div class="home-start-actions"><a class="home-cta" href="${routeHref('running-stack')}">Start with 01 · What is a stack? →</a><a class="home-cta-alt" href="${routeHref('running-stack', 'request')}">Or trace one API request through it first</a></div>
+      ${listenChips('start', {
+        kicker: 'Hear the frame first',
+        lead: 'Seven minutes from the round-trip conversation: why the fork exists, why it needs a stack, and the three things SPI means here. It keeps playing while you read this page, and stops when the section ends.',
+      })}
     </section>
     <section class="home-path" aria-label="The learning path">
       <div class="section-heading"><span class="guide-kicker">The path</span><h2>${words[learnCount]} views, in order</h2><p>Each builds on the one before. Take them in order the first time; after that, any of them stands alone.</p></div>
@@ -249,19 +253,27 @@ function listenPage(route) {
 
 // Short cues into the recordings, beside a map. Playing one never leaves the
 // view; the dock appears and keeps playing while the reader explores.
-export function listenChips(key) {
+// A cue plays its section and stops at the end of it. While it plays, the
+// line under the chips names the section and shows its source check, so a
+// correction is read where the claim is heard.
+export function listenChips(
+  key,
+  { kicker = 'Hear it explained', lead = '' } = {},
+) {
   const cues = chapters[key].listen;
   if (!cues?.length) return '';
-  return `<div class="listen-chips" aria-label="Hear it explained"><span class="guide-kicker">Hear it explained</span>${cues
+  const chips = cues
     .map((cue) => {
       const episode = episodeById(cue.episode);
       const marker = episode.markers.find((entry) => entry.time === cue.time);
-      const end = marker?.end ?? cue.time + 60;
-      return `<button type="button" class="listen-chip" data-seek="${cue.time}" data-listen-episode="${episode.id}" data-listen-end="${end}"><span class="play-glyph" aria-hidden="true">▶</span><b>${escapeHtml(cue.label)}</b><small>${episode.short} · ${formatTime(cue.time)} · ${Math.max(1, Math.round((end - cue.time) / 60))} min</small></button>`;
+      const end = cue.end ?? marker?.end ?? cue.time + 60;
+      const checks = episode.markers.filter(
+        (entry) => entry.note && entry.time >= cue.time && entry.time < end,
+      ).length;
+      return `<button type="button" class="listen-chip" data-seek="${cue.time}" data-listen-episode="${episode.id}" data-listen-end="${end}" data-listen-stop="${end}"><span class="play-glyph" aria-hidden="true">▶</span><b>${escapeHtml(cue.label)}</b><small>${episode.short} · ${formatTime(cue.time)} · ${Math.max(1, Math.round((end - cue.time) / 60))} min${checks ? ` · <i class="chip-check">${checks} source check${checks > 1 ? 's' : ''}</i>` : ''}</small></button>`;
     })
-    .join(
-      '',
-    )}<a class="small-link" href="#listen">All three episodes →</a></div>`;
+    .join('');
+  return `<div class="listen-chips" aria-label="${escapeHtml(kicker)}"><span class="guide-kicker">${escapeHtml(kicker)}</span>${lead ? `<p class="listen-lead">${lead}</p>` : ''}<div class="listen-chip-row">${chips}<a class="small-link" href="#listen">All three episodes →</a></div><p class="listen-now" data-listen-now aria-live="polite" hidden></p></div>`;
 }
 
 function guidesPage() {

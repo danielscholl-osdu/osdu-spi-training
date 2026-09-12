@@ -9,6 +9,14 @@ export const chapters = {
     intro:
       'You already know the OSDU APIs. Follow one request down to the Azure code it reaches, then follow a change to that code back into a running stack. By the end you can say where your request runs, what created the environment it runs in, and where a change to the Azure provider belongs.',
     premise: 'For engineers who know OSDU and are new to SPI.',
+    listen: [
+      {
+        episode: 'interface',
+        time: 0,
+        end: 427,
+        label: 'Why a fork, why a stack, what SPI means',
+      },
+    ],
     sources: ['architecture', 'engineering', 'designs', 'decisions'],
   },
   'running-stack': {
@@ -368,7 +376,7 @@ export const chapters = {
           copy: 'What 06 follows',
         },
       ],
-      note: 'The release moment is optional and comes after all of this. The digests and PR numbers are illustrative; the fix is real.',
+      note: 'The cache fix and its unit tests are real. From here the example follows an illustrative acceptance run using the newer template; the reference partition fork has not adopted that lane or written its descriptor yet. The release moment is optional and comes after all of this.',
     },
     outcomes: [
       'A sync is a generated tree plus one PR and one tracking issue, never a merge into fork_upstream. The cascade merges main first, then fork_upstream, into the workspace.',
@@ -384,7 +392,7 @@ export const chapters = {
     subtitle: 'Borrow, prove, restore',
     headline: 'A lock write<span>is the whole deploy.</span>',
     intro:
-      'The fork has a candidate digest and the stack has a running environment. One credentialed run reads what the environment publishes, pins the digest into the image lock as a pin it owns, checks the pod is running it, runs the suites the descriptor declares, and gives the slot back. Watch the lock and the pod change as you step through.',
+      'The fork has a candidate digest and the stack has a running environment. One credentialed run reads what the environment publishes, pins the digest into the image lock as a pin it owns, checks the pod is running it, runs the suites the descriptor declares, and gives the slot back. Watch the lock and the pod change as you step through. The run is illustrative: it uses the lane the newer template ships, which the reference partition fork has not adopted yet.',
     premise:
       'The stack publishes facts. The fork declares needs. The lock is the only thing both write.',
     figure: 'One run, one borrowed slot',
@@ -402,7 +410,7 @@ export const chapters = {
     guides: ['borrow-prove-restore'],
     mistakes: ['validation-summary-means-deployed', 'restore-always-restores'],
     scope:
-      'A shared environment can be borrowed by several onboarded forks, one service slot each, serialised per service. Key Vault binding materialisation, descriptor requirement checks before the borrow, and a second verify before each suite are not wired. osdu-spi-partition has not written its descriptor yet, so its gate skips today; the lane shown is the one the template ships.',
+      'A shared environment can be borrowed by several onboarded forks, one service slot each, serialised per service. Key Vault binding materialisation, descriptor requirement checks before the borrow, and a second verify before each suite are not wired. The lane shown is the one the template ships since 10 September; osdu-spi-partition has neither adopted it nor written its descriptor yet, so this run is illustrative until it does.',
     sources: ['forkDeploy', 'proof', 'descriptorContract', 'statusContract'],
     question:
       'How does that digest reach a running stack, what proves it, and what gives the slot back?',
@@ -468,7 +476,7 @@ export const chapters = {
     subtitle: 'Three conversations',
     headline: 'Three conversations,<span>one system.</span>',
     intro:
-      'Generated audio discussions of the two guides: one on the stack, one on the whole round trip, one on the fork in depth. Play one while you explore; each marker opens the matching view, and the maps carry short cues back into the recordings.',
+      'Generated audio discussions of the two guides: the whole round trip first, then the stack on its own, then the fork in depth. Play one while you explore; each marker opens the matching view, and the maps carry short cues back into the recordings.',
     premise: 'Keeps playing while you move around the site.',
     scope:
       'The narration is generated from the guides, not from the repositories. Where it rounds a number, mishears a command, or overstates a guarantee, the marker notes say what the source documentation actually claims.',

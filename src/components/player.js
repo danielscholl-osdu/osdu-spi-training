@@ -6,6 +6,8 @@ import { formatTime } from './pages.js';
 // all drive it. Switching episodes swaps the element's source.
 export function createPlayer(element, dock) {
   let episode = defaultEpisode;
+  // A cue from a map sets stopAt; playback pauses at the end of that section.
+  let stopAt = null;
   element.src = episode.file;
   element.preload = 'metadata';
 
@@ -46,6 +48,11 @@ export function createPlayer(element, dock) {
     }
     for (const title of byRole('episode')) title.textContent = episode.title;
     const marker = currentMarker(element.currentTime);
+    const ended = stopAt === null && dock.dataset.stopped === 'true';
+    for (const kicker of byRole('kicker'))
+      kicker.textContent = ended
+        ? 'Section ended · play to continue'
+        : 'Listening';
     for (const now of byRole('now'))
       now.textContent = marker ? marker.title : episode.title;
     for (const link of byRole('now-link')) {
@@ -54,6 +61,26 @@ export function createPlayer(element, dock) {
         ? `${marker.routeLabel} →`
         : 'Open the player →';
     }
+    for (const box of byRole('note-box')) box.hidden = !marker?.note;
+    for (const note of byRole('note')) note.textContent = marker?.note || '';
+    const listening = playing || ended;
+    document.querySelectorAll('[data-listen-now]').forEach((line) => {
+      const chips = [...line.parentElement.querySelectorAll('[data-seek]')];
+      const inside = chips.some(
+        (chip) =>
+          chip.dataset.listenEpisode === episode.id &&
+          element.currentTime >= Number(chip.dataset.seek) &&
+          element.currentTime <
+            Number(chip.dataset.listenEnd || chip.dataset.seek) + 1,
+      );
+      line.hidden = !(listening && inside && marker);
+      if (line.hidden) return;
+      line.innerHTML = `<b>${ended ? 'Section ended.' : 'Now:'} ${marker.title}.</b> ${
+        marker.note
+          ? `<span class="listen-check"><b>Source check.</b> ${marker.note}</span>`
+          : 'No source check for this section.'
+      }`;
+    });
     document.querySelectorAll('[data-marker-start]').forEach((item) => {
       const start = Number(item.dataset.markerStart);
       const end = Number(item.dataset.markerEnd);
@@ -69,7 +96,7 @@ export function createPlayer(element, dock) {
       const end = Number(chip.dataset.listenEnd || start + 1);
       chip.classList.toggle(
         'is-current',
-        playing &&
+        (playing || dock.dataset.stopped === 'true') &&
           chip.dataset.listenEpisode === episode.id &&
           element.currentTime >= start &&
           element.currentTime < end,
@@ -92,6 +119,8 @@ export function createPlayer(element, dock) {
     if (next === episode) return false;
     const wasPlaying = !element.paused && !element.ended;
     episode = next;
+    stopAt = null;
+    dock.dataset.stopped = 'false';
     element.src = episode.file;
     element.currentTime = 0;
     if (wasPlaying) element.play().catch(() => {});
@@ -100,17 +129,30 @@ export function createPlayer(element, dock) {
   }
 
   function toggle() {
-    if (element.paused) element.play().catch(() => {});
-    else element.pause();
+    if (element.paused) {
+      dock.dataset.stopped = 'false';
+      element.play().catch(() => {});
+    } else element.pause();
   }
 
-  function seekTo(seconds, play = true, id = null) {
+  function seekTo(seconds, play = true, id = null, until = null) {
     dock.dataset.dismissed = 'false';
+    dock.dataset.stopped = 'false';
     if (id) select(id);
+    stopAt = until;
     element.currentTime = Math.max(0, Math.min(seconds, episode.duration));
     if (play) element.play().catch(() => {});
     reflect();
   }
+
+  element.addEventListener('timeupdate', () => {
+    // Stop just short of the boundary so the section's marker stays current.
+    if (stopAt !== null && element.currentTime >= stopAt - 0.4) {
+      stopAt = null;
+      dock.dataset.stopped = 'true';
+      element.pause();
+    }
+  });
 
   document.addEventListener('click', (event) => {
     const seek = event.target.closest('[data-seek]');
@@ -119,6 +161,7 @@ export function createPlayer(element, dock) {
         Number(seek.dataset.seek),
         true,
         seek.dataset.listenEpisode || seek.dataset.episode || null,
+        seek.dataset.listenStop ? Number(seek.dataset.listenStop) : null,
       );
     const control = event.target.closest('[data-player]');
     if (!control) return;
