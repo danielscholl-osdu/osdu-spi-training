@@ -517,8 +517,7 @@ export const chapters = {
     group: 'supplement',
     title: 'Field guides',
     subtitle: 'Posters and infographics',
-    headline:
-      'Diagrams built for this site,<span>then the supplied posters.</span>',
+    headline: 'Architecture and<span>troubleshooting reference.</span>',
     intro:
       'Infographics built for this site from the source documentation, then the reference posters supplied with the training material. Each names its sources and links to the interactive view that lets you look closer. The index below groups them by what you are trying to do.',
     premise: 'Print one, pin it up, or open it beside the map.',

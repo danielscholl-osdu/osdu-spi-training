@@ -4,15 +4,15 @@ The recording that plays as the start page's cue, _Rebuilding OSDU for real Azur
 
 Nothing in the script goes beyond what the site's views and the source documentation say. Every claim below has a view that shows it and a document that supports it.
 
-## Script (about 120 seconds at a spoken pace)
+## Script (about 105 seconds at a spoken pace)
 
 OSDU services separate shared application code from cloud-specific implementations. The Service Provider Interface, or SPI, connects the two inside each service. There is no network hop between them: the interface and its implementation ship in one image.
 
-The community plans to remove its Azure implementations from the shared repositories. Microsoft maintains the Azure provider in service forks, one repository per service, and brings upstream changes into the shared code through scheduled workflows. Every day the fork regenerates a branch from the upstream tip with the Azure paths left out by construction, so upstream's removal deletes nothing on the fork's side.
+The community plans to remove its Azure implementations from the shared repositories. Microsoft maintains the Azure provider in service forks, one repository per service. Daily updates bring in shared-code changes while leaving the fork's Azure provider intact.
 
-Two projects support that work. osdu-spi supplies the fork workflows: the sync, the cascade, the build, and the validation that pushes a candidate image for every eligible commit. osdu-spi-stack creates a development and test environment on Azure, a resource group with a Kubernetes cluster and the Azure data services beside it, from one command.
+Two projects support that work. osdu-spi supplies the fork workflows that sync, build, and validate. osdu-spi-stack creates a development and test environment on Azure, a Kubernetes cluster with the Azure data services beside it, from one command.
 
-A successful build is not evidence that the provider works on Azure. To prove a candidate, a workflow borrows one service's slot in a running stack: it records its run and the candidate digest in the image lock, waits for the pod to run that digest, runs the test suites the service declares, and puts the canonical image back while it still owns the pin. A lost runner can leave that pin for a person to clear.
+A successful build is not evidence that the provider works on Azure. To prove a change, a workflow borrows one service's slot in a running stack, deploys the candidate image, runs the test suites the service declares, and puts the previous image back. That restore happens only while the run still owns the slot, so a lost run can leave work for a person.
 
 This site follows a partition lookup for a partition called opendes. You will see where it runs, how the provider reads stored configuration from Table Storage when its cache fails, and where a change to that provider belongs. The later views follow an acceptance run that is illustrative: the reference partition fork has not adopted the newer workflow yet.
 

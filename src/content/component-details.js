@@ -419,7 +419,7 @@ export const componentDetails = {
   'descriptor-file': {
     label: 'The descriptor',
     title: 'The one engineering file the template does not write.',
-    body: '.spi/service.yaml declares the acceptance suites the stack should run against this service and what each needs. It is excluded from template sync by name: the service repository writes it, and changes to it are reviewed with the code. Two authors, one column: the workflows above arrive from osdu-spi; this file is authored here. osdu-spi-partition has not written its descriptor yet. After onboarding, Deploy Gate skips the run while .spi/service.yaml is missing, with the reason no .spi/service.yaml declares the suites.',
+    body: '.spi/service.yaml declares the acceptance suites the stack should run against this service and what each needs. It is excluded from template sync by name: the service repository writes it, and changes to it are reviewed with the code. The workflows come from osdu-spi. The service team writes this descriptor. osdu-spi-partition has not written its descriptor yet. After onboarding, Deploy Gate skips the run while .spi/service.yaml is missing, with the reason no .spi/service.yaml declares the suites.',
     artifact: {
       label: 'Service-owned, never synced',
       code: '.spi/service.yaml    schemaVersion: 3, written in this repository\nsync-config.json     "exclusions": [".spi", "CODEOWNERS", …]',
