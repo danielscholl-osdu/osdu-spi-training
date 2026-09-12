@@ -190,14 +190,6 @@ summary:focus-visible {
 .rail-toggle {
   display: none;
 }
-.rail-note {
-  font-size: 13px;
-  color: var(--muted);
-  line-height: 1.8;
-  margin-top: 65px;
-  border-top: 1px solid var(--line);
-  padding-top: 18px;
-}
 main {
   padding: 27px 28px 24px;
   min-width: 0;
@@ -656,8 +648,7 @@ details[open] summary span {
     border-bottom: 1px solid var(--line);
     padding: 0 22px;
   }
-  .rail-label,
-  .rail-note {
+  .rail-label {
     display: none;
   }
   .rail nav {
