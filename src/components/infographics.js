@@ -1,6 +1,8 @@
 import { escapeHtml } from './node.js';
 import { zoomLevels, spiMeanings } from '../content/concepts.js';
 import { chapters } from '../content/chapters.js';
+import { componentDetails } from '../content/component-details.js';
+import { sources } from '../content/sources.js';
 
 // Owner colors are shared with the legend in pages.css; orange stays reserved
 // for fork-owned source.
@@ -284,6 +286,7 @@ const familiar = [
     owner: 'cli',
     where: 'Azure · per partition',
     href: '#running-stack/developer?detail=cosmos',
+    detail: 'cosmos',
   },
   {
     known: 'Entitlements groups',
@@ -292,6 +295,7 @@ const familiar = [
     owner: 'cli',
     where: 'Azure · shared',
     href: '#running-stack/developer?detail=shared-data',
+    detail: 'shared-data',
   },
   {
     known: 'Search',
@@ -300,6 +304,7 @@ const familiar = [
     owner: 'k8s',
     where: 'AKS · platform namespace',
     href: '#running-stack/developer?detail=middleware',
+    detail: 'middleware',
   },
   {
     known: 'Schemas',
@@ -308,6 +313,7 @@ const familiar = [
     owner: 'flux',
     where: 'AKS · osdu namespace',
     href: '#running-stack/developer?detail=initialization',
+    detail: 'initialization',
   },
   {
     known: 'The services',
@@ -317,6 +323,7 @@ const familiar = [
     owner: 'flux',
     where: 'AKS · osdu namespace',
     href: '#running-stack/developer?detail=service',
+    detail: 'service',
   },
   {
     known: 'Your API call',
@@ -326,6 +333,7 @@ const familiar = [
     owner: 'you',
     where: 'AKS · aks-istio-ingress',
     href: '#running-stack/request?detail=gateway',
+    detail: 'gateway',
   },
   {
     known: 'Credentials',
@@ -335,20 +343,34 @@ const familiar = [
     owner: 'cli',
     where: 'Azure · shared',
     href: '#running-stack/developer?detail=vault',
+    detail: 'vault',
   },
 ];
 
+// Each row opens its explanation in place. Only the explicit link at the end
+// moves the page to the map, and its label says so.
 function familiarGuide() {
   return `<div class="guide-familiar">
-    <div class="familiar-head"><span>You know</span><span>In the stack it is</span><span>Look</span></div>
+    <div class="familiar-head"><span>You know</span><span>In the stack it is</span><span>Explain</span></div>
     ${familiar
-      .map(
-        (row) => `<div class="familiar-row owner-${row.owner}">
-        <div class="familiar-known"><b>${row.known}</b><code>${escapeHtml(row.example)}</code></div>
-        <div class="familiar-lives"><small>${row.where}</small><p>${row.lives}</p></div>
-        <a href="${row.href}" aria-label="Look at ${row.known} on the map">On the map →</a>
-      </div>`,
-      )
+      .map((row) => {
+        const detail = componentDetails[row.detail];
+        const source = sources[detail.source];
+        return `<details class="familiar-row owner-${row.owner}" name="familiar">
+        <summary>
+          <div class="familiar-known"><b>${row.known}</b><code>${escapeHtml(row.example)}</code></div>
+          <div class="familiar-lives"><small>${row.where}</small><p>${row.lives}</p></div>
+          <span class="familiar-open" aria-hidden="true">▾</span>
+        </summary>
+        <div class="familiar-detail">
+          <span class="detail-label">${detail.label}</span>
+          <h4>${detail.title}</h4>
+          <p>${detail.body}</p>
+          ${detail.artifact ? `<div class="familiar-artifact"><span>${detail.artifact.label}</span><pre><code>${escapeHtml(detail.artifact.code)}</code></pre></div>` : ''}
+          <p class="familiar-links"><a href="${row.href}" data-map-jump>Show it on the map ↑</a><a href="${source.href}" target="_blank" rel="noopener noreferrer">${source.label} ↗</a></p>
+        </div>
+      </details>`;
+      })
       .join('')}
   </div>
   <p class="guide-thesis">Nothing about the OSDU contract changed. What changed is where each familiar thing lives and who keeps it running.</p>`;

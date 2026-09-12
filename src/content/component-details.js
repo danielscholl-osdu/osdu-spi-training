@@ -162,7 +162,7 @@ export const componentDetails = {
   'shared-data': {
     label: 'Shared by the environment',
     title: 'Entitlements uses the shared Gremlin backend.',
-    body: 'The entitlements graph lives in Cosmos DB Gremlin, shared by the environment. Common Storage is shared too. Partition-specific Azure resources do not imply isolation between service identities: OSDU workloads share one managed identity.',
+    body: 'The entitlements graph lives in Cosmos DB Gremlin, shared by the environment. Common Storage is shared too, and its tables are where the partition service keeps each partition’s stored configuration: the workload identity’s table role is granted on common Storage only. Partition-specific Azure resources do not imply isolation between service identities: OSDU workloads share one managed identity.',
     artifact: {
       label: 'Partition layout',
       code: 'opendes: SQL + Storage + Service Bus\nenvironment: Gremlin + common Storage',

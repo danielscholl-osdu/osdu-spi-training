@@ -5,7 +5,7 @@ An interactive learning site for senior engineers who know OSDU and are new to A
 Three ways in, all ending in the source documentation:
 
 - **Listen.** A one-hour generated deep dive with 22 chapter markers, source-check notes, and a transcript. It keeps playing while you move around the site.
-- **Explore.** Five views, each answering one question: **What is a stack?**, **How it comes to life**, **The SPI boundary**, **How changes arrive**, and **Things that are not true**. Every view says which of six places it works at, carries one running example (a partition lookup for opendes in a stack called dev1), shows one easy mistake beside its map, and ends with what the learner can now say.
+- **Explore.** Five views, each answering one question: **What is a stack?**, **How it comes to life**, **The SPI boundary**, **How changes arrive**, and **Things that are not true**. Every view says which of six places it works at, draws one running example as hops above its map (a partition lookup for opendes in a stack called dev1), shows one easy mistake directly under the map, and ends with what the learner can now say.
 - **Read.** Field guides: seven posters (two supplied with the training material, two adopted from the source repositories, three built for this site: namespaces and ordering, one request end to end, credentials and teardown) and six smaller infographics built in HTML (where the familiar things live, four owners, the spi up timeline, five milestones, three profiles, identity as two problems).
 
 Explanations are optional, and source documentation supplies depth. There are no quizzes, scores, or required exercises.

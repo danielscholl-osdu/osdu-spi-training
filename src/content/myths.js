@@ -55,6 +55,18 @@ export const myths = [
     routeLabel: 'Three profiles, one estate',
   },
   {
+    id: 'token-accepted-means-authorized',
+    theme: 'identity',
+    claim: 'The token was accepted, so the call is authorized.',
+    reality:
+      'The sidecar validates the JWT against the configured Entra issuers and projects x-app-id and x-user-id. That is authentication. The service still decides authorization from partition configuration and entitlements, and a 401 or 403 alone does not say which of the two boundaries failed.',
+    check:
+      'kubectl get requestauthentication spi-osdu-jwt-authn -n osdu -o yaml',
+    source: 'identity',
+    route: '#running-stack/request?detail=gateway',
+    routeLabel: 'The gateway and its sidecar',
+  },
+  {
     id: 'role-assignment-missing',
     theme: 'identity',
     claim: 'The role assignment is missing.',

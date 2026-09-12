@@ -34,9 +34,36 @@ export const chapters = {
     question: 'What did spi up actually give me?',
     builds: 'Starts from what you already know: OSDU APIs and data partitions.',
     where:
-      'This view stays wide: the resource group, the Azure resources in it, the AKS cluster, and the namespaces inside the cluster. It does not open a service yet.',
-    example:
-      'Ask the partition service in dev1 what opendes uses: GET /api/partition/v1/partitions/opendes. The request enters at the gateway, reaches the partition service in the osdu namespace, and the answer names Azure resources outside the cluster.',
+      'Wide: the resource group, the Azure resources in it, the cluster, and its namespaces. No service is opened yet.',
+    example: {
+      title: 'Follow a partition lookup',
+      code: 'GET /api/partition/v1/partitions/opendes',
+      step: 'request',
+      hops: [
+        {
+          detail: 'client',
+          label: 'Client',
+          copy: 'Bearer + data-partition-id',
+        },
+        {
+          detail: 'gateway',
+          label: 'Istio gateway',
+          copy: 'Sidecar identifies the caller',
+        },
+        {
+          detail: 'service',
+          label: 'Partition service',
+          copy: 'osdu namespace',
+        },
+        { detail: 'provider', label: 'Its Azure provider', copy: 'Same image' },
+        {
+          detail: 'shared-data',
+          label: 'Stored configuration',
+          copy: 'Tables in common Storage',
+        },
+      ],
+      note: 'The answer describes where opendes lives. Other services use it to find their Cosmos, Storage, and Service Bus.',
+    },
     outcomes: [
       'A stack is a resource group: AKS plus the Azure data services around it, not the cluster alone.',
       'My partition’s records, blobs, and events each have their own Azure resource; entitlements, identities, and Key Vault are shared by the environment.',
@@ -73,9 +100,44 @@ export const chapters = {
     builds:
       'Uses the boundaries from 01: the stack, AKS, and the resources outside it.',
     where:
-      'This view follows the same wide picture through time: the resource group filling with Azure resources, then the cluster, then the namespaces Flux assembles inside it.',
-    example:
-      'Before that partition lookup can answer, dev1 has to exist: the resource group, the Azure resources for opendes, the cluster, and the partition service running inside it. Each moment shows what creates the next piece.',
+      'The same wide picture through time: Azure resources, then the cluster, then the namespaces Flux assembles inside it.',
+    example: {
+      title: 'Before the lookup can answer',
+      code: 'spi up --env dev1',
+      hops: [
+        {
+          detail: 'aks',
+          label: 'AKS',
+          step: 'provision',
+          copy: 'Created first, in spi-stack-dev1',
+        },
+        {
+          detail: 'shared-data',
+          label: 'Common Storage',
+          step: 'provision',
+          copy: 'Holds the partition table',
+        },
+        {
+          detail: 'bootstrap',
+          label: 'Bootstrap inputs',
+          step: 'bootstrap',
+          copy: 'Namespaces, configuration, identity',
+        },
+        {
+          detail: 'service',
+          label: 'Partition service',
+          step: 'reconcile',
+          copy: 'Flux rolls it out',
+        },
+        {
+          detail: 'caller',
+          label: 'An API caller',
+          step: 'inspect',
+          copy: 'Then the lookup works',
+        },
+      ],
+      note: 'Each hop is a different moment. Click one to move the lifecycle to it.',
+    },
     outcomes: [
       'The CLI and Bicep create Azure and seed the cluster; Flux assembles the workloads; controllers keep them healthy. Different owners, different clocks.',
       'A successful spi up exit is the first of five milestones, not readiness. spi status --watch is how I follow the rest.',
@@ -94,19 +156,41 @@ export const chapters = {
     selected: 'azureimpl',
     diagram: 'spi',
     guides: ['one-request', 'identity'],
-    mistakes: ['role-assignment-missing'],
+    mistakes: ['token-accepted-means-authorized'],
     scope:
       'ADR-038 anticipates upstream removing its Azure implementations. The fork seeds Azure source once and keeps it outside the generated shared-code branch.',
     sources: ['ownership', 'concepts', 'engineering'],
     question: 'Where inside a service does OSDU stop and Azure begin?',
     builds:
-      'Zooms into the service node from 01 and uses its per-partition resources and managed identity.',
+      'Zooms into the partition service from 01 and follows the same lookup through its provider.',
     where:
-      'This view zooms into one service inside the osdu namespace. Everything around it from the first two views is still there; only the scale changed.',
-    example:
-      'The same lookup, inside the partition service: common code validates the request, then the Azure provider behind the interface resolves opendes to its Azure resources and reads them with Workload Identity.',
+      'One service inside the osdu namespace. Everything from the first two views is still around it; only the scale changed.',
+    example: {
+      title: 'The same lookup, inside the partition service',
+      code: 'GET /api/partition/v1/partitions/opendes',
+      hops: [
+        { detail: 'client', label: 'OSDU API', copy: 'The contract you know' },
+        { detail: 'core', label: 'Common code', copy: 'Validates the request' },
+        {
+          detail: 'contract',
+          label: 'The interface',
+          copy: 'getPartition(id)',
+        },
+        {
+          detail: 'azureimpl',
+          label: 'Azure implementation',
+          copy: 'Cache first',
+        },
+        {
+          detail: 'azureclients',
+          label: 'Table Storage',
+          copy: 'On a cache miss',
+        },
+      ],
+      note: 'The provider returns stored configuration for opendes. It does not call Cosmos, Storage, or Service Bus; other services use the answer to do that.',
+    },
     outcomes: [
-      'Common service code calls a provider interface; the Azure implementation resolves the partition’s backends and calls them with Workload Identity.',
+      'Common service code calls a provider interface; the Azure implementation behind it does the Azure work with Workload Identity. For the partition service that is a cache, then a Table Storage read.',
       'The interface and its implementation ship in one image. There is no network hop between them.',
       'Upstream may delete its Azure implementations; the fork owns provider/<svc>-azure and keeps it outside the generated upstream tree.',
     ],
@@ -132,9 +216,31 @@ export const chapters = {
     builds:
       'Uses the fork-owned paths from 03 and the shared environment from 01.',
     where:
-      'This view steps outside the running stack to where the code comes from: the service fork, the shared engineering system, and the stack repository that runs the environment.',
-    example:
-      'Suppose that provider needs a fix. The change lands in the osdu-spi-partition fork, becomes an image digest, and reaches dev1 through the image lock, where a deploy lane can prove it before restoring the pin.',
+      'Outside the running stack: the service fork, the shared engineering system, and the stack repository that runs the environment.',
+    example: {
+      title: 'A fix to that provider',
+      code: 'provider/partition-azure/',
+      hops: [
+        { detail: 'repo', label: 'Service fork', copy: 'osdu-spi-partition' },
+        { detail: 'image', label: 'GHCR digest', copy: 'Built and published' },
+        {
+          detail: 'delivery',
+          label: 'osdu-image-lock',
+          copy: 'Pinned into dev1',
+        },
+        {
+          detail: 'running',
+          label: 'Running pod',
+          copy: 'Flux reconciles the lock',
+        },
+        {
+          detail: 'proof',
+          label: 'Acceptance result',
+          copy: 'Prove, then restore',
+        },
+      ],
+      note: 'Every hop leaves something you can inspect.',
+    },
     outcomes: [
       'Three repositories, three jobs: a service fork owns provider code, osdu-spi supplies the workflows, osdu-spi-stack runs the environment.',
       'A candidate travels fork → GHCR digest → osdu-image-lock → running pod, and every hop leaves something I can inspect.',
@@ -158,9 +264,7 @@ export const chapters = {
     builds:
       'Each contradiction points back to the view where the concept was built.',
     where:
-      'These checks range across every level, from the resource group to the source repositories. Each one names the view where its concept was built.',
-    example:
-      'Each of these would have cost you time somewhere between running spi up for dev1 and getting that partition lookup to answer.',
+      'Every level, from the resource group to the source repositories. Each check names the view where its concept was built, and each would have cost time somewhere between spi up and a working partition lookup.',
     outcomes: [
       'When something looks wrong, I know which owner to ask and which command shows its view of the world.',
       'Provisioning, convergence, readiness, and proof are different signals, and I check the one I actually need.',

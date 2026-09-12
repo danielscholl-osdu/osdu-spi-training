@@ -109,6 +109,25 @@ test('chapters connect to renderers, explanations, and named sources', () => {
           nativeGuides.some((entry) => entry.id === guide),
         `${id}: unknown field guide ${guide}`,
       );
+    const example = chapter.example;
+    assert.ok(
+      example?.title && example.code && example.hops?.length >= 3,
+      `${id}: running example`,
+    );
+    for (const hop of example.hops) {
+      const step = hop.step || example.step || steps[0] || '';
+      const markup = diagramRenderers[chapter.diagram](
+        parseRoute(`#${id}${step ? `/${step}` : ''}`),
+      );
+      assert.ok(
+        markup.includes(`data-detail="${hop.detail}"`),
+        `${id}: example hop ${hop.detail} is not on the map at ${step || 'default'}`,
+      );
+      assert.ok(
+        componentDetails[hop.detail],
+        `${id}: example hop ${hop.detail} has no explanation`,
+      );
+    }
     const mistakes = flatten(chapter.mistakes, 'mistakes');
     assert.ok(mistakes.length, `${id}: no easy mistake beside the map`);
     for (const mistake of mistakes)
@@ -265,7 +284,6 @@ test('learn views state a question, what they build on, their scope, and outcome
   for (const [id, chapter] of learn) {
     assert.ok(chapter.question?.trim(), `${id}: question`);
     assert.ok(chapter.builds?.trim(), `${id}: builds`);
-    assert.ok(chapter.example?.trim(), `${id}: running example`);
     assert.ok(chapter.outcomes?.length >= 2, `${id}: outcomes`);
     assert.ok(chapter.where?.trim(), `${id}: where`);
   }
@@ -276,6 +294,10 @@ test('learn views state a question, what they build on, their scope, and outcome
   }
   for (const meaning of spiMeanings)
     verifyRoute(meaning.href, `SPI meaning ${meaning.id}`);
+  const familiarMarkup = infographics.familiar();
+  assert.ok(!familiarMarkup.includes('On the map'));
+  assert.ok(familiarMarkup.includes('data-map-jump'));
+  assert.equal(familiarMarkup.split('<details').length, 8);
   const ladder = zoomLadder();
   assert.ok(ladder.includes('zoom-source'));
   assert.ok(ladder.includes('zoom-siblings'));
@@ -306,7 +328,9 @@ test('field checks are grouped by a theme that points back to a learn view', () 
 
 test('the familiar-things guide links every row to a component on the map', () => {
   const markup = infographics.familiar();
-  const hrefs = [...markup.matchAll(/href="([^"]+)"/g)].map((m) => m[1]);
+  const hrefs = [...markup.matchAll(/href="(#[^"]+)" data-map-jump/g)].map(
+    (m) => m[1],
+  );
   assert.ok(hrefs.length >= 7);
   for (const href of hrefs) verifyRoute(href, 'familiar guide');
 });

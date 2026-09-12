@@ -11,7 +11,7 @@ import {
   zoomLadder,
   spiNamesFigure,
 } from './infographics.js';
-import { routeHref } from '../router.js';
+import { routeHref, parseRoute } from '../router.js';
 
 export function formatTime(seconds) {
   const whole = Math.max(0, Math.floor(seconds));
@@ -134,18 +134,44 @@ export function chapterOutcomes(key) {
 export function chapterScope(key) {
   const chapter = chapters[key];
   if (!chapter.where) return '';
-  return `<div class="view-scope">
-    <p><span>In this view</span>${escapeHtml(chapter.where)} <a href="#start?guide=ladder">See the six places →</a></p>
-    ${chapter.example ? `<p><span>The running example</span>${escapeHtml(chapter.example)}</p>` : ''}
-  </div>`;
+  return `<p class="view-scope"><span>In this view</span>${escapeHtml(chapter.where)} <a href="#start?guide=ladder">See the six places →</a></p>`;
 }
 
-export function mythCallout(id) {
+// The running example, drawn as hops above the map. Each hop selects a
+// component on the map; the current hop and the ones before it are marked.
+export function exampleStrip(key, route) {
+  const example = chapters[key].example;
+  if (!example) return '';
+  const current = example.hops.findIndex(
+    (hop) =>
+      hop.detail === route.detail &&
+      (!hop.step || hop.step === route.step) &&
+      (!example.step || example.step === route.step),
+  );
+  return `<div class="example-head"><span class="guide-kicker">Running example</span><b>${escapeHtml(example.title)}</b><code>${escapeHtml(example.code)}</code></div>
+    <ol class="journey" aria-label="${escapeHtml(example.title)}">${example.hops
+      .map((hop, index) => {
+        const state =
+          index === current ? 'is-current' : index < current ? 'is-done' : '';
+        return `<li class="${state}"><a href="${routeHref(key, hop.step || example.step || route.step, hop.detail)}" data-map-jump ${index === current ? 'aria-current="true"' : ''}><span>${index + 1}</span><b>${escapeHtml(hop.label)}</b><small>${escapeHtml(hop.copy)}</small></a></li>`;
+      })
+      .join('')}</ol>
+    <p class="example-note">${escapeHtml(example.note)}</p>`;
+}
+
+// One entry from the myths, directly under the map. A link back into the same
+// view says that the page will move; links to other views navigate as usual.
+export function mythCallout(id, chapterKey) {
   const myth = myths.find((entry) => entry.id === id);
   if (!myth) return '';
+  const source = sources[myth.source];
+  const sameView = parseRoute(myth.route).chapter === chapterKey;
   return `<aside class="easy-mistake" aria-label="Easy mistake">
     <div class="easy-mistake-head"><span class="guide-kicker">Easy mistake</span><a href="${routeHref('not-true')}">All ${myths.length}, by theme →</a></div>
-    ${mythCard(myth)}
+    <p class="myth-claim">“${myth.claim}”</p>
+    <p class="myth-reality"><b>Not quite.</b> ${myth.reality}</p>
+    <code class="myth-check">${escapeHtml(myth.check)}</code>
+    <p class="myth-links"><a href="${myth.route}" ${sameView ? 'data-map-jump' : ''}>${sameView ? 'Show it on the map ↑' : `${myth.routeLabel} →`}</a><a href="${source.href}" target="_blank" rel="noopener noreferrer">${source.label} ↗</a></p>
   </aside>`;
 }
 

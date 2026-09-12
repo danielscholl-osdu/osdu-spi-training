@@ -19,3 +19,14 @@ Inline poster links on the learn views carried a second `#` (`#field-guides#post
 
 - A guided first render of the view 01 map (client, one service, its partition resources, with the rest revealed on request) is the remaining item from the review. It needs a filter in the architecture renderer and is left for a later iteration.
 - Illustrative "what success looks like and what it still does not prove" evidence beside every command. The five-milestones guide already covers this for bring-up; extending it to every artifact is a content pass on component details.
+
+## Second pass: reading without losing your place
+
+The "On the map →" links in the familiar-things guide had become a remote control for the map: every click scrolled the page up, opened a panel, and left the table out of view. The rule now is that a link below the map never moves the page unless its label says so.
+
+- **Explain in place.** Each familiar-things row is a disclosure. Opening it shows the component's explanation (the same text the map panel shows, with its artifact and source) under the row, without scrolling. "Show it on the map ↑" is a secondary link inside the open row and is the only thing that moves the page.
+- **One rule in the renderer.** Only links carrying `data-map-jump` scroll the map into view and expand the explanation. Other same-view changes update the selection silently. The easy-mistake callout labels its link "Show it on the map ↑" when it points into the current view.
+- **The example is drawn, not described.** The running-example paragraph is gone from the text above the map. Each map view draws it as five hops above the map (client → gateway → partition service → its provider → stored configuration in common Storage tables; the lifecycle version steps through moments; the SPI version follows the lookup through the interface; the engineering version is the old journey strip, moved). Clicking a hop selects that component; the current hop and the ones before it are marked, and the matching components on the map are ringed.
+- **The provider path is corrected.** The partition service's Azure provider checks a cache and then reads stored properties from Azure Table Storage in common Storage. It returns configuration; other services use that to find their Cosmos, Storage, and Service Bus. The SPI diagram's endpoint, the outcome line, and the shared-data explanation now say this, traced to PartitionServiceImpl.java and the workload-identity guide (Storage Table Data Contributor is granted on common Storage only).
+- **Callouts moved under the map** and the SPI-boundary one changed from Cosmos role assignments to authentication versus authorization, which is the boundary the followed request actually crosses. That entry is new in "Things that are not true" (eleven now).
+- **Scope sentences shortened** to one line each.

@@ -1274,13 +1274,68 @@ body:has(.audio-dock:not([hidden])) main {
   margin: 0;
 }
 
-/* Learn views: one easy mistake beside the map */
+/* Learn views: the running example, drawn as hops above the map */
+.example-strip {
+  padding: 14px 18px 12px;
+  border-bottom: 1px solid var(--line);
+  background: #fbfdff;
+}
+.example-head {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 4px 12px;
+  margin-bottom: 10px;
+}
+.example-head b {
+  font-size: 15px;
+}
+.example-head code {
+  font-family: ui-monospace, SFMono-Regular, Consolas, monospace;
+  font-size: 12.5px;
+  padding: 3px 8px;
+  border-radius: 4px;
+  background: #eef4f9;
+  color: #1f3a52;
+  overflow-wrap: anywhere;
+}
+.example-strip .journey {
+  margin-bottom: 8px;
+}
+.example-note {
+  margin: 0;
+  font-size: 13px;
+  line-height: 1.5;
+  color: var(--muted);
+}
+.journey li.is-done a {
+  border-color: #9cbad0;
+  background: #f1f7fb;
+}
+.journey li.is-current a {
+  border-color: var(--blue);
+  box-shadow: 0 0 0 3px #c9e6f6;
+}
+.journey li.is-done a span,
+.journey li.is-current a span {
+  background: var(--blue);
+}
+.node.is-traced {
+  box-shadow: 0 0 0 3px #c9e6f6;
+  border-color: #388dbc;
+}
+
+/* Learn views: one easy mistake directly under the map */
+#chapter-mistake:not(:empty) {
+  margin: 18px 0 0;
+}
 .easy-mistake {
   display: grid;
   gap: 8px;
   padding: 16px 18px;
   border-radius: 10px;
   border: 1px solid #f0d9c2;
+  border-left: 4px solid #c9542f;
   background: #fff8f1;
 }
 .easy-mistake-head {
@@ -1297,10 +1352,10 @@ body:has(.audio-dock:not([hidden])) main {
   font-weight: 600;
   text-decoration: none;
 }
-.easy-mistake .myth {
-  border: 0;
-  padding: 0;
-  background: transparent;
+.easy-mistake .myth-claim,
+.easy-mistake .myth-reality,
+.easy-mistake .myth-links {
+  margin: 0;
 }
 .view-scope span {
   display: block;
@@ -1546,7 +1601,7 @@ body:has(.audio-dock:not([hidden])) main {
   gap: 6px;
 }
 .familiar-head,
-.familiar-row {
+.familiar-row summary {
   display: grid;
   grid-template-columns: 1fr 2fr auto;
   gap: 14px;
@@ -1565,7 +1620,66 @@ body:has(.audio-dock:not([hidden])) main {
   border: 1px solid var(--line);
   border-left: 5px solid var(--owner);
   border-radius: 8px;
+}
+.familiar-row summary {
   padding: 10px 12px;
+  cursor: pointer;
+  list-style: none;
+}
+.familiar-row summary::-webkit-details-marker {
+  display: none;
+}
+.familiar-row summary:hover {
+  background: #f6f9fc;
+}
+.familiar-open {
+  font-size: 14px;
+  color: var(--muted);
+  transition: transform 0.15s;
+}
+.familiar-row[open] .familiar-open {
+  transform: rotate(180deg);
+}
+.familiar-detail {
+  display: grid;
+  gap: 8px;
+  padding: 4px 12px 14px 12px;
+  border-top: 1px dashed var(--line);
+  margin: 0 12px;
+  padding-top: 12px;
+}
+.familiar-detail h4 {
+  margin: 0;
+  font-size: 15.5px;
+  line-height: 1.35;
+}
+.familiar-detail p {
+  margin: 0;
+  font-size: 14px;
+  line-height: 1.55;
+  color: #3e596e;
+}
+.familiar-artifact {
+  display: grid;
+  gap: 4px;
+}
+.familiar-artifact span {
+  font-size: 11.5px;
+  font-weight: 700;
+  color: var(--muted);
+}
+.familiar-artifact pre {
+  margin: 0;
+  padding: 8px 10px;
+  border-radius: 6px;
+  background: #f3f7fa;
+  font-size: 12.5px;
+  overflow-x: auto;
+}
+.familiar-links {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px 18px;
 }
 .familiar-known b {
   display: block;
@@ -1588,11 +1702,10 @@ body:has(.audio-dock:not([hidden])) main {
   font-size: 13.5px;
   line-height: 1.5;
 }
-.familiar-row a {
+.familiar-links a {
   font-size: 13px;
   font-weight: 600;
   text-decoration: none;
-  white-space: nowrap;
 }
 
 /* Not true: grouped by theme */
@@ -1628,7 +1741,7 @@ body:has(.audio-dock:not([hidden])) main {
   .path-cards {
     grid-template-columns: repeat(3, minmax(0, 1fr));
   }
-  .familiar-row,
+  .familiar-row summary,
   .familiar-head {
     grid-template-columns: 1fr 1.6fr auto;
   }
@@ -1658,7 +1771,7 @@ body:has(.audio-dock:not([hidden])) main {
   .zoom-arrow::after {
     content: '';
   }
-  .familiar-row,
+  .familiar-row summary,
   .familiar-head {
     grid-template-columns: 1fr;
     gap: 6px;
@@ -1677,6 +1790,12 @@ body:has(.audio-dock:not([hidden])) main {
   }
 }
 @media (max-width: 760px) {
+  .example-strip .journey {
+    grid-template-columns: 1fr 1fr;
+  }
+  .journey li + li::before {
+    content: none;
+  }
   .zoom-siblings {
     grid-template-columns: 1fr;
   }

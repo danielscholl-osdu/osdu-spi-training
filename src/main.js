@@ -12,6 +12,7 @@ import {
   chapterOutcomes,
   chapterScope,
   mythCallout,
+  exampleStrip,
 } from './components/pages.js';
 import { createPlayer } from './components/player.js';
 import { parseRoute, routeHref } from './router.js';
@@ -147,6 +148,8 @@ function render() {
   if (scene.kind === 'page') {
     document.getElementById('exploration').hidden = true;
     document.getElementById('chapter-guides').innerHTML = '';
+    document.getElementById('chapter-mistake').innerHTML = '';
+    document.getElementById('example-strip').hidden = true;
     const page = document.getElementById('page');
     page.hidden = false;
     if (chapterChanged) {
@@ -173,14 +176,22 @@ function render() {
     document.getElementById('figure-title').textContent = scene.figure;
   }
   if (mapChanged) {
-    document.getElementById('chapter-guides').innerHTML =
-      forStep(scene.guides, route)
-        .map((guide) =>
-          suppliedPosters.some((poster) => poster.id === guide)
-            ? posterInline(guide)
-            : guideFigure(guide, { compact: true }),
-        )
-        .join('') + forStep(scene.mistakes, route).map(mythCallout).join('');
+    document.getElementById('chapter-guides').innerHTML = forStep(
+      scene.guides,
+      route,
+    )
+      .map((guide) =>
+        suppliedPosters.some((poster) => poster.id === guide)
+          ? posterInline(guide)
+          : guideFigure(guide, { compact: true }),
+      )
+      .join('');
+    document.getElementById('chapter-mistake').innerHTML = forStep(
+      scene.mistakes,
+      route,
+    )
+      .map((id) => mythCallout(id, route.chapter))
+      .join('');
   }
   if (mapChanged) {
     document.getElementById('diagram').innerHTML =
@@ -202,22 +213,39 @@ function render() {
     buttons.find((button) => button.dataset.detail === route.detail) ||
     buttons.find((button) => button.dataset.detail === defaultDetail);
   selectDetail(element?.dataset.detail || defaultDetail, element);
-  const jumpedWithinView =
-    !chapterChanged &&
-    previousRoute &&
-    route.detail &&
-    route.detail !== previousRoute.detail;
-  if (jumpedWithinView && element) {
+  const strip = document.getElementById('example-strip');
+  strip.innerHTML = exampleStrip(route.chapter, {
+    ...route,
+    detail: element?.dataset.detail || defaultDetail,
+  });
+  strip.hidden = !strip.innerHTML;
+  const traced = new Set(
+    [...strip.querySelectorAll('.is-done a, .is-current a')].map(
+      (link) => parseRoute(link.getAttribute('href')).detail,
+    ),
+  );
+  buttons.forEach((button) =>
+    button.classList.toggle('is-traced', traced.has(button.dataset.detail)),
+  );
+  // Only a link that says it moves the page (data-map-jump) scrolls the map
+  // into view. Every other same-view change updates the selection in place.
+  if (jumpRequested && element) {
     element.scrollIntoView({ block: 'center' });
     element.focus({ preventScroll: true });
     expandInspector(true);
   }
+  jumpRequested = false;
   if (chapterChanged) {
     expandInspector(false);
     if (previousRoute) window.scrollTo({ top: 0, behavior: 'instant' });
   }
   previousRoute = route;
 }
+
+let jumpRequested = false;
+document.addEventListener('click', (event) => {
+  if (event.target.closest('a[data-map-jump]')) jumpRequested = true;
+});
 
 document.getElementById('diagram').addEventListener('click', (event) => {
   const button = event.target.closest('button[data-detail]');
