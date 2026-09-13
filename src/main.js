@@ -15,11 +15,10 @@ import {
   listenChips,
   hasClaims,
   claimStrip,
-  claimIndexForRoute,
-  hopIndexForRoute,
   guidePreview,
   detailSourceLinks,
   resolveExamplePresentation,
+  resolveLessonSelection,
   selectExampleVariant,
 } from './components/pages.js';
 import { createPlayer } from './components/player.js';
@@ -209,7 +208,7 @@ function closeInspector(restoreFocus = true) {
   const route = parseRoute(location.hash);
   if (route.detail) {
     history.replaceState(null, '', routeHref(route.chapter, route.step));
-    previousRoute = { ...route, detail: null };
+    previousRoute = { ...route, detail: null, claim: null, hop: null };
   }
   document
     .querySelectorAll('[data-detail]')
@@ -473,7 +472,6 @@ function render() {
   );
   if (element) {
     selectDetail(element.dataset.detail, element);
-    detailOpener = pendingOpener || element;
   } else {
     expandInspector(false);
     buttons.forEach((button) => button.setAttribute('aria-pressed', 'false'));
@@ -483,11 +481,11 @@ function render() {
     delete document.getElementById('diagram').dataset.selected;
   }
   const strip = document.getElementById('example-strip');
-  const exampleOpen =
-    !chapterChanged &&
-    (strip.querySelector('details')?.open || lessonState.exampleOpen);
-  const openerHop = detailOpener?.dataset.hop;
-  const openerWasLookCloser = detailOpener?.hasAttribute('data-look-closer');
+  const structured = hasClaims(scene);
+  const selection = structured ? resolveLessonSelection(scene, route) : null;
+  const requestedOpener = pendingOpener;
+  const openerHop = requestedOpener?.dataset.hop;
+  const openerWasLookCloser = requestedOpener?.hasAttribute('data-look-closer');
   if (!hasClaims(scene) || mapChanged) {
     strip.innerHTML = exampleStrip(
       route.chapter,
@@ -498,40 +496,39 @@ function render() {
       lessonState.variant,
     );
     strip.hidden = !strip.innerHTML;
-    if (hasClaims(scene)) strip.querySelector('details').open = exampleOpen;
   }
-  if (openerHop !== undefined && !detailOpener.isConnected) {
-    detailOpener = strip.querySelector(`[data-hop="${openerHop}"]`) || element;
-  }
-  if (openerWasLookCloser && !detailOpener.isConnected) {
-    detailOpener =
-      document.querySelector('#diagram [data-look-closer]') || element;
-  }
-  if (hasClaims(scene)) {
-    const pendingHop = pendingOpener?.dataset.hop;
-    if (pendingHop !== undefined) {
-      lessonState.hop = Number(pendingHop);
-      lessonState.exampleOpen = true;
-    } else if (!pendingOpener) {
-      lessonState.hop = hopIndexForRoute(scene, route);
-      if (lessonState.hop >= 0) lessonState.exampleOpen = true;
-    } else lessonState.hop = -1;
-
-    const routeClaim = claimIndexForRoute(scene, route);
-    const selectedClaim = scene.outcomes[routeClaim];
-    const routeSelectsEvidence =
-      route.detail &&
-      selectedClaim?.evidence === route.detail &&
-      (selectedClaim.evidenceStep || selectedClaim.step || route.step) ===
-        route.step;
-    if (
-      scene.outcomes.some((claim) => claim.steps) ||
-      (!pendingOpener && routeSelectsEvidence)
-    )
-      lessonState.claim = routeClaim;
-
-    if (lessonState.hop >= 0) strip.querySelector('details').open = true;
+  if (structured) {
+    lessonState.claim = selection.claim;
+    lessonState.hop = selection.hop;
+    lessonState.exampleOpen = selection.exampleOpen;
+    strip.querySelector('details').open = selection.exampleOpen;
     applyPolicy();
+  }
+  if (element) {
+    if (requestedOpener?.isConnected) {
+      detailOpener = requestedOpener;
+    } else if (openerHop !== undefined) {
+      detailOpener =
+        strip.querySelector(`[data-hop="${openerHop}"]`) || element;
+    } else if (openerWasLookCloser) {
+      detailOpener =
+        document.querySelector('#diagram [data-look-closer]') || element;
+    } else if (selection?.hop >= 0) {
+      detailOpener =
+        strip.querySelector(`[data-hop="${selection.hop}"]`) || element;
+    } else {
+      const evidence = document.querySelector(
+        `#chapter-claims [data-evidence="${selection?.claim}"]`,
+      );
+      const evidenceRoute = evidence
+        ? parseRoute(evidence.getAttribute('href'))
+        : null;
+      detailOpener =
+        evidenceRoute?.detail === route.detail &&
+        evidenceRoute.step === route.step
+          ? evidence
+          : element;
+    }
   }
   pendingOpener = null;
   const traced = new Set(
@@ -663,7 +660,7 @@ document.getElementById('chapter-claims').addEventListener('click', (event) => {
     const id = claim.evidence;
     const step = claim.evidenceStep || claim.step || route.step;
     pendingOpener = evidence || button;
-    const href = routeHref(route.chapter, step, id);
+    const href = routeHref(route.chapter, step, id, { claim: index });
     if (location.hash === href) render();
     else location.hash = href;
     return;
@@ -693,7 +690,15 @@ document.getElementById('diagram').addEventListener('click', (event) => {
   lessonState.hop = -1;
   pendingOpener = button;
   const route = parseRoute(location.hash);
-  const href = routeHref(route.chapter, route.step, button.dataset.detail);
+  const selection = hasClaims(chapters[route.chapter])
+    ? { claim: lessonState.claim }
+    : {};
+  const href = routeHref(
+    route.chapter,
+    route.step,
+    button.dataset.detail,
+    selection,
+  );
   if (location.hash === href) render();
   else location.hash = href;
 });
