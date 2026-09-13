@@ -437,6 +437,14 @@ function renderChapterFrame(route, scene) {
     ? `Lesson ${positionLabel(key)}`
     : kicker;
   document.getElementById('chapter-kicker').hidden = scene.page === 'home';
+  const hero = document.getElementById('hero-image');
+  if (scene.hero) {
+    hero.src = scene.hero.image;
+    hero.width = scene.hero.width;
+    hero.height = scene.hero.height;
+    hero.alt = scene.hero.alt;
+  }
+  hero.hidden = !scene.hero;
   mastheadLinks.forEach((link) => {
     if (link.hash === `#${key}`) link.setAttribute('aria-current', 'page');
     else link.removeAttribute('aria-current');

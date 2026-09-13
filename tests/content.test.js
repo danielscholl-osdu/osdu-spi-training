@@ -1151,10 +1151,23 @@ test('audio markers are ordered, inside the recording, and point at real views',
   );
   assert.ok(!home.includes('source-cards'), 'the source cards are gone');
   assert.ok(
-    home.indexOf('class="home-sources"') >
-      home.indexOf('SPI means three things'),
-    'sources follow the three meanings, collapsed',
+    home.indexOf('home-introduction') < home.indexOf('class="home-names"') &&
+      home.indexOf('class="home-names"') <
+        home.indexOf('class="home-lessons"') &&
+      home.indexOf('class="home-lessons"') <
+        home.indexOf('class="home-sources"'),
+    'Start runs introduction, three meanings, lessons, then go deeper',
   );
+  assert.ok(
+    !home.includes('<details class="home-sources"'),
+    'sources are not collapsed',
+  );
+  const heroFile = new URL(
+    `../public/${chapters.start.hero.image}`,
+    import.meta.url,
+  );
+  assert.ok(existsSync(heroFile), `missing ${fileURLToPath(heroFile)}`);
+  assert.ok(chapters.start.hero.alt.length > 20, 'the hero image has alt text');
   const html = readFileSync(
     new URL('../src/index.html', import.meta.url),
     'utf8',

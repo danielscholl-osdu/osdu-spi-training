@@ -252,18 +252,18 @@ function homePage() {
         ${briefChip()}
       </div>
     </section>
-    <section class="home-lessons" aria-labelledby="home-lessons-title">
-      <h2 id="home-lessons-title">Lessons</h2>
-      <div class="lesson-groups">${lessonIndex()}</div>
-    </section>
     <section class="home-names" aria-labelledby="home-names-title">
       <h2 id="home-names-title">SPI means three things here</h2>
       ${spiNamesFigure()}
     </section>
-    <details class="home-sources">
-      <summary>Go deeper: design guides, decision records, and the community reference</summary>
+    <section class="home-lessons" aria-labelledby="home-lessons-title">
+      <h2 id="home-lessons-title">Lessons</h2>
+      <div class="lesson-groups">${lessonIndex()}</div>
+    </section>
+    <section class="home-sources" aria-labelledby="home-sources-title">
+      <h2 id="home-sources-title">Go deeper</h2>
       <p class="home-more-sources">${moreSources.map(sourceAnchor).join('')}</p>
-    </details>`;
+    </section>`;
 }
 
 function mythsPage() {

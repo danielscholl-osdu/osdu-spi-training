@@ -220,6 +220,15 @@ body[data-page='home'] .intro p {
   max-width: 640px;
   margin-top: 14px;
 }
+#hero-image {
+  display: block;
+  width: 100%;
+  height: auto;
+  margin-top: 22px;
+  border-radius: 12px;
+  border: 1px solid var(--line);
+  background: #fff;
+}
 .chapter-kicker {
   font-size: 13px;
   font-weight: 600;

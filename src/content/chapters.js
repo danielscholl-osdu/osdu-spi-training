@@ -36,7 +36,13 @@ export const chapters = {
     headline:
       'Understand the Azure SPI machinery.<span>The stack, the provider inside each service, and the engineering that keeps them current.</span>',
     intro:
-      'SPI stands for Service Provider Interface. It connects shared OSDU code to a cloud implementation. Learn how the Azure stack is assembled and how service forks sync upstream changes, build images, and test them against Azure resources.',
+      'OSDU on Azure runs on machinery of its own: a stack in your subscription that runs the services, a provider inside each service where shared code hands off to Azure, and forks with scheduled workflows that keep that provider synced with upstream, built into images, and tested in a running stack. The seam where the hand-off happens is the Service Provider Interface, and SPI is the name this site uses for all three.',
+    hero: {
+      image: 'start/machinery.webp',
+      width: 1400,
+      height: 347,
+      alt: 'Three meshing gears joined by a loop arrow: the Azure stack, the provider interface inside a service, and the fork workflows.',
+    },
     reference:
       'CIMPL is the open-source community implementation used for comparison.',
     referenceLink: {
