@@ -132,7 +132,7 @@ export const chapters = {
     title: 'How it comes to life',
     subtitle: 'Create, use, and remove',
     headline:
-      'spi up creates the environment;<span>Flux continues the rollout.</span>',
+      'spi up creates the environment.<span>Flux continues the rollout.</span>',
     intro:
       'Build on lesson 01’s wide map: follow dev1 from your workstation into the resource group, AKS cluster, and namespaces, then remove it. Each moment shows who acts and what changes.',
     figure: 'Follow the environment',

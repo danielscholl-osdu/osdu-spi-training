@@ -1287,7 +1287,7 @@ test('lesson 02 editorial copy states the continuing rollout', () => {
 
   assert.equal(
     chapter.headline.replace(/<[^>]+>/g, ' ').trim(),
-    'spi up creates the environment; Flux continues the rollout.',
+    'spi up creates the environment. Flux continues the rollout.',
   );
   assert.match(
     chapter.outcomes[0].text,
