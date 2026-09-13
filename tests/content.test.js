@@ -16,6 +16,7 @@ import {
 } from '../src/components/architecture.js';
 import { infographics } from '../src/components/infographics.js';
 import { escapeHtml } from '../src/components/node.js';
+import { resolveDetail } from '../src/components/evidence.js';
 import {
   chapterOutcomes,
   chapterScope,
@@ -150,6 +151,58 @@ test('chapters connect to renderers, explanations, and named sources', () => {
   }
   for (const [id, chapter] of pageChapters)
     assert.ok(chapter.page, `${id}: page chapter names no renderer`);
+});
+
+test('evidence resolver applies chapter context without inferring ownership', () => {
+  const details = {
+    sample: {
+      label: 'Fallback context',
+      title: 'Base title.',
+      body: 'First sentence. Second sentence.',
+      artifact: { label: 'Base artifact', code: 'base' },
+      source: 'architecture',
+      goDeeper: ['lifecycle'],
+      here: {
+        lesson: {
+          context: 'Lesson context',
+          owner: 'Explicit owner',
+          summary: 'Authored summary.',
+          more: 'Authored detail.',
+          artifact: { label: 'Lesson artifact', code: 'lesson' },
+          source: 'ownership',
+        },
+        concise: {
+          summary: 'Concise summary.',
+          more: '',
+        },
+      },
+    },
+  };
+  const original = structuredClone(details);
+
+  const base = resolveDetail('sample', 'elsewhere', details);
+  assert.equal(base.label, 'Fallback context');
+  assert.equal(base.context, 'Fallback context');
+  assert.equal(base.owner, null);
+  assert.equal(base.summary, 'Base title. First sentence. Second sentence.');
+  assert.equal(base.more, '');
+  assert.deepEqual(base.goDeeper, ['lifecycle']);
+
+  const lesson = resolveDetail('sample', 'lesson', details);
+  assert.equal(lesson.context, 'Lesson context');
+  assert.equal(lesson.owner, 'Explicit owner');
+  assert.equal(lesson.summary, 'Authored summary.');
+  assert.equal(lesson.more, 'Authored detail.');
+  assert.deepEqual(lesson.artifact, {
+    label: 'Lesson artifact',
+    code: 'lesson',
+  });
+  assert.equal(lesson.source, 'ownership');
+
+  const concise = resolveDetail('sample', 'concise', details);
+  assert.equal(concise.more, '');
+  assert.equal(resolveDetail('missing', 'lesson', details), null);
+  assert.deepEqual(details, original);
 });
 
 test('every explanation names an artifact and a source', () => {
