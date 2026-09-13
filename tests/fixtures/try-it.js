@@ -1,5 +1,6 @@
 export const singleVariantTryIt = {
   activity: 'trace the partition lookup',
+  summary: 'Try it: trace the partition lookup · browser only',
   variants: [
     {
       label: 'Read the provider path',
@@ -56,6 +57,7 @@ export const singleVariantTryIt = {
 
 export const multipleVariantTryIt = {
   activity: 'compare environment routes',
+  summary: 'Try it: compare environment routes · Azure charges apply',
   variants: [
     {
       label: 'Without Azure',
@@ -160,4 +162,8 @@ export const multipleVariantTryIt = {
       },
     },
   ],
+  connection: {
+    text: 'Already have an environment? Connect to it with spi connect --resource-group <resource-group> --cluster <cluster-name>.',
+    sources: ['lifecycle'],
+  },
 };

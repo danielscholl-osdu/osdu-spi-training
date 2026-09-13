@@ -109,19 +109,10 @@ function tryItVariant(variant, index, count) {
 
 export function tryItBand(chapter) {
   if (!chapter.tryIt) return '';
-  const { activity, variants } = chapter.tryIt;
-  const summary =
-    variants.length === 1
-      ? `${variants[0].access} · ${variants[0].time.active}`
-      : variants
-          .map(
-            (variant) =>
-              `${variant.label}: ${variant.access} · ${variant.time.active}`,
-          )
-          .join(' · ');
+  const { activity, summary, variants, connection } = chapter.tryIt;
   return `<section class="try-it" aria-label="Try it: ${escapeHtml(activity)}">
     <details>
-      <summary><span>Try it: ${escapeHtml(activity)}</span><small> · ${escapeHtml(summary)}</small></summary>
+      <summary><span>${escapeHtml(summary)}</span></summary>
       <div class="try-it-body">
         <p class="try-it-safety">You run this activity in your own account. This site executes nothing and reports no live environment state.</p>
         <div class="try-it-variants">${variants
@@ -129,6 +120,7 @@ export function tryItBand(chapter) {
             tryItVariant(variant, index, variants.length),
           )
           .join('')}</div>
+        ${connection ? `<section class="try-it-connection"><h3>Using an existing environment</h3><p>${escapeHtml(connection.text)}</p>${sourceLinks(connection.sources)}</section>` : ''}
       </div>
     </details>
   </section>`;
@@ -275,6 +267,10 @@ function mythsPage() {
     .join('');
 }
 
+export function isLifecycleLesson(chapter) {
+  return chapter?.lesson === 'lifecycle';
+}
+
 export function hasClaims(chapter) {
   return chapter.outcomes?.some((claim) => typeof claim !== 'string') || false;
 }
@@ -348,6 +344,13 @@ export function resolveLessonSelection(chapter, route) {
 
 export function claimStrip(key) {
   const chapter = chapters[key];
+  if (isLifecycleLesson(chapter) && hasClaims(chapter))
+    return `<section class="lesson-claims is-statements" aria-label="Key ideas"><ul class="claim-statements">${chapter.outcomes
+      .map(
+        (claim) =>
+          `<li><b>${escapeHtml(claim.headline)}</b><span>${escapeHtml(claim.why)}</span></li>`,
+      )
+      .join('')}</ul></section>`;
   if (!hasClaims(chapter)) return '';
   return `<section class="claims" aria-label="Lesson claims">
     <p class="guide-kicker">Select an idea to highlight it on the map.</p>
@@ -467,7 +470,8 @@ export function mythCallout(id, chapterKey) {
   const myth = myths.find((entry) => entry.id === id);
   if (!myth) return '';
   const source = sources[myth.source];
-  const route = parseRoute(myth.route);
+  const target = myth.here?.[chapterKey] || myth.route;
+  const route = parseRoute(target);
   const sameView = route.chapter === chapterKey;
   const chapter = chapters[chapterKey];
   const claim = (chapter.outcomes || []).findIndex(
@@ -477,7 +481,7 @@ export function mythCallout(id, chapterKey) {
   const href =
     sameView && claim >= 0 && hopIndexForRoute(chapter, route) >= 0
       ? routeHref(route.chapter, route.step, route.detail, { claim })
-      : myth.route;
+      : target;
   return `<aside class="easy-mistake" aria-label="Easy mistake">
     <div class="easy-mistake-head"><span class="guide-kicker">Easy mistake</span></div>
     <p class="myth-claim">“${myth.claim}”</p>

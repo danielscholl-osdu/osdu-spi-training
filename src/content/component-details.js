@@ -263,7 +263,7 @@ export const componentDetails = {
       'bring-up': {
         context: 'Proof after spi up',
         summary:
-          'For the opendes lookup in your environment, a successful spi up does not prove that the request path is ready. The CLI verifies the requested Git artifact revision while Flux overlaps its final work. spi status --watch observes configured workload health and initialization, and spi info --show-apis discovers the endpoint; only a successful authenticated lookup proves the exercised API path, not every API. A Running pod is not necessarily Ready, and an initialization Job should be Complete.',
+          'For the opendes lookup in your environment, a successful spi up does not prove that the request path is ready. The CLI verifies the requested Git artifact revision before it exits, while Flux overlaps its final work. Ready Kustomizations and HelmReleases report workload health, and Complete initialization Jobs report initialization; spi status --watch observes both but makes no API request. spi info --show-apis discovers the endpoint, and only a successful authenticated lookup proves the exercised API path, not every API. A Running pod is not necessarily Ready.',
       },
     },
   },

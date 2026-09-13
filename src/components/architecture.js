@@ -110,9 +110,10 @@ export function creationWalkthrough(route) {
   const inspectionSelection = ['provision', 'bootstrap'].includes(moment.id)
     ? { claim: 0 }
     : {};
-  return `<div class="creation-intro"><span>Illustrated lifecycle</span><a href="${routeHref('bring-up', 'inspect', 'connect')}" class="small-link">Already have a stack? Connect to it →</a></div>
-    <nav class="creation-steps" aria-label="Lifecycle moments">${creationMoments.map((item, i) => `<a href="${routeHref('bring-up', item.id)}" data-route-key="${item.id}" ${i === index ? 'aria-current="step"' : ''}><span>${String(i + 1).padStart(2, '0')}</span><b>${item.name}</b></a>`).join('')}</nav>
-    <div class="creation-story"><div><span class="group-label">${moment.owner}</span><h3>${moment.title}</h3><p>${moment.copy}</p><a class="small-link look-closer" href="${routeHref('bring-up', moment.id, moment.detail, inspectionSelection)}" data-look-closer>Look closer ↗</a></div><div class="timing"><b>${moment.time}</b><small>${moment.timeKind}</small></div></div>
+  const next = creationMoments[index + 1];
+  return `<div class="creation-intro"><span>Illustrated lifecycle</span></div>
+    <nav class="creation-steps" aria-label="Lifecycle stages">${creationMoments.map((item, i) => `<a href="${routeHref('bring-up', item.id)}" data-route-key="${item.id}" data-stage-link ${i === index ? 'aria-current="step"' : ''}><span>${String(i + 1).padStart(2, '0')}</span><b>${item.name}</b></a>`).join('')}</nav>
+    <div class="creation-story" id="creation-story"><div><span class="group-label">${moment.owner}</span><h3 id="creation-story-title" tabindex="-1">${moment.title}</h3><p>${moment.copy}</p><a class="small-link look-closer" href="${routeHref('bring-up', moment.id, moment.detail, inspectionSelection)}" data-look-closer>Look closer ↗</a></div><div class="timing"><b>${moment.time}</b>${moment.timeKind ? `<small>${moment.timeKind}</small>` : ''}</div></div>
     ${architectureMap(index)}
-    <div class="creation-controls">${index ? `<a href="${routeHref('bring-up', creationMoments[index - 1].id)}" data-route-key="previous">← Previous</a>` : '<span></span>'}<span>${index + 1} / ${creationMoments.length}</span><a href="${routeHref('bring-up', creationMoments[(index + 1) % creationMoments.length].id)}" data-route-key="next">${index === creationMoments.length - 1 ? 'Return to the empty footprint ↺' : 'Continue →'}</a></div>`;
+    ${next ? `<div class="creation-controls"><a href="${routeHref('bring-up', next.id)}" data-route-key="next" data-stage-link data-stage-continue>Continue to ${next.name} →</a></div>` : ''}`;
 }

@@ -14,6 +14,7 @@ import {
   exampleStrip,
   listenChips,
   hasClaims,
+  isLifecycleLesson,
   claimStrip,
   claimContext,
   guidePreview,
@@ -28,6 +29,7 @@ import {
 } from './components/pages.js';
 import { frameVideo } from './content/audio.js';
 import { createPlayer } from './components/player.js';
+import { creationMoments } from './content/creation-moments.js';
 import { parseRoute, routeHref } from './router.js';
 
 const order = Object.keys(chapters);
@@ -36,6 +38,15 @@ let previousRoute = null;
 let lastSelectedElement = null;
 const inspector = document.getElementById('inspector');
 const resources = document.getElementById('masthead-resources');
+const masthead = document.querySelector('.masthead');
+function syncMastheadHeight() {
+  document.documentElement.style.setProperty(
+    '--masthead-height',
+    `${masthead.offsetHeight}px`,
+  );
+}
+syncMastheadHeight();
+new ResizeObserver(syncMastheadHeight).observe(masthead);
 const player = createPlayer(
   document.getElementById('deep-dive'),
   document.getElementById('audio-dock'),
@@ -115,13 +126,19 @@ function applyPolicy() {
   const claim = chapter.outcomes[lessonState.claim];
   const tracing = lessonState.hop >= 0;
   const presentation = applyExamplePresentation(chapter, tracing);
+  // A lifecycle lesson is driven by its stage: nothing recedes, and the
+  // stage's own evidence component carries the Inspect affordance.
+  const stage = isLifecycleLesson(chapter)
+    ? creationMoments.find((moment) => moment.id === route.step)
+    : null;
+  const staged = Boolean(stage) && !tracing;
   const focus = new Set(
     tracing
       ? presentation.hops.slice(0, lessonState.hop + 1).map((hop) => hop.detail)
       : claim.focus || [],
   );
   const scopes = new Set(
-    tracing ? presentation.scopes || [] : claim.scopes || [],
+    tracing ? presentation.scopes || [] : staged ? [] : claim.scopes || [],
   );
   const diagram = document.getElementById('diagram');
   diagram.dataset.policy = lessonState.policy;
@@ -130,8 +147,8 @@ function applyPolicy() {
     .forEach((node) => node.classList.remove('path-emphasis'));
   diagram.querySelectorAll('.node').forEach((node) => {
     const active = focus.has(node.dataset.detail);
-    node.classList.toggle('is-focus', active);
-    node.classList.toggle('is-receded', !active);
+    node.classList.toggle('is-focus', !staged && active);
+    node.classList.toggle('is-receded', !staged && !active);
     node.classList.toggle('is-path', tracing && active);
     node.classList.toggle('is-traced', tracing && active);
   });
@@ -140,7 +157,8 @@ function applyPolicy() {
     .forEach((node) =>
       node.classList.toggle(
         'is-evidence',
-        !tracing && node.dataset.detail === claim.evidence,
+        !tracing &&
+          node.dataset.detail === (staged ? stage.detail : claim.evidence),
       ),
     );
   diagram
@@ -181,7 +199,11 @@ function applyPolicy() {
   const crossing = diagram.querySelector(
     '.boundary-crossing span, [data-trace-crossing]',
   );
-  const crossingLabel = tracing ? presentation.crossing : claim.crossing;
+  const crossingLabel = tracing
+    ? presentation.crossing
+    : staged
+      ? stage.action
+      : claim.crossing;
   if (crossing && typeof crossingLabel === 'string')
     crossing.textContent = crossingLabel;
   const context = document.getElementById('claim-context');
@@ -193,7 +215,9 @@ function applyPolicy() {
     reason.textContent = hop?.copy || '';
     context.replaceChildren(sentence, reason);
   } else {
-    context.innerHTML = claimContext(route.chapter, lessonState.claim);
+    context.innerHTML = staged
+      ? ''
+      : claimContext(route.chapter, lessonState.claim);
   }
   context.hidden = !context.textContent.trim();
 }
@@ -352,6 +376,7 @@ function renderChapterFrame(route, scene) {
     variant: scene.example?.defaultVariant || 'normal',
   };
   document.body.classList.toggle('has-claims', structured);
+  document.body.classList.toggle('is-lifecycle', isLifecycleLesson(scene));
   delete document.getElementById('diagram').dataset.policy;
   document.getElementById('chapter-claims').innerHTML = claimStrip(key);
   const comparison = partitionComparison(key);
@@ -359,7 +384,8 @@ function renderChapterFrame(route, scene) {
   comparisonSlot.innerHTML = comparison;
   comparisonSlot.hidden = !comparison;
   document.getElementById('lesson-optional').hidden = !structured;
-  document.getElementById('map-policy').hidden = !structured;
+  document.getElementById('map-policy').hidden =
+    !structured || isLifecycleLesson(scene);
   document.getElementById('map-hint').hidden = structured;
   const context = document.getElementById('claim-context');
   context.innerHTML = '';
@@ -620,6 +646,8 @@ function render() {
     element.scrollIntoView({ block: 'center' });
   }
   jumpRequested = false;
+  if (stageRequested && !chapterChanged) revealStage(stageRequested);
+  stageRequested = null;
   if (chapterChanged) {
     if (previousRoute) {
       window.scrollTo({ top: 0, behavior: 'instant' });
@@ -663,6 +691,24 @@ document.addEventListener('change', (event) => {
 });
 
 let jumpRequested = false;
+let stageRequested = null;
+// A stage control leaves the new stage's explanation readable below the sticky
+// stage bar; Continue also moves focus to it, since the control scrolled away.
+function revealStage(kind) {
+  const story = document.getElementById('creation-story');
+  const bar = document.querySelector('.creation-steps');
+  if (!story || !bar) return;
+  const heading = document.getElementById('creation-story-title');
+  const clear =
+    Math.max(0, masthead.getBoundingClientRect().bottom) + bar.offsetHeight;
+  const top = story.getBoundingClientRect().top;
+  if (
+    top < clear ||
+    heading.getBoundingClientRect().bottom > window.innerHeight
+  )
+    window.scrollBy({ top: top - clear, behavior: 'instant' });
+  if (kind === 'continue') heading.focus({ preventScroll: true });
+}
 function isModifiedClick(event) {
   return (
     event.button ||
@@ -698,6 +744,16 @@ document.addEventListener('click', (event) => {
   if (lookCloser) {
     pendingOpener = lookCloser;
     if (lookCloser.hash === location.hash) {
+      event.preventDefault();
+      render();
+    }
+  }
+  const stageLink = event.target.closest('a[data-stage-link]');
+  if (stageLink) {
+    stageRequested = stageLink.hasAttribute('data-stage-continue')
+      ? 'continue'
+      : 'stage';
+    if (stageLink.hash === location.hash) {
       event.preventDefault();
       render();
     }

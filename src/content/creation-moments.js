@@ -11,7 +11,6 @@ export const creationMoments = [
     detail: 'workstation',
     state: 'Planned environment',
     time: 'Before provisioning',
-    timeKind: 'Starting point',
   },
   {
     id: 'provision',
@@ -31,7 +30,7 @@ export const creationMoments = [
     id: 'bootstrap',
     name: 'Prepare AKS',
     owner: 'SPI CLI · bootstrap',
-    title: 'Wire this environment into the cluster.',
+    title: 'Prepare cluster configuration and identity.',
     copy: 'The same invocation supplies namespaces, configuration, seed credentials, and identity bindings. Workloads will consume these inputs when Flux starts.',
     commands: ['spi up --env <name>'],
     commandLabel: 'Still the same invocation',
@@ -59,8 +58,8 @@ export const creationMoments = [
     id: 'inspect',
     name: 'Use the stack',
     owner: 'You · observe and call',
-    title: 'Connect, follow readiness, then make an OSDU call.',
-    copy: 'For a shared environment, connect using the coordinates from its owner. Check health and initialization, discover an API endpoint, and mint the app-only caller for an authenticated request.',
+    title: 'Follow readiness, then make an OSDU call.',
+    copy: 'Check health and initialization, discover an API endpoint, and get a token for an authenticated readiness check.',
     commands: [
       'spi status --watch',
       'spi info --show-apis',

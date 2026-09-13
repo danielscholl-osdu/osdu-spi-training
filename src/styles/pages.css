@@ -2571,6 +2571,44 @@ body:has(.audio-dock:not([hidden])) main {
 .claim-item:has([aria-pressed='true']) .claim-evidence {
   display: inline-block;
 }
+/* Lifecycle lesson: statements above the map; the stage bar drives it. */
+.claim-statements {
+  list-style: none;
+  margin: 0 0 18px;
+  padding: 0;
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 10px;
+}
+.claim-statements li {
+  display: grid;
+  gap: 6px;
+  align-content: start;
+  padding: 10px;
+  border-top: 3px solid var(--line);
+}
+.claim-statements b {
+  font-size: 15px;
+  line-height: 1.4;
+}
+.claim-statements span {
+  color: var(--muted);
+  font-size: 13.5px;
+  line-height: 1.5;
+}
+.creation-steps {
+  top: var(--masthead-height, 68px);
+}
+.creation-story h3:focus {
+  outline: none;
+}
+.creation-story h3:focus-visible {
+  outline: 3px solid #0b78af;
+  outline-offset: 4px;
+}
+.is-lifecycle .creation-controls {
+  justify-content: flex-end;
+}
 .map-policy {
   display: flex;
   border: 1px solid var(--line);
@@ -2779,11 +2817,6 @@ body:has(.audio-dock:not([hidden])) main {
 .try-it details[open] summary span {
   transform: none;
 }
-.try-it summary small {
-  color: var(--muted);
-  font-size: 13px;
-  font-weight: 500;
-}
 .try-it details[open] > summary {
   border-bottom: 1px solid var(--line);
 }
@@ -2831,6 +2864,21 @@ body:has(.audio-dock:not([hidden])) main {
 .try-it-result,
 .try-it-access p + p {
   color: var(--muted);
+}
+.try-it-connection {
+  margin-top: 16px;
+  padding: 12px 14px;
+  border: 1px dashed var(--line);
+  border-radius: 8px;
+}
+.try-it-connection h3 {
+  margin: 0 0 4px;
+  font-size: 14px;
+}
+.try-it-connection p {
+  margin: 0;
+  font-size: 14px;
+  line-height: 1.55;
 }
 .try-it-access {
   padding: 10px 12px;
@@ -3100,6 +3148,7 @@ body:has(.audio-dock:not([hidden])) main {
 }
 @media (max-width: 760px) {
   .claim-list,
+  .claim-statements,
   .claim-context,
   .partition-lookup-lanes,
   .partition-comparison-sources,
@@ -3108,10 +3157,6 @@ body:has(.audio-dock:not([hidden])) main {
   }
   .lesson-next a {
     white-space: normal;
-  }
-  .try-it summary small {
-    display: block;
-    margin-top: 4px;
   }
   .try-it-body,
   .try-it-variant {

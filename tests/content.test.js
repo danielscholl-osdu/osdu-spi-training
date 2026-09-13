@@ -30,6 +30,7 @@ import {
   frameVideoPlayer,
   guideFigure,
   hasClaims,
+  isLifecycleLesson,
   hopIndexForRoute,
   mythCallout,
   pageRenderers,
@@ -136,6 +137,16 @@ function verifyTryIt(tryIt, context) {
 
   assert.ok(tryIt && typeof tryIt === 'object', `${context}: tryIt`);
   nonempty(tryIt.activity, 'activity');
+  nonempty(tryIt.summary, 'summary');
+  assert.ok(
+    tryIt.summary.startsWith(`Try it: ${tryIt.activity}`) &&
+      tryIt.summary.length <= 64,
+    `${context}: summary is one short line naming the activity`,
+  );
+  if (tryIt.connection !== undefined) {
+    nonempty(tryIt.connection.text, 'connection.text');
+    sourceKeys(tryIt.connection.sources, 'connection.sources', true);
+  }
   assert.ok(
     Array.isArray(tryIt.variants) && tryIt.variants.length,
     `${context}: variants`,
@@ -890,7 +901,8 @@ test('selection intent is additive and invalid qualifiers preserve legacy routes
     for (const [claim, outcome] of chapter.outcomes.entries()) {
       const step = outcome.evidenceStep || outcome.step || '';
       const href = routeHref(key, step, outcome.evidence, { claim });
-      assert.ok(claimsMarkup.includes(`href="${href}"`), href);
+      if (!isLifecycleLesson(chapter))
+        assert.ok(claimsMarkup.includes(`href="${href}"`), href);
       assert.deepEqual(
         resolveLessonSelection(chapter, parseRoute(href)),
         { claim, hop: -1, exampleOpen: false },
@@ -1280,6 +1292,24 @@ test('tryIt fixtures and authored recipes satisfy the content contract', () => {
 });
 
 test('tryIt validation rejects focused invalid clones', () => {
+  const missingSummary = structuredClone(singleVariantTryIt);
+  delete missingSummary.summary;
+  assert.throws(
+    () => verifyTryIt(missingSummary, 'missing summary'),
+    /summary/,
+  );
+
+  const longSummary = structuredClone(singleVariantTryIt);
+  longSummary.summary = `Try it: ${'a very long label '.repeat(6)}`;
+  assert.throws(() => verifyTryIt(longSummary, 'long summary'), /summary/);
+
+  const invalidConnection = structuredClone(multipleVariantTryIt);
+  invalidConnection.connection.sources = ['unknown'];
+  assert.throws(
+    () => verifyTryIt(invalidConnection, 'invalid connection'),
+    /unknown source/,
+  );
+
   const invalidAccess = structuredClone(singleVariantTryIt);
   invalidAccess.variants[0].access = 'free';
   assert.throws(() => verifyTryIt(invalidAccess, 'invalid access'), /access/);
@@ -1310,8 +1340,9 @@ test('tryIt renderer returns an inert, escaped native disclosure', () => {
   const multiple = tryItBand({ tryIt: multipleVariantTryIt });
   assert.match(
     single,
-    /Try it: trace the partition lookup<\/span><small> · browser only · About 5 minutes/,
+    /<summary><span>Try it: trace the partition lookup · browser only<\/span><\/summary>/,
   );
+  assert.doesNotMatch(single, /<summary>.*About 5 minutes.*<\/summary>/s);
   for (const text of [
     'Read the provider path',
     'Prerequisites',
@@ -1330,8 +1361,18 @@ test('tryIt renderer returns an inert, escaped native disclosure', () => {
     assert.ok(single.includes(text), text);
   assert.match(
     multiple,
-    /Without Azure: workstation setup · About 5 minutes · With Azure: Azure resources billed separately · About 10 minutes/,
+    /<summary><span>Try it: compare environment routes · Azure charges apply<\/span><\/summary>/,
   );
+  for (const variant of multipleVariantTryIt.variants)
+    assert.ok(
+      multiple.includes(escapeHtml(variant.time.active)),
+      `${variant.label}: timing stays inside the band`,
+    );
+  assert.match(
+    multiple,
+    /<h3>Using an existing environment<\/h3><p>Already have an environment\? Connect to it with spi connect --resource-group &lt;resource-group&gt;/,
+  );
+  assert.doesNotMatch(single, /Using an existing environment/);
   assert.match(multiple, /An Azure subscription and permissions/);
   assert.match(multiple, /<code>spi up --env &lt;name&gt;<\/code>/);
 
@@ -1598,11 +1639,19 @@ test('structured claims resolve their focus, evidence, and scopes on every scene
         );
     const claimsMarkup = claimStrip(key);
     const outcomesMarkup = chapterOutcomes(key);
-    assert.match(
-      claimsMarkup,
-      /Select an idea to highlight it on the map\./,
-      `${key}: learner-facing claim instruction`,
-    );
+    const lifecycle = isLifecycleLesson(chapter);
+    if (lifecycle)
+      assert.doesNotMatch(
+        claimsMarkup,
+        /<button|data-claim|data-evidence|aria-pressed|Select an idea/,
+        `${key}: lifecycle claims are statements, not controls`,
+      );
+    else
+      assert.match(
+        claimsMarkup,
+        /Select an idea to highlight it on the map\./,
+        `${key}: learner-facing claim instruction`,
+      );
     assert.doesNotMatch(claimsMarkup, /claims, one map/);
     claims.forEach((claim, index) => {
       const contextMarkup = claimContext(key, index);
@@ -1631,29 +1680,37 @@ test('structured claims resolve their focus, evidence, and scopes on every scene
         outcomesMarkup.includes(escapeHtml(claim.text)),
         `${key}: claim ${index} is carried forward`,
       );
-      assert.ok(
-        contextMarkup.includes(escapeHtml(claim.text)),
-        `${key}: claim ${index} sentence is beside the map`,
-      );
-      assert.ok(
-        contextMarkup.includes(escapeHtml(claim.why)),
-        `${key}: claim ${index} reason is beside the map`,
-      );
-      assert.ok(
-        !claimsMarkup.includes(escapeHtml(claim.why)),
-        `${key}: claim ${index} reason is absent from compact controls`,
-      );
-      assert.ok(
-        claimsMarkup.includes(
-          routeHref(
-            key,
-            claim.evidenceStep || claim.step || null,
-            claim.evidence,
-            { claim: index },
+      if (lifecycle) {
+        assert.ok(
+          claimsMarkup.includes(escapeHtml(claim.headline)) &&
+            claimsMarkup.includes(escapeHtml(claim.why)),
+          `${key}: claim ${index} statement shows its headline and reason`,
+        );
+      } else {
+        assert.ok(
+          contextMarkup.includes(escapeHtml(claim.text)),
+          `${key}: claim ${index} sentence is beside the map`,
+        );
+        assert.ok(
+          contextMarkup.includes(escapeHtml(claim.why)),
+          `${key}: claim ${index} reason is beside the map`,
+        );
+        assert.ok(
+          !claimsMarkup.includes(escapeHtml(claim.why)),
+          `${key}: claim ${index} reason is absent from compact controls`,
+        );
+        assert.ok(
+          claimsMarkup.includes(
+            routeHref(
+              key,
+              claim.evidenceStep || claim.step || null,
+              claim.evidence,
+              { claim: index },
+            ),
           ),
-        ),
-        `${key}: claim ${index} evidence destination`,
-      );
+          `${key}: claim ${index} evidence destination`,
+        );
+      }
       if (claim.steps) {
         assert.ok(claim.step, `${key}: claim ${index} entry step`);
         assert.ok(
@@ -1839,23 +1896,25 @@ test('lesson 02 editorial copy states the continuing rollout', () => {
 test('lesson 02 readiness signals separate orchestration from API proof', () => {
   const readiness = chapters['bring-up'].outcomes[1];
   const visibleCopy = `${readiness.text} ${readiness.why}`;
+  const explanation = resolveDetail('readiness', 'bring-up').summary;
 
   assert.equal(readiness.headline, 'CLI success is not API readiness.');
   assert.match(readiness.text, /spi up does not establish API readiness/);
   assert.match(readiness.text, /spi status --watch/);
   assert.match(readiness.text, /authenticated request/);
-  assert.match(
+  assert.equal(
     readiness.why,
-    /requested Git artifact revision is verified before that exit/,
+    'Flux and initialization can continue after spi up returns. Check workload health and initialization with spi status --watch, then verify the API operation you need.',
   );
-  assert.match(readiness.why, /Flux overlaps the final CLI stages/);
-  assert.match(readiness.why, /Ready Kustomizations and HelmReleases/);
-  assert.match(readiness.why, /Complete initialization Jobs/);
+  assert.match(explanation, /requested Git artifact revision before it exits/);
+  assert.match(explanation, /Flux overlaps its final work/);
+  assert.match(explanation, /Ready Kustomizations and HelmReleases/);
+  assert.match(explanation, /Complete initialization Jobs/);
   assert.match(
-    readiness.why,
-    /authenticated request proves only the exercised API path/,
+    explanation,
+    /only a successful authenticated lookup proves the exercised API path/,
   );
-  assert.match(readiness.why, /does not make that request/);
+  assert.match(explanation, /makes no API request/);
   for (const phrase of ['first of five', 'the rest', 'later milestone'])
     assert.doesNotMatch(visibleCopy, new RegExp(phrase, 'i'));
 });
@@ -1869,17 +1928,24 @@ test('lesson 02 claim rendering and example routes preserve lesson 01 behavior',
     '#bring-up/inspect?detail=readiness&claim=1',
     '#bring-up/remove?detail=retained&claim=2',
   ];
+  assert.ok(isLifecycleLesson(chapter), 'lesson 02 is the lifecycle lesson');
+  assert.deepEqual(
+    Object.entries(chapters)
+      .filter(([, entry]) => isLifecycleLesson(entry))
+      .map(([key]) => key),
+    ['bring-up'],
+  );
+  assert.doesNotMatch(strip, /<button|data-claim|data-evidence|aria-pressed/);
   for (const [index, claim] of chapter.outcomes.entries()) {
-    const context = claimContext('bring-up', index);
     assert.ok(strip.includes(claim.headline), `claim ${index} headline`);
-    assert.ok(!strip.includes(claim.why), `claim ${index} compact control`);
-    assert.ok(context.includes(claim.text), `claim ${index} context sentence`);
-    assert.ok(context.includes(claim.why), `claim ${index} context reason`);
+    assert.ok(strip.includes(claim.why), `claim ${index} statement reason`);
     assert.ok(outcomes.includes(claim.text), `claim ${index} full outcome`);
-    assert.ok(
-      strip.includes(`href="${expectedEvidence[index]}"`),
-      `claim ${index} evidence route`,
+    assert.deepEqual(
+      resolveLessonSelection(chapter, parseRoute(expectedEvidence[index])),
+      { claim: index, hop: -1, exampleOpen: false },
+      `claim ${index} published evidence route still resolves`,
     );
+    verifyRoute(expectedEvidence[index], `claim ${index} evidence route`);
   }
 
   const momentClaims = {
@@ -1946,6 +2012,101 @@ test('lesson 02 claim rendering and example routes preserve lesson 01 behavior',
   assert.match(
     lessonOneExample,
     /The provider checks its cache, then Azure Table Storage/,
+  );
+});
+
+test('lesson 02 is operated by its lifecycle stages', () => {
+  const chapter = chapters['bring-up'];
+  assert.equal(
+    chapter.question,
+    'How is the stack created, and when is it usable?',
+  );
+  assert.doesNotMatch(chapter.intro, /Each moment shows who acts/);
+  const byId = Object.fromEntries(
+    creationMoments.map((moment) => [moment.id, moment]),
+  );
+  assert.equal(
+    byId.bootstrap.title,
+    'Prepare cluster configuration and identity.',
+  );
+  assert.match(
+    byId.inspect.copy,
+    /get a token for an authenticated readiness check/,
+  );
+  assert.doesNotMatch(byId.inspect.copy, /app-only caller|shared environment/);
+  assert.equal(byId.start.time, 'Before provisioning');
+  assert.equal(byId.start.timeKind, undefined);
+  for (const id of ['provision', 'bootstrap', 'reconcile', 'inspect', 'remove'])
+    assert.ok(byId[id].timeKind, `${id}: timing keeps its label`);
+
+  for (const [index, moment] of creationMoments.entries()) {
+    const markup = creationWalkthrough(
+      parseRoute(routeHref('bring-up', moment.id)),
+    );
+    const next = creationMoments[index + 1];
+    assert.doesNotMatch(markup, /Previous|Already have a stack|Connect to it/);
+    assert.equal(
+      [...markup.matchAll(/data-stage-link/g)].length,
+      creationMoments.length + (next ? 1 : 0),
+      `${moment.id}: stage links`,
+    );
+    assert.match(
+      markup,
+      /<div class="creation-story" id="creation-story">.*<h3 id="creation-story-title" tabindex="-1">/s,
+    );
+    if (next)
+      assert.ok(
+        markup.includes(
+          `<a href="${routeHref('bring-up', next.id)}" data-route-key="next" data-stage-link data-stage-continue>Continue to ${next.name} →</a>`,
+        ),
+        `${moment.id}: Continue names ${next.name}`,
+      );
+    else assert.doesNotMatch(markup, /creation-controls|Continue to/);
+    assert.equal(
+      markup.includes('<small></small>'),
+      false,
+      `${moment.id}: no empty timing label`,
+    );
+  }
+
+  for (const [step, id, detail] of [
+    ['bootstrap', 'delete-secret-rotates', 'vault'],
+    ['reconcile', 'suspended-means-frozen', 'flux'],
+  ]) {
+    const href = `#bring-up/${step}?detail=${detail}`;
+    const callout = mythCallout(id, 'bring-up');
+    assert.ok(
+      callout.includes(`href="${href}" data-map-jump`),
+      `${id}: stays on the lifecycle map`,
+    );
+    assert.equal(chapter.mistakes[step], id);
+    verifyRoute(href, `${id} in lesson 02`);
+    const myth = myths.find((entry) => entry.id === id);
+    assert.match(myth.route, /^#running-stack/, `${id}: collection route kept`);
+    assert.ok(
+      mythCallout(id, 'running-stack').includes(`href="${myth.route}"`),
+      `${id}: other lessons keep the collection route`,
+    );
+  }
+
+  const tryIt = chapter.tryIt;
+  assert.equal(
+    tryIt.summary,
+    'Try it: bring up an environment · Azure charges apply',
+  );
+  assert.deepEqual(
+    tryIt.variants.map((variant) => variant.access),
+    ['Azure resources billed separately', 'browser only'],
+  );
+  assert.match(tryIt.connection.text, /spi connect --resource-group/);
+  const band = tryItBand(chapter);
+  assert.ok(
+    band.indexOf('Run it in your subscription') <
+      band.indexOf('Read a run without Azure'),
+  );
+  assert.match(
+    band,
+    /<summary><span>Try it: bring up an environment · Azure charges apply<\/span><\/summary>/,
   );
 });
 

@@ -20,6 +20,7 @@ export const myths = [
     source: 'flux',
     route: '#running-stack/developer?detail=flux',
     routeLabel: 'Flux on the map',
+    here: { 'bring-up': '#bring-up/reconcile?detail=flux' },
   },
   {
     id: 'async-indexing-works',
@@ -101,6 +102,7 @@ export const myths = [
     source: 'secrets',
     route: '#running-stack/developer?detail=vault',
     routeLabel: 'Key Vault and seed Secrets',
+    here: { 'bring-up': '#bring-up/bootstrap?detail=vault' },
   },
   {
     id: 'reapply-retries',

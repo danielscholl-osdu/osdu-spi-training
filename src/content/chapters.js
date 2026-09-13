@@ -21,7 +21,9 @@
  *
  * @typedef {object} TryIt
  * @property {string} activity
+ * @property {string} summary The one-line collapsed label.
  * @property {TryItVariant[]} variants
+ * @property {{ text: string, sources: string[] }} [connection] Optional note for using an existing environment.
  */
 
 export const chapters = {
@@ -102,6 +104,7 @@ export const chapters = {
     guides: ['familiar', 'inside-the-cluster', 'profiles'],
     tryIt: {
       activity: 'prepare your workstation',
+      summary: 'Try it: prepare your workstation · no Azure sign-in',
       variants: [
         {
           label: 'Install the CLI and check the tools',
@@ -254,6 +257,7 @@ export const chapters = {
   },
   'bring-up': {
     kind: 'map',
+    lesson: 'lifecycle',
     group: 'learn',
     book: 'The stack',
     title: 'How it comes to life',
@@ -261,7 +265,7 @@ export const chapters = {
     headline:
       'spi up creates the environment.<span>Flux continues the rollout.</span>',
     intro:
-      'Build on lesson 01’s wide map: follow your environment from your workstation into the resource group, AKS cluster, and namespaces, then remove it. Each moment shows who acts and what changes.',
+      'Build on lesson 01’s wide map: follow your environment from your workstation into the resource group, AKS cluster, and namespaces, then remove it.',
     figure: 'Follow the environment',
     selected: 'workstation',
     diagram: 'creation',
@@ -287,90 +291,8 @@ export const chapters = {
     },
     tryIt: {
       activity: 'bring up an environment',
+      summary: 'Try it: bring up an environment · Azure charges apply',
       variants: [
-        {
-          label: 'Read a run without Azure',
-          result:
-            'You can name the five readiness signals as separate signals, say what the CLI verifies before it returns, and say what ordinary spi down keeps, without creating anything.',
-          access: 'browser only',
-          accessNote:
-            'The three --help commands read the CLI installed in lesson 01 and contact no subscription; skip them if it is not installed.',
-          prerequisites: [
-            {
-              text: 'A browser. The spi CLI from lesson 01 if you want to read its help; no Azure subscription and no sign-in.',
-              sources: ['install'],
-            },
-          ],
-          time: {
-            active: 'About 15 minutes of reading.',
-            wait: 'No automated waiting.',
-            cleanup: 'Nothing to clean up.',
-          },
-          effects:
-            'Nothing is created or changed. The linked documents are read in the browser, and --help prints option text without calling Azure.',
-          steps: [
-            {
-              click:
-                'Open the deployment lifecycle document and read “From invocation to CLI exit”.',
-              expect:
-                'A stage table that ends in Git-source finalization: the CLI waits for the source, verifies the requested artifact revision, then suspends the source and writes the deploy record before it returns. Under the table: “Flux runs concurrently with those final CLI stages”; there is no moment when the CLI stops and Flux starts.',
-              sources: ['lifecycle'],
-            },
-            {
-              click: 'In the same document, read “Timing and readiness”.',
-              expect:
-                'A five-row signal table: the CLI exits successfully, the Git source has an artifact, Kustomizations and HelmReleases are Ready, initialization Jobs are Complete, an authenticated API request succeeds. Each establishes a different thing and none implies the next. The 45 to 50 minute figure is a centralus planning estimate from prior runs, not a measurement or a guarantee.',
-              sources: ['lifecycle'],
-            },
-            {
-              click: 'Read “Steady state and teardown”.',
-              expect:
-                'Ordinary spi down deletes data and compute; managed identities, the resource group spi-stack-<name>, and its tags survive, so the next spi up reuses the same names. spi down --env <name> --purge is a separate destructive choice that deletes the group and its identities after external-grant cleanup.',
-              sources: ['lifecycle'],
-            },
-            {
-              command: 'spi up --help',
-              expect:
-                'Read, do not run. --env is required; --profile defaults to core; --location defaults to westus3 and its help names eastus2 and centralus as regions with capacity constraints; --tag pins an immutable release tag; --dry-run says it creates the resource group. This needs only the CLI from lesson 01 and makes no Azure call.',
-              sources: ['cli'],
-            },
-            {
-              command: 'spi status --help',
-              expect:
-                'Two options besides --help: --watch (-w) for continuous refresh, and --json. The description is deployment health and reconciliation progress; nothing about API requests.',
-              sources: ['cli'],
-            },
-            {
-              command: 'spi down --help',
-              expect:
-                '--env is required. The description says managed identities survive unless --purge, and --purge deletes the resource group itself, including the managed identities.',
-              sources: ['cli'],
-            },
-          ],
-          alternate: {
-            observation:
-              'spi: command not found, or spi --version reports a release other than 0.16.0.',
-            next: 'The three commands are optional here. Install the CLI with lesson 01’s band, or read the same options in cli.py at the reviewed revision.',
-          },
-          cleanup: {
-            steps: [
-              {
-                click: 'Close the document tabs.',
-                expect: 'Nothing to remove; --help changed nothing.',
-              },
-            ],
-            remains: 'Nothing was created.',
-          },
-          sources: ['lifecycle', 'cli'],
-          tested: {
-            cli: 'spi 0.16.0',
-            stack: 'osdu-spi-stack dc2c956 (release 0.16.0)',
-            template: 'Not applicable: no fork is used.',
-            shell: 'zsh',
-            os: 'macOS 26.6.2 on Apple silicon',
-            date: '2026-09-13',
-          },
-        },
         {
           label: 'Run it in your subscription',
           result:
@@ -480,7 +402,94 @@ export const chapters = {
             date: '2026-09-13',
           },
         },
+        {
+          label: 'Read a run without Azure',
+          result:
+            'You can name the five readiness signals as separate signals, say what the CLI verifies before it returns, and say what ordinary spi down keeps, without creating anything.',
+          access: 'browser only',
+          accessNote:
+            'The three --help commands read the CLI installed in lesson 01 and contact no subscription; skip them if it is not installed.',
+          prerequisites: [
+            {
+              text: 'A browser. The spi CLI from lesson 01 if you want to read its help; no Azure subscription and no sign-in.',
+              sources: ['install'],
+            },
+          ],
+          time: {
+            active: 'About 15 minutes of reading.',
+            wait: 'No automated waiting.',
+            cleanup: 'Nothing to clean up.',
+          },
+          effects:
+            'Nothing is created or changed. The linked documents are read in the browser, and --help prints option text without calling Azure.',
+          steps: [
+            {
+              click:
+                'Open the deployment lifecycle document and read “From invocation to CLI exit”.',
+              expect:
+                'A stage table that ends in Git-source finalization: the CLI waits for the source, verifies the requested artifact revision, then suspends the source and writes the deploy record before it returns. Under the table: “Flux runs concurrently with those final CLI stages”; there is no moment when the CLI stops and Flux starts.',
+              sources: ['lifecycle'],
+            },
+            {
+              click: 'In the same document, read “Timing and readiness”.',
+              expect:
+                'A five-row signal table: the CLI exits successfully, the Git source has an artifact, Kustomizations and HelmReleases are Ready, initialization Jobs are Complete, an authenticated API request succeeds. Each establishes a different thing and none implies the next. The 45 to 50 minute figure is a centralus planning estimate from prior runs, not a measurement or a guarantee.',
+              sources: ['lifecycle'],
+            },
+            {
+              click: 'Read “Steady state and teardown”.',
+              expect:
+                'Ordinary spi down deletes data and compute; managed identities, the resource group spi-stack-<name>, and its tags survive, so the next spi up reuses the same names. spi down --env <name> --purge is a separate destructive choice that deletes the group and its identities after external-grant cleanup.',
+              sources: ['lifecycle'],
+            },
+            {
+              command: 'spi up --help',
+              expect:
+                'Read, do not run. --env is required; --profile defaults to core; --location defaults to westus3 and its help names eastus2 and centralus as regions with capacity constraints; --tag pins an immutable release tag; --dry-run says it creates the resource group. This needs only the CLI from lesson 01 and makes no Azure call.',
+              sources: ['cli'],
+            },
+            {
+              command: 'spi status --help',
+              expect:
+                'Two options besides --help: --watch (-w) for continuous refresh, and --json. The description is deployment health and reconciliation progress; nothing about API requests.',
+              sources: ['cli'],
+            },
+            {
+              command: 'spi down --help',
+              expect:
+                '--env is required. The description says managed identities survive unless --purge, and --purge deletes the resource group itself, including the managed identities.',
+              sources: ['cli'],
+            },
+          ],
+          alternate: {
+            observation:
+              'spi: command not found, or spi --version reports a release other than 0.16.0.',
+            next: 'The three commands are optional here. Install the CLI with lesson 01’s band, or read the same options in cli.py at the reviewed revision.',
+          },
+          cleanup: {
+            steps: [
+              {
+                click: 'Close the document tabs.',
+                expect: 'Nothing to remove; --help changed nothing.',
+              },
+            ],
+            remains: 'Nothing was created.',
+          },
+          sources: ['lifecycle', 'cli'],
+          tested: {
+            cli: 'spi 0.16.0',
+            stack: 'osdu-spi-stack dc2c956 (release 0.16.0)',
+            template: 'Not applicable: no fork is used.',
+            shell: 'zsh',
+            os: 'macOS 26.6.2 on Apple silicon',
+            date: '2026-09-13',
+          },
+        },
       ],
+      connection: {
+        text: 'Already have a stack that someone else created? You can connect to it instead of provisioning your own: spi connect --resource-group <resource-group> --cluster <cluster-name> sets your kubectl context. You need Azure sign-in and access to that cluster; then start at spi status --watch.',
+        sources: ['forkDeploy'],
+      },
     },
     mistakes: {
       start: 'profiles-save-money',
@@ -493,7 +502,7 @@ export const chapters = {
     scope:
       'Illustrated core profile · your environment / opendes. Running spi up creates billable resources; spi down deletes compute and data. The ≈45–50 min provisioning observations were from centralus; the CLI defaults to westus3. Times vary, and overlapping phases must not be added.',
     sources: ['install', 'lifecycle', 'flux', 'identity'],
-    question: 'How does one command become all of that, and when is it usable?',
+    question: 'How is the stack created, and when is it usable?',
     builds:
       'Uses the boundaries from 01: the stack, AKS, and the resources outside it.',
     where:
@@ -555,7 +564,7 @@ export const chapters = {
       {
         headline: 'CLI success is not API readiness.',
         text: 'A successful spi up does not establish API readiness. I follow workload health and initialization with spi status --watch, then verify the API path I need with an authenticated request.',
-        why: 'The requested Git artifact revision is verified before that exit, and Flux overlaps the final CLI stages. Ready Kustomizations and HelmReleases report workload health, Complete initialization Jobs report initialization, and a successful authenticated request proves only the exercised API path. spi status --watch observes the first two; it does not make that request.',
+        why: 'Flux and initialization can continue after spi up returns. Check workload health and initialization with spi status --watch, then verify the API operation you need.',
         step: 'inspect',
         steps: ['inspect'],
         evidenceStep: 'inspect',
@@ -605,6 +614,7 @@ export const chapters = {
     guides: ['one-request', 'identity'],
     tryIt: {
       activity: 'trace the partition lookup',
+      summary: 'Try it: trace the partition lookup · browser only',
       variants: [
         {
           label: 'Follow the lookup in the source',
