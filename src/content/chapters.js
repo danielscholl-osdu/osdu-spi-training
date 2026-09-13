@@ -39,7 +39,10 @@ export const chapters = {
       'SPI stands for Service Provider Interface. It connects shared OSDU code to a cloud implementation. Learn how the Azure stack is assembled and how service forks sync upstream changes, build images, and test them against Azure resources.',
     reference:
       'CIMPL is the open-source community implementation used for comparison.',
-    checked: 'September 2026',
+    referenceLink: {
+      text: 'CIMPL',
+      href: 'https://community.opengroup.org/osdu/platform/deployment-and-operations/cimpl-stack',
+    },
     index: [
       {
         label: 'The stack',

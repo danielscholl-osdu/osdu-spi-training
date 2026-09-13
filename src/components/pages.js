@@ -240,8 +240,10 @@ function homePage() {
     'communityPartitionProvider',
   ];
   return `<div class="home-promise">
-      <p>${escapeHtml(start.reference)}</p>
-      <p class="home-checked">Source-checked ${escapeHtml(start.checked)}</p>
+      <p>${escapeHtml(start.reference).replace(
+        start.referenceLink.text,
+        `<a href="${start.referenceLink.href}" target="_blank" rel="noopener noreferrer">${escapeHtml(start.referenceLink.text)}</a>`,
+      )}</p>
     </div>
     <section class="home-introduction" aria-labelledby="home-introduction-title">
       <h2 id="home-introduction-title">Introduction</h2>

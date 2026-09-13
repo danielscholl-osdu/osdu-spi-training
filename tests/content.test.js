@@ -1192,9 +1192,12 @@ test('audio markers are ordered, inside the recording, and point at real views',
   );
   assert.match(chapters.start.intro, /Service Provider Interface/);
   assert.ok(
-    home.includes(chapters.start.checked),
-    'the review date is on the page',
+    home.includes(
+      `href="${chapters.start.referenceLink.href}" target="_blank" rel="noopener noreferrer">CIMPL</a>`,
+    ),
+    'CIMPL links to the community project',
   );
+  assert.ok(!home.includes('Source-checked'), 'no review-date line');
   assert.ok(!home.includes('Not quite'));
   assert.ok(
     !pageRenderers.myths(parseRoute('#not-true')).includes('Not quite'),

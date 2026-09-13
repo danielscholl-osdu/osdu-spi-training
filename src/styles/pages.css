@@ -79,10 +79,6 @@
   line-height: 1.6;
   color: var(--muted);
 }
-.home-promise .home-checked {
-  margin: 0;
-  font-size: 13px;
-}
 body[data-page='home'] .page > section > h2 {
   font-family: Manrope, var(--font);
   font-size: 22px;
