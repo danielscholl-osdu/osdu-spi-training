@@ -6,26 +6,44 @@ import { routeHref } from '../router.js';
 function spiBoundaryDiagram() {
   return `<div class="zoom-crumb" aria-label="Zoomed in from the map"><a href="#running-stack">The stack</a><span>›</span><a href="#running-stack/developer?detail=aks">AKS</a><span>›</span><a href="#running-stack/developer?detail=service">osdu namespace</a><span>›</span><b>one service · partition</b></div>
   <div class="spi-flow">
-    <div class="spi-lane spi-shared">
-      <div class="spi-lane-head"><h3>Shared OSDU code</h3><p>Upstream’s, taken as published</p></div>
-      ${node('client', 'OSDU API', 'The contract your client already uses')}
-      <div class="spi-step" aria-hidden="true">↓ the request reaches the service</div>
-      ${node('core', 'Common service logic', 'Caller check, validation, then the interface', 'shared-code')}
-      <div class="spi-step" aria-hidden="true">↓ calls the interface, never Azure directly</div>
-    </div>
-    ${node('contract', 'The Service Provider Interface', 'Common code calls it; the Azure provider implements it. This is the seam.', 'spi-seam', 'The contract between the two')}
-    <div class="spi-lane spi-fork">
-      <div class="spi-lane-head"><h3>Fork-owned Azure code</h3><p>Maintained in the service repository</p></div>
-      <div class="spi-step" aria-hidden="true">↓ implements the interface</div>
-      ${node('azureimpl', 'Azure implementation', 'provider/partition-azure', 'fork-code')}
-      <div class="spi-step" aria-hidden="true">↓ cache first; the table when it misses or throws</div>
+    <div class="spi-runtime">
+    ${node('client', 'OSDU API', 'The contract your client already uses')}
+    <div class="spi-step" aria-hidden="true">↓ the request reaches the service image</div>
+    <section class="spi-image-boundary" data-scope="spi-image">
+      ${node('image', 'One partition service image', 'partition-core + provider/partition-azure · one process', 'spi-image-node')}
+      <div class="spi-lane spi-shared" data-scope="spi-shared">
+        <div class="spi-lane-head"><h3>Shared OSDU code</h3><p>partition-core · upstream-owned</p></div>
+        ${node('core', 'partition-core', 'Caller check, validation, then the provider interface', 'shared-code')}
+        <div class="spi-step" aria-hidden="true">↓ calls the interface, never Azure directly</div>
+        ${node('contract', 'IPartitionService.getPartition', 'The shared Service Provider Interface', 'spi-seam', 'The contract between the two')}
+      </div>
+      <div class="spi-crossing-label" data-trace-crossing>Inside one image · Java interface call · no network hop</div>
+      <div class="spi-lane spi-fork" data-scope="spi-provider">
+        <div class="spi-lane-head"><h3>Fork-owned Azure code</h3><p>Maintained in the service repository</p></div>
+        <div class="spi-step" aria-hidden="true">↓ implements the interface</div>
+        ${node('azureimpl', 'provider/partition-azure', 'The Azure implementation', 'fork-code')}
+        <p class="spi-trace-status" data-trace-status="azureimpl" hidden></p>
+      </div>
+    </section>
+    <div class="spi-step" aria-hidden="true">↓ Azure SDK calls leave the image</div>
+    <div class="spi-lane spi-azure-resources" data-scope="spi-provider">
+      <div class="spi-lane-head"><h3>Azure data services</h3><p>Outside the service image · accessed with Workload Identity</p></div>
       ${node('azureclients', 'Cache, then Table Storage', 'Redis · common Storage tables · Workload Identity, no stored keys')}
+      <p class="spi-trace-status" data-trace-status="azureclients" hidden></p>
       <div class="spi-step" aria-hidden="true">↓ the row for opendes</div>
       <a class="spi-terminal" href="#running-stack/developer?detail=shared-data"><small>Back on the map · shared by the environment</small><b>Stored configuration for opendes · common Storage tables</b><span>The answer names the partition’s Cosmos, Storage, and Service Bus. See them in 01 →</span></a>
     </div>
+    </div>
+    <section class="spi-source-boundary" data-scope="spi-sources">
+      <header><h3>Source ownership outside the running image</h3><p>The generated upstream tree and the fork-owned provider stay separate.</p></header>
+      <div class="spi-source-columns">
+        ${node('upstream', 'Upstream source', 'partition-core and IPartitionService enter fork_upstream')}
+        ${node('engineering', 'osdu-spi engineering system', 'Preserves provider/&lt;svc&gt;-azure outside the generated tree')}
+      </div>
+      <p><code>provider/partition-azure</code> remains fork-owned even when upstream removes its Azure provider.</p>
+    </section>
   </div>
-  <div class="ownership-legend"><span><i class="shared-swatch"></i>Shared OSDU source</span><span><i class="fork-swatch"></i>Fork-owned Azure source</span><span>Both ship in one image; the seam is a Java interface, not a network hop.</span></div>
-  <div class="source-boundary-note"><b>Why the ownership matters</b><p>Upstream plans to remove its Azure implementations. The fork keeps the provider and its tests outside the generated shared-code branch, so a later upstream deletion cannot remove them. Where that code lives is the next view.</p></div>`;
+  <div class="ownership-legend"><span><i class="shared-swatch"></i>Shared OSDU source</span><span><i class="fork-swatch"></i>Fork-owned Azure source</span><span>Azure services sit outside the image.</span></div>`;
 }
 
 // View 04: the repository read by owner. Rows are paths, columns are branches.

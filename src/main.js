@@ -16,6 +16,9 @@ import {
   hasClaims,
   claimStrip,
   guidePreview,
+  detailSourceLinks,
+  resolveExamplePresentation,
+  selectExampleVariant,
 } from './components/pages.js';
 import { createPlayer } from './components/player.js';
 import { parseRoute, routeHref } from './router.js';
@@ -43,7 +46,57 @@ const movable = [
   element.before(marker);
   return { element, marker };
 });
-let lessonState = { claim: 0, hop: -1, policy: 'learn', exampleOpen: false };
+let lessonState = {
+  claim: 0,
+  hop: -1,
+  policy: 'learn',
+  exampleOpen: false,
+  variant: 'normal',
+};
+
+function applyExamplePresentation(chapter, tracing) {
+  const presentation = resolveExamplePresentation(
+    chapter.example,
+    lessonState.variant,
+  );
+  const strip = document.getElementById('example-strip');
+  strip
+    .querySelectorAll('[data-example-variant]')
+    .forEach((button) =>
+      button.setAttribute(
+        'aria-pressed',
+        String(button.dataset.exampleVariant === presentation.selectedVariant),
+      ),
+    );
+  presentation.hops.forEach((hop, index) => {
+    const link = strip.querySelector(`[data-hop="${index}"]`);
+    if (!link) return;
+    link.title = hop.copy;
+    link.setAttribute('aria-label', `${index + 1}. ${hop.label}: ${hop.copy}`);
+    const copy = link.querySelector('[data-hop-copy]');
+    if (copy) copy.textContent = hop.copy;
+  });
+  const note = strip.querySelector('[data-example-note]');
+  if (note) note.textContent = presentation.note;
+  const exampleCrossing = strip.querySelector('[data-example-crossing]');
+  if (exampleCrossing) exampleCrossing.textContent = presentation.crossing;
+  document
+    .getElementById('diagram')
+    .querySelectorAll('[data-trace-status]')
+    .forEach((status) => {
+      const index = presentation.hops.findIndex(
+        (hop) => hop.detail === status.dataset.traceStatus,
+      );
+      const hop = presentation.hops[index];
+      const visible =
+        tracing && index >= 0 && index <= lessonState.hop && hop?.mapStatus;
+      status.hidden = !visible;
+      status.textContent = visible ? hop.mapStatus : '';
+      if (visible && hop.state) status.dataset.traceState = hop.state;
+      else delete status.dataset.traceState;
+    });
+  return presentation;
+}
 
 function applyPolicy() {
   const route = parseRoute(location.hash);
@@ -51,15 +104,14 @@ function applyPolicy() {
   if (!hasClaims(chapter)) return;
   const claim = chapter.outcomes[lessonState.claim];
   const tracing = lessonState.hop >= 0;
+  const presentation = applyExamplePresentation(chapter, tracing);
   const focus = new Set(
     tracing
-      ? chapter.example.hops
-          .slice(0, lessonState.hop + 1)
-          .map((hop) => hop.detail)
+      ? presentation.hops.slice(0, lessonState.hop + 1).map((hop) => hop.detail)
       : claim.focus || [],
   );
   const scopes = new Set(
-    tracing ? chapter.example.scopes || [] : claim.scopes || [],
+    tracing ? presentation.scopes || [] : claim.scopes || [],
   );
   const diagram = document.getElementById('diagram');
   diagram.dataset.policy = lessonState.policy;
@@ -116,8 +168,10 @@ function applyPolicy() {
       link.setAttribute('aria-current', 'true');
     else link.removeAttribute('aria-current');
   });
-  const crossing = diagram.querySelector('.boundary-crossing span');
-  const crossingLabel = tracing ? chapter.example.crossing : claim.crossing;
+  const crossing = diagram.querySelector(
+    '.boundary-crossing span, [data-trace-crossing]',
+  );
+  const crossingLabel = tracing ? presentation.crossing : claim.crossing;
   if (crossing && typeof crossingLabel === 'string')
     crossing.textContent = crossingLabel;
 }
@@ -204,13 +258,10 @@ export function selectDetail(id, element = null) {
   document.getElementById('artifact-code').textContent =
     detail?.artifact?.code || '';
   document.getElementById('detail-artifact').hidden = !detail;
-  const source = detail && sources[detail.source];
+  const sourceMarkup = detailSourceLinks(detail);
   const link = document.getElementById('detail-source');
-  link.hidden = !source;
-  if (source) {
-    link.href = source.href;
-    link.textContent = `${source.label} ↗`;
-  }
+  link.hidden = !sourceMarkup;
+  link.innerHTML = sourceMarkup;
   document.getElementById('diagram').dataset.selected = id;
   // The seam's state panel can sit above the fold; repeat its lock and pod
   // for the selected step where the explanation opens.
@@ -249,7 +300,13 @@ function renderChapterFrame(route, scene) {
   const structured = hasClaims(scene);
   movable.forEach(({ element, marker }) => marker.after(element));
   document.getElementById('lesson-next')?.remove();
-  lessonState = { claim: 0, hop: -1, policy: 'learn', exampleOpen: false };
+  lessonState = {
+    claim: 0,
+    hop: -1,
+    policy: 'learn',
+    exampleOpen: false,
+    variant: scene.example?.defaultVariant || 'normal',
+  };
   document.body.classList.toggle('has-claims', structured);
   delete document.getElementById('diagram').dataset.policy;
   document.getElementById('chapter-claims').innerHTML = claimStrip(key);
@@ -429,10 +486,14 @@ function render() {
     (strip.querySelector('details')?.open || lessonState.exampleOpen);
   const openerHop = detailOpener?.dataset.hop;
   if (!hasClaims(scene) || mapChanged) {
-    strip.innerHTML = exampleStrip(route.chapter, {
-      ...route,
-      detail: element?.dataset.detail || null,
-    });
+    strip.innerHTML = exampleStrip(
+      route.chapter,
+      {
+        ...route,
+        detail: element?.dataset.detail || null,
+      },
+      lessonState.variant,
+    );
     strip.hidden = !strip.innerHTML;
     if (hasClaims(scene)) strip.querySelector('details').open = exampleOpen;
   }
@@ -534,6 +595,18 @@ document.addEventListener('click', (event) => {
     event.altKey
   )
     return;
+  const variant = event.target.closest('[data-example-variant]');
+  if (variant) {
+    const route = parseRoute(location.hash);
+    const example = chapters[route.chapter].example;
+    lessonState = selectExampleVariant(
+      lessonState,
+      variant.dataset.exampleVariant,
+      example.hops.length,
+    );
+    applyPolicy();
+    return;
+  }
   const hop = event.target.closest('[data-hop]');
   if (hop) {
     lessonState.hop = Number(hop.dataset.hop);
@@ -542,6 +615,8 @@ document.addEventListener('click', (event) => {
   }
   const link = event.target.closest('a[data-map-jump]');
   if (link) {
+    if (!hop && hasClaims(chapters[parseRoute(location.hash).chapter]))
+      lessonState.hop = -1;
     jumpRequested = true;
     pendingOpener = link;
     if (link.hash === location.hash) {
@@ -585,6 +660,7 @@ document.getElementById('map-policy').addEventListener('click', (event) => {
 document.getElementById('diagram').addEventListener('click', (event) => {
   const button = event.target.closest('button[data-detail]');
   if (!button) return;
+  lessonState.hop = -1;
   pendingOpener = button;
   const route = parseRoute(location.hash);
   const href = routeHref(route.chapter, route.step, button.dataset.detail);

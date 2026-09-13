@@ -1370,6 +1370,15 @@ body:has(.audio-dock:not([hidden])) main {
   box-shadow: 0 0 0 3px #c9e6f6;
   border-color: #388dbc;
 }
+.detail-sources {
+  display: grid;
+  justify-items: start;
+  gap: 6px;
+}
+.detail-sources a {
+  font-size: 14px;
+  line-height: 1.5;
+}
 
 /* Learn views: one easy mistake directly under the map */
 #chapter-mistake:not(:empty) {
@@ -1504,8 +1513,23 @@ body:has(.audio-dock:not([hidden])) main {
 /* Learn view 03: one request through one service */
 .spi-flow {
   display: grid;
+  gap: 16px;
+  align-items: start;
+}
+.spi-runtime {
+  display: grid;
   gap: 10px;
-  max-width: 560px;
+  min-width: 0;
+}
+@media (min-width: 980px) {
+  .spi-flow {
+    grid-template-columns: minmax(0, 7fr) minmax(260px, 4fr);
+  }
+  .spi-source-boundary {
+    margin-top: 0;
+    position: sticky;
+    top: 84px;
+  }
 }
 .spi-lane {
   display: grid;
@@ -1526,6 +1550,72 @@ body:has(.audio-dock:not([hidden])) main {
   margin: 0;
 }
 .spi-fork .spi-lane-head h3 {
+  color: var(--fork);
+}
+.spi-image-boundary {
+  display: grid;
+  gap: 10px;
+  padding: 12px;
+  border: 2px solid var(--navy);
+  border-radius: 12px;
+  background: #f8fbfd;
+}
+.spi-image-node {
+  border-color: var(--navy);
+  background: #edf4f9;
+}
+.spi-crossing-label {
+  padding: 7px 10px;
+  border-block: 1px dashed var(--line);
+  color: var(--muted);
+  font-size: 12px;
+  font-weight: 700;
+  text-align: center;
+}
+.spi-azure-resources {
+  border-top: 4px solid var(--cli);
+  background: var(--cli-bg);
+}
+.spi-trace-status {
+  margin: 0;
+  padding: 7px 9px;
+  border-radius: 5px;
+  background: #eef4f9;
+  color: var(--ink);
+  font-size: 12px;
+  font-weight: 700;
+}
+.spi-trace-status[data-trace-state='handled-failure'] {
+  border-left: 3px solid #9b3f46;
+}
+.spi-trace-status[data-trace-state='fallback'] {
+  border-left: 3px solid var(--blue);
+}
+.spi-source-boundary {
+  display: grid;
+  gap: 10px;
+  margin-top: 12px;
+  padding: 14px;
+  border: 1px dashed var(--line);
+  border-radius: 10px;
+  background: #fff;
+}
+.spi-source-boundary h3,
+.spi-source-boundary p {
+  margin: 0;
+}
+.spi-source-boundary header p,
+.spi-source-boundary > p {
+  color: var(--muted);
+  font-size: 12.5px;
+  line-height: 1.5;
+}
+.spi-source-columns {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 10px;
+}
+.spi-source-boundary code {
   color: var(--fork);
 }
 .spi-lane-head p {
@@ -1565,6 +1655,16 @@ body:has(.audio-dock:not([hidden])) main {
   font-size: 12.5px;
   font-weight: 600;
   color: var(--blue);
+}
+@media (max-width: 560px) {
+  .spi-image-boundary,
+  .spi-lane,
+  .spi-source-boundary {
+    padding: 10px;
+  }
+  .spi-source-columns {
+    grid-template-columns: 1fr;
+  }
 }
 
 /* Learn views: carry forward */
@@ -2732,6 +2832,39 @@ body:has(.audio-dock:not([hidden])) main {
   font-size: 12px;
   overflow-wrap: anywhere;
 }
+.example-variant-row {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 8px 12px;
+  margin-top: 12px;
+  color: var(--muted);
+  font-size: 12px;
+  font-weight: 700;
+}
+.example-variants {
+  display: inline-flex;
+  flex-wrap: wrap;
+  border: 1px solid var(--line);
+  border-radius: 6px;
+  overflow: hidden;
+}
+.example-variants button {
+  border: 0;
+  background: white;
+  color: var(--muted);
+  padding: 5px 10px;
+  cursor: pointer;
+}
+.example-variants button[aria-pressed='true'] {
+  background: var(--navy);
+  color: white;
+}
+.example-crossing {
+  margin: 8px 0 0;
+  color: var(--muted);
+  font-size: 12px;
+}
 .has-claims .journey {
   display: flex;
   flex-wrap: wrap;
@@ -2750,7 +2883,8 @@ body:has(.audio-dock:not([hidden])) main {
   margin-right: 4px;
 }
 .has-claims .journey a {
-  display: inline;
+  display: grid;
+  grid-template-columns: auto 1fr;
   border: 0;
   background: transparent;
   padding: 4px;
@@ -2758,9 +2892,13 @@ body:has(.audio-dock:not([hidden])) main {
   min-height: 0;
 }
 .has-claims .journey a span {
-  display: inline;
   font-size: 11px;
   margin-right: 4px;
+}
+.has-claims .journey a small {
+  grid-column: 2;
+  font-size: 11px;
+  line-height: 1.35;
 }
 .has-claims .journey .is-current a {
   background: #e8f2f9;
