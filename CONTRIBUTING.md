@@ -7,6 +7,7 @@ Install the pinned tools with `npm ci`, then start `npm run dev`. Work in `src/`
 | Change                                                          | File or directory                  |
 | --------------------------------------------------------------- | ---------------------------------- |
 | Chapter titles, introductions, source keys, or navigation order | `src/content/chapters.js`          |
+| Optional Try it activity data                                   | `src/content/chapters.js`          |
 | Episodes, their markers, source-check notes, and notebook links | `src/content/audio.js`             |
 | Things that are not true                                        | `src/content/myths.js`             |
 | Poster captions, takeaways, and field-guide summaries           | `src/content/posters.js`           |
@@ -33,6 +34,21 @@ Each component detail contains `label`, `title`, `body`, `artifact: { label, cod
 Use `summary` for an authored initial explanation and `more` only for deliberately optional detail. Without `summary`, the drawer shows the complete `title` and `body`; it does not split prose at punctuation or create an automatic disclosure. Source links always put the primary `source` first, then unique `goDeeper` keys in authored order.
 
 A diagram button's `data-detail` must match a key in that content. Audio markers, field checks, and poster links use site routes; the integrity checks parse each route and confirm that a `detail` names a component on that map and a `guide` names a field guide. They also catch missing explanations, duplicate component IDs within a scene, broken chapter-to-renderer connections, missing poster and audio files, and missing source files when sibling checkouts are present.
+
+## Authoring a Try it band
+
+A learn chapter may carry a `tryIt` object. Omit the field until every route has been walked and its tested CLI release, stack ref, template commit, shell, operating system, and date have been recorded. Test fixtures prove the renderer contract but are not publication evidence. A present object is complete:
+
+- `activity` is the short action in `Try it: <activity> · <access> · <active effort>`.
+- `variants` is a nonempty ordered array. Each variant has a nonempty `label`, `result`, `effects`, and exactly one `access`: `browser only`, `workstation setup`, `public GitHub repository`, or `Azure resources billed separately`. An optional `accessNote` is a sentence that clarifies relevant conditions.
+- `prerequisites` is a nonempty array of `{ text, sources }`; each `sources` list contains keys from `src/content/sources.js` so shared setup is linked instead of repeated.
+- `time` has nonempty `active`, `wait`, and `cleanup` descriptions. State when waiting or cleanup does not apply; do not derive estimates from timeouts.
+- `steps` is a nonempty ordered array. Each step has exactly one nonempty `command` or `click`, plus `expect` and optional source keys. The renderer shows `effects` before these steps and never executes their actions.
+- `alternate` has a nonempty `observation` and `next`. `cleanup` has nonempty `steps` using the same action-and-observation shape and a nonempty `remains` statement.
+- `sources` is a nonempty list of source keys for the quoted runbook, CLI help, or source artifact.
+- `tested` has nonempty `cli`, `stack`, `template`, `shell`, `os`, and ISO `date` values. For a field that does not apply, write an explicit reason instead of inventing a version.
+
+Multiple variants are complete alternatives, such as a future lesson 02 route without Azure and one with Azure. The collapsed summary names each variant's access and active effort. Commands use only `opendes`, `dev1`, and marked placeholders such as `<name>`. Keep prerequisites sufficient to start the activity, state resource effects before steps, and identify what remains after cleanup. The site must not promise that an activity is free, execute a command, imply live state, or track completion.
 
 The transcript modules are generated: to regenerate one, transcribe the audio to VTT (mlx-whisper, large-v3-turbo), replace the file in `docs/reference/`, and rebuild `src/content/transcripts/<episode>.js` with the same paragraph grouping. Marker times in `audio.js` are read from the transcript. A chapter's `listen` cues must start on a marker of the episode they name; the integrity checks enforce this. Content is trusted, repository-authored material; selected fields intentionally contain HTML. Do not feed external user input into those templates.
 
