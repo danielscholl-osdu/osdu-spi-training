@@ -229,7 +229,10 @@ test('look closer links resolve to every lifecycle moment target', () => {
     'the current moment has one Look closer link',
   );
   for (const moment of creationMoments) {
-    const href = routeHref('bring-up', moment.id, moment.detail);
+    const selection = ['provision', 'bootstrap'].includes(moment.id)
+      ? { claim: 0 }
+      : {};
+    const href = routeHref('bring-up', moment.id, moment.detail, selection);
     const momentMarkup = creationWalkthrough(
       parseRoute(routeHref('bring-up', moment.id)),
     );
