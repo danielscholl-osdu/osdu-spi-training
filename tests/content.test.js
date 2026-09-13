@@ -457,6 +457,10 @@ test('structured claims resolve their focus, evidence, and scopes on every scene
       (claim) => typeof claim !== 'string',
     );
     if (!claims.length) continue;
+    assert.ok(
+      claims.length >= 2 && claims.length <= 4,
+      `${key}: a lesson carries two to four claims`,
+    );
     assert.ok(chapter.goal, `${key}: goal`);
     for (const step of chapterSteps(key).length ? chapterSteps(key) : [null]) {
       const markup = diagramRenderers[chapter.diagram]({ chapter: key, step });
@@ -477,6 +481,12 @@ test('structured claims resolve their focus, evidence, and scopes on every scene
           `${key}: claim ${index} crossing label`,
         );
         assert.ok(claim.text && claim.why, `${key}: claim copy`);
+        assert.ok(
+          typeof claim.headline === 'string' &&
+            claim.headline.length < claim.text.length &&
+            claim.headline.length <= 80,
+          `${key}: claim ${index} headline is shorter than its sentence`,
+        );
         for (const id of [...claim.focus, claim.evidence])
           assert.ok(details.has(id), `${key}/${step}: claim detail ${id}`);
         for (const id of claim.scopes)

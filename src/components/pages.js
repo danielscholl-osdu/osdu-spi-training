@@ -164,11 +164,11 @@ export function claimStrip(key) {
   const chapter = chapters[key];
   if (!hasClaims(chapter)) return '';
   return `<section class="claims" aria-label="Lesson claims">
-    <p class="guide-kicker">Three claims, one map · select one to see it</p>
+    <p class="guide-kicker">${chapter.outcomes.length === 3 ? 'Three' : chapter.outcomes.length} claims, one map · select one to see it</p>
     <ol class="claim-list">${chapter.outcomes
       .map((claim, index) => {
         const c = typeof claim === 'string' ? { text: claim } : claim;
-        return `<li class="claim-item" data-claim-item="${index}"><button type="button" class="claim" data-claim="${index}" aria-pressed="${index === 0}"><b>${escapeHtml(c.text)}</b><small>${escapeHtml(c.why || '')}</small><span class="claim-count">${index + 1} / ${chapter.outcomes.length}</span></button>${c.evidence ? `<a class="claim-evidence" data-evidence="${index}" href="${routeHref(key, null, c.evidence)}">How we know →</a>` : ''}</li>`;
+        return `<li class="claim-item" data-claim-item="${index}"><button type="button" class="claim" data-claim="${index}" aria-pressed="${index === 0}"><b>${escapeHtml(c.headline || c.text)}</b><small>${escapeHtml(c.why || '')}</small><span class="claim-count">${index + 1} / ${chapter.outcomes.length}</span></button>${c.evidence ? `<a class="claim-evidence" data-evidence="${index}" href="${routeHref(key, null, c.evidence)}">How we know →</a>` : ''}</li>`;
       })
       .join('')}</ol>
   </section>`;

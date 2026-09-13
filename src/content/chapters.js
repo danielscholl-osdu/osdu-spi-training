@@ -87,6 +87,7 @@ export const chapters = {
     goal: 'You can point at the map and say which half is the cluster, which half is not, and where opendes lives in both.',
     outcomes: [
       {
+        headline: 'The stack is AKS plus Azure data services.',
         text: 'A stack is a resource group: AKS plus the Azure data services around it, not the cluster alone.',
         why: 'Both halves are created by one spi up and named by one --env.',
         focus: ['flux', 'gateway', 'cosmos', 'shared-data'],
@@ -95,6 +96,8 @@ export const chapters = {
         crossing: 'CLI provisions Azure and prepares AKS',
       },
       {
+        headline:
+          'Partitions own data resources; the environment shares platform resources.',
         text: 'My partition’s records, blobs, and events each have their own Azure resource; entitlements, identities, and Key Vault are shared by the environment.',
         why: 'opendes owns three resources. Everything else in the stack is shared with the next partition.',
         focus: [
@@ -110,6 +113,7 @@ export const chapters = {
         crossing: 'Per partition, or shared',
       },
       {
+        headline: 'The Azure provider lives inside each OSDU service.',
         text: 'The OSDU services run in the osdu namespace, and each one carries its Azure provider inside its own image.',
         why: 'There is no separate Azure adapter to find. The provider is in the pod.',
         focus: ['gateway', 'service', 'provider'],

@@ -173,10 +173,13 @@ summary:focus-visible {
   margin-top: 2px;
 }
 .chapter-link small {
-  display: block;
+  display: none;
   font-size: 12px;
   margin-top: 5px;
   font-weight: 400;
+}
+.chapter-link[aria-current='page'] small {
+  display: block;
 }
 .chapter-link[aria-current='page'] {
   background: #e7f0f7;
@@ -662,7 +665,8 @@ details[open] summary span {
     border-bottom: 2px solid transparent;
     padding: 14px 3px;
   }
-  .chapter-link small {
+  .chapter-link small,
+  .chapter-link[aria-current='page'] small {
     display: none;
   }
   .chapter-link[aria-current='page'] {
