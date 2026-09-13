@@ -446,8 +446,8 @@ export function spiNamesFigure() {
       (meaning) => `<article class="spi-name owner-${meaning.owner}">
       <span class="spi-name-kicker">${meaning.kicker}</span>
       <h3>${meaning.name}</h3>
-      <p>${meaning.copy}</p>
-      <a class="spi-name-repo" href="${meaning.repo.href}" target="_blank" rel="noopener noreferrer">${escapeHtml(meaning.repo.label)} ↗</a>${meaning.lives ? `<code>${escapeHtml(meaning.lives)}</code>` : ''}
+      <p>${meaning.copy}</p>${meaning.lives ? `<code>${escapeHtml(meaning.lives)}</code>` : ''}
+      <a class="spi-name-repo" href="${meaning.repo.href}" target="_blank" rel="noopener noreferrer">${escapeHtml(meaning.repo.label)} ↗</a>
     </article>`,
     )
     .join('')}</div>`;

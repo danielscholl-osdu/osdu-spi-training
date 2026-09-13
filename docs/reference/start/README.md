@@ -1,6 +1,6 @@
 # Start page hero graphic
 
-`machinery.png` is the original of the graphic beside the Start page headline (`public/start/machinery.webp` is the web copy, cropped to the band between the loop arrows and rendered at 21:9). It is decorative: it carries no claim and is not a source.
+`machinery.png` is the original of the graphic beside the Start page headline (`public/start/machinery.webp` is the web copy, cropped to the three gears and their loop arrows, 656 by 372, shown under the subhead at up to 520 pixels wide). It is decorative: it carries no claim and is not a source.
 
 Generated on 13 September 2026 with the Gemini 2.5 Flash Image model from this prompt:
 

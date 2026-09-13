@@ -1177,6 +1177,25 @@ test('audio markers are ordered, inside the recording, and point at real views',
     html.indexOf('</header>'),
   );
   assert.ok(!masthead.includes('Explore'), 'the masthead has no Explore link');
+  assert.equal(
+    masthead.split('class="masthead-label"').length,
+    3,
+    'each masthead link labels its icon',
+  );
+  const intro = html.slice(
+    html.indexOf('<div class="intro">'),
+    html.indexOf('id="view-scope"'),
+  );
+  assert.ok(
+    intro.indexOf('id="headline"') < intro.indexOf('id="subhead"') &&
+      intro.indexOf('id="subhead"') < intro.indexOf('id="hero-image"') &&
+      intro.indexOf('id="hero-image"') < intro.indexOf('id="introduction"'),
+    'headline, subhead, machinery strip, then the paragraph',
+  );
+  assert.ok(
+    chapters.start.hero.width <= 700 && chapters.start.hero.height >= 300,
+    'the strip is cropped to the gears',
+  );
   assert.ok(
     !masthead.includes('<details') &&
       masthead.includes('class="masthead-link" href="#listen"') &&
@@ -1223,6 +1242,10 @@ test('audio markers are ordered, inside the recording, and point at real views',
   assert.ok(
     home.includes('start/watch.webp'),
     'the Watch card uses the gear badge',
+  );
+  assert.ok(
+    home.includes('How the machinery is engineered'),
+    'the Watch card is captioned after the headline',
   );
   assert.ok(!home.includes('Source-checked'), 'no review-date line');
   assert.ok(!home.includes('Not quite'));
@@ -1567,7 +1590,7 @@ test('learn views retain authored lesson metadata and omit repeated scaffolding'
   );
   assert.deepEqual(
     spiMeanings.map((meaning) => meaning.id),
-    ['stack', 'engineering', 'interface'],
+    ['stack', 'interface', 'engineering'],
   );
   assert.ok(spiNamesFigure().split('<article').length === 4);
 });

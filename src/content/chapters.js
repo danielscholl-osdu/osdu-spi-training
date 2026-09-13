@@ -37,11 +37,11 @@ export const chapters = {
     subhead:
       'The stack, the provider inside each service, and the engineering that keeps them current.',
     intro:
-      'The machinery has three parts: a stack in your subscription that runs the services, a provider inside each service where shared code hands off to Azure, and forks with scheduled workflows that keep that provider synced with upstream, built into images, and tested in a running stack. The seam where the hand-off happens is the Service Provider Interface, and SPI is the name this site uses for all three. Where a design choice differs from the OSDU <a href="https://community.opengroup.org/osdu/platform/deployment-and-operations/cimpl-stack" target="_blank" rel="noopener noreferrer">Community Implementation (CIMPL)</a>, the lessons say so.',
+      'A stack in your subscription runs the services. Inside each service, a provider is where shared code hands off to Azure. Forks with scheduled workflows keep that provider synced with upstream, built into images, and tested in a running stack. That hand-off seam is the Service Provider Interface, and SPI is the name this site uses for all three. Where a choice differs from the OSDU <a href="https://community.opengroup.org/osdu/platform/deployment-and-operations/cimpl-stack" target="_blank" rel="noopener noreferrer">Community Implementation (CIMPL)</a>, the lessons say so.',
     hero: {
       image: 'start/machinery.webp',
-      width: 1400,
-      height: 347,
+      width: 656,
+      height: 372,
       alt: 'Three meshing gears joined by a loop arrow: the Azure stack, the provider interface inside a service, and the fork workflows.',
     },
     index: [
@@ -55,14 +55,11 @@ export const chapters = {
       {
         label: 'Provider code and engineering',
         lessons: {
-          'spi-boundary':
-            'Where does shared code hand off to the Azure provider?',
-          'fork-shape':
-            'Which paths does a service fork own, and which come from upstream?',
+          'spi-boundary': 'Where does shared code hand off to Azure?',
+          'fork-shape': 'Who owns which paths in a service fork?',
           'fork-day': 'How does an upstream update become a candidate image?',
           handshake: 'How is a candidate image tested in a running stack?',
-          'not-true':
-            'Which common assumptions does the documentation contradict?',
+          'not-true': 'Which assumptions do the docs contradict?',
         },
       },
     ],

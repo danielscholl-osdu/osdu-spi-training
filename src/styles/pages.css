@@ -1107,9 +1107,9 @@ body:has(.audio-dock:not([hidden])) main {
   gap: 12px;
 }
 .spi-name {
-  display: grid;
+  display: flex;
+  flex-direction: column;
   gap: 8px;
-  align-content: start;
   padding: 18px;
   border-radius: 10px;
   border: 1px solid var(--line);
@@ -1132,6 +1132,7 @@ body:has(.audio-dock:not([hidden])) main {
   line-height: 1.25;
 }
 .spi-name p {
+  flex: 1 0 auto;
   margin: 0;
   font-size: 14px;
   line-height: 1.55;
@@ -1874,10 +1875,6 @@ body:has(.audio-dock:not([hidden])) main {
   }
   .zoom-siblings {
     grid-template-columns: 1fr;
-  }
-  .masthead-link {
-    font-size: 13px;
-    padding: 7px 8px;
   }
   .home-media,
   .lesson-groups {

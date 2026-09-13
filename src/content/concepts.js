@@ -68,8 +68,8 @@ export const zoomLevels = [
 export const spiMeanings = [
   {
     id: 'stack',
-    kicker: 'On Azure',
-    name: 'The SPI Stack',
+    kicker: 'In your subscription',
+    name: 'The Azure stack',
     copy: 'The Azure environment that runs the OSDU services: Bicep for the resources, the spi CLI to drive it, Flux for the workloads.',
     repo: {
       label: 'Azure/osdu-spi-stack',
@@ -80,22 +80,9 @@ export const spiMeanings = [
     owner: 'cli',
   },
   {
-    id: 'engineering',
-    kicker: 'In GitHub',
-    name: 'osdu-spi, the engineering system',
-    copy: 'The template that gives every service fork its sync, cascade, build, and validation workflows, so the Azure code stays maintainable.',
-    repo: {
-      label: 'Azure/osdu-spi',
-      href: 'https://github.com/Azure/osdu-spi',
-    },
-    href: '#fork-shape',
-    hrefLabel: '04 · The shape of the fork',
-    owner: 'you',
-  },
-  {
     id: 'interface',
     kicker: 'In each service',
-    name: 'The SPI inside each service',
+    name: 'The service interface',
     copy: 'Inside every OSDU service, partition for example, the seam where common code calls a cloud provider. The Azure implementation lives behind it.',
     repo: {
       label: 'Azure/osdu-spi-partition',
@@ -105,5 +92,18 @@ export const spiMeanings = [
     href: '#spi-boundary',
     hrefLabel: '03 · The SPI boundary',
     owner: 'fork',
+  },
+  {
+    id: 'engineering',
+    kicker: 'In GitHub',
+    name: 'The engineering system',
+    copy: 'The template that gives every service fork its sync, cascade, build, and validation workflows, so the Azure code stays maintainable.',
+    repo: {
+      label: 'Azure/osdu-spi',
+      href: 'https://github.com/Azure/osdu-spi',
+    },
+    href: '#fork-shape',
+    hrefLabel: '04 · The shape of the fork',
+    owner: 'you',
   },
 ];

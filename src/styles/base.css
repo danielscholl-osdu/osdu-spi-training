@@ -241,8 +241,11 @@ body[data-page='home'] .intro p {
 #hero-image {
   display: block;
   width: 100%;
+  max-width: 520px;
   height: auto;
-  margin-top: 22px;
+  box-sizing: border-box;
+  padding: 8px 14px;
+  margin: 22px 0 2px;
   border-radius: 12px;
   border: 1px solid var(--line);
   background: #fff;
@@ -743,8 +746,9 @@ details[open] summary span {
     padding: 22px 16px 140px;
   }
   .masthead {
-    padding: 13px 16px;
+    padding: 13px 14px;
     min-height: 62px;
+    gap: 10px;
   }
   .brand {
     font-size: 16px;
@@ -753,6 +757,26 @@ details[open] summary span {
   .brand strong {
     font-size: 11px;
     margin-left: 5px;
+  }
+  .masthead-nav {
+    gap: 2px;
+  }
+  .masthead-link {
+    padding: 4px;
+    gap: 0;
+  }
+  .masthead-label {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+    clip: rect(0 0 0 0);
+    white-space: nowrap;
+  }
+  .masthead-icon {
+    width: 34px;
+    height: 34px;
+    font-size: 14px;
   }
   .rail {
     padding: 0 14px;
@@ -1060,5 +1084,10 @@ details[open] summary span {
 @media (prefers-reduced-motion: reduce) {
   .inspector {
     transition: none;
+  }
+}
+@media (max-width: 480px) {
+  .brand strong {
+    display: none;
   }
 }

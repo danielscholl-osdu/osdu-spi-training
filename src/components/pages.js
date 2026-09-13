@@ -242,7 +242,7 @@ function homePage() {
   return `<section class="home-introduction" aria-labelledby="home-introduction-title">
       <h2 id="home-introduction-title">Introduction</h2>
       <div class="home-media">
-        <button type="button" class="home-watch home-media-button" data-video-open aria-haspopup="dialog" aria-controls="video-dialog"><img src="start/watch.webp" alt="" width="80" height="40" loading="lazy" /><span><b>Watch · ${Math.round(frameVideo.duration / 60)} min</b><small>${escapeHtml(frameVideo.title)}</small></span></button>
+        <button type="button" class="home-watch home-media-button" data-video-open aria-haspopup="dialog" aria-controls="video-dialog"><img src="start/watch.webp" alt="" width="80" height="40" loading="lazy" /><span><b>Watch · ${Math.round(frameVideo.duration / 60)} min</b><small>${escapeHtml(frameVideo.card)}</small></span></button>
         ${briefChip()}
       </div>
     </section>

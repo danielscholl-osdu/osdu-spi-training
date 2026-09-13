@@ -628,6 +628,7 @@ export const episodes = [
 // it has no markers, plays in its own element, and pauses the audio dock.
 export const frameVideo = {
   title: 'How Microsoft engineers Azure OSDU',
+  card: 'How the machinery is engineered',
   file: 'video/how-microsoft-engineers-azure-osdu.mp4',
   poster: 'video/how-microsoft-engineers-azure-osdu.jpg',
   captions: 'video/how-microsoft-engineers-azure-osdu.vtt',
