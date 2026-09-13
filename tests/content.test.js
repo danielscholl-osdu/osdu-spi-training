@@ -205,6 +205,112 @@ test('evidence resolver applies chapter context without inferring ownership', ()
   assert.deepEqual(details, original);
 });
 
+test('lesson 01 claim evidence resolves all three claims in stack context', () => {
+  const details = chapters['running-stack'].outcomes.map(({ evidence }) =>
+    resolveDetail(evidence, 'running-stack'),
+  );
+
+  assert.deepEqual(
+    details.map(({ owner }) => owner),
+    [null, null, 'The partition service fork'],
+  );
+  assert.deepEqual(
+    details.map(({ source }) => source),
+    ['architecture', 'architecture', 'partitionPom'],
+  );
+  assert.match(details[0].summary, /resource group contains AKS/);
+  assert.match(details[0].summary, /--env dev1.*whole environment/);
+  assert.match(
+    details[1].summary,
+    /opendes.*Cosmos DB SQL account.*Storage account.*Service Bus namespace/,
+  );
+  assert.match(details[1].summary, /common Storage.*Gremlin.*service identity/);
+  assert.match(
+    details[2].summary,
+    /partition-core.*provider\/partition-azure.*one executable/,
+  );
+  assert.match(details[2].summary, /POM.*Spring Boot.*Dockerfile.*entry point/);
+});
+
+test('lesson 02 claim evidence resolves all three claims without false owners', () => {
+  const details = chapters['bring-up'].outcomes.map(({ evidence }) =>
+    resolveDetail(evidence, 'bring-up'),
+  );
+
+  assert.deepEqual(
+    details.map(({ owner }) => owner),
+    [null, null, null],
+  );
+  assert.deepEqual(
+    details.map(({ source }) => source),
+    ['architecture', 'lifecycle', 'lifecycle'],
+  );
+  assert.match(details[0].summary, /Bicep.*spi-cluster-config/);
+  assert.match(details[0].summary, /Flux.*controllers.*after the CLI exits/);
+  assert.match(details[1].summary, /successful spi up does not prove/);
+  assert.match(details[1].summary, /spi status --watch/);
+  assert.match(
+    details[1].summary,
+    /authenticated lookup proves the exercised API path, not every API/,
+  );
+  assert.match(details[2].summary, /deletes the cluster and application data/);
+  assert.match(
+    details[2].summary,
+    /reuse resource names and identity client IDs/,
+  );
+  assert.match(details[2].summary, /not the deleted application data/);
+});
+
+test('lesson 03 claim evidence resolves all three claims and cache-hop proof', () => {
+  const details = chapters['spi-boundary'].outcomes.map(({ evidence }) =>
+    resolveDetail(evidence, 'spi-boundary'),
+  );
+
+  assert.deepEqual(
+    details.map(({ owner }) => owner),
+    ['The partition service fork', 'The partition service fork', null],
+  );
+  assert.deepEqual(
+    details.map(({ source }) => source),
+    ['partitionProvider', 'partitionPom', 'ownership'],
+  );
+  assert.match(details[0].summary, /Redis inside AKS.*middleware credentials/);
+  assert.match(details[0].summary, /cache miss or caught read exception/);
+  assert.match(details[0].summary, /logged as a warning.*common Table Storage/);
+  assert.match(details[0].summary, /reachable and contains opendes/);
+  assert.match(details[0].summary, /Workload Identity/);
+  assert.match(
+    details[0].summary,
+    /does not visit.*Cosmos DB.*blob Storage.*Service Bus/,
+  );
+  assert.match(details[1].summary, /depends on partition-core/);
+  assert.match(details[1].summary, /Spring Boot repackage.*\/app\.jar/);
+  assert.match(details[1].summary, /one process, not across a network/);
+  assert.match(
+    details[2].summary,
+    /regenerates shared source separately from fork-owned Azure source/,
+  );
+  assert.match(details[2].summary, /removing.*upstream does not delete/);
+
+  for (const id of ['redis', 'azureclients']) {
+    const detail = resolveDetail(id, 'spi-boundary');
+    assert.equal(detail.source, 'partitionProvider');
+    assert.match(detail.summary, /miss or caught read exception/);
+    assert.match(detail.summary, /reachable and contains opendes/);
+  }
+  assert.equal(
+    details[2].title,
+    componentDetails.upstream.title,
+    'the upstream title remains shared with later lessons',
+  );
+  assert.deepEqual(details[2].artifact, componentDetails.upstream.artifact);
+  assert.equal(resolveDetail('image', 'fork-shape').source, 'ghcr');
+  assert.equal(
+    resolveDetail('upstream', 'fork-shape').source,
+    'synchronization',
+  );
+});
+
 test('every explanation names an artifact and a source', () => {
   for (const [id, detail] of Object.entries(componentDetails)) {
     for (const field of ['label', 'title', 'body'])
@@ -214,6 +320,19 @@ test('every explanation names an artifact and a source', () => {
     assert.ok(sources[detail.source], `${id}: source`);
     for (const source of detail.goDeeper || [])
       assert.ok(sources[source], `${id}: Go deeper source ${source}`);
+    for (const [chapterKey, override] of Object.entries(detail.here || {})) {
+      assert.ok(chapters[chapterKey], `${id}: unknown chapter ${chapterKey}`);
+      assert.ok(override.summary?.trim(), `${id}/${chapterKey}: summary`);
+      if (override.owner !== undefined)
+        assert.ok(override.owner.trim(), `${id}/${chapterKey}: owner`);
+      if (override.source)
+        assert.ok(sources[override.source], `${id}/${chapterKey}: source`);
+      for (const source of override.goDeeper || [])
+        assert.ok(
+          sources[source],
+          `${id}/${chapterKey}: Go deeper source ${source}`,
+        );
+    }
   }
 });
 
