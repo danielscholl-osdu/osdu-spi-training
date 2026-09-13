@@ -915,12 +915,12 @@ details[open] summary span {
   border-right: 0;
 }
 .inspector {
-  position: absolute;
+  position: fixed;
   top: var(--drawer-top, 0px);
-  right: 0;
+  right: var(--drawer-right, 0px);
   left: auto;
-  width: min(400px, 92%);
-  max-height: min(760px, calc(100dvh - 100px), var(--drawer-max, 100dvh));
+  width: var(--drawer-width, min(400px, 92%));
+  max-height: var(--drawer-max, min(760px, calc(100dvh - 100px)));
   overflow-y: auto;
   z-index: 20;
   background: white;
@@ -931,11 +931,12 @@ details[open] summary span {
   visibility: hidden;
   transition:
     transform 0.22s ease,
-    visibility 0.22s;
+    visibility 0s linear 0.22s;
 }
 .inspector.is-expanded {
   transform: none;
   visibility: visible;
+  transition-delay: 0s;
 }
 #detail-toggle {
   display: block;

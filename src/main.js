@@ -179,6 +179,31 @@ function applyPolicy() {
 
 let detailOpener = null;
 let pendingOpener = null;
+function positionInspector() {
+  if (window.matchMedia('(max-width: 760px)').matches) return;
+  const workspace = inspector.parentElement.getBoundingClientRect();
+  const masthead = document.querySelector('.masthead').getBoundingClientRect();
+  const topInset = Math.max(12, masthead.bottom + 16);
+  const bottomInset = 16;
+  const width = Math.min(400, workspace.width * 0.92);
+  const maxHeight = Math.min(
+    760,
+    Math.max(0, window.innerHeight - topInset - bottomInset),
+  );
+  inspector.style.setProperty(
+    '--drawer-right',
+    `${Math.max(0, window.innerWidth - workspace.right)}px`,
+  );
+  inspector.style.setProperty('--drawer-width', `${width}px`);
+  inspector.style.setProperty('--drawer-max', `${maxHeight}px`);
+  const highestTop = Math.max(
+    topInset,
+    window.innerHeight - bottomInset - inspector.offsetHeight,
+  );
+  const top = Math.min(Math.max(workspace.top, topInset), highestTop);
+  inspector.style.setProperty('--drawer-top', `${top}px`);
+}
+
 function expandInspector(expanded, { focus = true } = {}) {
   inspector.classList.toggle('is-expanded', expanded);
   inspector.inert = !expanded;
@@ -187,19 +212,15 @@ function expandInspector(expanded, { focus = true } = {}) {
     .getElementById('detail-toggle')
     .setAttribute('aria-expanded', String(expanded));
   if (expanded) {
-    // Keep the overlay near the visible part of a tall map without scrolling
-    // the page, and inside the workspace, which clips overflow.
-    const workspace = inspector.parentElement.getBoundingClientRect();
-    inspector.style.setProperty('--drawer-max', `${workspace.height}px`);
-    const top = Math.min(
-      Math.max(0, 84 - workspace.top),
-      Math.max(0, workspace.height - inspector.offsetHeight),
-    );
-    inspector.style.setProperty('--drawer-top', `${top}px`);
+    inspector.scrollTop = 0;
+    positionInspector();
     if (focus)
       document.getElementById('detail-title').focus({ preventScroll: true });
   }
 }
+window.addEventListener('resize', () => {
+  if (inspector.classList.contains('is-expanded')) positionInspector();
+});
 function closeInspector(restoreFocus = true) {
   const wasOpen = inspector.classList.contains('is-expanded');
   expandInspector(false);
@@ -658,7 +679,7 @@ document.getElementById('chapter-claims').addEventListener('click', (event) => {
     const route = parseRoute(location.hash);
     const claim = chapters[route.chapter].outcomes[index];
     const id = claim.evidence;
-    const step = claim.evidenceStep || claim.step || route.step;
+    const step = claim.evidenceStep || claim.step || '';
     pendingOpener = evidence || button;
     const href = routeHref(route.chapter, step, id, { claim: index });
     if (location.hash === href) render();
