@@ -1,3 +1,29 @@
+/**
+ * @typedef {object} TryItAction
+ * @property {string} [command] Inert shell text; mutually exclusive with click.
+ * @property {string} [click] One browser action; mutually exclusive with command.
+ * @property {string} expect The observation that confirms the action's result.
+ * @property {string[]} [sources] Keys from the shared source registry.
+ *
+ * @typedef {object} TryItVariant
+ * @property {string} label
+ * @property {string} result
+ * @property {'browser only'|'workstation setup'|'public GitHub repository'|'Azure resources billed separately'} access
+ * @property {string} [accessNote]
+ * @property {{ text: string, sources: string[] }[]} prerequisites
+ * @property {{ active: string, wait: string, cleanup: string }} time
+ * @property {string} effects Resource changes shown before the steps.
+ * @property {TryItAction[]} steps
+ * @property {{ observation: string, next: string }} alternate
+ * @property {{ steps: TryItAction[], remains: string }} cleanup
+ * @property {string[]} sources
+ * @property {{ cli: string, stack: string, template: string, shell: string, os: string, date: string }} tested
+ *
+ * @typedef {object} TryIt
+ * @property {string} activity
+ * @property {TryItVariant[]} variants
+ */
+
 export const chapters = {
   start: {
     kind: 'page',

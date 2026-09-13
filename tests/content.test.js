@@ -37,6 +37,7 @@ import { forkMoments } from '../src/content/fork-moments.js';
 import { zoomLevels, spiMeanings } from '../src/content/concepts.js';
 import { mythThemes } from '../src/content/myths.js';
 import { zoomLadder, spiNamesFigure } from '../src/components/infographics.js';
+import { multipleVariantTryIt, singleVariantTryIt } from './fixtures/try-it.js';
 
 const mapChapters = Object.entries(chapters).filter(
   ([, chapter]) => chapter.kind === 'map',
@@ -46,6 +47,115 @@ const pageChapters = Object.entries(chapters).filter(
 );
 const partitionSourcePattern =
   /^https:\/\/github.com\/Azure\/osdu-spi-partition(?:\/blob\/main\/|\/commit\/[0-9a-f]{40}$|$)/;
+const tryItAccess = new Set([
+  'browser only',
+  'workstation setup',
+  'public GitHub repository',
+  'Azure resources billed separately',
+]);
+
+function verifySourceRecord(key, source) {
+  const url = new URL(source.href);
+  assert.equal(url.protocol, 'https:');
+  assert.ok(source.label && source.repo && source.path, key);
+  if (source.repo === 'osdu-spi') {
+    assert.equal(url.hostname, 'azure.github.io', key);
+    assert.ok(url.pathname.startsWith('/osdu-spi/'), key);
+  } else if (source.repo === 'osdu-spi-partition')
+    assert.match(source.href, partitionSourcePattern);
+  else
+    assert.match(
+      source.href,
+      /^https:\/\/github.com\/Azure\/osdu-spi-stack\/blob\/main\//,
+    );
+  const checkout = new URL(`../../${source.repo}/`, import.meta.url);
+  if (existsSync(checkout)) {
+    const target = new URL(source.path, checkout);
+    assert.ok(existsSync(target), `${key}: missing ${fileURLToPath(target)}`);
+  }
+}
+
+function verifyTryIt(tryIt, context) {
+  const nonempty = (value, field) => {
+    assert.equal(typeof value, 'string', `${context}: ${field}`);
+    assert.ok(value.trim(), `${context}: ${field}`);
+  };
+  const sourceKeys = (keys, field, required = false) => {
+    assert.ok(Array.isArray(keys), `${context}: ${field}`);
+    if (required) assert.ok(keys.length, `${context}: ${field}`);
+    for (const key of keys) {
+      assert.ok(sources[key], `${context}: ${field} has unknown source ${key}`);
+      verifySourceRecord(key, sources[key]);
+    }
+  };
+  const action = (step, field) => {
+    const hasCommand =
+      typeof step.command === 'string' && Boolean(step.command.trim());
+    const hasClick =
+      typeof step.click === 'string' && Boolean(step.click.trim());
+    assert.notEqual(hasCommand, hasClick, `${context}: ${field} action`);
+    nonempty(step.expect, `${field}.expect`);
+    if (step.sources) sourceKeys(step.sources, `${field}.sources`);
+  };
+
+  assert.ok(tryIt && typeof tryIt === 'object', `${context}: tryIt`);
+  nonempty(tryIt.activity, 'activity');
+  assert.ok(
+    Array.isArray(tryIt.variants) && tryIt.variants.length,
+    `${context}: variants`,
+  );
+  for (const [variantIndex, variant] of tryIt.variants.entries()) {
+    const field = `variants[${variantIndex}]`;
+    for (const key of ['label', 'result', 'effects'])
+      nonempty(variant[key], `${field}.${key}`);
+    assert.ok(tryItAccess.has(variant.access), `${context}: ${field}.access`);
+    if (variant.accessNote !== undefined) {
+      nonempty(variant.accessNote, `${field}.accessNote`);
+      assert.match(
+        variant.accessNote,
+        /[.!?]$/,
+        `${context}: ${field}.accessNote sentence`,
+      );
+    }
+    assert.ok(
+      Array.isArray(variant.prerequisites) && variant.prerequisites.length,
+      `${context}: ${field}.prerequisites`,
+    );
+    for (const [index, prerequisite] of variant.prerequisites.entries()) {
+      nonempty(prerequisite.text, `${field}.prerequisites[${index}].text`);
+      sourceKeys(
+        prerequisite.sources,
+        `${field}.prerequisites[${index}].sources`,
+        true,
+      );
+    }
+    for (const key of ['active', 'wait', 'cleanup'])
+      nonempty(variant.time?.[key], `${field}.time.${key}`);
+    assert.ok(
+      Array.isArray(variant.steps) && variant.steps.length,
+      `${context}: ${field}.steps`,
+    );
+    for (const [index, step] of variant.steps.entries())
+      action(step, `${field}.steps[${index}]`);
+    nonempty(variant.alternate?.observation, `${field}.alternate.observation`);
+    nonempty(variant.alternate?.next, `${field}.alternate.next`);
+    assert.ok(
+      Array.isArray(variant.cleanup?.steps) && variant.cleanup.steps.length,
+      `${context}: ${field}.cleanup.steps`,
+    );
+    for (const [index, step] of variant.cleanup.steps.entries())
+      action(step, `${field}.cleanup.steps[${index}]`);
+    nonempty(variant.cleanup.remains, `${field}.cleanup.remains`);
+    sourceKeys(variant.sources, `${field}.sources`, true);
+    for (const key of ['cli', 'stack', 'template', 'shell', 'os', 'date'])
+      nonempty(variant.tested?.[key], `${field}.tested.${key}`);
+    assert.match(
+      variant.tested.date,
+      /^\d{4}-\d{2}-\d{2}$/,
+      `${context}: ${field}.tested.date`,
+    );
+  }
+}
 
 function verifyDetails(markup, context) {
   const ids = [...markup.matchAll(/data-detail="([^"]+)"/g)].map(
@@ -947,26 +1057,39 @@ test('readiness signals guide compares five proof scopes without ordering them',
 });
 
 test('source links use readable documentation and match a sibling checkout when present', () => {
-  for (const [key, source] of Object.entries(sources)) {
-    const url = new URL(source.href);
-    assert.equal(url.protocol, 'https:');
-    assert.ok(source.label && source.repo && source.path, key);
-    if (source.repo === 'osdu-spi') {
-      assert.equal(url.hostname, 'azure.github.io', key);
-      assert.ok(url.pathname.startsWith('/osdu-spi/'), key);
-    } else if (source.repo === 'osdu-spi-partition')
-      assert.match(source.href, partitionSourcePattern);
-    else
-      assert.match(
-        source.href,
-        /^https:\/\/github.com\/Azure\/osdu-spi-stack\/blob\/main\//,
-      );
-    const checkout = new URL(`../../${source.repo}/`, import.meta.url);
-    if (existsSync(checkout)) {
-      const target = new URL(source.path, checkout);
-      assert.ok(existsSync(target), `${key}: missing ${fileURLToPath(target)}`);
-    }
-  }
+  for (const [key, source] of Object.entries(sources))
+    verifySourceRecord(key, source);
+});
+
+test('tryIt fixtures and authored recipes satisfy the content contract', () => {
+  verifyTryIt(singleVariantTryIt, 'single variant fixture');
+  verifyTryIt(multipleVariantTryIt, 'multiple variant fixture');
+  for (const [key, chapter] of Object.entries(chapters))
+    if (chapter.tryIt) verifyTryIt(chapter.tryIt, key);
+});
+
+test('tryIt validation rejects focused invalid clones', () => {
+  const invalidAccess = structuredClone(singleVariantTryIt);
+  invalidAccess.variants[0].access = 'free';
+  assert.throws(() => verifyTryIt(invalidAccess, 'invalid access'), /access/);
+
+  const malformedStep = structuredClone(singleVariantTryIt);
+  malformedStep.variants[0].steps[0].command = 'spi --help';
+  assert.throws(() => verifyTryIt(malformedStep, 'malformed step'), /action/);
+
+  const missingRemains = structuredClone(singleVariantTryIt);
+  missingRemains.variants[0].cleanup.remains = '';
+  assert.throws(
+    () => verifyTryIt(missingRemains, 'missing remains'),
+    /cleanup\.remains/,
+  );
+
+  const unknownSource = structuredClone(singleVariantTryIt);
+  unknownSource.variants[0].prerequisites[0].sources = ['unknown'];
+  assert.throws(
+    () => verifyTryIt(unknownSource, 'unknown source'),
+    /unknown source/,
+  );
 });
 
 test('partition source links accept pinned commits but reject unrelated URLs', () => {
