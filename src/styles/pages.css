@@ -2951,6 +2951,162 @@ body:has(.audio-dock:not([hidden])) main {
   color: white;
   font-weight: 700;
 }
+.try-it {
+  min-width: 0;
+  margin-top: 18px;
+}
+.try-it details {
+  min-width: 0;
+  background: var(--white);
+  border: 1px solid var(--line);
+  border-radius: 8px;
+}
+.try-it summary {
+  padding: 15px 18px;
+  color: var(--ink);
+  cursor: pointer;
+  overflow-wrap: anywhere;
+}
+.try-it summary span {
+  font-weight: 700;
+}
+.try-it summary small {
+  color: var(--muted);
+  font-size: 13px;
+  font-weight: 500;
+}
+.try-it details[open] > summary {
+  border-bottom: 1px solid var(--line);
+}
+.try-it-body {
+  padding: 18px;
+}
+.try-it-safety {
+  margin: 0 0 16px;
+  color: var(--muted);
+  font-size: 13px;
+}
+.try-it-variants {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 320px), 1fr));
+  gap: 16px;
+}
+.try-it-variant {
+  min-width: 0;
+  padding: 18px;
+  background: var(--paper);
+  border: 1px solid var(--line);
+  border-radius: 7px;
+}
+.try-it-variant header {
+  margin-bottom: 14px;
+}
+.try-it-variant h3 {
+  margin: 2px 0 4px;
+  font-size: 18px;
+}
+.try-it-variant h4 {
+  margin: 18px 0 7px;
+  font-size: 13px;
+  color: var(--ink);
+}
+.try-it-result,
+.try-it-effects p,
+.try-it-access p,
+.try-it-alternate p,
+.try-it-cleanup > p {
+  margin: 0;
+  font-size: 14px;
+  line-height: 1.55;
+}
+.try-it-result,
+.try-it-access p + p {
+  color: var(--muted);
+}
+.try-it-access {
+  padding: 10px 12px;
+  background: var(--white);
+  border-left: 3px solid var(--blue);
+}
+.try-it-access p + p {
+  margin-top: 4px;
+  font-size: 13px;
+}
+.try-it-prerequisites ul,
+.try-it-steps ol,
+.try-it-cleanup ol {
+  margin: 0;
+  padding-left: 22px;
+}
+.try-it-prerequisites li,
+.try-it-steps li,
+.try-it-cleanup li {
+  margin-top: 10px;
+  font-size: 14px;
+}
+.try-it-prerequisites .guide-sources,
+.try-it-steps .guide-sources,
+.try-it-cleanup .guide-sources {
+  margin-top: 4px;
+  overflow-wrap: anywhere;
+}
+.try-it-time,
+.try-it-tested dl {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 8px;
+  margin: 18px 0 0;
+}
+.try-it-time div,
+.try-it-tested dl div {
+  min-width: 0;
+  padding: 9px 10px;
+  background: var(--white);
+  border: 1px solid var(--line);
+  border-radius: 5px;
+}
+.try-it-time dt,
+.try-it-tested dt {
+  color: var(--muted);
+  font-size: 11px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+.try-it-time dd,
+.try-it-tested dd {
+  margin: 3px 0 0;
+  font-size: 13px;
+  overflow-wrap: anywhere;
+}
+.try-it-command {
+  max-width: 100%;
+  margin: 8px 0 0;
+  padding: 9px 10px;
+  overflow-x: auto;
+  background: var(--navy);
+  border-radius: 5px;
+  color: var(--white);
+  font-size: 12px;
+}
+.try-it-click,
+.try-it-expect {
+  margin: 5px 0 0;
+  font-size: 13px;
+}
+.try-it-alternate,
+.try-it-cleanup {
+  margin-top: 18px;
+  padding-top: 1px;
+  border-top: 1px dashed var(--line);
+}
+.try-it-tested dl {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+.try-it-variant > .guide-sources {
+  margin-top: 18px;
+  overflow-wrap: anywhere;
+}
 .partition-comparison {
   margin: 20px 0 24px;
   border: 1px solid var(--line);
@@ -3147,6 +3303,19 @@ body:has(.audio-dock:not([hidden])) main {
   }
   .lesson-next a {
     white-space: normal;
+  }
+  .try-it summary small {
+    display: block;
+    margin-top: 4px;
+  }
+  .try-it-body,
+  .try-it-variant {
+    padding: 14px;
+  }
+  .try-it-variants,
+  .try-it-time,
+  .try-it-tested dl {
+    grid-template-columns: 1fr;
   }
 }
 
