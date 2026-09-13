@@ -1136,13 +1136,24 @@ test('audio markers are ordered, inside the recording, and point at real views',
   ])
     assert.ok(!home.includes(retired), `home no longer carries ${retired}`);
   assert.ok(
-    !spiNamesFigure().includes('<a '),
+    !spiNamesFigure().includes('href="#'),
     'the SPI meanings carry no lesson link each',
   );
   assert.equal(
-    home.split('class="source-cards"').length - 1,
+    spiNamesFigure().split('class="spi-name-repo"').length - 1,
+    3,
+    'each SPI meaning links its repository',
+  );
+  assert.equal(
+    home.split('class="home-sources"').length - 1,
     1,
     'one source area',
+  );
+  assert.ok(!home.includes('source-cards'), 'the source cards are gone');
+  assert.ok(
+    home.indexOf('class="home-sources"') >
+      home.indexOf('SPI means three things'),
+    'sources follow the three meanings, collapsed',
   );
   const html = readFileSync(
     new URL('../src/index.html', import.meta.url),
@@ -1525,7 +1536,7 @@ test('learn views retain authored lesson metadata and omit repeated scaffolding'
   );
   assert.deepEqual(
     spiMeanings.map((meaning) => meaning.id),
-    ['stack', 'interface', 'engineering'],
+    ['stack', 'engineering', 'interface'],
   );
   assert.ok(spiNamesFigure().split('<article').length === 4);
 });

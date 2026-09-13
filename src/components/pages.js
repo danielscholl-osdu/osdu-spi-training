@@ -232,6 +232,8 @@ function lessonIndex() {
 function homePage() {
   const start = chapters.start;
   const moreSources = [
+    'architecture',
+    'engineering',
     'designs',
     'decisions',
     'cimplArchitecture',
@@ -256,15 +258,10 @@ function homePage() {
       <h2 id="home-names-title">SPI means three things here</h2>
       ${spiNamesFigure()}
     </section>
-    <section class="home-sources" aria-labelledby="home-sources-title">
-      <h2 id="home-sources-title">Source documentation</h2>
-      <div class="source-cards">
-        <a href="${sources.architecture.href}" target="_blank" rel="noopener noreferrer"><b>osdu-spi-stack</b><p>Azure infrastructure, workload configuration, the spi CLI. Nine design guides and a register of decision records.</p><span>Architecture ↗</span></a>
-        <a href="${sources.partitionRepo.href}" target="_blank" rel="noopener noreferrer"><b>osdu-spi-partition</b><p>The reference service fork: shared code regenerated from upstream and the Azure provider behind the interface.</p><span>Repository ↗</span></a>
-        <a href="${sources.engineering.href}" target="_blank" rel="noopener noreferrer"><b>osdu-spi</b><p>The engineering system behind every service fork: sync, cascade, build, validation, and fork tiers.</p><span>Architecture overview ↗</span></a>
-      </div>
+    <details class="home-sources">
+      <summary>Go deeper: design guides, decision records, and the community reference</summary>
       <p class="home-more-sources">${moreSources.map(sourceAnchor).join('')}</p>
-    </section>`;
+    </details>`;
 }
 
 function mythsPage() {
