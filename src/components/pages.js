@@ -24,7 +24,9 @@ export function formatTime(seconds) {
 }
 
 function sourceAnchor(key) {
-  return `<a href="${sources[key].href}" target="_blank" rel="noopener noreferrer">${sources[key].label} ↗</a>`;
+  const source = sources[key];
+  if (!source) throw new Error(`Unknown source key: ${key}`);
+  return `<a href="${source.href}" target="_blank" rel="noopener noreferrer">${source.label} ↗</a>`;
 }
 
 function sourceLinks(keys) {
@@ -254,7 +256,9 @@ export function exampleStrip(key, route, variant) {
   const presentation = resolveExamplePresentation(example, variant);
   if (hasClaims(chapters[key])) {
     const variantControls = example.variants
-      ? `<div class="example-variant-row"><span>Trace condition</span><div class="example-variants" role="group" aria-label="Trace condition">${Object.entries(example.variants)
+      ? `<div class="example-variant-row"><span>Trace condition</span><div class="example-variants" role="group" aria-label="Trace condition">${Object.entries(
+          example.variants,
+        )
           .map(
             ([id, option]) =>
               `<button type="button" data-example-variant="${id}" aria-pressed="${presentation.selectedVariant === id}">${escapeHtml(option.label)}</button>`,

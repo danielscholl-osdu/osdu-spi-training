@@ -60,12 +60,14 @@ function applyExamplePresentation(chapter, tracing) {
     lessonState.variant,
   );
   const strip = document.getElementById('example-strip');
-  strip.querySelectorAll('[data-example-variant]').forEach((button) =>
-    button.setAttribute(
-      'aria-pressed',
-      String(button.dataset.exampleVariant === presentation.selectedVariant),
-    ),
-  );
+  strip
+    .querySelectorAll('[data-example-variant]')
+    .forEach((button) =>
+      button.setAttribute(
+        'aria-pressed',
+        String(button.dataset.exampleVariant === presentation.selectedVariant),
+      ),
+    );
   presentation.hops.forEach((hop, index) => {
     const link = strip.querySelector(`[data-hop="${index}"]`);
     if (!link) return;
@@ -105,9 +107,7 @@ function applyPolicy() {
   const presentation = applyExamplePresentation(chapter, tracing);
   const focus = new Set(
     tracing
-      ? presentation.hops
-          .slice(0, lessonState.hop + 1)
-          .map((hop) => hop.detail)
+      ? presentation.hops.slice(0, lessonState.hop + 1).map((hop) => hop.detail)
       : claim.focus || [],
   );
   const scopes = new Set(

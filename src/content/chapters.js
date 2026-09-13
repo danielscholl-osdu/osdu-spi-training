@@ -322,8 +322,7 @@ export const chapters = {
       providerPath:
         'The provider checks its cache, then Azure Table Storage in common Storage, returning stored configuration. This lookup does not visit the partition’s Cosmos, blob Storage, or Service Bus.',
     },
-    goal:
-      'With the drawer closed, you can point to where shared code ends and Azure provider code begins, explain why the interface is not a network hop, and say what survives a cache exception.',
+    goal: 'With the drawer closed, you can point to where shared code ends and Azure provider code begins, explain why the interface is not a network hop, and say what survives a cache exception.',
     outcomes: [
       {
         headline: 'Common code calls Azure through a provider interface.',

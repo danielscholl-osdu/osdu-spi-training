@@ -35,6 +35,8 @@ const mapChapters = Object.entries(chapters).filter(
 const pageChapters = Object.entries(chapters).filter(
   ([, chapter]) => chapter.kind === 'page',
 );
+const partitionSourcePattern =
+  /^https:\/\/github.com\/Azure\/osdu-spi-partition(?:\/blob\/main\/|\/commit\/[0-9a-f]{40}$|$)/;
 
 function verifyDetails(markup, context) {
   const ids = [...markup.matchAll(/data-detail="([^"]+)"/g)].map(
@@ -173,9 +175,14 @@ test('Go deeper links preserve evidence order and single-source fallback', () =>
     [...fallback.matchAll(/href="([^"]+)"/g)].map((match) => match[1]),
     [sources[componentDetails.contract.source].href],
   );
-  assert.match(
-    ordered,
-    /target="_blank" rel="noopener noreferrer"/,
+  assert.match(ordered, /target="_blank" rel="noopener noreferrer"/);
+  assert.throws(
+    () =>
+      detailSourceLinks({
+        source: 'partitionProvider',
+        goDeeper: ['missing-source'],
+      }),
+    /Unknown source key: missing-source/,
   );
 });
 
@@ -219,10 +226,7 @@ test('SPI boundary map exposes one runtime seam and its source owners', () => {
   assert.match(markup, /IPartitionService\.getPartition/);
   assert.match(markup, /provider\/partition-azure/);
   assert.match(markup, /no network hop/);
-  assert.equal(
-    [...markup.matchAll(/data-trace-status=/g)].length,
-    2,
-  );
+  assert.equal([...markup.matchAll(/data-trace-status=/g)].length, 2);
 });
 
 test('deep links recover chapter, lifecycle moment, and component without module state', () => {
@@ -394,10 +398,7 @@ test('source links use readable documentation and match a sibling checkout when 
       assert.equal(url.hostname, 'azure.github.io', key);
       assert.ok(url.pathname.startsWith('/osdu-spi/'), key);
     } else if (source.repo === 'osdu-spi-partition')
-      assert.match(
-        source.href,
-        /^https:\/\/github.com\/Azure\/osdu-spi-partition(?:\/blob\/main\/|\/commit\/[0-9a-f]{40}$|$)/,
-      );
+      assert.match(source.href, partitionSourcePattern);
     else
       assert.match(
         source.href,
@@ -409,6 +410,16 @@ test('source links use readable documentation and match a sibling checkout when 
       assert.ok(existsSync(target), `${key}: missing ${fileURLToPath(target)}`);
     }
   }
+});
+
+test('partition source links accept pinned commits but reject unrelated URLs', () => {
+  assert.match(sources.partitionCacheFix.href, partitionSourcePattern);
+  for (const href of [
+    'https://github.com/Azure/osdu-spi-partition/commit/fc2dfbf',
+    'https://github.com/Azure/osdu-spi-stack/commit/fc2dfbf6f1a3038a804441aba615bf5ebadb3332',
+    'https://example.com/Azure/osdu-spi-partition/commit/fc2dfbf6f1a3038a804441aba615bf5ebadb3332',
+  ])
+    assert.doesNotMatch(href, partitionSourcePattern);
 });
 
 test('learn views state a question, what they build on, their scope, and outcomes', () => {
@@ -535,6 +546,9 @@ test('structured claims resolve their focus, evidence, and scopes on every scene
       const scopes = new Set(
         [...markup.matchAll(/data-scope="([^"]+)"/g)].map((match) => match[1]),
       );
+      for (const id of chapter.example.scopes || [])
+        assert.ok(scopes.has(id), `${key}/${step}: example scope ${id}`);
+      const claimsMarkup = claimStrip(key);
       claims.forEach((claim, index) => {
         assert.ok(
           Array.isArray(claim.focus) && Array.isArray(claim.scopes),
@@ -556,6 +570,10 @@ test('structured claims resolve their focus, evidence, and scopes on every scene
           assert.ok(details.has(id), `${key}/${step}: claim detail ${id}`);
         for (const id of claim.scopes)
           assert.ok(scopes.has(id), `${key}/${step}: claim scope ${id}`);
+        assert.ok(
+          claimsMarkup.includes(routeHref(key, null, claim.evidence)),
+          `${key}: claim ${index} evidence destination`,
+        );
       });
     }
   }
@@ -563,6 +581,10 @@ test('structured claims resolve their focus, evidence, and scopes on every scene
 
 test('lesson 03 claims keep the provider seam understandable without evidence', () => {
   const chapter = chapters['spi-boundary'];
+  assert.equal(
+    chapter.headline.replace(/<[^>]+>/g, ' ').trim(),
+    'The provider lives inside the service.',
+  );
   assert.equal(chapter.outcomes.length, 3);
   assert.deepEqual(
     chapter.outcomes.map(({ headline, focus, evidence, scopes }) => ({
@@ -629,7 +651,9 @@ test('lesson 03 states its own prerequisite and place without changing orientati
   assert.ok(orientation.includes(chapter.goal));
   assert.ok(!orientation.includes(chapter.builds));
   assert.ok(!orientation.includes(chapter.where));
-  assert.ok(!chapterScope('running-stack').includes(chapters['running-stack'].builds));
+  assert.ok(
+    !chapterScope('running-stack').includes(chapters['running-stack'].builds),
+  );
 });
 
 test('example variants present two states of one canonical five-hop trace', () => {
@@ -649,10 +673,7 @@ test('example variants present two states of one canonical five-hop trace', () =
   );
   assert.equal(normal.hops[3].copy, 'Healthy cache miss');
   assert.equal(normal.hops[4].copy, 'Stored configuration for opendes');
-  assert.equal(
-    cacheDown.hops[3].copy,
-    'Cache read throws; treated as a miss',
-  );
+  assert.equal(cacheDown.hops[3].copy, 'Cache read throws; treated as a miss');
   assert.equal(cacheDown.hops[4].copy, 'Table Storage answers anyway');
   assert.deepEqual(example.hops, canonical);
 
@@ -740,4 +761,22 @@ test('lesson 03 evidence deep links stay step-less and map to claims', () => {
     parseRoute('#running-stack/request?detail=provider').step,
     'request',
   );
+});
+
+test('example renderers preserve structured and unconverted lessons', () => {
+  const fixtures = [
+    ['running-stack', '#running-stack/request', true],
+    ['spi-boundary', '#spi-boundary', true],
+    ['bring-up', '#bring-up/prepare', false],
+  ];
+  for (const [key, href, structured] of fixtures) {
+    const markup = exampleStrip(key, parseRoute(href));
+    assert.ok(markup.includes('class="journey"'), key);
+    assert.equal(markup.includes('example-disclosure'), structured, key);
+    assert.equal(
+      (markup.match(/data-example-variant=/g) || []).length,
+      key === 'spi-boundary' ? 2 : 0,
+      key,
+    );
+  }
 });
