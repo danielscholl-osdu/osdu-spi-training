@@ -305,7 +305,7 @@ export const componentDetails = {
   upstream: {
     label: 'Upstream tip',
     title:
-      'The community repository, including the providers the fork does not want.',
+      'The community repository contains shared code and providers for several clouds.',
     body: 'community.opengroup.org publishes the whole partition service: core, acceptance tests, and one provider per cloud, including an Azure one that upstream plans to remove. The fork never checks this tree out as a branch. Sync Upstream reads it with git plumbing and generates fork_upstream from it, so upstream’s Azure directory and the fork’s never share a merge base.',
     artifact: {
       label: 'Where the sync reads from',

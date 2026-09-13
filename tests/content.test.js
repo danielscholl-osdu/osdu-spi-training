@@ -162,6 +162,12 @@ test('every explanation names an artifact and a source', () => {
     for (const source of detail.goDeeper || [])
       assert.ok(sources[source], `${id}: Go deeper source ${source}`);
   }
+  assert.equal(
+    componentDetails.upstream.title,
+    'The community repository contains shared code and providers for several clouds.',
+  );
+  assert.equal(componentDetails.upstream.source, 'synchronization');
+  assert.match(componentDetails.upstream.artifact.code, /UPSTREAM_REPO_URL/);
 });
 
 test('readiness drawer distinguishes observed state from API proof', () => {
