@@ -28,6 +28,7 @@ import {
   hopIndexForRoute,
   mythCallout,
   pageRenderers,
+  partitionComparison,
   resolveExamplePresentation,
   resolveLessonSelection,
   selectExampleVariant,
@@ -36,7 +37,11 @@ import { parseRoute, routeHref, chapterSteps } from '../src/router.js';
 import { forkMoments } from '../src/content/fork-moments.js';
 import { zoomLevels, spiMeanings } from '../src/content/concepts.js';
 import { mythThemes } from '../src/content/myths.js';
-import { zoomLadder, spiNamesFigure } from '../src/components/infographics.js';
+import {
+  partitionLookupFigure,
+  zoomLadder,
+  spiNamesFigure,
+} from '../src/components/infographics.js';
 
 const mapChapters = Object.entries(chapters).filter(
   ([, chapter]) => chapter.kind === 'map',
@@ -1579,6 +1584,110 @@ test('lesson 03 editorial copy stays at the provider boundary', () => {
   assert.doesNotMatch(
     requiredCopy,
     /\bfork_upstream\b|\bfork_integration\b|\bmain\b/,
+  );
+});
+
+test('partition comparison record renders one closed, bounded two-lane disclosure', () => {
+  const entries = Object.entries(chapters).filter(([, chapter]) =>
+    Boolean(chapter.comparison),
+  );
+  assert.deepEqual(
+    entries.map(([key]) => key),
+    ['spi-boundary'],
+  );
+
+  const comparison = entries[0][1].comparison;
+  assert.equal(
+    comparison.operation,
+    'GET /api/partition/v1/partitions/opendes',
+  );
+  assert.equal(
+    comparison.community.revision,
+    'Partition 5aa406b9 · CIMPL Stack fe56aa1b',
+  );
+  assert.equal(
+    comparison.azure.revision,
+    'osdu-spi-partition 3a5690d · SPI Stack dc2c956',
+  );
+  assert.deepEqual(comparison.community.sources, [
+    'communityPartitionInterface',
+    'communityPartitionProvider',
+    'communityPartitionCache',
+    'communityPartitionRepository',
+    'communityPartitionPom',
+    'cimplArchitecture',
+    'cimplPartitionSecrets',
+  ]);
+  assert.deepEqual(comparison.azure.sources, [
+    'communityPartitionInterface',
+    'partitionProvider',
+    'partitionRedis',
+    'partitionTableStore',
+    'partitionPom',
+    'architecture',
+  ]);
+
+  const markup = partitionComparison('spi-boundary');
+  assert.match(markup, /^<details class="partition-comparison">/);
+  assert.doesNotMatch(markup, /<details[^>]*\bopen\b/);
+  assert.match(markup, /<summary><b>Compare the partition lookup<\/b>/);
+  assert.equal(markup.match(/class="partition-lookup-lane /g)?.length, 2);
+  for (const label of [
+    'Inside the community service process',
+    'PostgreSQL',
+    'inside the CIMPL Kubernetes cluster',
+    'Inside the Azure service process',
+    'Redis',
+    'inside AKS',
+    'Common Table Storage',
+    'outside AKS',
+  ])
+    assert.ok(markup.includes(label), label);
+
+  const orderedLabels = [
+    'partition-core-plus',
+    'Configured VmCache',
+    'OsmPartitionPropertyRepository + PostgreSQL driver',
+    'PostgreSQL',
+    'provider/partition-azure',
+    'Redis',
+    'Common Table Storage',
+  ];
+  let previous = -1;
+  for (const label of orderedLabels) {
+    const position = markup.indexOf(label, previous + 1);
+    assert.ok(position > previous, `${label}: lookup order`);
+    previous = position;
+  }
+  for (const phrase of [
+    'cache server does not forward',
+    'reachable and opendes exists',
+    'does not visit the partition’s Cosmos DB, Blob Storage, or Service Bus',
+    'two separately built service images',
+    'does not claim a default CIMPL deployment contains that partition',
+    'Returned properties can differ',
+    'do not identify the implementation',
+    'do not prove a deployed image digest or acceptance-test result',
+  ])
+    assert.ok(markup.includes(phrase), phrase);
+  for (const key of [
+    ...comparison.community.sources,
+    ...comparison.azure.sources,
+  ])
+    assert.ok(markup.includes(`href="${sources[key].href}"`), key);
+
+  assert.equal(partitionComparison('running-stack'), '');
+  assert.doesNotMatch(
+    markup,
+    /data-detail|data-guide|data-map-jump|data-listen|<button|href="#/,
+  );
+  assert.doesNotMatch(markup, /\sid="/);
+  const escaped = structuredClone(comparison);
+  escaped.community.label = '<Community>';
+  assert.match(partitionLookupFigure(escaped), /&lt;Community&gt;/);
+  assert.deepEqual(
+    chapters['spi-boundary'].example.hops.map(({ detail }) => detail),
+    ['client', 'core', 'contract', 'azureimpl', 'redis', 'azureclients'],
   );
 });
 

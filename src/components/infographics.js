@@ -547,6 +547,56 @@ function clocksGuide() {
   <p class="labels-note">A cascade follows a sync PR merge, and a release follows a version PR merge. Everything else here runs on its own schedule and does not wait for the day view’s moments.</p>`;
 }
 
+function partitionLookupLane(lane, key) {
+  const processSteps = lane.process.steps
+    .map(
+      (step, index) => `<li class="partition-flow-step">
+        ${index ? '<span class="partition-flow-arrow" aria-hidden="true">↓</span>' : ''}
+        <b>${escapeHtml(step.label)}</b>
+        <span>${escapeHtml(step.detail)}</span>
+      </li>`,
+    )
+    .join('');
+  const dependencies = lane.dependencies
+    .map(
+      (dependency) => `<li class="partition-dependency">
+        <span class="partition-flow-arrow" aria-hidden="true">↓</span>
+        <small>${escapeHtml(dependency.when)}</small>
+        <b>${escapeHtml(dependency.label)}</b>
+        <span>${escapeHtml(dependency.detail)}</span>
+      </li>`,
+    )
+    .join('');
+
+  return `<article class="partition-lookup-lane partition-lookup-${key}">
+    <header>
+      <span class="guide-kicker">${escapeHtml(lane.label)}</span>
+      <h3>${escapeHtml(lane.image)}</h3>
+      <p>${escapeHtml(lane.revision)}</p>
+      <small>${escapeHtml(lane.hosting)}</small>
+    </header>
+    <div class="partition-process">
+      <span class="partition-boundary-label">${escapeHtml(lane.process.label)}</span>
+      <ol>${processSteps}</ol>
+    </div>
+    <ol class="partition-dependencies">${dependencies}</ol>
+  </article>`;
+}
+
+export function partitionLookupFigure(comparison) {
+  if (!comparison) return '';
+  return `<figure class="partition-lookup-figure">
+    <figcaption>
+      <code>${escapeHtml(comparison.operation)}</code>
+      <p>${escapeHtml(comparison.intro)}</p>
+    </figcaption>
+    <div class="partition-lookup-lanes">
+      ${partitionLookupLane(comparison.community, 'community')}
+      ${partitionLookupLane(comparison.azure, 'azure')}
+    </div>
+  </figure>`;
+}
+
 export const infographics = {
   familiar: familiarGuide,
   owners: ownersGuide,

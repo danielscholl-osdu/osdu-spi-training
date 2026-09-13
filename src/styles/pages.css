@@ -2951,6 +2951,140 @@ body:has(.audio-dock:not([hidden])) main {
   color: white;
   font-weight: 700;
 }
+.partition-comparison {
+  margin: 20px 0 24px;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: var(--white);
+}
+.partition-comparison > summary {
+  align-items: center;
+  padding: 14px 16px;
+  border-bottom: 0;
+  color: var(--blue);
+}
+.partition-comparison[open] > summary {
+  border-bottom: 1px solid var(--line);
+}
+.partition-comparison-body {
+  padding: 18px;
+}
+.partition-lookup-figure {
+  margin: 0;
+}
+.partition-lookup-figure figcaption {
+  display: grid;
+  gap: 8px;
+  margin-bottom: 16px;
+}
+.partition-lookup-figure figcaption code {
+  width: fit-content;
+  max-width: 100%;
+  overflow-wrap: anywhere;
+}
+.partition-lookup-figure figcaption p,
+.partition-lookup-lane header p,
+.partition-lookup-lane header small,
+.partition-flow-step span,
+.partition-dependency span {
+  margin: 0;
+  color: var(--muted);
+}
+.partition-lookup-lanes,
+.partition-comparison-sources {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 16px;
+}
+.partition-lookup-lane {
+  min-width: 0;
+  padding: 14px;
+  border: 1px solid var(--line);
+  border-top: 3px solid var(--teal);
+  border-radius: 6px;
+  background: var(--paper);
+}
+.partition-lookup-azure {
+  border-top-color: var(--blue);
+}
+.partition-lookup-lane header {
+  display: grid;
+  gap: 4px;
+  margin-bottom: 12px;
+}
+.partition-lookup-lane h3,
+.partition-comparison-notes h3,
+.partition-comparison-sources h3 {
+  margin: 0;
+  font-size: 14px;
+  overflow-wrap: anywhere;
+}
+.partition-process {
+  padding: 10px;
+  border: 1px dashed var(--muted);
+  border-radius: 5px;
+  background: var(--white);
+}
+.partition-boundary-label {
+  display: block;
+  margin-bottom: 8px;
+  color: var(--muted);
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+.partition-process ol,
+.partition-dependencies {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+.partition-flow-step,
+.partition-dependency {
+  display: grid;
+  gap: 2px;
+  min-width: 0;
+  overflow-wrap: anywhere;
+}
+.partition-flow-step + .partition-flow-step {
+  margin-top: 4px;
+}
+.partition-flow-arrow {
+  color: var(--teal);
+  font-weight: 700;
+  line-height: 1;
+}
+.partition-lookup-azure .partition-flow-arrow {
+  color: var(--blue);
+}
+.partition-dependency {
+  margin-top: 8px;
+  padding: 0 10px 10px;
+  border-bottom: 1px solid var(--line);
+}
+.partition-dependency small {
+  color: var(--blue);
+  font-weight: 700;
+}
+.partition-comparison-notes {
+  margin-top: 18px;
+}
+.partition-comparison-notes ul {
+  margin: 8px 0 0;
+  padding-left: 20px;
+}
+.partition-comparison-notes li {
+  margin-top: 5px;
+}
+.partition-comparison-sources {
+  margin-top: 18px;
+  padding-top: 14px;
+  border-top: 1px solid var(--line);
+}
+.partition-comparison-sources .guide-sources {
+  overflow-wrap: anywhere;
+}
 .lesson-optional {
   margin-top: 40px;
   border-top: 1px dashed var(--line);
@@ -3002,6 +3136,8 @@ body:has(.audio-dock:not([hidden])) main {
 @media (max-width: 760px) {
   .lesson-orientation,
   .claim-list,
+  .partition-lookup-lanes,
+  .partition-comparison-sources,
   .optional-grid {
     grid-template-columns: 1fr;
   }
