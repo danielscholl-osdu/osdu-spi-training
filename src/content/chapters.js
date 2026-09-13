@@ -129,9 +129,10 @@ export const chapters = {
     book: 'The stack',
     title: 'How it comes to life',
     subtitle: 'Create, use, and remove',
-    headline: 'How spi up<span>builds the environment.</span>',
+    headline:
+      'One command creates the environment.<span>Flux finishes it.</span>',
     intro:
-      'Follow the same environment from an empty footprint to OSDU, then remove it. Each moment shows who acts and what changes.',
+      'Build on lesson 01’s wide map: follow dev1 from your workstation into the resource group, AKS cluster, and namespaces, then remove it. Each moment shows who acts and what changes.',
     figure: 'Follow the environment',
     selected: 'workstation',
     diagram: 'creation',
@@ -156,6 +157,9 @@ export const chapters = {
       remove: ['credentials'],
     },
     mistakes: {
+      start: 'profiles-save-money',
+      provision: 'profiles-save-money',
+      bootstrap: 'delete-secret-rotates',
       reconcile: 'suspended-means-frozen',
       inspect: 'finished-means-ready',
       remove: 'teardown-green-means-deleted',
@@ -171,6 +175,8 @@ export const chapters = {
     example: {
       title: 'Before the lookup can answer',
       code: 'spi up --env dev1',
+      scopes: ['environment', 'aks', 'resources'],
+      crossing: 'Provision dev1, then look up opendes',
       hops: [
         {
           detail: 'aks',
@@ -203,12 +209,47 @@ export const chapters = {
           copy: 'Then the lookup works',
         },
       ],
-      note: 'Each hop is a different moment. Click one to move the lifecycle to it.',
+      note: 'Each hop is a different lifecycle moment. Once the Partition service is running, the opendes lookup checks its cache, falls back to Azure Table Storage in common Storage, and returns stored configuration. It does not visit the partition’s Cosmos DB, blob Storage, or Service Bus.',
     },
+    goal: 'You can explain how spi up divides work among the CLI, Flux, and controllers; distinguish CLI exit from API readiness; and say what spi down retains.',
     outcomes: [
-      'The CLI and Bicep create Azure and seed the cluster; Flux assembles the workloads; controllers keep them healthy. Different owners, different clocks.',
-      'A successful spi up exit is the first of five milestones, not readiness. spi status --watch is how I follow the rest.',
-      'spi down removes compute and data but keeps identities and the resource group, so a rebuild reuses the same names.',
+      {
+        headline:
+          'CLI creates; Flux assembles; controllers keep workloads healthy.',
+        text: 'The CLI and Bicep create Azure and seed the cluster; Flux assembles the workloads; controllers keep them healthy. Different owners, different clocks.',
+        why: 'spi up drives Bicep and bootstrap while Flux begins reconciling before the CLI exits; Flux and Kubernetes controllers continue after the terminal returns.',
+        step: 'provision',
+        steps: ['start', 'provision', 'bootstrap', 'reconcile'],
+        evidenceStep: 'reconcile',
+        focus: ['workstation', 'aks', 'bootstrap', 'flux'],
+        scopes: ['environment', 'aks', 'resources'],
+        evidence: 'flux',
+        crossing: 'CLI provisions Azure and prepares AKS',
+      },
+      {
+        headline: 'CLI success is not API readiness.',
+        text: 'A successful spi up exit is the first of five milestones, not readiness. spi status --watch is how I follow the rest.',
+        why: 'Read the signals separately: a successful CLI exit, a Git source artifact, Ready Kustomizations and HelmReleases, Complete initialization Jobs, then a successful authenticated request. spi status --watch follows workload health and initialization; it does not make that final API call.',
+        step: 'inspect',
+        steps: ['inspect'],
+        evidenceStep: 'inspect',
+        focus: ['readiness', 'initialization', 'caller'],
+        scopes: ['environment', 'aks'],
+        evidence: 'readiness',
+        crossing: 'Observe readiness, then exercise an API',
+      },
+      {
+        headline: 'Teardown removes data but preserves identities and names.',
+        text: 'spi down removes compute and data but keeps identities and the resource group, so a rebuild reuses the same names.',
+        why: 'Ordinary spi down deletes the cluster and application data while retaining managed-identity client IDs and the resource group’s naming tags. A rebuild can reuse those names and IDs, not the deleted application data.',
+        step: 'remove',
+        steps: ['remove'],
+        evidenceStep: 'remove',
+        focus: ['retained'],
+        scopes: ['environment', 'resources'],
+        evidence: 'retained',
+        crossing: 'Delete compute and data; retain identity',
+      },
     ],
   },
   'spi-boundary': {

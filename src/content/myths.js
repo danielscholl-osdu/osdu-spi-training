@@ -8,7 +8,7 @@ export const myths = [
     check: 'spi status --watch',
     source: 'lifecycle',
     route: '#bring-up/inspect?detail=readiness',
-    routeLabel: 'The three readiness signals',
+    routeLabel: 'Readiness milestones',
   },
   {
     id: 'suspended-means-frozen',

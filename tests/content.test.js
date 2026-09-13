@@ -506,36 +506,128 @@ test('structured claims resolve their focus, evidence, and scopes on every scene
       `${key}: a lesson carries two to four claims`,
     );
     assert.ok(chapter.goal, `${key}: goal`);
-    for (const step of chapterSteps(key).length ? chapterSteps(key) : [null]) {
+    const chapterSceneSteps = chapterSteps(key).length
+      ? chapterSteps(key)
+      : [null];
+    const scene = (step) => {
       const markup = diagramRenderers[chapter.diagram]({ chapter: key, step });
-      const details = new Set(
-        [...markup.matchAll(/data-detail="([^"]+)"/g)].map((match) => match[1]),
+      return {
+        details: new Set(
+          [...markup.matchAll(/data-detail="([^"]+)"/g)].map(
+            (match) => match[1],
+          ),
+        ),
+        scopes: new Set(
+          [...markup.matchAll(/data-scope="([^"]+)"/g)].map(
+            (match) => match[1],
+          ),
+        ),
+      };
+    };
+    claims.forEach((claim, index) => {
+      assert.ok(
+        Array.isArray(claim.focus) && Array.isArray(claim.scopes),
+        `${key}: claim ${index} focus and scopes are arrays`,
       );
-      const scopes = new Set(
-        [...markup.matchAll(/data-scope="([^"]+)"/g)].map((match) => match[1]),
+      assert.equal(
+        typeof claim.crossing,
+        'string',
+        `${key}: claim ${index} crossing label`,
       );
-      claims.forEach((claim, index) => {
+      assert.ok(claim.text && claim.why, `${key}: claim copy`);
+      assert.ok(
+        typeof claim.headline === 'string' &&
+          claim.headline.length < claim.text.length &&
+          claim.headline.length <= 80,
+        `${key}: claim ${index} headline is shorter than its sentence`,
+      );
+      if (claim.steps) {
+        assert.ok(claim.step, `${key}: claim ${index} entry step`);
         assert.ok(
-          Array.isArray(claim.focus) && Array.isArray(claim.scopes),
-          `${key}: claim ${index} focus and scopes are arrays`,
+          claim.steps.includes(claim.step),
+          `${key}: claim ${index} coverage includes its entry`,
         );
-        assert.equal(
-          typeof claim.crossing,
-          'string',
-          `${key}: claim ${index} crossing label`,
-        );
-        assert.ok(claim.text && claim.why, `${key}: claim copy`);
+        for (const step of [...claim.steps, claim.evidenceStep || claim.step])
+          assert.ok(
+            chapterSceneSteps.includes(step),
+            `${key}: claim ${index} uses unknown step ${step}`,
+          );
+        const foundFocus = new Set();
+        for (const step of claim.steps) {
+          const { details, scopes } = scene(step);
+          const availableFocus = claim.focus.filter((id) => details.has(id));
+          assert.ok(
+            availableFocus.length,
+            `${key}/${step}: claim ${index} has no available focus`,
+          );
+          availableFocus.forEach((id) => foundFocus.add(id));
+          for (const id of claim.scopes)
+            assert.ok(scopes.has(id), `${key}/${step}: claim scope ${id}`);
+        }
+        for (const id of claim.focus)
+          assert.ok(
+            foundFocus.has(id),
+            `${key}: claim ${index} focus ${id} is absent from its coverage`,
+          );
+        const evidenceScene = scene(claim.evidenceStep || claim.step);
         assert.ok(
-          typeof claim.headline === 'string' &&
-            claim.headline.length < claim.text.length &&
-            claim.headline.length <= 80,
-          `${key}: claim ${index} headline is shorter than its sentence`,
+          evidenceScene.details.has(claim.evidence),
+          `${key}: claim ${index} evidence ${claim.evidence}`,
         );
+        return;
+      }
+      for (const step of chapterSceneSteps) {
+        const { details, scopes } = scene(step);
         for (const id of [...claim.focus, claim.evidence])
           assert.ok(details.has(id), `${key}/${step}: claim detail ${id}`);
         for (const id of claim.scopes)
           assert.ok(scopes.has(id), `${key}/${step}: claim scope ${id}`);
-      });
-    }
+      }
+    });
   }
+});
+
+test('lesson 02 preserves its outcomes as three moment-aware claims', () => {
+  const chapter = chapters['bring-up'];
+  const expectedOutcomes = [
+    'The CLI and Bicep create Azure and seed the cluster; Flux assembles the workloads; controllers keep them healthy. Different owners, different clocks.',
+    'A successful spi up exit is the first of five milestones, not readiness. spi status --watch is how I follow the rest.',
+    'spi down removes compute and data but keeps identities and the resource group, so a rebuild reuses the same names.',
+  ];
+  assert.equal(chapter.outcomes.length, 3);
+  assert.deepEqual(
+    chapter.outcomes.map((claim) => claim.text),
+    expectedOutcomes,
+  );
+  assert.deepEqual(
+    chapter.outcomes.map((claim) => claim.step),
+    ['provision', 'inspect', 'remove'],
+  );
+  assert.deepEqual(
+    chapter.outcomes.map((claim) => claim.evidenceStep),
+    ['reconcile', 'inspect', 'remove'],
+  );
+  for (const claim of chapter.outcomes) {
+    const words = claim.headline
+      .replace(/<[^>]+>/g, ' ')
+      .trim()
+      .split(/\s+/);
+    assert.ok(words.length < 12, `${claim.headline}: fewer than twelve words`);
+    for (const field of ['headline', 'text', 'why', 'evidence', 'crossing'])
+      assert.ok(claim[field]?.trim(), `lesson 02 claim: ${field}`);
+  }
+  assert.deepEqual(Object.keys(chapter.mistakes), [
+    'start',
+    'provision',
+    'bootstrap',
+    'reconcile',
+    'inspect',
+    'remove',
+  ]);
+  assert.match(chapter.example.note, /cache/);
+  assert.match(chapter.example.note, /Azure Table Storage/);
+  assert.match(
+    chapter.example.note,
+    /does not visit.*Cosmos DB.*blob Storage.*Service Bus/,
+  );
 });
