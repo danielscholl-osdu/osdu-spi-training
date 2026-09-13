@@ -201,7 +201,7 @@ const orientationMarkers = [
     copy: 'The codebase splits into the Venus community line, proved on CIMPL, and the Mercury provider line, which moves to maintenance. Cloud-provider code leaves the community repositories.',
     route: '#start',
     routeLabel: 'Start here',
-    note: 'The narration frames the split as an eviction. The community record frames it as a decision the Forum took, with cloud-provider code moving to the providers’ own subprojects, and Microsoft contributed cimpl-stack, the tool CIMPL runs on.',
+    note: 'The narration frames the move of cloud-provider code out of the community repositories as an eviction. The community record frames it as a decision the Forum took, with cloud-provider code moving to the providers’ own subprojects, and Microsoft contributed cimpl-stack, the tool CIMPL runs on.',
   },
   {
     time: 384.3,
@@ -588,7 +588,7 @@ export const episodes = [
     origin:
       'Generated with NotebookLM as an audio brief from the introduction source, Azure SPI: An Introduction',
     summary:
-      'The split, the daily sync, and the proving ground, in under two minutes. The shortest way to hear the frame.',
+      'Why the Azure provider code moved to Microsoft, the daily sync, and the proving ground, in under two minutes. The shortest way to hear the frame.',
     markers: withEnds(briefMarkers, 112),
     transcript: briefTranscript,
   },
@@ -637,7 +637,7 @@ export const frameVideo = {
   origin:
     'Generated with NotebookLM as a video overview from the introduction source, Azure SPI: An Introduction',
   summary:
-    'The split, the service forks, the candidate image, and the borrowed slot in a live stack, drawn in one minute.',
+    'Provider ownership moving to Microsoft, the service forks, the candidate image, and a temporary test deployment in a live stack, drawn in one minute.',
   notes: [
     'The narration calls the Azure logic proprietary. The service forks are public repositories under the Apache 2.0 license; what changed is ownership, not visibility.',
     'The narration says the community stripped out all cloud-specific code. Upstream plans that removal (community ADR 61); as of September 2026 the Azure directory is still there.',

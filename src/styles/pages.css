@@ -324,6 +324,16 @@ body[data-page='home'] .page > section > h2 {
   gap: 6px 16px;
   font-size: 13px;
 }
+.myth-links .myth-guide {
+  padding: 0;
+  border: 0;
+  background: none;
+  font: inherit;
+  color: var(--blue);
+  text-decoration: underline;
+  text-underline-offset: 3px;
+  cursor: pointer;
+}
 
 /* Field guides */
 .chapter-guides {
@@ -767,7 +777,13 @@ body[data-page='home'] .page > section > h2 {
 .poster-inline {
   display: block;
   position: relative;
-  text-decoration: none;
+  width: 100%;
+  padding: 0;
+  border: 0;
+  background: none;
+  font: inherit;
+  text-align: left;
+  cursor: zoom-in;
 }
 .poster-inline img {
   display: block;
@@ -826,6 +842,34 @@ body[data-page='home'] .page > section > h2 {
   width: 100%;
   min-width: 900px;
   height: auto;
+}
+.lightbox-notes {
+  padding: 16px 20px 20px;
+  border-top: 1px solid var(--line);
+  font-size: 14px;
+  line-height: 1.55;
+  columns: 2 360px;
+  column-gap: 32px;
+}
+.lightbox-notes .poster-origin {
+  margin: 0 0 8px;
+  font-size: 13px;
+  color: var(--muted);
+  column-span: all;
+}
+.lightbox-notes h4 {
+  margin: 10px 0 4px;
+  font-size: 12px;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: var(--muted);
+}
+.lightbox-notes ul {
+  margin: 0;
+  padding-left: 18px;
+}
+.lightbox-notes li {
+  margin: 0 0 4px;
 }
 
 /* Listen page */
@@ -2163,9 +2207,8 @@ body:has(.audio-dock:not([hidden])) main {
 .listen-check b {
   color: #8a5a00;
 }
-.chip-check {
-  font-style: normal;
-  color: #8a5a00;
+.listen-from {
+  color: var(--muted);
 }
 .listen-chip {
   display: grid;
@@ -2768,7 +2811,7 @@ body:has(.audio-dock:not([hidden])) main {
   border-color: var(--blue);
   color: var(--blue);
 }
-.has-claims #source-details summary span {
+.has-claims #source-details > summary {
   display: none;
 }
 .has-claims .outcomes ol {

@@ -75,7 +75,7 @@ export function createPlayer(element, dock) {
       );
       line.hidden = !(listening && inside && marker);
       if (line.hidden) return;
-      line.innerHTML = `<b>${ended ? 'Section ended.' : 'Now:'} ${marker.title}.</b> ${
+      line.innerHTML = `<b>${ended ? 'Section ended.' : 'Now:'} ${marker.title}.</b> <span class="listen-from">${episode.short} · ${formatTime(marker.time)}</span> ${
         marker.note
           ? `<span class="listen-check"><b>Source check.</b> ${marker.note}</span>`
           : 'No source check for this section.'

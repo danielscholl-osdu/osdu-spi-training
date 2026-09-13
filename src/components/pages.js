@@ -133,13 +133,25 @@ export function detailSourceLinks(detail) {
   return keys.map(sourceAnchor).join('');
 }
 
+// A supplied poster beside a lesson opens in the lightbox with its notes; the
+// notes travel hidden in the figure so the dialog can show them without a
+// chapter change.
 export function posterInline(id) {
   const poster = suppliedPosters.find((entry) => entry.id === id);
   if (!poster) return '';
   return `<figure class="field-guide is-compact is-poster" id="guide-${id}" data-guide="${id}">
     <figcaption><span class="guide-kicker">Poster</span><h3>${poster.title}</h3><p>${poster.summary}</p></figcaption>
     ${poster.inline ? `<p class="poster-inline-note">${escapeHtml(poster.inline)}</p>` : ''}
-    <a class="poster-inline" href="${routeHref('field-guides')}?guide=${id}"><img src="${poster.image}" width="${poster.width}" height="${poster.height}" alt="${escapeHtml(poster.title)}" loading="lazy" /><span>Read the poster with its notes →</span></a>
+    <button type="button" class="poster-inline" data-lightbox="${poster.image}" data-lightbox-title="${escapeHtml(poster.title)}" data-lightbox-notes="poster-notes-${id}" aria-haspopup="dialog" aria-controls="lightbox"><img src="${poster.image}" width="${poster.width}" height="${poster.height}" alt="${escapeHtml(poster.title)}" loading="lazy" /><span aria-hidden="true">Open with its notes ⤢</span></button>
+    <div id="poster-notes-${id}" class="poster-lightbox-notes" hidden>
+      <p class="poster-origin">${poster.origin}</p>
+      ${poster.inline ? `<p class="poster-inline-note">${escapeHtml(poster.inline)}</p>` : ''}
+      <h4>Take from it</h4>
+      <ul>${poster.takeaways.map((item) => `<li>${item}</li>`).join('')}</ul>
+      <h4>Read it with these checks</h4>
+      <ul class="poster-notes">${poster.notes.map((item) => `<li>${item}</li>`).join('')}</ul>
+    </div>
+    <div class="guide-foot">${sourceLinks(poster.sources)}<a class="small-link" href="${routeHref('field-guides')}?guide=${id}">All field guides →</a></div>
   </figure>`;
 }
 
@@ -465,11 +477,13 @@ export function exampleStrip(key, route, variant) {
 }
 
 // One entry from the myths, directly under the map. A link back into the same
-// view says that the page will move; links to other views navigate as usual.
+// view says that the page will move; a guide rendered beside this lesson opens
+// in place; links to other views navigate as usual.
 export function mythCallout(id, chapterKey) {
   const myth = myths.find((entry) => entry.id === id);
   if (!myth) return '';
   const source = sources[myth.source];
+  const guideHere = myth.guideHere?.[chapterKey];
   const target = myth.here?.[chapterKey] || myth.route;
   const route = parseRoute(target);
   const sameView = route.chapter === chapterKey;
@@ -487,7 +501,7 @@ export function mythCallout(id, chapterKey) {
     <p class="myth-claim">“${myth.claim}”</p>
     <p class="myth-reality">${myth.reality}</p>
     <code class="myth-check">${escapeHtml(myth.check)}</code>
-    <p class="myth-links"><a href="${href}" ${sameView ? 'data-map-jump' : ''}>${sameView ? 'Show it on the map ↑' : `${myth.routeLabel} →`}</a><a href="${source.href}" target="_blank" rel="noopener noreferrer">${source.label} ↗</a></p>
+    <p class="myth-links">${guideHere ? `<button type="button" class="myth-guide" data-guide-open="${guideHere}">${myth.routeLabel} ↓</button>` : `<a href="${href}" ${sameView ? 'data-map-jump' : ''}>${sameView ? 'Show it on the map ↑' : `${myth.routeLabel} →`}</a>`}<a href="${source.href}" target="_blank" rel="noopener noreferrer">${source.label} ↗</a></p>
   </aside>`;
 }
 
@@ -540,9 +554,10 @@ function listenPage(route) {
 
 // Short cues into the recordings, beside a map. Playing one never leaves the
 // view; the dock appears and keeps playing while the reader explores.
-// A cue plays its section and stops at the end of it. While it plays, the
-// line under the chips names the section and shows its source check, so a
-// correction is read where the claim is heard.
+// A cue plays its section and stops at the end of it. The chip carries the
+// cue and its length; while it plays, the line under the chips names the
+// section, its recording, and its source check, so a correction is read
+// where the claim is heard.
 export function listenChips(
   key,
   { kicker = 'Hear it explained', lead = '' } = {},
@@ -554,10 +569,7 @@ export function listenChips(
       const episode = episodeById(cue.episode);
       const marker = episode.markers.find((entry) => entry.time === cue.time);
       const end = cue.end ?? marker?.end ?? cue.time + 60;
-      const checks = episode.markers.filter(
-        (entry) => entry.note && entry.time >= cue.time && entry.time < end,
-      ).length;
-      return `<button type="button" class="listen-chip" data-seek="${cue.time}" data-listen-episode="${episode.id}" data-listen-end="${end}" data-listen-stop="${end}"><span class="play-glyph" aria-hidden="true">▶</span><b>${escapeHtml(cue.label)}</b><small>${episode.short} · ${formatTime(cue.time)} · ${Math.max(1, Math.round((end - cue.time) / 60))} min${checks ? ` · <i class="chip-check">${checks} source check${checks > 1 ? 's' : ''}</i>` : ''}</small></button>`;
+      return `<button type="button" class="listen-chip" data-seek="${cue.time}" data-listen-episode="${episode.id}" data-listen-end="${end}" data-listen-stop="${end}"><span class="play-glyph" aria-hidden="true">▶</span><b>${escapeHtml(cue.label)}</b><small>${Math.max(1, Math.round((end - cue.time) / 60))} min</small></button>`;
     })
     .join('');
   return `<div class="listen-chips" aria-label="${escapeHtml(kicker)}"><span class="guide-kicker">${escapeHtml(kicker)}</span>${lead ? `<p class="listen-lead">${lead}</p>` : ''}<div class="listen-chip-row">${chips}<a class="small-link" href="#listen">All episodes →</a></div><p class="listen-now" data-listen-now aria-live="polite" hidden></p></div>`;

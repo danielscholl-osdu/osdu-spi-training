@@ -39,6 +39,9 @@ import {
   resolveLessonSelection,
   selectExampleVariant,
   tryItBand,
+  guidePreview,
+  listenChips,
+  posterInline,
 } from '../src/components/pages.js';
 import {
   chapterAliases,
@@ -1904,7 +1907,7 @@ test('lesson 02 readiness signals separate orchestration from API proof', () => 
   assert.match(readiness.text, /authenticated request/);
   assert.equal(
     readiness.why,
-    'Flux and initialization can continue after spi up returns. Check workload health and initialization with spi status --watch, then verify the API operation you need.',
+    'Flux and initialization can continue after spi up returns. Watch spi status --watch, then verify the API operation you need.',
   );
   assert.match(explanation, /requested Git artifact revision before it exits/);
   assert.match(explanation, /Flux overlaps its final work/);
@@ -2550,4 +2553,182 @@ test('all map lesson examples use one closed disclosure and preserve routes', ()
     exampleStrip('running-stack', parseRoute('#running-stack')),
     /^<details class="example-disclosure"><summary>Example: a partition lookup<\/summary>/,
   );
+});
+
+test('lesson 02 claim statements keep their reasons to two short sentences', () => {
+  for (const claim of chapters['bring-up'].outcomes) {
+    const sentences = claim.why.split(/(?<=[.!?])\s+/);
+    assert.ok(sentences.length <= 2, `${claim.headline}: ${sentences.length}`);
+    assert.ok(
+      claim.why.length <= 160,
+      `${claim.headline}: ${claim.why.length}`,
+    );
+  }
+  const stages = creationMoments
+    .map((moment) => JSON.stringify(moment))
+    .join(' ');
+  assert.match(stages, /45–50 min/);
+  assert.match(stages, /overlaps/);
+  assert.match(stages, /45 min deletion deadline/);
+});
+
+test('listen chips carry the cue and its length; the recording is named while it plays', () => {
+  const chips = listenChips('bring-up');
+  for (const cue of chapters['bring-up'].listen) {
+    const episode = episodes.find((entry) => entry.id === cue.episode);
+    const chip = chips.match(
+      new RegExp(
+        `<button[^>]*data-seek="${cue.time}" data-listen-episode="${episode.id}"[^>]*>(.*?)</button>`,
+        's',
+      ),
+    );
+    assert.ok(chip, cue.label);
+    assert.ok(chip[1].includes(`<b>${escapeHtml(cue.label)}</b>`), cue.label);
+    assert.match(chip[1], /<small>\d+ min<\/small>/, cue.label);
+    assert.ok(!chip[1].includes(episode.short), `${cue.label}: recording name`);
+    assert.ok(
+      !chip[1].includes('source check'),
+      `${cue.label}: source-check count`,
+    );
+  }
+  assert.ok(chips.includes('data-listen-now'));
+  const player = readFileSync(
+    fileURLToPath(new URL('../src/components/player.js', import.meta.url)),
+    'utf8',
+  );
+  assert.match(player, /class="listen-from">\$\{episode\.short\}/);
+});
+
+test('a supplied poster beside a lesson opens in the lightbox with its notes', () => {
+  const frame = readFileSync(
+    fileURLToPath(new URL('../src/index.html', import.meta.url)),
+    'utf8',
+  );
+  assert.match(frame, /<dialog id="lightbox"/);
+  assert.match(frame, /id="lightbox-notes"/);
+  for (const poster of suppliedPosters) {
+    const markup = posterInline(poster.id);
+    assert.ok(
+      markup.includes(
+        `<button type="button" class="poster-inline" data-lightbox="${poster.image}"`,
+      ),
+      `${poster.id}: lightbox opener`,
+    );
+    assert.ok(
+      markup.includes(`data-lightbox-notes="poster-notes-${poster.id}"`),
+      `${poster.id}: names its notes`,
+    );
+    assert.ok(
+      markup.includes(
+        `<div id="poster-notes-${poster.id}" class="poster-lightbox-notes" hidden>`,
+      ),
+      `${poster.id}: notes travel with the figure`,
+    );
+    for (const note of [...poster.notes, ...poster.takeaways])
+      assert.ok(markup.includes(note), `${poster.id}: ${note.slice(0, 40)}`);
+    assert.ok(
+      markup.includes(
+        `href="#field-guides?guide=${poster.id}">All field guides →</a>`,
+      ),
+      `${poster.id}: the Field guides page stays reachable`,
+    );
+    assert.ok(
+      !markup.includes(`<a class="poster-inline"`),
+      `${poster.id}: no navigation on the image`,
+    );
+    assert.equal(guidePreview(poster.id), markup);
+  }
+  const guides = pageRenderers.guides(parseRoute('#field-guides'));
+  for (const poster of suppliedPosters) {
+    assert.ok(guides.includes(`id="guide-${poster.id}"`), poster.id);
+    assert.ok(guides.includes(`data-lightbox="${poster.image}"`), poster.id);
+  }
+  assert.ok(
+    !guides.includes('data-lightbox-notes'),
+    'notes are already beside the poster there',
+  );
+});
+
+test('the profiles easy mistake opens its guide beside lesson 02', () => {
+  const myth = myths.find((entry) => entry.id === 'profiles-save-money');
+  assert.equal(myth.guideHere['bring-up'], 'profiles');
+  const chapter = chapters['bring-up'];
+  for (const [step, id] of Object.entries(chapter.mistakes)) {
+    if (id !== 'profiles-save-money') continue;
+    assert.ok(
+      chapter.guides[step].includes('profiles'),
+      `${step}: guide beside the stage`,
+    );
+  }
+  const callout = mythCallout('profiles-save-money', 'bring-up');
+  assert.ok(
+    callout.includes(
+      '<button type="button" class="myth-guide" data-guide-open="profiles">Three profiles, one estate ↓</button>',
+    ),
+  );
+  assert.ok(
+    !callout.includes('href="#field-guides'),
+    'no exit to the Field guides page',
+  );
+  assert.ok(
+    mythCallout('profiles-save-money', 'running-stack').includes(
+      `href="${myth.route}"`,
+    ),
+    'other lessons keep the collection route',
+  );
+  for (const [id, entry] of Object.entries(myths)) {
+    for (const [chapterKey, guide] of Object.entries(entry.guideHere || {})) {
+      assert.ok(
+        nativeGuides.some((item) => item.id === guide),
+        `${id}: ${guide}`,
+      );
+      const guides = Object.values(chapters[chapterKey].guides || {}).flat();
+      assert.ok(
+        guides.includes(guide),
+        `${id}: ${guide} is rendered in ${chapterKey}`,
+      );
+    }
+  }
+  assert.match(
+    guidePreview('profiles'),
+    /<details><summary>Open here<\/summary><figure class="field-guide is-compact" id="guide-profiles"/,
+  );
+});
+
+test('no decorative kicker or method sentence survives in content or renderers', () => {
+  const root = new URL('../src/', import.meta.url);
+  const files = [
+    'content/chapters.js',
+    'content/concepts.js',
+    'content/audio.js',
+    'content/myths.js',
+    'content/posters.js',
+    'content/component-details.js',
+    'content/creation-moments.js',
+    'content/fork-moments.js',
+    'components/pages.js',
+    'components/diagrams.js',
+    'components/infographics.js',
+    'components/architecture.js',
+    'index.html',
+  ];
+  const text = files
+    .map((file) => readFileSync(fileURLToPath(new URL(file, root)), 'utf8'))
+    .join('\n');
+  for (const phrase of [
+    'The word',
+    'Carry forward',
+    'Each moment shows',
+    'reference this site keeps',
+    'assumptions that cost',
+    'the borrowed slot',
+    'that digest',
+    'the fix,',
+    'the split',
+    'Six views in order',
+    'The shape of the site',
+    'The mental map',
+  ])
+    assert.ok(!text.includes(phrase), phrase);
+  assert.equal((text.match(/Go deeper in the documentation/g) || []).length, 1);
 });

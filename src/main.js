@@ -891,22 +891,49 @@ videoDialog.addEventListener('click', (event) => {
 window.addEventListener('hashchange', closeVideo);
 
 const lightbox = document.getElementById('lightbox');
+let lightboxOpener = null;
 
 document.addEventListener('click', (event) => {
   const opener = event.target.closest('[data-lightbox]');
   if (!opener) return;
+  lightboxOpener = opener;
   const image = document.getElementById('lightbox-image');
   image.src = opener.dataset.lightbox;
   image.alt = opener.dataset.lightboxTitle;
   document.getElementById('lightbox-title').textContent =
     opener.dataset.lightboxTitle;
+  const notes = document.getElementById('lightbox-notes');
+  const source = opener.dataset.lightboxNotes
+    ? document.getElementById(opener.dataset.lightboxNotes)
+    : null;
+  notes.innerHTML = source ? source.innerHTML : '';
+  notes.hidden = !source;
+  document.querySelector('.lightbox-scroll').scrollTop = 0;
   lightbox.showModal();
+});
+
+// An easy mistake can open a field guide rendered beside the lesson in place
+// of leaving for the Field guides page.
+document.addEventListener('click', (event) => {
+  const opener = event.target.closest('[data-guide-open]');
+  if (!opener) return;
+  const figure = document.getElementById(`guide-${opener.dataset.guideOpen}`);
+  if (!figure) return;
+  const holder = figure.closest('details');
+  if (holder) holder.open = true;
+  figure.scrollIntoView({ block: 'start' });
+  figure.tabIndex = -1;
+  figure.focus({ preventScroll: true });
 });
 document
   .getElementById('lightbox-close')
   .addEventListener('click', () => lightbox.close());
 lightbox.addEventListener('click', (event) => {
   if (event.target === lightbox) lightbox.close();
+});
+lightbox.addEventListener('close', () => {
+  lightboxOpener?.focus({ preventScroll: true });
+  lightboxOpener = null;
 });
 
 document.addEventListener('keydown', (event) => {

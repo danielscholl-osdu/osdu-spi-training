@@ -283,7 +283,8 @@ export const chapters = {
       },
     ],
     guides: {
-      provision: ['owners'],
+      start: ['profiles'],
+      provision: ['owners', 'profiles'],
       bootstrap: ['owners'],
       reconcile: ['timeline', 'inside-the-cluster'],
       inspect: ['milestones'],
@@ -552,7 +553,7 @@ export const chapters = {
         headline:
           'CLI creates; Flux assembles; controllers keep workloads healthy.',
         text: 'The CLI and Bicep create Azure and seed the cluster; Flux assembles the workloads; controllers keep them healthy. Flux and Kubernetes controllers continue after the CLI returns.',
-        why: 'spi up drives Bicep and bootstrap while Flux begins reconciling before the CLI exits; Flux and Kubernetes controllers continue after the terminal returns.',
+        why: 'spi up runs Bicep and the bootstrap. Flux starts reconciling before the CLI exits and keeps working after it returns.',
         step: 'provision',
         steps: ['start', 'provision', 'bootstrap', 'reconcile'],
         evidenceStep: 'reconcile',
@@ -564,7 +565,7 @@ export const chapters = {
       {
         headline: 'CLI success is not API readiness.',
         text: 'A successful spi up does not establish API readiness. I follow workload health and initialization with spi status --watch, then verify the API path I need with an authenticated request.',
-        why: 'Flux and initialization can continue after spi up returns. Check workload health and initialization with spi status --watch, then verify the API operation you need.',
+        why: 'Flux and initialization can continue after spi up returns. Watch spi status --watch, then verify the API operation you need.',
         step: 'inspect',
         steps: ['inspect'],
         evidenceStep: 'inspect',
@@ -576,7 +577,7 @@ export const chapters = {
       {
         headline: 'Teardown removes data but preserves identities and names.',
         text: 'spi down removes compute and data but keeps identities and the resource group, so a rebuild reuses the same names.',
-        why: 'Ordinary spi down deletes the cluster and application data while retaining managed-identity client IDs and the resource group’s naming tags. A rebuild can reuse those names and IDs, not the deleted application data.',
+        why: 'Ordinary spi down deletes the cluster and its data but keeps the managed identities and the resource group. A rebuild reuses those names, not the deleted data.',
         step: 'remove',
         steps: ['remove'],
         evidenceStep: 'remove',
@@ -1019,7 +1020,7 @@ export const chapters = {
           copy: 'Tonight at 00:00 UTC',
         },
       ],
-      note: 'Two changes are now waiting to meet: the fix on main, upstream’s on fork_upstream. The next view is the day they do.',
+      note: 'Two changes are now waiting to meet: the provider fix on main, upstream’s on fork_upstream. The next view is the day they do.',
     },
     outcomes: [
       'The fork owns provider/partition-azure, its Azure tests, its descriptor, and the engineering files the template delivers. Everything else is upstream’s, regenerated daily.',
@@ -1035,7 +1036,7 @@ export const chapters = {
     subtitle: 'Generate, integrate, propose, prove, release',
     headline: 'From an upstream update<span>to a candidate image.</span>',
     intro:
-      'The three branches from 04, followed through one change. Upstream is regenerated at midnight, the cascade carries it into the workspace, a person approves, every eligible commit gets a digest and a turn in the stack, and a release is an optional tag on an image that already exists.',
+      'The three branches from 04, followed through one change. Upstream is regenerated at midnight, the cascade carries it into the workspace, a person approves, every eligible commit gets an image digest and a turn in the stack, and a release is an optional tag on an image that already exists.',
     premise: 'Nothing here is a merge you run by hand.',
     figure: 'The branches, in time',
     selected: 'sync-pr',
@@ -1062,12 +1063,12 @@ export const chapters = {
       'Times are the scheduled triggers in the template workflows, not measurements. Template sync, the monitor, and Settings Apply run on their own clocks and are drawn below the map, not as steps. The mirror tier runs the same day with fork_upstream copied rather than generated.',
     sources: ['synchronization', 'cascade', 'release', 'cascadeMonitor'],
     question:
-      'What happens to the fix, and to upstream’s change, between midnight and a digest?',
+      'What happens to a provider change, and to upstream’s change, between midnight and an image digest?',
     builds: 'Uses the three branches and the ownership rows from 04.',
     where:
       'The same repository as 04, followed through five moments. The stack appears at the fourth, when a candidate digest borrows it.',
     example: {
-      title: 'The fix meets the upstream change',
+      title: 'The cache fallback fix meets the upstream change',
       code: 'provider/partition-azure + partition-core',
       hops: [
         {
@@ -1105,7 +1106,7 @@ export const chapters = {
     },
     outcomes: [
       'A sync is a generated tree plus one PR and one tracking issue; upstream is never merged in as text, and the generated commit lands through a reviewed sync PR. The cascade merges main first, then fork_upstream, into the workspace.',
-      'The labels on the tracking issue are the state: cascade-active, cascade-blocked, cascade-failed, validated. A blocked cascade is run again after the fix on fork_integration; removing human-required is how a failed one retries.',
+      'The labels on the tracking issue are the state: cascade-active, cascade-blocked, cascade-failed, validated. A blocked cascade is run again after a provider change on fork_integration; removing human-required is how a failed one retries.',
       'The integration PR and the version PR are different PRs. Validation runs on PRs and on pushes to main and fork_integration, pushes a digest for every eligible commit, and the stack is borrowed for it before any release exists.',
     ],
   },
@@ -1117,7 +1118,7 @@ export const chapters = {
     subtitle: 'Borrow, prove, restore',
     headline: 'Write the lock.<span>Flux rolls out the image.</span>',
     intro:
-      'The fork has a candidate digest and the stack has a running environment. One credentialed workflow run reads the configuration the environment reports, records its run ID and the candidate digest in osdu-image-lock, checks that the pod is running that digest, runs the suites the descriptor declares, and gives the slot back. Watch the lock and the pod change as you step through. The run is illustrative: it uses the lane the newer template ships, which the reference partition fork has not adopted yet.',
+      'The fork has a candidate image digest and the stack has a running environment. One credentialed workflow run borrows the partition service’s slot in that environment: it reads the configuration the environment reports, records its run ID and the candidate digest in osdu-image-lock, checks that the pod is running the candidate digest, runs the suites the descriptor declares, and gives the slot back. Watch the lock and the pod change as you step through. The run is illustrative: it uses the lane the newer template ships, which the reference partition fork has not adopted yet.',
     premise:
       'The stack reports its configuration. The service descriptor lists the test suites and their inputs. The lock is the only thing both write.',
     figure: 'One run, one borrowed slot',
@@ -1142,7 +1143,7 @@ export const chapters = {
       'A shared environment can be borrowed by several onboarded forks, one service slot each, serialised per service. The workflow does not yet load test inputs from Key Vault, check every descriptor requirement before borrowing, or verify the pod again before each suite. The lane shown is the one the template ships since 10 September; osdu-spi-partition has neither adopted it nor written its descriptor yet, so this run is illustrative until it does.',
     sources: ['forkDeploy', 'proof', 'descriptorContract', 'statusContract'],
     question:
-      'How does that digest reach a running stack, what proves it, and what gives the slot back?',
+      'How does a candidate image reach a running stack, what proves it, and how is the temporary test deployment restored?',
     builds: 'Uses the candidate digest from 05 and the environment from 01.',
     where:
       'Both maps at once: a GitHub Actions run on the fork side, and your environment’s image lock, pod, and deploy identity on the stack side.',

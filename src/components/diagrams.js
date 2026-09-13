@@ -310,7 +310,7 @@ function forkDayDiagram(route) {
       ${lanes
         .map(
           ([key, id, title, sub]) =>
-            `<div class="branch-lane ${moment.active.includes(key) ? 'is-active' : 'is-idle'} ${key === 'main-branch' || key === 'fork-integration' ? 'lane-fork' : ''} ${key === 'stack' ? 'lane-stack' : ''}">${node(id, title, sub, key === 'main-branch' || key === 'fork-integration' ? 'fork-code' : '')}<div class="lane-artifacts">${flows[key] ? `<span class="lane-flow">${flows[key]}</span>` : ''}${(artifacts[key] || []).map(([aid, atitle, asub]) => node(aid, atitle, asub, 'artifact')).join('')}${key === 'stack' && moment.id === 'prove' ? `<a class="lane-link" href="#handshake">Follow the borrowed slot in 06 →</a>` : ''}</div></div>`,
+            `<div class="branch-lane ${moment.active.includes(key) ? 'is-active' : 'is-idle'} ${key === 'main-branch' || key === 'fork-integration' ? 'lane-fork' : ''} ${key === 'stack' ? 'lane-stack' : ''}">${node(id, title, sub, key === 'main-branch' || key === 'fork-integration' ? 'fork-code' : '')}<div class="lane-artifacts">${flows[key] ? `<span class="lane-flow">${flows[key]}</span>` : ''}${(artifacts[key] || []).map(([aid, atitle, asub]) => node(aid, atitle, asub, 'artifact')).join('')}${key === 'stack' && moment.id === 'prove' ? `<a class="lane-link" href="#handshake">Follow the temporary test deployment in 06 →</a>` : ''}</div></div>`,
         )
         .join('')}
     </div>

@@ -67,6 +67,7 @@ export const myths = [
     source: 'architecture',
     route: '#field-guides?guide=profiles',
     routeLabel: 'Three profiles, one estate',
+    guideHere: { 'bring-up': 'profiles' },
   },
   {
     id: 'token-accepted-means-authorized',
