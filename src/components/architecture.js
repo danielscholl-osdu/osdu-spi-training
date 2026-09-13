@@ -3,7 +3,7 @@ import { creationMoments } from '../content/creation-moments.js';
 import { routeHref } from '../router.js';
 
 function scope(id, title, subtitle) {
-  return `<button class="scope-button" type="button" data-detail="${id}" aria-pressed="false" aria-controls="inspector"><b>${title}</b><small>${subtitle}</small><span aria-hidden="true">↗</span></button>`;
+  return `<button class="scope-button" type="button" data-detail="${id}" aria-pressed="false" aria-controls="inspector"><b>${title}</b><small>${subtitle}</small><span class="node-open" aria-hidden="true">Inspect ↗</span></button>`;
 }
 
 function placeholder(title, copy, removed = false) {
@@ -51,7 +51,7 @@ export function architectureMap(stage = null, path = 'developer') {
                   ? `<div class="controllers">${node('flux', 'Flux', 'Reconcile workloads', '', 'flux-system')}${node('operators', 'Operators', 'ECK · CNPG · certificates', '', 'foundation')}</div>
                 ${node('gateway', 'Istio gateway', 'Routes OSDU API requests', request ? 'path-emphasis' : '', 'aks-istio-ingress')}
                 <div class="inside-arrow" aria-hidden="true">↓</div>
-                <section class="service-boundary ${request ? 'path-emphasis' : ''}"><div class="group-label">osdu · OSDU service workloads</div><div class="service-code">${node('service', 'Shared OSDU code', 'Partition · entitlements · storage', 'shared-code')}${node('provider', 'Azure SPI provider', 'Cloud-specific operations', 'fork-code')}</div><small>Both are packaged inside the service.</small></section>
+                <section data-scope="service-boundary" class="service-boundary ${request ? 'path-emphasis' : ''}"><div class="group-label">osdu · OSDU service workloads</div><div class="service-code">${node('service', 'Shared OSDU code', 'Partition · entitlements · storage', 'shared-code')}${node('provider', 'Azure SPI provider', 'Cloud-specific operations', 'fork-code')}</div><small>Both are packaged inside the service.</small></section>
                 ${node('middleware', 'Platform middleware', 'Elasticsearch · Redis · PostgreSQL', '', 'platform')}
                 ${node('initialization', 'Initialize OSDU', 'Partitions · entitlements · schema load', '', 'osdu')}`
                   : removed
@@ -71,7 +71,7 @@ export function architectureMap(stage = null, path = 'developer') {
               }
             </div>
           </section>
-          <section class="managed-resources" aria-label="Azure services outside AKS">
+          <section data-scope="resources" class="managed-resources" aria-label="Azure services outside AKS">
             <header><b>Azure resources</b><small>Outside AKS</small></header>
             ${
               created

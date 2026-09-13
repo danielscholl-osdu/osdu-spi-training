@@ -6,3 +6,6 @@ package-lock.json
 # Preserve the supplied review artifact verbatim.
 docs/concept-review.html
 docs/reference/
+
+# Managed by bd; not formatted here.
+.beads/

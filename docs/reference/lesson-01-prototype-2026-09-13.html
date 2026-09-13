@@ -1,0 +1,617 @@
+<title>What is a stack? Prototype</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Manrope:wght@700;800&family=DM+Sans:ital,wght@0,400;0,500;0,600;1,400&display=swap">
+<style>
+  :root {
+    --ink: #102b43; --muted: #52697b; --paper: #f4f7fa; --navy: #102c47; --blue: #0b6a9c;
+    --line: #cedbe5; --line-soft: #e4ebf1; --white: #fff; --orange: #a34d21; --orange-bg: #fff1e6;
+    --flux: #1f7a5c; --k8s: #5b4fb8; --blue-bg: #e8f2f9; --dot: #c9d7e1;
+    --font: 'DM Sans', system-ui, -apple-system, 'Segoe UI', sans-serif;
+    --display: 'Manrope', var(--font);
+    --mono: ui-monospace, 'SF Mono', Menlo, Consolas, monospace;
+  }
+  * { box-sizing: border-box; }
+  body { margin: 0; background: var(--paper); color: var(--ink); font-family: var(--font); font-size: 16px; line-height: 1.55; padding-inline: 0; }
+  a { color: var(--blue); }
+  button { font: inherit; color: inherit; }
+  code { font-family: var(--mono); font-size: 0.86em; }
+  .sr { position: absolute; left: -9999px; }
+
+  /* Prototype banner */
+  .proto {
+    background: var(--navy); color: #cfe3f0; font-size: 12.5px; padding: 6px 20px; display: flex; flex-wrap: wrap; gap: 4px 18px; align-items: center;
+  }
+  .proto b { color: #fff; font-weight: 600; }
+  .proto span { opacity: 0.85; }
+
+  /* Masthead */
+  .masthead { background: #0e263e; color: #fff; display: flex; justify-content: space-between; align-items: center; padding: 14px 24px; gap: 20px; }
+  .brand { color: #fff; text-decoration: none; font-size: 17px; display: flex; align-items: center; gap: 10px; }
+  .brand-mark { width: 30px; height: 30px; border-radius: 7px; background: #59cced22; color: #59cced; display: grid; place-items: center; font-size: 18px; }
+  .brand strong { font-size: 12px; letter-spacing: 0.12em; margin-left: 6px; }
+  .masthead nav { display: flex; gap: 6px; }
+  .masthead nav a { color: #dbe8f3; text-decoration: none; font-weight: 600; font-size: 14px; padding: 7px 12px; border-radius: 6px; }
+  .masthead nav a[aria-current] { background: #ffffff1a; color: #fff; }
+  .masthead nav a:hover { background: #ffffff12; }
+
+  /* Shell */
+  .shell { display: grid; grid-template-columns: 180px minmax(0, 1fr); max-width: 1600px; margin: auto; }
+  .rail { border-right: 1px solid var(--line); padding: 30px 14px 24px 22px; }
+  .rail-label { font-size: 11px; letter-spacing: 0.12em; text-transform: uppercase; color: #7b93a6; font-weight: 700; margin-bottom: 12px; }
+  .rail a { display: flex; gap: 10px; padding: 8px 8px; margin-left: -8px; border-left: 2px solid transparent; text-decoration: none; color: var(--muted); font-size: 14px; line-height: 1.4; border-radius: 0 4px 4px 0; }
+  .rail a .n { color: #8a9fb1; font-size: 12px; font-variant-numeric: tabular-nums; min-width: 12px; margin-top: 2px; }
+  .rail a[aria-current] { background: #e7f0f7; color: var(--ink); border-left-color: var(--blue); font-weight: 600; }
+  .rail a:hover { background: #eaf1f6; }
+  .rail .home { margin-bottom: 8px; }
+  main { padding: 26px 32px 40px; min-width: 0; }
+
+  /* Lesson head */
+  .position { font-size: 13px; font-weight: 600; color: var(--blue); margin: 0 0 12px; letter-spacing: 0.01em; }
+  .position span { color: var(--muted); font-weight: 500; }
+  .position span::before { content: ' · '; }
+  h1 { font-family: var(--display); font-size: clamp(30px, 2.6vw, 42px); font-weight: 800; line-height: 1.15; letter-spacing: -0.035em; margin: 0 0 12px; max-width: 16ch; text-wrap: balance; }
+  h1 em { font-style: normal; color: var(--blue); }
+  .intro { font-size: 17px; line-height: 1.6; color: var(--muted); max-width: 66ch; margin: 0 0 22px; }
+
+  .orient { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 0 28px; border-top: 1px solid var(--line); border-bottom: 1px solid var(--line); padding: 14px 0; margin-bottom: 26px; }
+  .orient div { font-size: 14.5px; line-height: 1.5; }
+  .orient .k { display: block; font-size: 11px; letter-spacing: 0.1em; text-transform: uppercase; color: var(--blue); font-weight: 700; margin-bottom: 4px; }
+  .place { color: var(--muted); }
+  .place b { color: var(--ink); font-weight: 600; }
+  .place i { font-style: normal; color: #9fb0bf; margin: 0 4px; }
+
+  /* Claims */
+  .claims { margin: 0 0 18px; }
+  .claims .k { font-size: 11px; letter-spacing: 0.1em; text-transform: uppercase; color: var(--muted); font-weight: 700; margin: 0 0 8px; }
+  .claim-list { list-style: none; margin: 0; padding: 0; display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 10px; }
+  .claim { text-align: left; border: 0; background: transparent; border-top: 3px solid var(--line); padding: 10px 2px 8px; cursor: pointer; width: 100%; display: grid; gap: 6px; align-content: start; }
+  .claim:hover { border-top-color: #9fb8cb; }
+  .claim[aria-pressed="true"] { border-top-color: var(--blue); }
+  .claim b { font-family: var(--display); font-weight: 700; font-size: 15.5px; line-height: 1.35; letter-spacing: -0.01em; }
+  .claim[aria-pressed="true"] b { color: var(--blue); }
+  .claim small { font-size: 13px; color: var(--muted); line-height: 1.45; }
+  .claim .how { font-size: 13px; color: var(--blue); font-weight: 600; display: none; }
+  .claim[aria-pressed="true"] .how { display: inline; }
+  .claim:focus-visible { outline: 2px solid var(--blue); outline-offset: 3px; border-radius: 3px; }
+
+  /* Figure */
+  .figure { position: relative; background: var(--white); border: 1px solid var(--line); border-radius: 8px; overflow: hidden; }
+  .figure-bar { display: flex; justify-content: space-between; align-items: center; gap: 16px; padding: 10px 16px; border-bottom: 1px solid var(--line-soft); font-size: 13px; color: var(--muted); flex-wrap: wrap; }
+  .figure-bar b { color: var(--ink); font-weight: 600; font-size: 14px; }
+  .mode { display: inline-flex; border: 1px solid var(--line); border-radius: 6px; overflow: hidden; }
+  .mode button { border: 0; background: var(--white); padding: 5px 12px; font-size: 13px; font-weight: 600; color: var(--muted); cursor: pointer; }
+  .mode button[aria-pressed="true"] { background: var(--navy); color: #fff; }
+  .mode button:focus-visible { outline: 2px solid var(--blue); outline-offset: -2px; }
+  .mode-hint { font-size: 12.5px; color: var(--muted); }
+
+  .example { padding: 10px 16px; border-bottom: 1px solid var(--line-soft); display: flex; flex-wrap: wrap; align-items: baseline; gap: 6px 14px; font-size: 13.5px; }
+  .example .k { font-size: 11px; letter-spacing: 0.1em; text-transform: uppercase; color: var(--blue); font-weight: 700; }
+  .example b { font-weight: 600; }
+  .example code { background: #eef3f7; padding: 2px 7px; border-radius: 4px; font-size: 12.5px; }
+  .hops { list-style: none; margin: 0; padding: 0; display: flex; flex-wrap: wrap; gap: 4px 2px; width: 100%; }
+  .hops li { display: flex; align-items: center; }
+  .hops li + li::before { content: '→'; color: #b7c6d3; margin: 0 6px; }
+  .hop { border: 0; background: transparent; padding: 3px 6px; border-radius: 4px; cursor: pointer; font-size: 13.5px; display: inline-flex; gap: 6px; align-items: baseline; color: var(--muted); }
+  .hop .n { font-size: 11px; font-weight: 700; color: var(--blue); }
+  .hop:hover { background: #eef3f7; color: var(--ink); }
+  .hop.is-done, .hop.is-current { color: var(--ink); font-weight: 600; }
+  .hop.is-current { background: var(--blue-bg); }
+  .hop:focus-visible { outline: 2px solid var(--blue); }
+  .example-note { width: 100%; margin: 2px 0 0; font-size: 13px; color: var(--muted); }
+
+  .map-wrap { padding: 18px; background-image: radial-gradient(var(--dot) 0.6px, transparent 0.6px); background-size: 15px 15px; }
+
+  /* Map */
+  .map { display: grid; gap: 10px; font-size: 13px; }
+  .outside { display: grid; grid-template-columns: 1.2fr 1fr; gap: 12px; }
+  .place-h { display: flex; align-items: baseline; gap: 8px; margin-bottom: 8px; }
+  .place-h b { font-size: 13.5px; font-weight: 700; }
+  .place-h small { color: var(--muted); font-size: 12px; }
+  .ws-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+  .cmds { font-family: var(--mono); font-size: 12px; color: var(--blue); background: #eef3f7; border-radius: 6px; padding: 8px 10px; display: grid; gap: 4px; }
+  .group-label { font-size: 11px; letter-spacing: 0.08em; text-transform: uppercase; color: var(--muted); font-weight: 600; display: block; margin-bottom: 6px; }
+  .crossing { display: flex; justify-content: center; gap: 10px; align-items: center; color: var(--blue); font-size: 13px; font-weight: 600; padding: 2px 0; }
+
+  .azure { border: 1.5px solid #6e93b2; border-radius: 10px; padding: 12px; background: #f4f8fb; }
+  .azure-h { display: flex; justify-content: space-between; align-items: baseline; margin-bottom: 8px; }
+  .azure-h b { color: var(--blue); font-size: 15px; }
+  .azure-h span { font-size: 12px; color: var(--muted); }
+  .stack { border: 1.5px solid var(--navy); border-radius: 8px; background: var(--white); padding: 10px; }
+  .stack-h { display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; gap: 10px; }
+  .tag { font-size: 11px; font-weight: 600; background: var(--navy); color: #fff; padding: 3px 8px; border-radius: 4px; white-space: nowrap; }
+  .grid2 { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; align-items: start; }
+  .aks { border: 1.5px solid #b9c9d6; border-radius: 8px; padding: 10px; background: #f7fafc; display: grid; gap: 8px; }
+  .res { border: 1.5px dashed #b9c9d6; border-radius: 8px; padding: 10px; background: #f7fafc; display: grid; gap: 8px; }
+  .res header b { font-size: 14px; }
+  .res header small { display: block; color: var(--muted); font-size: 12px; }
+  .row2 { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+  .svc { border: 1px solid #b9c9d6; background: #edf2f6; border-radius: 6px; padding: 8px; }
+  .svc .row2 { margin: 6px 0; }
+  .svc small.note { color: var(--muted); font-size: 11.5px; }
+  .down { text-align: center; color: var(--blue); font-size: 14px; line-height: 1; }
+  .map-caption { text-align: center; font-size: 12px; color: var(--muted); margin: 10px 0 0; }
+
+  /* Scope buttons (boundaries) */
+  .scope { border: 0; background: transparent; text-align: left; padding: 2px 4px; margin: -2px -4px; border-radius: 4px; cursor: pointer; display: inline-grid; }
+  .scope b { font-size: 14.5px; font-weight: 700; }
+  .scope small { color: var(--muted); font-size: 12px; }
+  .scope:hover b { color: var(--blue); }
+  .scope[aria-pressed="true"] b { color: var(--blue); text-decoration: underline; text-underline-offset: 3px; }
+  .scope:focus-visible { outline: 2px solid var(--blue); }
+
+  /* Nodes */
+  .node { position: relative; display: grid; gap: 2px; text-align: left; border: 1px solid #c3d1dd; background: var(--white); border-radius: 6px; padding: 8px 26px 8px 10px; cursor: pointer; min-width: 0; transition: opacity 0.18s ease, border-color 0.18s ease, box-shadow 0.18s ease; }
+  .node b { font-size: 13.5px; font-weight: 600; }
+  .node small { color: var(--muted); font-size: 12px; line-height: 1.35; }
+  .node .ns { font-size: 10.5px; color: #7b93a6; font-family: var(--mono); }
+  .node .glyph { position: absolute; top: 7px; right: 8px; font-size: 12px; color: var(--blue); opacity: 0; transition: opacity 0.18s ease; }
+  .node:hover { border-color: var(--blue); }
+  .node:hover .glyph { opacity: 1; }
+  .node[aria-pressed="true"] { border-color: var(--blue); box-shadow: 0 0 0 2px var(--blue-bg), 0 0 0 3px var(--blue); }
+  .node:focus-visible { outline: 2px solid var(--blue); outline-offset: 2px; }
+  .node.shared { background: var(--navy); color: #fff; border-color: var(--navy); }
+  .node.shared small, .node.shared .ns { color: #cfe3f0; }
+  .node.fork { background: var(--orange-bg); border-color: #e2b89b; }
+  .node.fork .ns { color: var(--orange); }
+
+  /* Policies */
+  .map[data-mode="learn"] .node.is-focus { border-color: var(--blue); box-shadow: 0 1px 0 var(--blue-bg); }
+  .map[data-mode="learn"] .node.is-focus .glyph { opacity: 1; }
+  .map[data-mode="learn"] .node.is-receded { opacity: 0.42; }
+  .map[data-mode="learn"] .node.is-receded:hover { opacity: 1; }
+  .map[data-mode="learn"] .node.is-receded:not(:hover) .glyph { opacity: 0; }
+  .map[data-mode="learn"] .is-focus-scope b { color: var(--blue); }
+  .map[data-mode="learn"] .res.is-focus-scope, .map[data-mode="learn"] .aks.is-focus-scope { border-color: var(--blue); border-style: solid; }
+  .map[data-mode="explore"] .node .glyph { opacity: 1; }
+  .map[data-mode="learn"] .node.is-path { border-color: var(--blue); background: var(--blue-bg); }
+  .map[data-mode="learn"] .node.shared.is-path { background: var(--navy); }
+  .map[data-mode="learn"] .node.fork.is-path { background: var(--orange-bg); }
+
+  /* Drawer */
+  .drawer { position: absolute; top: 0; right: 0; bottom: 0; width: min(400px, 92%); background: var(--white); border-left: 2px solid var(--blue); box-shadow: -14px 0 32px rgba(16, 43, 67, 0.16); padding: 18px 20px 20px; overflow-y: auto; transform: translateX(104%); transition: transform 0.22s ease; z-index: 3; }
+  .drawer[data-open="true"] { transform: none; }
+  .drawer .close { position: absolute; top: 12px; right: 14px; border: 1px solid var(--line); background: var(--white); border-radius: 6px; padding: 4px 10px; font-size: 13px; cursor: pointer; color: var(--muted); }
+  .drawer .close:hover { color: var(--ink); border-color: var(--blue); }
+  .drawer .close:focus-visible { outline: 2px solid var(--blue); }
+  .drawer .k { display: block; font-size: 11px; letter-spacing: 0.1em; text-transform: uppercase; color: var(--blue); font-weight: 700; margin: 14px 0 3px; }
+  .drawer .k:first-of-type { margin-top: 0; }
+  .drawer h3 { font-family: var(--display); font-size: 20px; font-weight: 800; letter-spacing: -0.02em; line-height: 1.25; margin: 0 0 2px; padding-right: 70px; }
+  .drawer .owned { font-size: 12.5px; color: var(--muted); font-family: var(--mono); }
+  .drawer p { margin: 0; font-size: 15px; line-height: 1.55; }
+  .drawer .why { font-weight: 500; }
+  .drawer pre { margin: 0; background: #eef3f7; border-radius: 6px; padding: 10px 12px; font-family: var(--mono); font-size: 12.5px; line-height: 1.5; white-space: pre-wrap; overflow-wrap: anywhere; color: var(--navy); }
+  .drawer .verify-label { font-size: 12.5px; color: var(--muted); margin-bottom: 4px; }
+  .drawer details { margin-top: 10px; font-size: 14.5px; }
+  .drawer summary { cursor: pointer; color: var(--blue); font-weight: 600; font-size: 13.5px; }
+  .drawer details p { margin-top: 6px; color: var(--muted); }
+  .drawer .deeper { display: inline-block; font-weight: 600; font-size: 14px; }
+  .drawer .ctx { font-size: 12.5px; color: var(--muted); margin-top: 18px; padding-top: 12px; border-top: 1px dashed var(--line); }
+
+  /* Below the figure */
+  .mistake { border-left: 3px solid var(--orange); padding: 4px 0 4px 16px; margin: 24px 0; max-width: 78ch; }
+  .mistake .k { font-size: 11px; letter-spacing: 0.1em; text-transform: uppercase; color: var(--orange); font-weight: 700; display: block; margin-bottom: 4px; }
+  .mistake .claim-q { font-family: var(--display); font-weight: 700; font-size: 17px; margin: 0 0 4px; }
+  .mistake p { margin: 0 0 6px; font-size: 15px; }
+  .mistake code { display: block; background: #eef3f7; padding: 8px 10px; border-radius: 6px; font-size: 12.5px; margin: 8px 0; overflow-x: auto; }
+  .mistake .links { font-size: 13.5px; display: flex; gap: 16px; flex-wrap: wrap; }
+
+  .say { margin: 28px 0 0; max-width: 78ch; }
+  .say .k { font-size: 11px; letter-spacing: 0.1em; text-transform: uppercase; color: var(--muted); font-weight: 700; display: block; margin-bottom: 6px; }
+  .say h2 { font-family: var(--display); font-size: 22px; font-weight: 800; letter-spacing: -0.02em; margin: 0 0 8px; }
+  .say ol { margin: 0; padding-left: 22px; font-size: 15.5px; }
+  .say li { margin-bottom: 6px; }
+  .next { display: flex; justify-content: space-between; align-items: center; gap: 16px; flex-wrap: wrap; margin: 22px 0 0; padding: 16px 18px; background: var(--navy); color: #fff; border-radius: 8px; }
+  .next span { font-size: 13.5px; color: #cfe3f0; max-width: 60ch; }
+  .next a { color: #fff; font-weight: 700; text-decoration: none; font-size: 16px; white-space: nowrap; }
+  .next a:hover { text-decoration: underline; }
+
+  .optional { margin-top: 40px; border-top: 1px dashed var(--line); padding-top: 18px; }
+  .optional > .k { font-size: 11px; letter-spacing: 0.1em; text-transform: uppercase; color: var(--muted); font-weight: 700; display: block; margin-bottom: 14px; }
+  .opt-grid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 24px; }
+  .opt h4 { font-size: 14px; font-weight: 700; margin: 0 0 8px; }
+  .opt ul { list-style: none; margin: 0; padding: 0; display: grid; gap: 8px; }
+  .opt li { font-size: 13.5px; line-height: 1.45; }
+  .opt li b { display: block; font-weight: 600; }
+  .opt li small { color: var(--muted); font-size: 12.5px; }
+  .opt a { text-decoration: none; }
+  .opt a:hover { text-decoration: underline; }
+  .cue { display: inline-flex; gap: 8px; align-items: baseline; border: 1px solid var(--line); border-radius: 6px; padding: 6px 10px; background: var(--white); cursor: pointer; text-align: left; width: 100%; }
+  .cue .play { color: var(--blue); font-size: 11px; }
+  .cue b { font-size: 13.5px; }
+  .cue small { display: block; color: var(--muted); font-size: 12px; }
+  .cue:hover { border-color: var(--blue); }
+
+  .foot { margin-top: 36px; font-size: 13px; color: var(--muted); border-top: 1px solid var(--line); padding-top: 12px; display: flex; justify-content: space-between; flex-wrap: wrap; gap: 8px; }
+
+  @media (max-width: 1100px) {
+    .shell { grid-template-columns: 150px minmax(0, 1fr); }
+    main { padding: 22px 20px 40px; }
+    .orient { grid-template-columns: 1fr; gap: 10px; }
+  }
+  @media (max-width: 860px) {
+    .shell { display: block; }
+    .rail { border-right: 0; border-bottom: 1px solid var(--line); padding: 8px 16px; display: flex; gap: 2px; overflow-x: auto; }
+    .rail-label { display: none; }
+    .rail a { border-left: 0; border-bottom: 2px solid transparent; margin: 0; padding: 8px 8px; white-space: nowrap; }
+    .rail a[aria-current] { background: transparent; border-bottom-color: var(--blue); }
+    .rail a .t { display: none; }
+    .rail a[aria-current] .t { display: inline; }
+    .claim-list, .opt-grid { grid-template-columns: 1fr; }
+    .outside, .grid2, .ws-grid { grid-template-columns: 1fr; }
+    .drawer { top: auto; bottom: 0; left: 0; right: 0; width: auto; max-height: 72%; border-left: 0; border-top: 2px solid var(--blue); border-radius: 10px 10px 0 0; transform: translateY(104%); position: fixed; box-shadow: 0 -14px 32px rgba(16, 43, 67, 0.2); }
+    .drawer[data-open="true"] { transform: none; }
+  }
+  @media (prefers-reduced-motion: reduce) { .drawer, .node, .node .glyph { transition: none; } }
+</style>
+
+<div class="proto"><b>Prototype</b><span>Lesson 01 rebuilt under the proposed rules: story on the page, the map focused by claim, the inspector as a drawer, Explore as a policy on the same map. Real content from the current site. Links off this page are inert.</span></div>
+
+<header class="masthead">
+  <a class="brand" href="#"><span class="brand-mark" aria-hidden="true">≋</span><span>OSDU Azure SPI <strong>FIELDNOTES</strong></span></a>
+  <nav aria-label="Site">
+    <a href="#" aria-current="page">Learn</a>
+    <a href="#">Explore</a>
+    <a href="#">Field guides</a>
+  </nav>
+</header>
+
+<div class="shell">
+  <aside class="rail" aria-label="Lessons">
+    <div class="rail-label">Learn</div>
+    <a class="home" href="#"><span class="n">⌂</span><span class="t">Start here</span></a>
+    <a href="#" aria-current="page"><span class="n">1</span><span class="t">What is a stack?</span></a>
+    <a href="#"><span class="n">2</span><span class="t">How it comes to life</span></a>
+    <a href="#"><span class="n">3</span><span class="t">The SPI boundary</span></a>
+    <a href="#"><span class="n">4</span><span class="t">The shape of the fork</span></a>
+    <a href="#"><span class="n">5</span><span class="t">A day in the fork</span></a>
+    <a href="#"><span class="n">6</span><span class="t">The handshake</span></a>
+    <a href="#"><span class="n">7</span><span class="t">Things that are not true</span></a>
+  </aside>
+
+  <main id="main">
+    <p class="position">Lesson 1 of 7<span>The stack</span></p>
+    <h1>AKS is one part <em>of the stack.</em></h1>
+    <p class="intro">Your OSDU APIs run inside Kubernetes. Their data partitions reach Azure resources outside the cluster. The stack is both sides together, in one resource group, built for development and test. Start by finding the things you already know.</p>
+
+    <div class="orient" aria-label="Orientation">
+      <div><span class="k">You are here</span><span class="place"><b>Resource group</b><i>›</i><b>Azure data services</b><i>›</i><b>AKS</b><i>›</i><b>Namespaces</b><i>›</i>One service<i>›</i>The source</span></div>
+      <div><span class="k">This lesson answers</span>What is actually running when someone says “the stack”?</div>
+      <div><span class="k">By the end</span>You can point at the map and say which half is the cluster, which half is not, and where opendes lives in both.</div>
+    </div>
+
+    <section class="claims" aria-label="Three claims">
+      <p class="k">Three claims, one map · select one to see it</p>
+      <ol class="claim-list" id="claims"></ol>
+    </section>
+
+    <section class="figure" aria-label="The map">
+      <div class="figure-bar">
+        <b id="figure-title">Follow the boundaries</b>
+        <span class="mode-hint" id="mode-hint"></span>
+        <div class="mode" role="group" aria-label="Map mode">
+          <button type="button" data-mode="learn" aria-pressed="true">Learn</button>
+          <button type="button" data-mode="explore" aria-pressed="false">Explore this diagram</button>
+        </div>
+      </div>
+      <div class="example">
+        <span class="k">Running example</span><b>Follow a partition lookup</b><code>GET /api/partition/v1/partitions/opendes</code>
+        <ol class="hops" id="hops" aria-label="Follow a partition lookup"></ol>
+        <p class="example-note">The answer describes where opendes lives. Other services use it to find their Cosmos, Storage, and Service Bus. Each hop opens the inspector on the component it reaches.</p>
+      </div>
+
+      <div class="map-wrap">
+        <div class="map" id="map" data-mode="learn">
+          <div class="outside">
+            <section aria-label="Your workstation, outside the stack">
+              <div class="place-h"><b>⌘ Your workstation</b><small>Outside the stack</small></div>
+              <div class="ws-grid">
+                <div style="display:grid;gap:8px;">
+                  <button class="node" type="button" data-id="workstation"><b>spi CLI</b><small>Create, inspect, and operate</small><span class="glyph" aria-hidden="true">Inspect ↗</span></button>
+                  <div class="cmds"><span>spi up --env dev1</span><span>spi status --watch</span></div>
+                </div>
+                <button class="node" type="button" data-id="client"><b>OSDU API client</b><small>Bearer + data-partition-id</small><span class="glyph" aria-hidden="true">Inspect ↗</span></button>
+              </div>
+            </section>
+            <section aria-label="Sources outside the deployed stack">
+              <span class="group-label">Outside the deployed stack</span>
+              <div style="display:grid;gap:8px;">
+                <button class="node" type="button" data-id="config-source"><b>osdu-spi-stack Git</b><small>Workload configuration → Flux</small><span class="glyph" aria-hidden="true">Inspect ↗</span></button>
+                <button class="node" type="button" data-id="image-source"><b>GitLab / GHCR</b><small>Community / fork images</small><span class="glyph" aria-hidden="true">Inspect ↗</span></button>
+              </div>
+            </section>
+          </div>
+          <div class="crossing" id="crossing"><span>CLI provisions Azure and prepares AKS</span><span aria-hidden="true">↓</span></div>
+
+          <section class="azure" aria-label="Azure cloud boundary">
+            <div class="azure-h"><b>Azure</b><span>Cloud boundary</span></div>
+            <section class="stack" aria-label="Stack environment boundary" data-scope="environment">
+              <div class="stack-h">
+                <button class="scope" type="button" data-id="environment"><b>The deployed stack</b><small>dev1 · One development and test environment</small></button>
+                <span class="tag">Stack boundary</span>
+              </div>
+              <div class="grid2">
+                <section class="aks" aria-label="AKS cluster boundary" data-scope="aks">
+                  <button class="scope" type="button" data-id="aks"><b>AKS Automatic</b><small>Kubernetes boundary</small></button>
+                  <div class="row2">
+                    <button class="node" type="button" data-id="flux"><span class="ns">flux-system</span><b>Flux</b><small>Reconcile workloads</small><span class="glyph" aria-hidden="true">Inspect ↗</span></button>
+                    <button class="node" type="button" data-id="operators"><span class="ns">foundation</span><b>Operators</b><small>ECK · CNPG · certificates</small><span class="glyph" aria-hidden="true">Inspect ↗</span></button>
+                  </div>
+                  <button class="node" type="button" data-id="gateway"><span class="ns">aks-istio-ingress</span><b>Istio gateway</b><small>Routes OSDU API requests</small><span class="glyph" aria-hidden="true">Inspect ↗</span></button>
+                  <div class="down" aria-hidden="true">↓</div>
+                  <div class="svc" data-scope="service-boundary">
+                    <span class="group-label">osdu · OSDU service workloads</span>
+                    <div class="row2">
+                      <button class="node shared" type="button" data-id="service"><b>Shared OSDU code</b><small>Partition · entitlements · storage</small><span class="glyph" aria-hidden="true">Inspect ↗</span></button>
+                      <button class="node fork" type="button" data-id="provider"><b>Azure SPI provider</b><small>Cloud-specific operations</small><span class="glyph" aria-hidden="true">Inspect ↗</span></button>
+                    </div>
+                    <small class="note">Both are packaged inside the service.</small>
+                  </div>
+                  <button class="node" type="button" data-id="middleware"><span class="ns">platform</span><b>Platform middleware</b><small>Elasticsearch · Redis · PostgreSQL</small><span class="glyph" aria-hidden="true">Inspect ↗</span></button>
+                  <button class="node" type="button" data-id="initialization"><span class="ns">osdu</span><b>Initialize OSDU</b><small>Partitions · entitlements · schema load</small><span class="glyph" aria-hidden="true">Inspect ↗</span></button>
+                </section>
+                <section class="res" aria-label="Azure services outside AKS" data-scope="resources">
+                  <header><b>Azure resources</b><small>Outside AKS</small></header>
+                  <div>
+                    <span class="group-label">Per partition · opendes</span>
+                    <div style="display:grid;gap:8px;">
+                      <button class="node" type="button" data-id="cosmos"><b>Cosmos DB SQL</b><small>Records and metadata</small><span class="glyph" aria-hidden="true">Inspect ↗</span></button>
+                      <button class="node" type="button" data-id="partition-storage"><b>Storage</b><small>Blobs and tables</small><span class="glyph" aria-hidden="true">Inspect ↗</span></button>
+                      <button class="node" type="button" data-id="events"><b>Service Bus</b><small>Records-changed events</small><span class="glyph" aria-hidden="true">Inspect ↗</span></button>
+                    </div>
+                  </div>
+                  <div>
+                    <span class="group-label">Shared by the environment</span>
+                    <div style="display:grid;gap:8px;">
+                      <button class="node" type="button" data-id="shared-data"><b>Gremlin + common Storage</b><small>Entitlements graph and shared data</small><span class="glyph" aria-hidden="true">Inspect ↗</span></button>
+                      <button class="node" type="button" data-id="identity"><b>Managed identities</b><small>Workload and test callers</small><span class="glyph" aria-hidden="true">Inspect ↗</span></button>
+                      <button class="node" type="button" data-id="vault"><b>Key Vault</b><small>Configuration and credentials</small><span class="glyph" aria-hidden="true">Inspect ↗</span></button>
+                      <button class="node" type="button" data-id="registry"><b>Container Registry</b><small>Provisioned; not this flow’s image source</small><span class="glyph" aria-hidden="true">Inspect ↗</span></button>
+                    </div>
+                  </div>
+                </section>
+              </div>
+              <p class="map-caption">Stack = AKS + its workloads + the Azure resources around it</p>
+            </section>
+          </section>
+        </div>
+      </div>
+
+      <aside class="drawer" id="drawer" data-open="false" aria-label="Inspector" aria-hidden="true">
+        <button type="button" class="close" id="drawer-close">× Close</button>
+        <span class="k">Inspecting</span>
+        <h3 id="d-name"></h3>
+        <div class="owned" id="d-owned"></div>
+        <span class="k">What it is</span>
+        <p id="d-what"></p>
+        <span class="k">Why it matters here</span>
+        <p class="why" id="d-why"></p>
+        <details id="d-more"><summary>More</summary><p id="d-more-text"></p></details>
+        <span class="k">Verify it</span>
+        <div class="verify-label" id="d-verify-label"></div>
+        <pre id="d-verify"></pre>
+        <span class="k">Go deeper</span>
+        <a class="deeper" id="d-source" target="_blank" rel="noopener noreferrer"></a>
+        <p class="ctx">The inspector is evidence, not the lesson. Close it and the three claims above still hold. Escape closes it too.</p>
+      </aside>
+    </section>
+
+    <aside class="mistake" aria-label="Easy mistake">
+      <span class="k">Easy mistake</span>
+      <p class="claim-q">“Profiles save money.”</p>
+      <p>bare, minimal, and core select Kubernetes workloads. All three provision the full Azure estate, including the cluster and every PaaS service. A bare deployment simply has nothing running on top.</p>
+      <code>az resource list -g spi-stack-dev1 --query "length(@)"   # same count under any profile</code>
+      <div class="links"><a href="#">Three profiles, one estate →</a><a href="#">Stack architecture ↗</a><a href="#">All 21, by theme →</a></div>
+    </aside>
+
+    <section class="say" aria-label="What you can now say">
+      <span class="k">Carry forward</span>
+      <h2>What you can now say</h2>
+      <ol id="say"></ol>
+    </section>
+
+    <div class="next">
+      <span><b>Next, How it comes to life</b> asks: How does one command become all of that, and when is it usable? It uses the boundaries from this lesson: the stack, AKS, and the resources outside it.</span>
+      <a href="#">Lesson 2 · How it comes to life →</a>
+    </div>
+
+    <section class="optional" aria-label="Optional, go deeper">
+      <span class="k">Optional · go deeper</span>
+      <div class="opt-grid">
+        <div class="opt">
+          <h4>Hear it explained</h4>
+          <ul>
+            <li><button class="cue" type="button"><span class="play" aria-hidden="true">▶</span><span><b>Four owners, four boundaries</b><small>The stack · 12:44 · 3 min</small></span></button></li>
+            <li><button class="cue" type="button"><span class="play" aria-hidden="true">▶</span><span><b>Real Azure, on demand, and what the stack is not</b><small>The orientation · 12:50 · 2 min · 1 source check</small></span></button></li>
+            <li><a href="#">All recordings →</a></li>
+          </ul>
+        </div>
+        <div class="opt">
+          <h4>Field guides for this lesson</h4>
+          <ul>
+            <li><a href="#"><b>Where the familiar things live</b></a><small>Seven OSDU concepts you already use, and the place in the stack each one turns into.</small></li>
+            <li><a href="#"><b>Namespaces and the order things come up</b></a><small>Poster · the cluster as its namespaces, and the two switches people confuse.</small></li>
+            <li><a href="#"><b>Three profiles, one Azure estate</b></a><small>Profiles select Kubernetes workloads. Every profile provisions the same estate.</small></li>
+          </ul>
+        </div>
+        <div class="opt">
+          <h4>Sources</h4>
+          <ul>
+            <li><a href="https://github.com/Azure/osdu-spi-stack/blob/main/docs/architecture.md" target="_blank" rel="noopener noreferrer">Stack architecture ↗</a></li>
+            <li><a href="https://github.com/Azure/osdu-spi-stack/blob/main/docs/design/workload-identity.md" target="_blank" rel="noopener noreferrer">Workload Identity and API callers ↗</a></li>
+            <li><a href="https://github.com/Azure/osdu-spi-stack/blob/main/docs/decisions/033-explicit-canonical-image-source-policy.md" target="_blank" rel="noopener noreferrer">Image sources and canonical policy ↗</a></li>
+            <li><small>Development and test only. OSDU services share a managed identity and middleware credentials. This stack provides no backup, disaster recovery, or per-service Azure access isolation.</small></li>
+          </ul>
+        </div>
+      </div>
+    </section>
+
+    <footer class="foot"><span>Prototype of lesson 1 under the proposed rules</span><span>Content as of commit 67f5c2d</span></footer>
+  </main>
+</div>
+
+<script>
+(function () {
+  const SOURCES = {
+    architecture: { label: 'Stack architecture', href: 'https://github.com/Azure/osdu-spi-stack/blob/main/docs/architecture.md' },
+    flux: { label: 'Flux dependency ordering', href: 'https://github.com/Azure/osdu-spi-stack/blob/main/docs/design/flux-reconciliation.md' },
+    identity: { label: 'Workload Identity and API callers', href: 'https://github.com/Azure/osdu-spi-stack/blob/main/docs/design/workload-identity.md' },
+    lifecycle: { label: 'Deployment and teardown', href: 'https://github.com/Azure/osdu-spi-stack/blob/main/docs/design/deployment-lifecycle.md' },
+    ownership: { label: 'Why Azure source belongs to the fork', href: 'https://azure.github.io/osdu-spi/adr/038-upstream-filter-transform/' },
+    images: { label: 'Image sources and canonical policy', href: 'https://github.com/Azure/osdu-spi-stack/blob/main/docs/decisions/033-explicit-canonical-image-source-policy.md' },
+    forkDeploy: { label: 'Fork deployment contract', href: 'https://github.com/Azure/osdu-spi-stack/blob/main/docs/design/fork-deployment.md' },
+  };
+
+  // Real entries from component-details.js. `what` is the map node's own subtitle.
+  const DETAILS = {
+    environment: { name: 'The deployed stack', what: 'One development and test environment, dev1, in one resource group.', label: 'The stack boundary', title: 'AKS is one part of the environment.', body: 'The dev1 environment includes AKS and its Azure data services. A data partition such as opendes gets its own Cosmos DB SQL account, Storage account, and Service Bus namespace. Gremlin, common Storage, Key Vault, and middleware are shared by the environment.', artifact: { label: 'Environment identity', code: '--env dev1 → resource group spi-stack-dev1' }, source: 'architecture' },
+    aks: { name: 'AKS Automatic', what: 'The Kubernetes boundary, beside the data services.', label: 'Kubernetes boundary', title: 'Namespaces tell you where to look.', body: 'foundation hosts operators, platform hosts middleware, and osdu hosts APIs and initialization jobs. OSDU pods receive Istio sidecars; platform middleware stays outside that mesh. Start diagnosis in the namespace that owns the failed workload.', artifact: { label: 'Inspect operators and middleware', code: 'kubectl get pods -n foundation\nkubectl get pods -n platform' }, source: 'architecture' },
+    flux: { name: 'Flux', what: 'Reconciles workload configuration into the cluster.', label: 'flux-system / osdu-flux', title: 'Git fetching and reconciliation are separate switches.', body: 'The Git source is suspended after deployment by default. Controllers still reconcile the cached configuration and live inputs, including osdu-image-lock. If a downstream Kustomization is blocked, follow its dependsOn chain to the first unhealthy dependency.', artifact: { label: 'Read rollout conditions', code: 'kubectl get kustomizations -n osdu-flux' }, source: 'flux' },
+    operators: { name: 'Operators', what: 'ECK, CloudNativePG, and certificate operators.', label: 'foundation', title: 'Operators make the middleware possible.', body: 'ECK manages Elasticsearch; CloudNativePG manages PostgreSQL. cert-manager and trust-manager provide certificate and trust handling. Flux orders these dependencies ahead of the workloads that need them.', artifact: { label: 'Find the operator pods', code: 'kubectl get pods -n foundation' }, source: 'architecture' },
+    gateway: { name: 'Istio gateway', what: 'Routes OSDU API requests into the cluster.', label: 'aks-istio-ingress', title: 'The gateway routes; the receiving sidecar identifies the caller.', body: 'spi-gateway binds to the AKS managed ingress Service. RequestAuthentication and an EnvoyFilter in osdu validate tokens and project x-app-id and x-user-id. Caller authentication and OSDU authorization remain separate checks.', artifact: { label: 'Inspect the entry point', code: 'kubectl get gateway spi-gateway -n aks-istio-ingress' }, source: 'identity' },
+    service: { name: 'Shared OSDU code', what: 'Partition, entitlements, storage and the other OSDU services, as workloads.', label: 'osdu', title: 'Your familiar OSDU APIs run here.', body: 'Partition, entitlements, legal, schema, storage, search, and indexer are Kubernetes workloads. Each service packages shared code with its Azure provider. Runtime API dependencies and Flux rollout dependencies are different graphs.', artifact: { label: 'Find the service workloads', code: 'kubectl get deployments -n osdu' }, source: 'architecture' },
+    provider: { name: 'Azure SPI provider', what: 'The cloud-specific operations inside each OSDU service.', label: 'Inside an OSDU service', title: 'The Azure provider does the Azure work for this service.', body: 'Shared service code calls a Service Provider Interface; the Azure implementation behind it ships in the same image. For the partition service that work is a cache read and a Table Storage read in common Storage. It does not visit the partition’s own Cosmos DB, blob Storage, or Service Bus; other services use the answer it returns to find those.', artifact: { label: 'Reference provider source', code: 'provider/partition-azure/' }, source: 'ownership' },
+    middleware: { name: 'Platform middleware', what: 'Elasticsearch, Redis, and PostgreSQL, run in the cluster.', label: 'platform', title: 'Search still depends on Elasticsearch.', body: 'Elasticsearch, Redis, and Airflow’s PostgreSQL run in the cluster. Azure AI Search does not implement the Elasticsearch APIs OSDU uses. The default community indexer-queue still expects a Service Bus connection string, so records-changed indexing needs a Workload-Identity-capable replacement image.', artifact: { label: 'Inspect the middleware layer', code: 'kubectl get pods -n platform' }, source: 'architecture' },
+    initialization: { name: 'Initialize OSDU', what: 'Jobs that seed partitions, entitlements, and schemas.', label: 'osdu / initialization', title: 'A running service can still be waiting for its data.', body: 'Partition and entitlements initialization precede schema loading. The schema-load Job has a 150-minute deadline and its Kustomization a 155-minute timeout. Those are ceilings, not a normal wait time; inspect conditions and logs when progress stalls.', artifact: { label: 'Check completion, not just pod phase', code: 'kubectl get jobs -n osdu\nspi status --watch' }, source: 'lifecycle' },
+    cosmos: { name: 'Cosmos DB SQL', what: 'Records and metadata for one partition.', label: 'Per partition · opendes', title: 'Records and metadata have a partition-specific account.', body: 'Each OSDU data partition gets a Cosmos DB SQL account. The first partition is also the primary partition, which hosts the system database used by schema loading. Cosmos data-plane grants are Cosmos-native assignments and do not appear in az role assignment output.', artifact: { label: 'Infrastructure definition', code: 'infra/main.bicep' }, source: 'architecture' },
+    'partition-storage': { name: 'Storage', what: 'Blobs and tables for one partition.', label: 'Per partition · opendes', title: 'Each partition gets its own Storage account.', body: 'Storage supplies the Azure provider’s blob and table backends. Shared-key access is disabled; retained connection-string fields contain DISABLED placeholders. A client that still requires an account key must be adapted to the identity-based data plane.', artifact: { label: 'Identity-based access', code: 'workload-identity-sa · namespace osdu' }, source: 'identity' },
+    events: { name: 'Service Bus', what: 'Records-changed events for one partition.', label: 'Per partition · opendes', title: 'Service Bus carries records-changed events.', body: 'The intended indexing path is Service Bus → indexer-queue → indexer → Elasticsearch. Local Service Bus authentication is disabled. The default community queue image’s connection-string client cannot use that path until replaced with a Workload-Identity-capable image.', artifact: { label: 'The documented compatibility boundary', code: 'docs/decisions/005-workload-identity.md' }, source: 'identity' },
+    'shared-data': { name: 'Gremlin + common Storage', what: 'The entitlements graph and the shared data the whole environment uses.', label: 'Shared by the environment', title: 'The partition table lives in common Storage.', body: 'The partition service keeps each partition’s stored configuration in tables in common Storage, a Storage account shared by the whole environment; the workload identity’s table role is granted there and nowhere else. The entitlements graph is shared the same way, in Cosmos DB Gremlin. Partition-specific Azure resources do not imply isolation between service identities: OSDU workloads share one managed identity.', artifact: { label: 'Partition layout', code: 'opendes: SQL + Storage + Service Bus\nenvironment: Gremlin + common Storage' }, source: 'architecture' },
+    identity: { name: 'Managed identities', what: 'The workload identity and the test callers.', label: 'Azure managed identity', title: 'Services share one Azure access identity.', body: 'spi-stack-<env>-osdu-identity is bound to Kubernetes ServiceAccounts through the AKS OIDC issuer. The Azure SDK exchanges the projected token for Azure access. The environment’s deploy, member, and no-access test identities are separate from this workload identity.', artifact: { label: 'ServiceAccount wiring', code: 'kubectl get serviceaccount workload-identity-sa -n osdu -o yaml' }, source: 'identity' },
+    vault: { name: 'Key Vault', what: 'Configuration and credentials for the environment.', label: 'Azure Key Vault', title: 'Identity-based Azure access still leaves middleware credentials.', body: 'Cosmos, Storage, and Service Bus use Azure identity rather than usable stored access keys. Redis and Elasticsearch passwords still live in Kubernetes Secrets and are mirrored into Key Vault. Bootstrap configuration is not all recreated from Git.', artifact: { label: 'Bootstrap configuration', code: 'osdu-config · osdu-image-lock · seed Secrets' }, source: 'architecture' },
+    registry: { name: 'Container Registry', what: 'A provisioned ACR; not the image source in this flow.', label: 'Provisioned ACR', title: 'This registry is not the source of the shown images.', body: 'The stack provisions a Basic ACR with its admin account disabled. Community images come from GitLab; fork images come from GHCR. ADR-013 describes mirroring into this ACR as a possible follow-up, not the implemented image path.', artifact: { label: 'Provisioned infrastructure', code: 'infra/modules/acr.bicep' }, source: 'images' },
+    client: { name: 'OSDU API client', what: 'Your call, with a bearer token and a data-partition-id header.', label: 'The OSDU request', title: 'The partition header still selects your data partition.', body: 'The gateway routes the request to an OSDU service. Its sidecar validates the bearer and projects caller identity; the service still makes its authorization decision. A valid Azure token alone does not establish that the caller can use an OSDU API.', artifact: { label: 'Request headers', code: 'Authorization: Bearer <token>\ndata-partition-id: opendes' }, source: 'identity' },
+    'config-source': { name: 'osdu-spi-stack Git', what: 'The repository that supplies workload configuration to Flux.', label: 'Outside the stack', title: 'Git supplies workload configuration.', body: 'The osdu-spi-stack source supplies manifests and local Helm charts. Its GitRepository lives in osdu-flux, while Flux controllers live in flux-system. A suspended Git source keeps its cached revision available to reconciliation.', artifact: { label: 'Inspect the selected revision', code: 'kubectl get gitrepository osdu-spi-stack-system -n osdu-flux -o yaml' }, source: 'flux' },
+    'image-source': { name: 'GitLab / GHCR', what: 'Where community images and fork images come from.', label: 'Image registries', title: 'Community images and fork images have different sources.', body: 'Community service images resolve from the OSDU GitLab registry. A service fork publishes to ghcr.io/<owner>/<SERVICE_NAME, or the repository name when that variable is unset>. The provisioned ACR is a possible future mirror; it is not the source in this flow.', artifact: { label: 'A fork package', code: 'ghcr.io/azure/osdu-spi-partition@sha256:<digest>' }, source: 'forkDeploy' },
+    workstation: { name: 'spi CLI', what: 'The command-line tool that creates, inspects, and operates a stack.', label: 'Outside the stack', title: 'Your terminal starts the work; controllers keep it running.', body: 'spi up drives Bicep and seeds the cluster. Before returning, it verifies the requested Git revision and suspends further Git fetching. Flux and Kubernetes continue running when you close the terminal.', artifact: { label: 'Start an environment', code: 'spi up --env dev1' }, source: 'lifecycle' },
+  };
+
+  // Lesson data: the three claims, each with the map state that shows it and
+  // the component whose artifact is the evidence.
+  const CLAIMS = [
+    { text: 'A stack is a resource group: AKS plus the Azure data services around it, not the cluster alone.', why: 'Both halves are created by one spi up and named by one --env.', scopes: ['environment', 'aks', 'resources'], focus: ['flux', 'gateway', 'cosmos', 'shared-data'], evidence: 'environment', crossing: 'CLI provisions Azure and prepares AKS' },
+    { text: 'My partition’s records, blobs, and events each have their own Azure resource; entitlements, identities, and Key Vault are shared by the environment.', why: 'opendes owns three resources. Everything else in the stack is shared with the next partition.', scopes: ['resources'], focus: ['cosmos', 'partition-storage', 'events', 'shared-data', 'identity', 'vault'], evidence: 'shared-data', crossing: 'Per partition, or shared' },
+    { text: 'The OSDU services run in the osdu namespace, and each one carries its Azure provider inside its own image.', why: 'There is no separate Azure adapter to find. The provider is in the pod.', scopes: ['aks', 'service-boundary'], focus: ['gateway', 'service', 'provider'], evidence: 'service', crossing: 'Authenticated OSDU request' },
+  ];
+  const HOPS = [
+    { detail: 'client', label: 'Client', copy: 'Bearer + data-partition-id' },
+    { detail: 'gateway', label: 'Istio gateway', copy: 'Routes to the service' },
+    { detail: 'service', label: 'Partition service', copy: 'Its sidecar identifies the caller' },
+    { detail: 'provider', label: 'Its Azure provider', copy: 'Same image' },
+    { detail: 'shared-data', label: 'Stored configuration', copy: 'Tables in common Storage' },
+  ];
+
+  const map = document.getElementById('map');
+  const drawer = document.getElementById('drawer');
+  const nodes = [...map.querySelectorAll('.node')];
+  const scopes = [...map.querySelectorAll('[data-scope]')];
+  const state = { mode: 'learn', claim: 0, hop: -1, selected: null, lastButton: null };
+
+  // Render claims and hops
+  const claimList = document.getElementById('claims');
+  claimList.innerHTML = CLAIMS.map((c, i) => `<li><button type="button" class="claim" data-claim="${i}" aria-pressed="${i === 0}"><b>${c.text}</b><small>${c.why}</small><span class="how">How we know →</span></button></li>`).join('');
+  document.getElementById('say').innerHTML = CLAIMS.map((c) => `<li>${c.text}</li>`).join('');
+  document.getElementById('hops').innerHTML = HOPS.map((h, i) => `<li><button type="button" class="hop" data-hop="${i}" title="${h.copy}"><span class="n">${i + 1}</span>${h.label}</button></li>`).join('');
+
+  function applyPolicy() {
+    map.dataset.mode = state.mode;
+    const claim = CLAIMS[state.claim];
+    const tracing = state.hop >= 0;
+    const focus = new Set(tracing ? HOPS.slice(0, state.hop + 1).map((h) => h.detail) : claim.focus);
+    const scopeSet = new Set(tracing ? ['aks', 'service-boundary'] : claim.scopes);
+    nodes.forEach((n) => {
+      const id = n.dataset.id;
+      const inFocus = focus.has(id);
+      n.classList.toggle('is-focus', state.mode === 'learn' && inFocus);
+      n.classList.toggle('is-receded', state.mode === 'learn' && !inFocus);
+      n.classList.toggle('is-path', state.mode === 'learn' && tracing && inFocus);
+      n.setAttribute('aria-pressed', String(state.selected === id));
+    });
+    scopes.forEach((s) => s.classList.toggle('is-focus-scope', state.mode === 'learn' && scopeSet.has(s.dataset.scope)));
+    map.querySelectorAll('.scope').forEach((s) => s.setAttribute('aria-pressed', String(state.selected === s.dataset.id)));
+    document.getElementById('crossing').firstElementChild.textContent = tracing ? 'Authenticated OSDU request' : claim.crossing;
+    document.getElementById('mode-hint').textContent = state.mode === 'learn'
+      ? (tracing ? 'Tracing the request. The path is the only thing at full weight.' : 'Showing what this claim is about. Everything else stays clickable, just quieter.')
+      : 'Every component is open. This is the Explore page’s policy on the same map.';
+    document.querySelectorAll('.mode button').forEach((b) => b.setAttribute('aria-pressed', String(b.dataset.mode === state.mode)));
+    document.querySelectorAll('.claim').forEach((b) => b.setAttribute('aria-pressed', String(!tracing && Number(b.dataset.claim) === state.claim)));
+    document.querySelectorAll('.hop').forEach((b) => {
+      const i = Number(b.dataset.hop);
+      b.classList.toggle('is-done', tracing && i < state.hop);
+      b.classList.toggle('is-current', tracing && i === state.hop);
+      if (tracing && i === state.hop) b.setAttribute('aria-current', 'true'); else b.removeAttribute('aria-current');
+    });
+  }
+
+  function openDrawer(id, from) {
+    const d = DETAILS[id];
+    if (!d) return;
+    state.selected = id;
+    state.lastButton = from || null;
+    document.getElementById('d-name').textContent = d.name;
+    document.getElementById('d-owned').textContent = d.label;
+    document.getElementById('d-what').textContent = d.what;
+    const sentences = d.body.match(/[^.!?]+[.!?]+(\s|$)/g) || [d.body];
+    document.getElementById('d-why').textContent = `${d.title} ${sentences[0].trim()}`;
+    const rest = sentences.slice(1).join(' ').trim();
+    const more = document.getElementById('d-more');
+    more.hidden = !rest;
+    more.open = false;
+    document.getElementById('d-more-text').textContent = rest;
+    document.getElementById('d-verify-label').textContent = d.artifact.label;
+    document.getElementById('d-verify').textContent = d.artifact.code;
+    const src = SOURCES[d.source];
+    const link = document.getElementById('d-source');
+    link.href = src.href;
+    link.textContent = `${src.label} ↗`;
+    drawer.dataset.open = 'true';
+    drawer.setAttribute('aria-hidden', 'false');
+    applyPolicy();
+    document.getElementById('drawer-close').focus({ preventScroll: true });
+  }
+  function closeDrawer() {
+    if (drawer.dataset.open !== 'true') return;
+    drawer.dataset.open = 'false';
+    drawer.setAttribute('aria-hidden', 'true');
+    state.selected = null;
+    applyPolicy();
+    state.lastButton?.focus({ preventScroll: true });
+  }
+
+  map.addEventListener('click', (e) => {
+    const b = e.target.closest('[data-id]');
+    if (!b) return;
+    openDrawer(b.dataset.id, b);
+  });
+  document.getElementById('drawer-close').addEventListener('click', closeDrawer);
+  document.addEventListener('keydown', (e) => { if (e.key === 'Escape') closeDrawer(); });
+
+  claimList.addEventListener('click', (e) => {
+    const b = e.target.closest('.claim');
+    if (!b) return;
+    const i = Number(b.dataset.claim);
+    if (e.target.closest('.how') || (state.claim === i && state.hop < 0 && drawer.dataset.open !== 'true')) {
+      state.claim = i; state.hop = -1; state.mode = 'learn';
+      openDrawer(CLAIMS[i].evidence, b);
+      return;
+    }
+    state.claim = i; state.hop = -1; state.mode = 'learn';
+    closeDrawer();
+    applyPolicy();
+  });
+  document.getElementById('hops').addEventListener('click', (e) => {
+    const b = e.target.closest('.hop');
+    if (!b) return;
+    state.hop = Number(b.dataset.hop);
+    state.mode = 'learn';
+    openDrawer(HOPS[state.hop].detail, b);
+  });
+  document.querySelector('.mode').addEventListener('click', (e) => {
+    const b = e.target.closest('button[data-mode]');
+    if (!b) return;
+    state.mode = b.dataset.mode;
+    if (state.mode === 'explore') state.hop = -1;
+    applyPolicy();
+  });
+
+  applyPolicy();
+})();
+</script>

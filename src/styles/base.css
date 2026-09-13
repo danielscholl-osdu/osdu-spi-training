@@ -246,7 +246,7 @@ h3 {
   border: 1px solid var(--line);
   background: white;
   border-radius: 10px;
-  box-shadow: 0 6px 22px #102b4308;
+  box-shadow: none;
 }
 .visual-header {
   padding: 15px 18px;
@@ -896,5 +896,108 @@ details[open] summary span {
   * {
     transition: none !important;
     scroll-behavior: auto !important;
+  }
+}
+
+/* The evidence drawer overlays a full-width map at every desktop breakpoint. */
+.visual-workspace {
+  display: block;
+  position: relative;
+  overflow: clip;
+}
+.diagram {
+  border-right: 0;
+}
+.inspector {
+  position: absolute;
+  top: var(--drawer-top, 0px);
+  right: 0;
+  left: auto;
+  width: min(400px, 92%);
+  max-height: min(760px, calc(100dvh - 100px), var(--drawer-max, 100dvh));
+  overflow-y: auto;
+  z-index: 20;
+  background: white;
+  border-left: 2px solid var(--blue);
+  padding: 20px;
+  box-shadow: -14px 0 32px #102b4329;
+  transform: translateX(104%);
+  visibility: hidden;
+  transition:
+    transform 0.22s ease,
+    visibility 0.22s;
+}
+.inspector.is-expanded {
+  transform: none;
+  visibility: visible;
+}
+#detail-toggle {
+  display: block;
+  position: absolute;
+  top: 10px;
+  right: 12px;
+  border: 1px solid var(--line);
+  border-radius: 5px;
+  background: white;
+  padding: 4px 10px;
+  color: var(--blue);
+  font-size: 20px;
+}
+.inspector .detail-body {
+  display: block;
+}
+.detail-kicker {
+  display: block;
+  margin: 16px 0 4px;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  font-size: 11px;
+  font-weight: 700;
+  color: var(--blue);
+}
+.detail-kicker:first-child {
+  margin-top: 0;
+}
+.inspector h3 {
+  padding-right: 35px;
+  font-size: 20px;
+}
+.inspector .detail-body p {
+  margin: 0;
+  font-size: 15px;
+  line-height: 1.55;
+}
+.inspector #detail-label {
+  font-size: 12px;
+}
+#detail-more {
+  margin-top: 10px;
+}
+#detail-more summary {
+  cursor: pointer;
+  color: var(--blue);
+}
+#detail-more p {
+  margin-top: 6px;
+}
+@media (max-width: 760px) {
+  .inspector {
+    position: fixed;
+    top: auto;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    width: auto;
+    max-height: 65dvh;
+    border-left: 0;
+    border-top: 2px solid var(--blue);
+    border-radius: 10px 10px 0 0;
+    transform: translateY(104%);
+    padding-bottom: calc(20px + env(safe-area-inset-bottom));
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .inspector {
+    transition: none;
   }
 }

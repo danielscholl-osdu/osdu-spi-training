@@ -1225,3 +1225,71 @@
     overflow-wrap: anywhere;
   }
 }
+
+/* Inspect is explicit, and never overlays the component's title. */
+.node-open,
+.scope-button > .node-open {
+  top: 6px;
+  right: 6px;
+  font-size: 11px;
+  padding: 1px 5px;
+  border-radius: 3px;
+  background: #ffffffd9;
+  transition: opacity 0.18s ease;
+}
+/* A lesson that has not been given claims yet advertises Inspect only on hover or focus. */
+.diagram:not([data-policy]) .node-open {
+  opacity: 0;
+}
+.diagram:not([data-policy]) [data-detail]:hover .node-open,
+.diagram:not([data-policy]) [data-detail]:focus-visible .node-open {
+  opacity: 1;
+}
+.scope-button {
+  position: relative;
+  padding-right: 70px;
+}
+.scope-button > .node-open {
+  bottom: 2px;
+}
+.diagram[data-policy='learn'] .node {
+  transition: opacity 0.18s ease;
+}
+.diagram[data-policy='learn'] .node.is-receded {
+  opacity: 0.45;
+}
+.diagram[data-policy='learn'] .node.is-receded:hover,
+.diagram[data-policy='learn'] .node.is-receded:focus-visible {
+  opacity: 1;
+}
+.diagram[data-policy='learn'] .node-open {
+  opacity: 0;
+}
+.diagram[data-policy='learn'] .is-evidence .node-open,
+.diagram[data-policy='learn'] [data-detail]:hover .node-open,
+.diagram[data-policy='learn'] [data-detail]:focus-visible .node-open,
+.diagram[data-policy='explore'] .node-open {
+  opacity: 1;
+}
+.diagram[data-policy='learn'] .node.is-focus {
+  border-color: var(--blue);
+}
+.diagram[data-policy='learn'] .is-focus-scope {
+  border-color: var(--blue);
+}
+.diagram[data-policy='learn'] .is-focus-scope > .scope-button b,
+.diagram[data-policy='learn'] .is-focus-scope > header b {
+  color: var(--blue);
+}
+.diagram[data-policy='learn'] .node.is-path {
+  box-shadow: 0 0 0 2px #0b6a9c30;
+}
+.diagram[data-policy] .path-emphasis {
+  outline: none;
+  box-shadow: none;
+}
+@media (prefers-reduced-motion: reduce) {
+  .diagram[data-policy='learn'] .node {
+    transition: none;
+  }
+}

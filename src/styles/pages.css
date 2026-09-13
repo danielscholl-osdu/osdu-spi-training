@@ -2619,3 +2619,296 @@ body:has(.audio-dock:not([hidden])) main {
     grid-template-columns: 1fr;
   }
 }
+
+/* Lesson 01: claims lead; evidence and reference material are optional. */
+.lesson-orientation {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 28px;
+  padding: 15px 0;
+  margin: 22px 0 26px;
+  border-block: 1px solid var(--line);
+}
+.lesson-orientation p {
+  margin: 5px 0 0;
+  font-size: 14px;
+  line-height: 1.5;
+}
+.claims {
+  margin-bottom: 18px;
+}
+.claim-list {
+  list-style: none;
+  margin: 8px 0 0;
+  padding: 0;
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 10px;
+}
+.claim-item {
+  border-top: 3px solid var(--line);
+  padding: 10px;
+}
+.claim-item:has([aria-pressed='true']) {
+  border-color: var(--blue);
+  background: #e8f2f980;
+}
+.claim {
+  display: grid;
+  gap: 6px;
+  width: 100%;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  text-align: left;
+  cursor: pointer;
+  color: var(--ink);
+}
+.claim b {
+  font-size: 15px;
+  line-height: 1.4;
+}
+.claim small {
+  color: var(--muted);
+  font-size: 13px;
+  line-height: 1.45;
+}
+.claim-count,
+.claim-evidence {
+  color: var(--blue);
+  font-size: 12px;
+  margin-top: 7px;
+}
+.claim-count {
+  visibility: hidden;
+}
+.claim[aria-pressed='true'] .claim-count {
+  visibility: visible;
+}
+.claim-evidence {
+  display: none;
+}
+.claim-item:has([aria-pressed='true']) .claim-evidence {
+  display: inline-block;
+}
+.map-policy {
+  display: flex;
+  border: 1px solid var(--line);
+  border-radius: 6px;
+  overflow: hidden;
+}
+.map-policy button {
+  border: 0;
+  background: white;
+  color: var(--muted);
+  padding: 6px 12px;
+  font-size: 13px;
+  cursor: pointer;
+}
+.map-policy button[aria-pressed='true'] {
+  background: var(--navy);
+  color: white;
+}
+.has-claims .visual-header {
+  flex-wrap: wrap;
+}
+.has-claims .diagram-toolbar,
+.has-claims .route-strip,
+.has-claims .diagram-note {
+  display: none;
+}
+.has-claims .example-strip {
+  padding: 12px 16px;
+}
+.example-disclosure summary {
+  cursor: pointer;
+  color: var(--blue);
+  font-size: 13px;
+}
+.example-disclosure summary code {
+  display: inline-block;
+  margin-left: 12px;
+  color: var(--muted);
+  font-size: 12px;
+  overflow-wrap: anywhere;
+}
+.has-claims .journey {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+  margin: 10px 0;
+  padding: 0;
+  list-style: none;
+}
+.has-claims .journey li {
+  display: flex;
+  align-items: center;
+}
+.has-claims .journey li + li::before {
+  content: '→';
+  color: var(--muted);
+  margin-right: 4px;
+}
+.has-claims .journey a {
+  display: inline;
+  border: 0;
+  background: transparent;
+  padding: 4px;
+  font-size: 13px;
+  min-height: 0;
+}
+.has-claims .journey a span {
+  display: inline;
+  font-size: 11px;
+  margin-right: 4px;
+}
+.has-claims .journey .is-current a {
+  background: #e8f2f9;
+  border-radius: 4px;
+}
+.has-claims .easy-mistake {
+  border: 0;
+  border-left: 3px solid var(--orange);
+  border-radius: 0;
+  box-shadow: none;
+  background: transparent;
+  padding: 4px 0 4px 16px;
+  margin: 24px 0;
+}
+.has-claims .outcomes {
+  border: 0;
+  background: transparent;
+  padding: 0;
+  margin: 28px 0 0;
+  display: block;
+}
+.has-claims .outcomes {
+  color: var(--ink);
+}
+.has-claims .outcomes .guide-kicker {
+  color: var(--muted);
+}
+.has-claims .outcomes li::before {
+  border-color: var(--blue);
+  color: var(--blue);
+}
+.has-claims #source-details summary span {
+  display: none;
+}
+.has-claims .outcomes ol {
+  margin-top: 12px;
+}
+.lesson-next {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 20px;
+  flex-wrap: wrap;
+  background: var(--navy);
+  color: white;
+  border-radius: 8px;
+  padding: 18px;
+  margin-top: 22px;
+}
+.lesson-next span {
+  font-size: 13px;
+  color: #cfe3f0;
+}
+.lesson-next a {
+  color: white;
+  font-weight: 700;
+}
+.lesson-optional {
+  margin-top: 40px;
+  border-top: 1px dashed var(--line);
+  padding-top: 18px;
+}
+.optional-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 24px;
+  margin-top: 14px;
+}
+.optional-grid h2,
+.guide-preview h3 {
+  font-size: 14px;
+  margin: 0 0 6px;
+}
+.optional-grid p,
+.optional-grid summary,
+.optional-grid a {
+  font-size: 13px;
+}
+.optional-grid #chapter-guides {
+  display: block;
+  margin: 0;
+}
+.guide-preview {
+  margin-bottom: 16px;
+}
+.guide-preview p {
+  margin: 0 0 6px;
+  color: var(--muted);
+}
+.guide-preview summary {
+  color: var(--blue);
+  cursor: pointer;
+}
+.guide-preview:has(details[open]) {
+  grid-column: 1 / -1;
+}
+.optional-grid:has(.guide-preview details[open]) {
+  grid-template-columns: 1fr;
+}
+.optional-grid .listen-chips {
+  margin: 0;
+}
+.has-claims .below-figure {
+  display: none;
+}
+@media (max-width: 760px) {
+  .lesson-orientation,
+  .claim-list,
+  .optional-grid {
+    grid-template-columns: 1fr;
+  }
+  .example-disclosure summary code {
+    margin: 6px 0 0;
+    display: block;
+  }
+  .lesson-next a {
+    white-space: normal;
+  }
+}
+
+.has-claims .intro {
+  display: block;
+}
+.has-claims .intro h1 {
+  max-width: 18ch;
+  margin-bottom: 12px;
+}
+.has-claims .intro p {
+  max-width: 66ch;
+}
+.has-claims .journey li + li::before {
+  position: static;
+  transform: none;
+}
+.has-claims .journey a span {
+  width: auto;
+  height: auto;
+  border-radius: 0;
+  background: transparent;
+  color: var(--blue);
+}
+.has-claims .journey .is-current a {
+  box-shadow: none;
+}
+.optional-grid .listen-chip-row {
+  display: grid;
+}
+
+.has-claims .journey li + li::before {
+  display: block;
+}
