@@ -15,6 +15,8 @@ import {
   listenChips,
   hasClaims,
   claimStrip,
+  claimIndexForRoute,
+  hopIndexForRoute,
   guidePreview,
 } from './components/pages.js';
 import { createPlayer } from './components/player.js';
@@ -428,6 +430,7 @@ function render() {
     !chapterChanged &&
     (strip.querySelector('details')?.open || lessonState.exampleOpen);
   const openerHop = detailOpener?.dataset.hop;
+  const openerWasLookCloser = detailOpener?.hasAttribute('data-look-closer');
   if (!hasClaims(scene) || mapChanged) {
     strip.innerHTML = exampleStrip(route.chapter, {
       ...route,
@@ -439,30 +442,33 @@ function render() {
   if (openerHop !== undefined && !detailOpener.isConnected) {
     detailOpener = strip.querySelector(`[data-hop="${openerHop}"]`) || element;
   }
+  if (openerWasLookCloser && !detailOpener.isConnected) {
+    detailOpener =
+      document.querySelector('#diagram [data-look-closer]') || element;
+  }
   if (hasClaims(scene)) {
-    // History or a link that is not a hop ends the trace.
-    if (!pendingOpener && (!route.detail || route.step !== scene.example.step))
-      lessonState.hop = -1;
-    // A bookmarked or historical request hop restores the visible trace too.
-    if (
-      !pendingOpener &&
-      route.step === scene.example.step &&
+    const pendingHop = pendingOpener?.dataset.hop;
+    if (pendingHop !== undefined) {
+      lessonState.hop = Number(pendingHop);
+      lessonState.exampleOpen = true;
+    } else if (!pendingOpener) {
+      lessonState.hop = hopIndexForRoute(scene, route);
+      if (lessonState.hop >= 0) lessonState.exampleOpen = true;
+    } else lessonState.hop = -1;
+
+    const routeClaim = claimIndexForRoute(scene, route);
+    const selectedClaim = scene.outcomes[routeClaim];
+    const routeSelectsEvidence =
       route.detail &&
-      (chapterChanged ||
-        previousRoute?.detail !== route.detail ||
-        previousRoute?.step !== route.step)
-    ) {
-      lessonState.hop = scene.example.hops.findIndex(
-        (hop) => hop.detail === route.detail,
-      );
-    }
-    // A bookmarked or historical evidence component selects its claim.
-    if (!pendingOpener && route.detail && lessonState.hop < 0) {
-      const claimIndex = scene.outcomes.findIndex(
-        (claim) => claim.evidence === route.detail,
-      );
-      if (claimIndex >= 0) lessonState.claim = claimIndex;
-    }
+      selectedClaim?.evidence === route.detail &&
+      (selectedClaim.evidenceStep || selectedClaim.step || route.step) ===
+        route.step;
+    if (
+      scene.outcomes.some((claim) => claim.steps) ||
+      (!pendingOpener && routeSelectsEvidence)
+    )
+      lessonState.claim = routeClaim;
+
     if (lessonState.hop >= 0) strip.querySelector('details').open = true;
     applyPolicy();
   }
@@ -524,21 +530,32 @@ document.addEventListener('change', (event) => {
 });
 
 let jumpRequested = false;
-document.addEventListener('click', (event) => {
-  // A modified click opens a new tab or window; leave the lesson state alone.
-  if (
+function isModifiedClick(event) {
+  return (
     event.button ||
     event.metaKey ||
     event.ctrlKey ||
     event.shiftKey ||
     event.altKey
-  )
-    return;
+  );
+}
+
+document.addEventListener('click', (event) => {
+  // A modified click opens a new tab or window; leave the lesson state alone.
+  if (isModifiedClick(event)) return;
   const hop = event.target.closest('[data-hop]');
   if (hop) {
     lessonState.hop = Number(hop.dataset.hop);
     lessonState.policy = 'learn';
     lessonState.exampleOpen = true;
+  }
+  const lookCloser = event.target.closest('a[data-look-closer]');
+  if (lookCloser) {
+    pendingOpener = lookCloser;
+    if (lookCloser.hash === location.hash) {
+      event.preventDefault();
+      render();
+    }
   }
   const link = event.target.closest('a[data-map-jump]');
   if (link) {
@@ -555,6 +572,7 @@ document.getElementById('chapter-claims').addEventListener('click', (event) => {
   const evidence = event.target.closest('[data-evidence]');
   const button = event.target.closest('[data-claim]');
   if (!evidence && !button) return;
+  if (evidence && isModifiedClick(event)) return;
   event.preventDefault();
   const index = Number(evidence?.dataset.evidence ?? button.dataset.claim);
   const repeat =
@@ -566,12 +584,24 @@ document.getElementById('chapter-claims').addEventListener('click', (event) => {
   lessonState.policy = 'learn';
   if (evidence || repeat) {
     const route = parseRoute(location.hash);
-    const id = chapters[route.chapter].outcomes[index].evidence;
+    const claim = chapters[route.chapter].outcomes[index];
+    const id = claim.evidence;
+    const step = claim.evidenceStep || claim.step || route.step;
     pendingOpener = evidence || button;
-    const href = routeHref(route.chapter, route.step, id);
+    const href = routeHref(route.chapter, step, id);
     if (location.hash === href) render();
     else location.hash = href;
-  } else closeInspector(false);
+    return;
+  }
+  closeInspector(false);
+  const route = parseRoute(location.hash);
+  const claim = chapters[route.chapter].outcomes[index];
+  if (claim.step) {
+    const href = routeHref(route.chapter, claim.step);
+    if (location.hash === href) render();
+    else location.hash = href;
+    return;
+  }
   applyPolicy();
 });
 document.getElementById('map-policy').addEventListener('click', (event) => {
