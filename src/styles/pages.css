@@ -1570,6 +1570,12 @@ body:has(.audio-dock:not([hidden])) main {
   font-size: 12px;
   font-weight: 700;
 }
+.spi-trace-status[data-trace-state='handled-failure'] {
+  border-left: 3px solid #9b3f46;
+}
+.spi-trace-status[data-trace-state='fallback'] {
+  border-left: 3px solid var(--blue);
+}
 .spi-source-boundary {
   display: grid;
   gap: 10px;

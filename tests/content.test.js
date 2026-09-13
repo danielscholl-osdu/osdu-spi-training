@@ -21,6 +21,7 @@ import {
   exampleStrip,
   pageRenderers,
   resolveExamplePresentation,
+  selectExampleVariant,
 } from '../src/components/pages.js';
 import { parseRoute, routeHref, chapterSteps } from '../src/router.js';
 import { forkMoments } from '../src/content/fork-moments.js';
@@ -690,4 +691,53 @@ test('example compatibility keeps provider paths in content and controls optiona
   assert.ok(!lessonOne.includes('data-example-variant'));
   assert.match(lessonOne, /The answer describes where opendes lives/);
   assert.match(lessonOne, /does not visit the partition’s Cosmos/);
+});
+
+test('lesson trace state keeps variants local and preserves an active hop', () => {
+  const initial = {
+    claim: 0,
+    hop: -1,
+    policy: 'learn',
+    exampleOpen: false,
+    variant: 'normal',
+  };
+  const cacheDown = selectExampleVariant(initial, 'cache-down', 5);
+  assert.deepEqual(cacheDown, {
+    ...initial,
+    hop: 4,
+    exampleOpen: true,
+    variant: 'cache-down',
+  });
+  const atProvider = { ...cacheDown, hop: 3 };
+  assert.deepEqual(selectExampleVariant(atProvider, 'normal', 5), {
+    ...atProvider,
+    variant: 'normal',
+  });
+  assert.deepEqual(initial, {
+    claim: 0,
+    hop: -1,
+    policy: 'learn',
+    exampleOpen: false,
+    variant: 'normal',
+  });
+});
+
+test('lesson 03 evidence deep links stay step-less and map to claims', () => {
+  const chapter = chapters['spi-boundary'];
+  for (const [detail, claim] of [
+    ['azureimpl', 0],
+    ['image', 1],
+    ['upstream', 2],
+  ]) {
+    const route = parseRoute(`#spi-boundary?detail=${detail}`);
+    assert.equal(route.step, '');
+    assert.equal(
+      chapter.outcomes.findIndex((entry) => entry.evidence === route.detail),
+      claim,
+    );
+  }
+  assert.equal(
+    parseRoute('#running-stack/request?detail=provider').step,
+    'request',
+  );
 });

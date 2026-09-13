@@ -238,6 +238,16 @@ export function resolveExamplePresentation(example, variant) {
   };
 }
 
+export function selectExampleVariant(state, variant, hopCount) {
+  return {
+    ...state,
+    variant,
+    hop: state.hop < 0 ? hopCount - 1 : state.hop,
+    policy: 'learn',
+    exampleOpen: true,
+  };
+}
+
 export function exampleStrip(key, route, variant) {
   const example = chapters[key].example;
   if (!example) return '';
