@@ -230,8 +230,8 @@ export const chapters = {
       },
       {
         headline: 'CLI success is not API readiness.',
-        text: 'A successful spi up exit is the first of five milestones, not readiness. spi status --watch is how I follow the rest.',
-        why: 'Read the signals separately: a successful CLI exit, a Git source artifact, Ready Kustomizations and HelmReleases, Complete initialization Jobs, then a successful authenticated request. spi status --watch follows workload health and initialization; it does not make that final API call.',
+        text: 'A successful spi up does not establish API readiness. I follow workload health and initialization with spi status --watch, then verify the API path I need with an authenticated request.',
+        why: 'The requested Git artifact revision is verified before that exit, and Flux overlaps the final CLI stages. Ready Kustomizations and HelmReleases report workload health, Complete initialization Jobs report initialization, and a successful authenticated request proves only the exercised API path. spi status --watch observes the first two; it does not make that request.',
         step: 'inspect',
         steps: ['inspect'],
         evidenceStep: 'inspect',

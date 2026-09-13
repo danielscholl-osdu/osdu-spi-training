@@ -23,6 +23,7 @@ import {
   claimStrip,
   detailSourceLinks,
   exampleStrip,
+  guideFigure,
   hopIndexForRoute,
   pageRenderers,
   resolveExamplePresentation,
@@ -159,6 +160,31 @@ test('every explanation names an artifact and a source', () => {
     for (const source of detail.goDeeper || [])
       assert.ok(sources[source], `${id}: Go deeper source ${source}`);
   }
+});
+
+test('readiness drawer distinguishes observed state from API proof', () => {
+  const readiness = componentDetails.readiness;
+  const drawerCopy = `${readiness.label} ${readiness.title} ${readiness.body}`;
+
+  assert.equal(readiness.source, 'lifecycle');
+  assert.match(readiness.artifact.code, /spi status --watch/);
+  assert.match(readiness.artifact.code, /spi info --show-apis/);
+  assert.match(readiness.body, /opendes lookup in dev1/);
+  assert.match(
+    readiness.body,
+    /CLI verifies the requested Git artifact revision/,
+  );
+  assert.match(readiness.body, /Flux overlaps the final CLI work/);
+  assert.match(readiness.body, /observes configured workload health/);
+  assert.match(readiness.body, /discovers the endpoint/);
+  assert.match(
+    readiness.body,
+    /authenticated lookup proves that exercised API path, not every API/,
+  );
+  assert.match(readiness.body, /Running phase is not necessarily Ready/);
+  assert.match(readiness.body, /Job should be Complete rather than Running/);
+  for (const phrase of ['first of five', 'the rest', 'later milestone'])
+    assert.doesNotMatch(drawerCopy, new RegExp(phrase, 'i'));
 });
 
 test('Go deeper links preserve evidence order and single-source fallback', () => {
@@ -354,6 +380,31 @@ test('field checks name a source, a command, and a place on the site', () => {
   }
 });
 
+test('readiness misconception separates possible convergence from API proof', () => {
+  const readiness = myths.find((myth) => myth.id === 'finished-means-ready');
+  const misconceptionCopy = `${readiness.reality} ${readiness.routeLabel}`;
+
+  assert.equal(readiness.claim, 'The command finished, so it is ready.');
+  assert.equal(readiness.check, 'spi status --watch');
+  assert.equal(readiness.source, 'lifecycle');
+  assert.equal(readiness.route, '#bring-up/inspect?detail=readiness');
+  assert.equal(readiness.routeLabel, 'Readiness signals');
+  assert.match(readiness.reality, /does not establish API readiness/);
+  assert.match(
+    readiness.reality,
+    /Flux reconciliation and initialization Jobs may still be working/,
+  );
+  assert.match(readiness.reality, /does not make an API call/);
+  assert.match(
+    readiness.reality,
+    /authenticated request verifies only the path exercised/,
+  );
+  assert.match(readiness.reality, /150-minute value is a deadline/);
+  assert.match(readiness.reality, /not an expected wait/);
+  for (const phrase of ['first of five', 'the rest', 'later milestone'])
+    assert.doesNotMatch(misconceptionCopy, new RegExp(phrase, 'i'));
+});
+
 test('audio markers are ordered, inside the recording, and point at real views', () => {
   assert.equal(
     new Set(episodes.map((episode) => episode.id)).size,
@@ -461,6 +512,42 @@ test('posters and field guides resolve their images, renderers, sources, and lin
     for (const key of guide.sources) assert.ok(sources[key], guide.id);
     verifyRoute(guide.appearsIn.href, guide.id);
   }
+});
+
+test('readiness signals guide compares five proof scopes without ordering them', () => {
+  const guide = nativeGuides.find((entry) => entry.id === 'milestones');
+  const body = infographics.milestones();
+  const compact = guideFigure('milestones', { compact: true });
+  const full = guideFigure('milestones');
+  const renderedCopy = `${guide.title} ${guide.summary} ${body}`;
+
+  assert.equal(guide.appearsIn.href, '#bring-up/inspect');
+  assert.deepEqual(guide.sources, ['lifecycle']);
+  assert.match(guide.summary, /separate signals, not deployment steps/);
+  assert.match(
+    guide.summary,
+    /verifies the requested Git artifact revision before exit/,
+  );
+  assert.match(guide.summary, /Flux overlaps the final CLI work/);
+  assert.match(body, /<ul role="list" class="guide-milestones">/);
+  assert.equal(body.match(/<li class="owner-/g)?.length, 5);
+  assert.doesNotMatch(body, /<ol|milestone-number|Only the fifth/);
+  assert.match(body, /orchestration completed without a fatal error/);
+  assert.match(body, /Flux has the requested revision to reconcile/);
+  assert.match(body, /status\.artifact\.revision/);
+  assert.match(body, /configured health checks/);
+  assert.match(body, /bootstrap and schema loading finished/);
+  assert.match(body, /particular request path you exercised is usable/);
+  assert.match(body, /without making an authenticated request/);
+  assert.match(body, /request proves only the exercised API path/);
+  assert.match(body, /Running phase is not necessarily Ready/);
+  assert.match(body, /Job should be Complete rather than Running/);
+  for (const markup of [compact, full]) {
+    assert.match(markup, /Readiness signals and what they prove/);
+    assert.match(markup, /<ul role="list" class="guide-milestones">/);
+  }
+  for (const phrase of ['first of five', 'the rest', 'later milestone'])
+    assert.doesNotMatch(renderedCopy, new RegExp(phrase, 'i'));
 });
 
 test('source links use readable documentation and match a sibling checkout when present', () => {
@@ -714,7 +801,7 @@ test('lesson 02 preserves its outcomes as three moment-aware claims', () => {
   const chapter = chapters['bring-up'];
   const expectedOutcomes = [
     'The CLI and Bicep create Azure and seed the cluster; Flux assembles the workloads; controllers keep them healthy. Different owners, different clocks.',
-    'A successful spi up exit is the first of five milestones, not readiness. spi status --watch is how I follow the rest.',
+    'A successful spi up does not establish API readiness. I follow workload health and initialization with spi status --watch, then verify the API path I need with an authenticated request.',
     'spi down removes compute and data but keeps identities and the resource group, so a rebuild reuses the same names.',
   ];
   assert.equal(chapter.outcomes.length, 3);
@@ -753,6 +840,30 @@ test('lesson 02 preserves its outcomes as three moment-aware claims', () => {
     chapter.example.note,
     /does not visit.*Cosmos DB.*blob Storage.*Service Bus/,
   );
+});
+
+test('lesson 02 readiness signals separate orchestration from API proof', () => {
+  const readiness = chapters['bring-up'].outcomes[1];
+  const visibleCopy = `${readiness.text} ${readiness.why}`;
+
+  assert.equal(readiness.headline, 'CLI success is not API readiness.');
+  assert.match(readiness.text, /spi up does not establish API readiness/);
+  assert.match(readiness.text, /spi status --watch/);
+  assert.match(readiness.text, /authenticated request/);
+  assert.match(
+    readiness.why,
+    /requested Git artifact revision is verified before that exit/,
+  );
+  assert.match(readiness.why, /Flux overlaps the final CLI stages/);
+  assert.match(readiness.why, /Ready Kustomizations and HelmReleases/);
+  assert.match(readiness.why, /Complete initialization Jobs/);
+  assert.match(
+    readiness.why,
+    /authenticated request proves only the exercised API path/,
+  );
+  assert.match(readiness.why, /does not make that request/);
+  for (const phrase of ['first of five', 'the rest', 'later milestone'])
+    assert.doesNotMatch(visibleCopy, new RegExp(phrase, 'i'));
 });
 
 test('lesson 02 claim rendering and example routes preserve lesson 01 behavior', () => {

@@ -4,11 +4,11 @@ export const myths = [
     theme: 'readiness',
     claim: 'The command finished, so it is ready.',
     reality:
-      'A successful spi up exit means the orchestration completed. Flux is still converging, initialization Jobs may still be running, and schema loading alone carries a 150-minute deadline. Readiness is a later milestone the CLI does not wait for.',
+      'A successful spi up exit means orchestration completed without a fatal error; it does not establish API readiness. Flux reconciliation and initialization Jobs may still be working, and spi status --watch follows them but does not make an API call. A successful authenticated request verifies only the path exercised. The schema Job’s 150-minute value is a deadline, not an expected wait.',
     check: 'spi status --watch',
     source: 'lifecycle',
     route: '#bring-up/inspect?detail=readiness',
-    routeLabel: 'Readiness milestones',
+    routeLabel: 'Readiness signals',
   },
   {
     id: 'suspended-means-frozen',

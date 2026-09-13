@@ -210,9 +210,9 @@ export const componentDetails = {
     source: 'lifecycle',
   },
   readiness: {
-    label: 'Readiness milestones',
-    title: 'CLI success is the first signal, not the last.',
-    body: 'Check configured workload health and initialization completion with spi status --watch, then discover endpoints with spi info --show-apis. An authenticated response proves the particular API path you exercised. A pod in Running phase and a completed Job are different signals.',
+    label: 'Readiness signals',
+    title: 'CLI success does not establish API readiness.',
+    body: 'For the opendes lookup in dev1, a successful spi up does not prove that the request path is ready. Before exiting, the CLI verifies the requested Git artifact revision while Flux overlaps the final CLI work; these signals are not a first-to-last checklist. spi status --watch observes configured workload health and initialization, and spi info --show-apis discovers the endpoint. Only a successful authenticated lookup proves that exercised API path, not every API. A pod in Running phase is not necessarily Ready, and a completed initialization Job should be Complete rather than Running.',
     artifact: {
       label: 'Observe the environment',
       code: 'spi status --watch\nspi info --show-apis',
