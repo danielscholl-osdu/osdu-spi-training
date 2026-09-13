@@ -239,7 +239,7 @@ export function claimStrip(key) {
   const chapter = chapters[key];
   if (!hasClaims(chapter)) return '';
   return `<section class="claims" aria-label="Lesson claims">
-    <p class="guide-kicker">${chapter.outcomes.length === 3 ? 'Three' : chapter.outcomes.length} claims, one map · select one to see it</p>
+    <p class="guide-kicker">Select an idea to highlight it on the map.</p>
     <ol class="claim-list">${chapter.outcomes
       .map((claim, index) => {
         const c = typeof claim === 'string' ? { text: claim } : claim;

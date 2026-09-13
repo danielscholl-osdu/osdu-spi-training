@@ -923,6 +923,13 @@ test('structured claims resolve their focus, evidence, and scopes on every scene
           `${key}/${step}: example scope ${id}`,
         );
     const claimsMarkup = claimStrip(key);
+    const outcomesMarkup = chapterOutcomes(key);
+    assert.match(
+      claimsMarkup,
+      /Select an idea to highlight it on the map\./,
+      `${key}: learner-facing claim instruction`,
+    );
+    assert.doesNotMatch(claimsMarkup, /claims, one map/);
     claims.forEach((claim, index) => {
       assert.ok(
         Array.isArray(claim.focus) && Array.isArray(claim.scopes),
@@ -939,6 +946,15 @@ test('structured claims resolve their focus, evidence, and scopes on every scene
           claim.headline.length < claim.text.length &&
           claim.headline.length <= 80,
         `${key}: claim ${index} headline is shorter than its sentence`,
+      );
+      if (key === 'running-stack')
+        assert.ok(
+          claim.headline.split(/\s+/).length < 12,
+          `${claim.headline}: fewer than twelve words`,
+        );
+      assert.ok(
+        outcomesMarkup.includes(escapeHtml(claim.text)),
+        `${key}: claim ${index} is carried forward`,
       );
       assert.ok(
         claimsMarkup.includes(
