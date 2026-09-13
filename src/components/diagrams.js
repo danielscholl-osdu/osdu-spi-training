@@ -6,6 +6,7 @@ import { routeHref } from '../router.js';
 function spiBoundaryDiagram() {
   return `<div class="zoom-crumb" aria-label="Zoomed in from the map"><a href="#running-stack">The stack</a><span>›</span><a href="#running-stack/developer?detail=aks">AKS</a><span>›</span><a href="#running-stack/developer?detail=service">osdu namespace</a><span>›</span><b>one service · partition</b></div>
   <div class="spi-flow">
+    <div class="spi-runtime">
     ${node('client', 'OSDU API', 'The contract your client already uses')}
     <div class="spi-step" aria-hidden="true">↓ the request reaches the service image</div>
     <section class="spi-image-boundary" data-scope="spi-image">
@@ -31,6 +32,7 @@ function spiBoundaryDiagram() {
       <p class="spi-trace-status" data-trace-status="azureclients" hidden></p>
       <div class="spi-step" aria-hidden="true">↓ the row for opendes</div>
       <a class="spi-terminal" href="#running-stack/developer?detail=shared-data"><small>Back on the map · shared by the environment</small><b>Stored configuration for opendes · common Storage tables</b><span>The answer names the partition’s Cosmos, Storage, and Service Bus. See them in 01 →</span></a>
+    </div>
     </div>
     <section class="spi-source-boundary" data-scope="spi-sources">
       <header><h3>Source ownership outside the running image</h3><p>The generated upstream tree and the fork-owned provider stay separate.</p></header>

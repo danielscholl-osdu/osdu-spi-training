@@ -326,7 +326,7 @@ export const chapters = {
     outcomes: [
       {
         headline: 'Common code calls Azure through a provider interface.',
-        text: 'Common service code calls a provider interface; the Azure implementation behind it uses Workload Identity for Azure access, checking its cache before common Table Storage for this lookup. The Table Storage read still happens when the cache throws.',
+        text: 'Common service code calls a provider interface; the Azure implementation behind it does the Azure work with Workload Identity. For the partition service that is a cache, then a Table Storage read, and the read still happens when the cache throws.',
         why: 'partition-core calls IPartitionService.getPartition. provider/partition-azure uses Workload Identity for Azure access, checking cache then common Table Storage on a miss. The Table Storage read still happens when the cache throws.',
         focus: ['core', 'contract', 'azureimpl', 'azureclients'],
         scopes: ['spi-shared', 'spi-provider'],
@@ -335,7 +335,7 @@ export const chapters = {
       },
       {
         headline: 'The interface and implementation ship in one image.',
-        text: 'The provider interface and Azure implementation execute in the same service process and ship in one image, so crossing the Java interface is not a network hop.',
+        text: 'The interface and its implementation ship in one image. There is no network hop between them.',
         why: 'IPartitionService and provider/partition-azure execute in the same service process. Crossing that Java interface is not a network hop.',
         focus: ['contract', 'azureimpl', 'image'],
         scopes: ['spi-image'],
@@ -344,7 +344,7 @@ export const chapters = {
       },
       {
         headline: 'The fork keeps Azure source outside the generated tree.',
-        text: 'The fork owns provider/<svc>-azure outside generated fork_upstream, so upstream deleting its own Azure provider does not delete the fork’s copy.',
+        text: 'Upstream may delete its Azure implementations; the fork owns provider/<svc>-azure and keeps it outside the generated upstream tree.',
         why: 'The engineering system regenerates fork_upstream from upstream while provider/<svc>-azure stays fork-owned on fork_integration and main.',
         focus: ['upstream', 'azureimpl', 'engineering'],
         scopes: ['spi-provider', 'spi-sources'],

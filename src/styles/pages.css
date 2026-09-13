@@ -1513,8 +1513,23 @@ body:has(.audio-dock:not([hidden])) main {
 /* Learn view 03: one request through one service */
 .spi-flow {
   display: grid;
+  gap: 16px;
+  align-items: start;
+}
+.spi-runtime {
+  display: grid;
   gap: 10px;
-  max-width: 680px;
+  min-width: 0;
+}
+@media (min-width: 980px) {
+  .spi-flow {
+    grid-template-columns: minmax(0, 7fr) minmax(260px, 4fr);
+  }
+  .spi-source-boundary {
+    margin-top: 0;
+    position: sticky;
+    top: 84px;
+  }
 }
 .spi-lane {
   display: grid;
