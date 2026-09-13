@@ -1,8 +1,8 @@
 import { chapters } from './content/chapters.js';
-import { componentDetails } from './content/component-details.js';
 import { sources } from './content/sources.js';
 import { suppliedPosters } from './content/posters.js';
 import { diagramRenderers } from './components/diagrams.js';
+import { resolveDetail } from './components/evidence.js';
 import {
   pageRenderers,
   chapterNavigation,
@@ -240,10 +240,8 @@ function closeInspector(restoreFocus = true) {
   delete document.getElementById('diagram').dataset.selected;
 }
 
-export function selectDetail(id, element = null) {
-  const detail = Object.hasOwn(componentDetails, id)
-    ? componentDetails[id]
-    : null;
+export function selectDetail(id, chapterKey, element = null) {
+  const detail = resolveDetail(id, chapterKey);
   document
     .querySelectorAll('[data-detail]')
     .forEach((button) =>
@@ -258,7 +256,11 @@ export function selectDetail(id, element = null) {
       ),
     );
   document.getElementById('detail-label').textContent =
-    detail?.label || 'Explanation unavailable';
+    detail?.context || 'Explanation unavailable';
+  const owner = document.getElementById('detail-owner');
+  const ownerName = document.getElementById('detail-owner-name');
+  if (owner) owner.hidden = !detail?.owner;
+  if (ownerName) ownerName.textContent = detail?.owner || '';
   document.getElementById('detail-title').textContent =
     element?.querySelector('b')?.textContent ||
     element?.querySelector('span')?.textContent ||
@@ -266,20 +268,16 @@ export function selectDetail(id, element = null) {
     id;
   document.getElementById('detail-what').textContent =
     element?.querySelector('small')?.textContent || '';
-  const body = detail?.body || '';
-  const first = body.match(/^.*?[.!?](?=\s|$)/s)?.[0] || body;
-  document.getElementById('detail-copy').textContent =
-    `${detail?.title || ''} ${first}`;
-  const rest = body.slice(first.length).trim();
+  document.getElementById('detail-copy').textContent = detail?.summary || '';
   const more = document.getElementById('detail-more');
-  more.hidden = !rest;
+  more.hidden = !detail?.more;
   more.open = false;
-  document.getElementById('detail-more-copy').textContent = rest;
+  document.getElementById('detail-more-copy').textContent = detail?.more || '';
   document.getElementById('artifact-label').textContent =
     detail?.artifact?.label || '';
   document.getElementById('artifact-code').textContent =
     detail?.artifact?.code || '';
-  document.getElementById('detail-artifact').hidden = !detail;
+  document.getElementById('detail-artifact').hidden = !detail?.artifact;
   const sourceMarkup = detailSourceLinks(detail);
   const link = document.getElementById('detail-source');
   link.hidden = !sourceMarkup;
@@ -492,7 +490,7 @@ function render() {
     (button) => button.dataset.detail === route.detail,
   );
   if (element) {
-    selectDetail(element.dataset.detail, element);
+    selectDetail(element.dataset.detail, route.chapter, element);
   } else {
     expandInspector(false);
     buttons.forEach((button) => button.setAttribute('aria-pressed', 'false'));
