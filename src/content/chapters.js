@@ -82,7 +82,7 @@ export const chapters = {
           copy: 'Tables in common Storage',
         },
       ],
-      note: 'The answer describes where opendes lives. Other services use it to find their Cosmos, Storage, and Service Bus.',
+      note: 'The provider checks its cache, then Azure Table Storage in common Storage, returning stored configuration. This lookup does not visit the partition’s Cosmos, blob Storage, or Service Bus. The answer describes where opendes lives. Other services use it to find their Cosmos, Storage, and Service Bus.',
     },
     goal: 'You can point at the map and say which half is the cluster, which half is not, and where opendes lives in both.',
     outcomes: [

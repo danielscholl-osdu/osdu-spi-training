@@ -15,7 +15,14 @@ import {
   creationWalkthrough,
 } from '../src/components/architecture.js';
 import { infographics } from '../src/components/infographics.js';
-import { pageRenderers } from '../src/components/pages.js';
+import {
+  pageRenderers,
+  chapterOutcomes,
+  claimIndexForRoute,
+  claimStrip,
+  exampleStrip,
+  hopIndexForRoute,
+} from '../src/components/pages.js';
 import { parseRoute, routeHref, chapterSteps } from '../src/router.js';
 import { forkMoments } from '../src/content/fork-moments.js';
 import { zoomLevels, spiMeanings } from '../src/content/concepts.js';
@@ -629,5 +636,87 @@ test('lesson 02 preserves its outcomes as three moment-aware claims', () => {
   assert.match(
     chapter.example.note,
     /does not visit.*Cosmos DB.*blob Storage.*Service Bus/,
+  );
+});
+
+test('lesson 02 claim rendering and example routes preserve lesson 01 behavior', () => {
+  const chapter = chapters['bring-up'];
+  const strip = claimStrip('bring-up');
+  const outcomes = chapterOutcomes('bring-up');
+  const expectedEvidence = [
+    '#bring-up/reconcile?detail=flux',
+    '#bring-up/inspect?detail=readiness',
+    '#bring-up/remove?detail=retained',
+  ];
+  for (const [index, claim] of chapter.outcomes.entries()) {
+    assert.ok(strip.includes(claim.headline), `claim ${index} headline`);
+    assert.ok(strip.includes(claim.why), `claim ${index} reason`);
+    assert.ok(outcomes.includes(claim.text), `claim ${index} full outcome`);
+    assert.ok(
+      strip.includes(`href="${expectedEvidence[index]}"`),
+      `claim ${index} evidence route`,
+    );
+  }
+
+  const momentClaims = {
+    start: 0,
+    provision: 0,
+    bootstrap: 0,
+    reconcile: 0,
+    inspect: 1,
+    remove: 2,
+  };
+  for (const [step, index] of Object.entries(momentClaims))
+    assert.equal(
+      claimIndexForRoute(chapter, parseRoute(`#bring-up/${step}`)),
+      index,
+      `${step}: compatible claim`,
+    );
+  assert.equal(
+    claimIndexForRoute(chapter, parseRoute('#bring-up/reconcile?detail=flux')),
+    0,
+  );
+
+  const exampleMarkup = exampleStrip('bring-up', parseRoute('#bring-up/start'));
+  assert.ok(exampleMarkup.startsWith('<details'));
+  assert.ok(!exampleMarkup.startsWith('<details open'));
+  for (const [index, hop] of chapter.example.hops.entries()) {
+    const route = parseRoute(routeHref('bring-up', hop.step, hop.detail));
+    assert.equal(hopIndexForRoute(chapter, route), index);
+    assert.ok(
+      exampleMarkup.includes(
+        `href="${routeHref('bring-up', hop.step, hop.detail)}"`,
+      ),
+    );
+  }
+  assert.equal(
+    hopIndexForRoute(chapter, parseRoute('#bring-up/inspect?detail=service')),
+    -1,
+    'a hop only restores at its own moment',
+  );
+
+  const lessonOne = chapters['running-stack'];
+  const lessonOneClaims = claimStrip('running-stack');
+  const lessonOneExample = exampleStrip(
+    'running-stack',
+    parseRoute('#running-stack/request?detail=gateway'),
+  );
+  assert.ok(
+    lessonOneClaims.includes('href="#running-stack?detail=environment"'),
+    'timeless claim evidence keeps its chapter-only route',
+  );
+  assert.ok(
+    lessonOneExample.includes('href="#running-stack/request?detail=gateway"'),
+  );
+  assert.equal(
+    hopIndexForRoute(
+      lessonOne,
+      parseRoute('#running-stack/request?detail=gateway'),
+    ),
+    1,
+  );
+  assert.match(
+    lessonOneExample,
+    /The provider checks its cache, then Azure Table Storage/,
   );
 });
