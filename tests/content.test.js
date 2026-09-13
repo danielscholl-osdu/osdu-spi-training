@@ -18,7 +18,9 @@ import {
   chapterScope,
   claimStrip,
   detailSourceLinks,
+  exampleStrip,
   pageRenderers,
+  resolveExamplePresentation,
 } from '../src/components/pages.js';
 import { parseRoute, routeHref, chapterSteps } from '../src/router.js';
 import { forkMoments } from '../src/content/fork-moments.js';
@@ -627,4 +629,65 @@ test('lesson 03 states its own prerequisite and place without changing orientati
   assert.ok(!orientation.includes(chapter.builds));
   assert.ok(!orientation.includes(chapter.where));
   assert.ok(!chapterScope('running-stack').includes(chapters['running-stack'].builds));
+});
+
+test('example variants present two states of one canonical five-hop trace', () => {
+  const example = chapters['spi-boundary'].example;
+  const canonical = structuredClone(example.hops);
+  const normal = resolveExamplePresentation(example);
+  const cacheDown = resolveExamplePresentation(example, 'cache-down');
+
+  assert.equal(normal.selectedVariant, 'normal');
+  assert.deepEqual(
+    normal.hops.map(({ detail }) => detail),
+    ['client', 'core', 'contract', 'azureimpl', 'azureclients'],
+  );
+  assert.deepEqual(
+    cacheDown.hops.map(({ detail }) => detail),
+    normal.hops.map(({ detail }) => detail),
+  );
+  assert.equal(normal.hops[3].copy, 'Healthy cache miss');
+  assert.equal(normal.hops[4].copy, 'Stored configuration for opendes');
+  assert.equal(
+    cacheDown.hops[3].copy,
+    'Cache read throws; treated as a miss',
+  );
+  assert.equal(cacheDown.hops[4].copy, 'Table Storage answers anyway');
+  assert.deepEqual(example.hops, canonical);
+
+  const route = parseRoute('#spi-boundary');
+  const normalMarkup = exampleStrip('spi-boundary', route);
+  const cacheDownMarkup = exampleStrip('spi-boundary', route, 'cache-down');
+  for (const markup of [normalMarkup, cacheDownMarkup]) {
+    assert.equal((markup.match(/<ol class="journey"/g) || []).length, 1);
+    assert.equal((markup.match(/data-hop="/g) || []).length, 5);
+    assert.equal((markup.match(/data-example-variant=/g) || []).length, 2);
+  }
+  const links = (markup) =>
+    [...markup.matchAll(/<a href="([^"]+)" data-map-jump data-hop/g)].map(
+      (match) => match[1],
+    );
+  assert.deepEqual(links(cacheDownMarkup), links(normalMarkup));
+  assert.match(normalMarkup, /healthy cache miss/i);
+  assert.match(cacheDownMarkup, /Cache read throws; treated as a miss/);
+  assert.match(cacheDownMarkup, /Table Storage answers anyway/);
+});
+
+test('example compatibility keeps provider paths in content and controls optional', () => {
+  for (const key of ['running-stack', 'spi-boundary']) {
+    const example = chapters[key].example;
+    assert.match(example.providerPath, /Azure Table Storage in common Storage/);
+    assert.match(
+      example.providerPath,
+      /does not visit the partition’s Cosmos, blob Storage, or Service Bus/,
+    );
+  }
+
+  const lessonOne = exampleStrip(
+    'running-stack',
+    parseRoute('#running-stack/request'),
+  );
+  assert.ok(!lessonOne.includes('data-example-variant'));
+  assert.match(lessonOne, /The answer describes where opendes lives/);
+  assert.match(lessonOne, /does not visit the partition’s Cosmos/);
 });

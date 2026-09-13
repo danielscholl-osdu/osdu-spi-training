@@ -2811,6 +2811,39 @@ body:has(.audio-dock:not([hidden])) main {
   font-size: 12px;
   overflow-wrap: anywhere;
 }
+.example-variant-row {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 8px 12px;
+  margin-top: 12px;
+  color: var(--muted);
+  font-size: 12px;
+  font-weight: 700;
+}
+.example-variants {
+  display: inline-flex;
+  flex-wrap: wrap;
+  border: 1px solid var(--line);
+  border-radius: 6px;
+  overflow: hidden;
+}
+.example-variants button {
+  border: 0;
+  background: white;
+  color: var(--muted);
+  padding: 5px 10px;
+  cursor: pointer;
+}
+.example-variants button[aria-pressed='true'] {
+  background: var(--navy);
+  color: white;
+}
+.example-crossing {
+  margin: 8px 0 0;
+  color: var(--muted);
+  font-size: 12px;
+}
 .has-claims .journey {
   display: flex;
   flex-wrap: wrap;
@@ -2829,7 +2862,8 @@ body:has(.audio-dock:not([hidden])) main {
   margin-right: 4px;
 }
 .has-claims .journey a {
-  display: inline;
+  display: grid;
+  grid-template-columns: auto 1fr;
   border: 0;
   background: transparent;
   padding: 4px;
@@ -2837,9 +2871,13 @@ body:has(.audio-dock:not([hidden])) main {
   min-height: 0;
 }
 .has-claims .journey a span {
-  display: inline;
   font-size: 11px;
   margin-right: 4px;
+}
+.has-claims .journey a small {
+  grid-column: 2;
+  font-size: 11px;
+  line-height: 1.35;
 }
 .has-claims .journey .is-current a {
   background: #e8f2f9;

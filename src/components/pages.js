@@ -219,13 +219,44 @@ export function chapterScope(key) {
 
 // The running example, drawn as hops above the map. Each hop selects a
 // component on the map; the current hop and the ones before it are marked.
-export function exampleStrip(key, route) {
+export function resolveExamplePresentation(example, variant) {
+  const variants = example?.variants || null;
+  const selectedVariant =
+    variants &&
+    (Object.hasOwn(variants, variant) ? variant : example.defaultVariant);
+  const selected = selectedVariant ? variants[selectedVariant] : null;
+  return {
+    ...example,
+    selectedVariant,
+    crossing: selected?.crossing || example?.crossing || '',
+    note: selected?.note || example?.note || '',
+    hops:
+      example?.hops.map((hop) => ({
+        ...hop,
+        ...(selected?.overrides?.[hop.detail] || {}),
+      })) || [],
+  };
+}
+
+export function exampleStrip(key, route, variant) {
   const example = chapters[key].example;
   if (!example) return '';
-  if (hasClaims(chapters[key]))
+  const presentation = resolveExamplePresentation(example, variant);
+  if (hasClaims(chapters[key])) {
+    const variantControls = example.variants
+      ? `<div class="example-variant-row"><span>Trace condition</span><div class="example-variants" role="group" aria-label="Trace condition">${Object.entries(example.variants)
+          .map(
+            ([id, option]) =>
+              `<button type="button" data-example-variant="${id}" aria-pressed="${presentation.selectedVariant === id}">${escapeHtml(option.label)}</button>`,
+          )
+          .join('')}</div></div>`
+      : '';
     return `<details class="example-disclosure"><summary>Running example: ${escapeHtml(example.title)} → <code>${escapeHtml(example.code)}</code></summary>
-    <ol class="journey" aria-label="${escapeHtml(example.title)}">${example.hops.map((hop, index) => `<li><a href="${routeHref(key, hop.step || example.step || route.step, hop.detail)}" data-map-jump data-hop="${index}" title="${escapeHtml(hop.copy)}"><span>${index + 1}</span> ${escapeHtml(hop.label)}</a></li>`).join('')}</ol>
-    <p class="example-note">The provider checks its cache, then Azure Table Storage in common Storage, returning stored configuration. This lookup does not visit the partition’s Cosmos, blob Storage, or Service Bus. ${escapeHtml(example.note)}</p></details>`;
+    ${variantControls}
+    <p class="example-crossing" data-example-crossing>${escapeHtml(presentation.crossing)}</p>
+    <ol class="journey" aria-label="${escapeHtml(example.title)}">${presentation.hops.map((hop, index) => `<li><a href="${routeHref(key, hop.step || example.step || route.step, hop.detail)}" data-map-jump data-hop="${index}" title="${escapeHtml(hop.copy)}" aria-label="${escapeHtml(`${index + 1}. ${hop.label}: ${hop.copy}`)}"><span>${index + 1}</span><b>${escapeHtml(hop.label)}</b><small data-hop-copy="${hop.detail}">${escapeHtml(hop.copy)}</small></a></li>`).join('')}</ol>
+    <p class="example-note"><span class="example-provider-path">${escapeHtml(example.providerPath || '')}</span> <span data-example-note>${escapeHtml(presentation.note)}</span></p></details>`;
+  }
   const current = example.hops.findIndex(
     (hop) =>
       hop.detail === route.detail &&
@@ -240,7 +271,7 @@ export function exampleStrip(key, route) {
         return `<li class="${state}"><a href="${routeHref(key, hop.step || example.step || route.step, hop.detail)}" data-map-jump ${index === current ? 'aria-current="true"' : ''}><span>${index + 1}</span><b>${escapeHtml(hop.label)}</b><small>${escapeHtml(hop.copy)}</small></a></li>`;
       })
       .join('')}</ol>
-    <p class="example-note">${escapeHtml(example.note)}</p>`;
+    <p class="example-note">${escapeHtml(example.providerPath || '')} ${escapeHtml(example.note)}</p>`;
 }
 
 // One entry from the myths, directly under the map. A link back into the same

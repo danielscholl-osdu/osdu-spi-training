@@ -82,6 +82,8 @@ export const chapters = {
           copy: 'Tables in common Storage',
         },
       ],
+      providerPath:
+        'The provider checks its cache, then Azure Table Storage in common Storage, returning stored configuration. This lookup does not visit the partition’s Cosmos, blob Storage, or Service Bus.',
       note: 'The answer describes where opendes lives. Other services use it to find their Cosmos, Storage, and Service Bus.',
     },
     goal: 'You can point at the map and say which half is the cluster, which half is not, and where opendes lives in both.',
@@ -253,8 +255,10 @@ export const chapters = {
     where:
       'One service inside the osdu namespace. Everything from the first two views is still around it; only the scale changed.',
     example: {
-      title: 'The same lookup, with the cache down',
+      title: 'Follow the same lookup through the provider',
       code: 'GET /api/partition/v1/partitions/opendes',
+      scopes: ['spi-image', 'spi-provider'],
+      crossing: 'One service image, then Azure data access',
       hops: [
         { detail: 'client', label: 'OSDU API', copy: 'The contract you know' },
         {
@@ -270,15 +274,53 @@ export const chapters = {
         {
           detail: 'azureimpl',
           label: 'Azure implementation',
-          copy: 'Asks the cache; it throws',
+          copy: 'Checks the cache, then chooses the fallback',
         },
         {
           detail: 'azureclients',
           label: 'Table Storage',
-          copy: 'Answers anyway',
+          copy: 'Returns stored configuration for opendes',
         },
       ],
-      note: 'The provider treats a broken cache as a miss and reads the row from common Storage. That fallback is the fix the next three views follow out through the fork and back.',
+      defaultVariant: 'normal',
+      variants: {
+        normal: {
+          label: 'Normal',
+          crossing: 'Healthy cache miss reaches common Table Storage',
+          note: 'Normal shows a healthy cache miss, so hop five is required. Common Table Storage is reachable and contains opendes; a cache hit would stop before it.',
+          overrides: {
+            azureimpl: {
+              copy: 'Healthy cache miss',
+              mapStatus: 'Healthy cache miss',
+              state: 'normal',
+            },
+            azureclients: {
+              copy: 'Stored configuration for opendes',
+              mapStatus: 'Table Storage returns opendes',
+              state: 'normal',
+            },
+          },
+        },
+        'cache-down': {
+          label: 'Cache down',
+          crossing: 'Cache exception is handled as a miss',
+          note: 'Cache down assumes common Table Storage is reachable and contains opendes. It does not promise to swallow Table Storage failures or missing-partition errors.',
+          overrides: {
+            azureimpl: {
+              copy: 'Cache read throws; treated as a miss',
+              mapStatus: 'Cache read throws; treated as a miss',
+              state: 'handled-failure',
+            },
+            azureclients: {
+              copy: 'Table Storage answers anyway',
+              mapStatus: 'Table Storage answers anyway',
+              state: 'fallback',
+            },
+          },
+        },
+      },
+      providerPath:
+        'The provider checks its cache, then Azure Table Storage in common Storage, returning stored configuration. This lookup does not visit the partition’s Cosmos, blob Storage, or Service Bus.',
     },
     goal:
       'With the drawer closed, you can point to where shared code ends and Azure provider code begins, explain why the interface is not a network hop, and say what survives a cache exception.',
