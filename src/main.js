@@ -18,6 +18,7 @@ import {
   claimContext,
   guidePreview,
   detailSourceLinks,
+  hopIndexForRoute,
   partitionComparison,
   resolveExamplePresentation,
   resolveLessonSelection,
@@ -42,6 +43,7 @@ const movable = [
   'chapter-guides',
   'chapter-outcomes',
   'chapter-try-it',
+  'example-strip',
   'next-link',
   'scope-note',
   'source-details',
@@ -375,13 +377,18 @@ function renderChapterFrame(route, scene) {
     document
       .getElementById('chapter-mistake')
       .after(document.getElementById('chapter-outcomes'));
+  }
+  if (scene.kind === 'map' && scene.group === 'learn') {
     const nextBlock = document.createElement('div');
     nextBlock.id = 'lesson-next';
     nextBlock.className = 'lesson-next';
-    nextBlock.innerHTML = `<span>${chapters[nextChapter(key)].question}</span>`;
+    nextBlock.innerHTML = structured
+      ? `<span>${chapters[nextChapter(key)].question}</span>`
+      : '';
     nextBlock.append(document.getElementById('next-link'));
     document.getElementById('chapter-outcomes').after(nextBlock);
     nextBlock.after(tryIt);
+    tryIt.after(document.getElementById('example-strip'));
   } else if (scene.tryIt && nextChapter(key) === 'start') {
     const nextBlock = document.createElement('div');
     nextBlock.id = 'lesson-next';
@@ -537,6 +544,7 @@ function render() {
   const strip = document.getElementById('example-strip');
   const structured = hasClaims(scene);
   const selection = structured ? resolveLessonSelection(scene, route) : null;
+  const legacyHop = structured ? -1 : hopIndexForRoute(scene, route);
   const requestedOpener = pendingOpener;
   const openerHop = requestedOpener?.dataset.hop;
   const openerWasLookCloser = requestedOpener?.hasAttribute('data-look-closer');
@@ -557,6 +565,10 @@ function render() {
     lessonState.exampleOpen = selection.exampleOpen;
     strip.querySelector('details').open = selection.exampleOpen;
     applyPolicy();
+  } else if (scene.example) {
+    lessonState.hop = legacyHop;
+    lessonState.exampleOpen = legacyHop >= 0;
+    strip.querySelector('details').open = lessonState.exampleOpen;
   }
   if (element) {
     if (requestedOpener?.isConnected) {

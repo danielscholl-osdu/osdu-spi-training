@@ -418,8 +418,8 @@ export function chapterScope(key) {
   <p class="view-scope"><span>In this view</span>${escapeHtml(chapter.where)} <a href="#start?guide=ladder">See the six places →</a></p>`;
 }
 
-// The running example, drawn as hops above the map. Each hop selects a
-// component on the map; the current hop and the ones before it are marked.
+// The running example is optional depth after the lesson exit. Each hop can
+// deliberately return to its component on the map.
 export function resolveExamplePresentation(example, variant) {
   const variants = example?.variants || null;
   const selectedVariant =
@@ -453,33 +453,24 @@ export function exampleStrip(key, route, variant) {
   const example = chapters[key].example;
   if (!example) return '';
   const presentation = resolveExamplePresentation(example, variant);
-  if (hasClaims(chapters[key])) {
-    const variantControls = example.variants
-      ? `<div class="example-variant-row"><span>Trace condition</span><div class="example-variants" role="group" aria-label="Trace condition">${Object.entries(
-          example.variants,
+  const structured = hasClaims(chapters[key]);
+  const current = hopIndexForRoute(chapters[key], route);
+  const variantControls = example.variants
+    ? `<div class="example-variant-row"><span>Trace condition</span><div class="example-variants" role="group" aria-label="Trace condition">${Object.entries(
+        example.variants,
+      )
+        .map(
+          ([id, option]) =>
+            `<button type="button" data-example-variant="${id}" aria-pressed="${presentation.selectedVariant === id}">${escapeHtml(option.label)}</button>`,
         )
-          .map(
-            ([id, option]) =>
-              `<button type="button" data-example-variant="${id}" aria-pressed="${presentation.selectedVariant === id}">${escapeHtml(option.label)}</button>`,
-          )
-          .join('')}</div></div>`
-      : '';
-    return `<details class="example-disclosure"><summary>Running example: ${escapeHtml(example.title)} → <code>${escapeHtml(example.code)}</code></summary>
+        .join('')}</div></div>`
+    : '';
+  return `<details class="example-disclosure"><summary>Example: ${escapeHtml(example.title)}</summary>
+    <div class="example-head"><code>${escapeHtml(example.code)}</code></div>
     ${variantControls}
     <p class="example-crossing" data-example-crossing>${escapeHtml(presentation.crossing)}</p>
-    <ol class="journey" aria-label="${escapeHtml(example.title)}">${presentation.hops.map((hop, index) => `<li><a href="${routeHref(key, hop.step || example.step || route.step, hop.detail, { hop: index })}" data-map-jump data-hop="${index}" title="${escapeHtml(hop.copy)}" aria-label="${escapeHtml(`${index + 1}. ${hop.label}: ${hop.copy}`)}"><span>${index + 1}</span><b>${escapeHtml(hop.label)}</b><small data-hop-copy="${hop.detail}">${escapeHtml(hop.copy)}</small></a></li>`).join('')}</ol>
+    <ol class="journey" aria-label="${escapeHtml(example.title)}">${presentation.hops.map((hop, index) => `<li class="${index === current ? 'is-current' : index < current ? 'is-done' : ''}"><a href="${routeHref(key, hop.step || example.step || route.step, hop.detail, structured ? { hop: index } : {})}" data-map-jump data-hop="${index}" ${index === current ? 'aria-current="true"' : ''} title="${escapeHtml(hop.copy)}" aria-label="${escapeHtml(`${index + 1}. ${hop.label}: ${hop.copy}`)}"><span>${index + 1}</span><b>${escapeHtml(hop.label)}</b><small data-hop-copy="${hop.detail}">${escapeHtml(hop.copy)}</small></a></li>`).join('')}</ol>
     <p class="example-note"><span class="example-provider-path">${escapeHtml(example.providerPath || '')}</span> <span data-example-note>${escapeHtml(presentation.note)}</span></p></details>`;
-  }
-  const current = hopIndexForRoute(chapters[key], route);
-  return `<div class="example-head"><span class="guide-kicker">Running example</span><b>${escapeHtml(example.title)}</b><code>${escapeHtml(example.code)}</code></div>
-    <ol class="journey" aria-label="${escapeHtml(example.title)}">${example.hops
-      .map((hop, index) => {
-        const state =
-          index === current ? 'is-current' : index < current ? 'is-done' : '';
-        return `<li class="${state}"><a href="${routeHref(key, hop.step || example.step || route.step, hop.detail)}" data-map-jump ${index === current ? 'aria-current="true"' : ''}><span>${index + 1}</span><b>${escapeHtml(hop.label)}</b><small>${escapeHtml(hop.copy)}</small></a></li>`;
-      })
-      .join('')}</ol>
-    <p class="example-note">${escapeHtml(example.providerPath || '')} ${escapeHtml(example.note)}</p>`;
 }
 
 // One entry from the myths, directly under the map. A link back into the same

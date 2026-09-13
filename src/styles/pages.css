@@ -1337,7 +1337,7 @@ body:has(.audio-dock:not([hidden])) main {
   color: var(--muted);
 }
 
-/* Learn views: scope sentence and the running example */
+/* Learn views: scope sentence */
 .view-scope {
   margin: -6px 0 22px;
   max-width: 820px;
@@ -1348,10 +1348,12 @@ body:has(.audio-dock:not([hidden])) main {
   padding-left: 14px;
 }
 
-/* Learn views: the running example, drawn as hops above the map */
+/* Learn views: the running example, disclosed after the lesson exit */
 .example-strip {
-  padding: 14px 18px 12px;
-  border-bottom: 1px solid var(--line);
+  margin-top: 18px;
+  padding: 14px 18px;
+  border: 1px solid var(--line);
+  border-radius: 10px;
   background: #fbfdff;
 }
 .example-head {
@@ -1359,10 +1361,7 @@ body:has(.audio-dock:not([hidden])) main {
   flex-wrap: wrap;
   align-items: baseline;
   gap: 4px 12px;
-  margin-bottom: 10px;
-}
-.example-head b {
-  font-size: 15px;
+  margin: 12px 0 10px;
 }
 .example-head code {
   font-family: ui-monospace, SFMono-Regular, Consolas, monospace;
@@ -2825,9 +2824,6 @@ body:has(.audio-dock:not([hidden])) main {
 .has-claims .diagram-note {
   display: none;
 }
-.has-claims .example-strip {
-  padding: 12px 16px;
-}
 .has-claims .creation-story .look-closer {
   display: inline-block;
   margin-top: 8px;
@@ -2837,13 +2833,6 @@ body:has(.audio-dock:not([hidden])) main {
   cursor: pointer;
   color: var(--blue);
   font-size: 13px;
-}
-.example-disclosure summary code {
-  display: inline-block;
-  margin-left: 12px;
-  color: var(--muted);
-  font-size: 12px;
-  overflow-wrap: anywhere;
 }
 .example-variant-row {
   display: flex;
@@ -3318,10 +3307,6 @@ body:has(.audio-dock:not([hidden])) main {
   .partition-comparison-sources,
   .optional-grid {
     grid-template-columns: 1fr;
-  }
-  .example-disclosure summary code {
-    margin: 6px 0 0;
-    display: block;
   }
   .lesson-next a {
     white-space: normal;

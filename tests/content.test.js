@@ -2139,21 +2139,87 @@ test('lesson 03 evidence deep links stay step-less and map to claims', () => {
   );
 });
 
-test('example renderers preserve structured and unconverted lessons', () => {
-  const fixtures = [
-    ['running-stack', '#running-stack/request', true],
-    ['spi-boundary', '#spi-boundary', true],
-    ['bring-up', '#bring-up/provision', true],
-    ['fork-shape', '#fork-shape', false],
-  ];
-  for (const [key, href, structured] of fixtures) {
-    const markup = exampleStrip(key, parseRoute(href));
-    assert.ok(markup.includes('class="journey"'), key);
-    assert.equal(markup.includes('example-disclosure'), structured, key);
+test('all map lesson examples use one closed disclosure and preserve routes', () => {
+  const exampleLessons = mapChapters.filter(([, chapter]) => chapter.example);
+  assert.deepEqual(
+    exampleLessons.map(([key]) => key),
+    [
+      'running-stack',
+      'bring-up',
+      'spi-boundary',
+      'fork-shape',
+      'fork-day',
+      'handshake',
+    ],
+  );
+  for (const [key, chapter] of exampleLessons) {
+    const steps = chapterSteps(key).length ? chapterSteps(key) : [''];
+    for (const step of steps) {
+      const href = routeHref(key, step);
+      const markup = exampleStrip(key, parseRoute(href));
+      assert.match(markup, /^<details class="example-disclosure">/, href);
+      assert.doesNotMatch(markup, /^<details[^>]*\bopen\b/, href);
+      assert.ok(
+        markup.includes(
+          `<summary>Example: ${escapeHtml(chapter.example.title)}</summary>`,
+        ),
+        href,
+      );
+      assert.ok(
+        markup.indexOf('</summary>') <
+          markup.indexOf(escapeHtml(chapter.example.code)),
+        `${href}: command follows summary`,
+      );
+      assert.equal(
+        (markup.match(/data-hop="/g) || []).length,
+        chapter.example.hops.length,
+        href,
+      );
+      assert.ok(markup.includes('data-map-jump'), href);
+      for (const [index, hop] of chapter.example.hops.entries()) {
+        const options = hasClaims(chapter) ? { hop: index } : {};
+        const hopHref = routeHref(
+          key,
+          hop.step || chapter.example.step || step,
+          hop.detail,
+          options,
+        );
+        assert.ok(
+          markup.includes(`href="${hopHref}"`),
+          `${href}: hop ${index}`,
+        );
+        const hopRoute = parseRoute(hopHref);
+        if (hasClaims(chapter))
+          assert.equal(
+            resolveLessonSelection(chapter, hopRoute).exampleOpen,
+            true,
+            hopHref,
+          );
+        else assert.equal(hopIndexForRoute(chapter, hopRoute), index, hopHref);
+        assert.match(
+          exampleStrip(key, hopRoute),
+          new RegExp(
+            `<li class="is-current"><a href="${hopHref.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}"`,
+          ),
+          `${hopHref}: current hop`,
+        );
+      }
+      const presentation = resolveExamplePresentation(chapter.example);
+      if (presentation.crossing)
+        assert.ok(markup.includes(escapeHtml(presentation.crossing)), href);
+      if (presentation.providerPath)
+        assert.ok(markup.includes(escapeHtml(presentation.providerPath)), href);
+      assert.ok(markup.includes(escapeHtml(presentation.note)), href);
+    }
+    const markup = exampleStrip(key, parseRoute(routeHref(key)));
     assert.equal(
       (markup.match(/data-example-variant=/g) || []).length,
       key === 'spi-boundary' ? 2 : 0,
       key,
     );
   }
+  assert.match(
+    exampleStrip('running-stack', parseRoute('#running-stack')),
+    /^<details class="example-disclosure"><summary>Example: a partition lookup<\/summary>/,
+  );
 });
