@@ -685,28 +685,25 @@ document.getElementById('chapter-claims').addEventListener('click', (event) => {
   if (evidence && isModifiedClick(event)) return;
   event.preventDefault();
   const index = Number(evidence?.dataset.evidence ?? button.dataset.claim);
-  const repeat =
-    index === lessonState.claim &&
-    lessonState.hop < 0 &&
-    !inspector.classList.contains('is-expanded');
+  const previousClaim = lessonState.claim;
+  const route = parseRoute(location.hash);
+  const claim = chapters[route.chapter].outcomes[index];
   lessonState.claim = index;
   lessonState.hop = -1;
   lessonState.policy = 'learn';
-  if (evidence || repeat) {
-    const route = parseRoute(location.hash);
-    const claim = chapters[route.chapter].outcomes[index];
+  if (evidence) {
     const id = claim.evidence;
     const step = claim.evidenceStep || claim.step || '';
-    pendingOpener = evidence || button;
+    pendingOpener = evidence;
     const href = routeHref(route.chapter, step, id, { claim: index });
     if (location.hash === href) render();
     else location.hash = href;
     return;
   }
   closeInspector(false);
-  const route = parseRoute(location.hash);
-  const claim = chapters[route.chapter].outcomes[index];
-  if (claim.step) {
+  const currentStepIsCompatible =
+    !claim.steps || claim.steps.includes(route.step);
+  if (claim.step && (index !== previousClaim || !currentStepIsCompatible)) {
     const href = routeHref(route.chapter, claim.step);
     if (location.hash === href) render();
     else location.hash = href;
