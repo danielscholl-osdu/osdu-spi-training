@@ -209,13 +209,9 @@ function frameSection() {
   const conversation = episodeById('orientation');
   return `<section class="home-frame" aria-label="The introduction, three minutes">
       <div class="home-frame-copy">
-        <span class="guide-kicker">Optional · three minutes</span>
+        <span class="guide-kicker">The introduction · three minutes</span>
         <h2>Who maintains the Azure provider now, and where a change to it is proved.</h2>
-        <p>SPI is the Service Provider Interface, the seam inside each OSDU service between shared code and a cloud implementation; the site also uses the name for the stack and for the engineering system built around it. Start with who maintains the Azure code and how a change to it is tested.</p>
-        ${listenChips('start', {
-          kicker: 'Listen · two minutes',
-          lead: 'Plays while you read.',
-        })}
+        <p>The one-minute video draws the split, the service forks, the candidate image, and the borrowed slot in a live stack. The two-minute brief, playable from the top of this page, tells the same story while you read. Both are generated from the introduction source; the source checks under the video say where its narration overreaches.</p>
         <p class="home-frame-more"><a href="#listen?episode=${conversation.id}">${escapeHtml(conversation.short)} →</a><span>${escapeHtml(conversation.title)}: the full conversation, ${Math.round(conversation.duration / 60)} minutes, cued from the views as you go.</span></p>
       </div>
       <figure class="home-frame-video">
@@ -229,9 +225,23 @@ function frameSection() {
 }
 
 function homePage() {
-  return `<section class="home-start" aria-label="Where to begin">
-      <div class="home-start-copy"><span class="guide-kicker">Start</span><p>Six views in order, then the assumptions that cost an afternoon. The running example is a partition lookup for opendes and the cache fallback that keeps it answering; it starts real and turns illustrative at 04.</p></div>
-      <div class="home-start-actions"><a class="home-cta" href="${routeHref('running-stack')}">Start with 01 · What is a stack? →</a><a class="home-cta-alt" href="${routeHref('running-stack', 'request')}">Or trace one API request through it first</a></div>
+  const start = chapters.start;
+  return `<p class="home-checked">Checked against the published docs and source, ${escapeHtml(start.checked)}. Each view links the pages and code it draws on.</p>
+    <section class="home-start" aria-label="Where to begin">
+      <div class="home-start-copy">
+        <span class="guide-kicker">Start</span>
+        <p>Six views in order, then the assumptions that cost an afternoon. The running example is a partition lookup for opendes and the cache fallback that keeps it answering; it starts real and turns illustrative at 04.</p>
+        <div class="doors">
+          <a class="door" href="${routeHref('running-stack')}"><span class="door-kicker">Just bring up OSDU on Azure</span><b>Start at 01 · What is a stack? →</b><p>Views 01 and 02 cover it. spi up builds the environment and records every service image in the image lock. You never touch a fork.</p></a>
+          <a class="door door-fork" href="${routeHref('spi-boundary')}"><span class="door-kicker">Maintain or mirror a service fork</span><b>Start at 03 · The SPI boundary →</b><p>Views 03 to 06, and you will need a stack: the fork proves a change by borrowing a slot in a running one.</p></a>
+        </div>
+        <a class="home-cta-alt" href="${routeHref('running-stack', 'request')}">Or trace one API request through the stack first</a>
+      </div>
+      <div class="home-start-media">
+        <span class="guide-kicker">The introduction · three minutes</span>
+        <button type="button" class="home-watch" data-play-frame-video><img src="${frameVideo.poster}" alt="" width="56" height="100" loading="lazy" /><span><b>Watch · one minute</b><small>${escapeHtml(frameVideo.title)}</small></span></button>
+        ${listenChips('start', { kicker: 'Listen · two minutes' })}
+      </div>
     </section>
     <section class="home-path" aria-label="The learning path">
       <div class="section-heading"><span class="guide-kicker">The path</span><h2>Six views, in order, then the checks</h2><p>Each view builds on the one before; 07 collects the assumptions the documentation contradicts. Take them in order the first time. After that, any of them stands alone.</p></div>
@@ -241,13 +251,6 @@ function homePage() {
     <section class="home-loop" id="guide-round-trip" aria-label="The round trip">
       <div class="section-heading"><span class="guide-kicker">The shape of the site</span><h2>Down the stack, out to the fork, back in through the lock</h2><p>The stack is a resource group with a cluster and data services in it. The fork is a repository whose branches are regenerated, integrated, and released by scheduled workflows. They meet at one object, the image lock, and that is where the running example crosses from one to the other.</p></div>
       ${roundTripFigure()}
-    </section>
-    <section class="home-doors" aria-label="Two reasons to be here">
-      <div class="section-heading"><span class="guide-kicker">Two reasons to be here</span><h2>You can run the stack without maintaining a fork.</h2></div>
-      <div class="doors">
-        <a class="door" href="${routeHref('running-stack')}"><span class="door-kicker">Just bring up OSDU on Azure</span><b>Views 01 and 02 cover it.</b><p>spi up builds the environment and records every service image in the image lock. Every canonical image comes from the community registry today; per-service promotion to a fork (osdu-spi-stack ADR-033) is designed, not built. You never touch a fork.</p><span class="way-cta">Start at 01 →</span></a>
-        <a class="door door-fork" href="${routeHref('spi-boundary')}"><span class="door-kicker">Maintain or mirror a service fork</span><b>Views 03 to 06, and you will need a stack.</b><p>The fork owns the Azure provider and the workflows around it. To prove a change it borrows a slot in a running stack, so the stack comes first even when the fork is your job.</p><span class="way-cta">Start at 03 →</span></a>
-      </div>
     </section>
     <section class="home-names" aria-label="One word, three things">
       <div class="section-heading"><span class="guide-kicker">The word</span><h2>SPI means three things here</h2><p>They are related, and the site says which one it means. In the order the views meet them: the environment, the interface, the engineering system.</p></div>

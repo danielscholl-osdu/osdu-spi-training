@@ -746,6 +746,14 @@ document
 
 const lightbox = document.getElementById('lightbox');
 document.addEventListener('click', (event) => {
+  if (!event.target.closest('[data-play-frame-video]')) return;
+  const video = document.querySelector('[data-frame-video]');
+  if (!video) return;
+  video.scrollIntoView({ behavior: 'smooth', block: 'center' });
+  video.play();
+});
+
+document.addEventListener('click', (event) => {
   const opener = event.target.closest('[data-lightbox]');
   if (!opener) return;
   const image = document.getElementById('lightbox-image');

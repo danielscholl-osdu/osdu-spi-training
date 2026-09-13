@@ -33,8 +33,9 @@ export const chapters = {
     subtitle: 'What this site is for',
     headline: 'Understand the Azure stack<span>behind your OSDU APIs.</span>',
     intro:
-      'You know the OSDU APIs and data partitions. CIMPL provides the open-source community implementation. This course uses it as a reference while following the Azure provider code, the Azure resources it calls, and the forks and test environment used to maintain it.',
+      'You know the OSDU APIs and data partitions. SPI is the Service Provider Interface, the seam inside each OSDU service between shared code and a cloud implementation; Microsoft maintains the Azure one. CIMPL provides the open-source community implementation. This site uses it as a reference while following the Azure provider code, the Azure resources it calls, and the forks and test environment used to maintain it.',
     premise: 'For engineers who know OSDU and are new to SPI.',
+    checked: 'September 2026',
     listen: [
       {
         episode: 'brief',

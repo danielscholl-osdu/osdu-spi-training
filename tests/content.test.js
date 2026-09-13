@@ -64,6 +64,13 @@ const communityPartitionSourcePattern = new RegExp(
 const cimplStackSourcePattern = new RegExp(
   `^https://community\\.opengroup\\.org/osdu/platform/deployment-and-operations/cimpl-stack/-/blob/${fullRevision}/`,
 );
+// Sibling checkouts the content is reviewed against; a same-named directory
+// for a community repository is not one of them.
+const siblingRepos = new Set([
+  'osdu-spi',
+  'osdu-spi-stack',
+  'osdu-spi-partition',
+]);
 const tryItAccess = new Set([
   'browser only',
   'workstation setup',
@@ -85,6 +92,7 @@ function verifySourceRecord(key, source) {
   else if (source.repo === 'cimpl-stack')
     assert.match(source.href, cimplStackSourcePattern);
   else assert.match(source.href, stackSourcePattern);
+  if (!siblingRepos.has(source.repo)) return;
   const checkout = new URL(`../../${source.repo}/`, import.meta.url);
   if (existsSync(checkout)) {
     const target = new URL(source.path, checkout);
@@ -995,6 +1003,27 @@ test('audio markers are ordered, inside the recording, and point at real views',
   assert.ok(
     home.indexOf('class="path-cards"') < home.indexOf('class="home-frame"'),
     'the path comes before the media on the start page',
+  );
+  assert.ok(
+    home.indexOf('data-play-frame-video') < home.indexOf('class="path-cards"'),
+    'the Start panel enters the introduction before the path',
+  );
+  assert.ok(
+    home.indexOf('class="doors"') < home.indexOf('class="path-cards"') &&
+      home.includes(`class="door" href="${routeHref('running-stack')}"`) &&
+      home.includes(
+        `class="door door-fork" href="${routeHref('spi-boundary')}"`,
+      ),
+    'the Start panel carries the two doors',
+  );
+  assert.ok(
+    !home.includes('Optional'),
+    'the introduction is not labeled optional',
+  );
+  assert.match(chapters.start.intro, /Service Provider Interface/);
+  assert.ok(
+    home.includes(chapters.start.checked),
+    'the review date is on the page',
   );
   assert.ok(!home.includes('Not quite'));
   assert.ok(
