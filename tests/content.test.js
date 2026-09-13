@@ -361,11 +361,12 @@ test('readiness drawer distinguishes observed state from API proof', () => {
     assert.doesNotMatch(drawerCopy, new RegExp(phrase, 'i'));
 });
 
-test('Go deeper links preserve evidence order and single-source fallback', () => {
+test('Go deeper links put primary evidence before deduplicated depth', () => {
   const ordered = detailSourceLinks(componentDetails.azureimpl);
-  const expected = componentDetails.azureimpl.goDeeper.map(
-    (key) => sources[key].href,
-  );
+  const expected = [
+    componentDetails.azureimpl.source,
+    ...componentDetails.azureimpl.goDeeper,
+  ].map((key) => sources[key].href);
   assert.deepEqual(
     [...ordered.matchAll(/href="([^"]+)"/g)].map((match) => match[1]),
     expected,
@@ -376,7 +377,25 @@ test('Go deeper links preserve evidence order and single-source fallback', () =>
     [...fallback.matchAll(/href="([^"]+)"/g)].map((match) => match[1]),
     [sources[componentDetails.contract.source].href],
   );
+  const deduplicated = detailSourceLinks({
+    source: 'partitionProvider',
+    goDeeper: ['partitionProvider', 'ownership', 'partitionProvider'],
+  });
+  assert.deepEqual(
+    [...deduplicated.matchAll(/href="([^"]+)"/g)].map((match) => match[1]),
+    [sources.partitionProvider.href, sources.ownership.href],
+  );
+  assert.ok(
+    detailSourceLinks({ source: 'architecture', goDeeper: [] }).includes(
+      sources.architecture.href,
+    ),
+  );
+  assert.equal(detailSourceLinks(null), '');
   assert.match(ordered, /target="_blank" rel="noopener noreferrer"/);
+  assert.throws(
+    () => detailSourceLinks({ source: 'missing-source' }),
+    /Unknown source key: missing-source/,
+  );
   assert.throws(
     () =>
       detailSourceLinks({
