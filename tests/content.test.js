@@ -1256,8 +1256,26 @@ test('lesson 01 editorial copy introduces its example and complete command', () 
   const callout = mythCallout(misconception.id, 'running-stack');
 
   assert.match(
+    chapters.start.intro,
+    /CIMPL provides the open-source community implementation/,
+  );
+  assert.match(chapter.intro, /CIMPL runs its supporting middleware in Kubernetes/);
+  assert.match(chapter.intro, /Azure data services outside AKS/);
+  assert.match(
+    chapter.intro,
+    /Elasticsearch, Redis, and Airflow’s database remain inside the cluster/,
+  );
+  assert.match(
     chapter.intro,
     /opendes, the example data partition, in the dev1 environment/,
+  );
+  assert.match(
+    chapter.outcomes[1].why,
+    /^An OSDU data partition supplies the configuration and data context/,
+  );
+  assert.ok(
+    chapter.outcomes[1].why.indexOf('configuration and data context') <
+      chapter.outcomes[1].why.indexOf('Cosmos DB SQL account'),
   );
   assert.equal(
     chapter.outcomes[0].why,
@@ -1489,6 +1507,8 @@ test('lesson 03 claims keep the provider seam understandable without evidence', 
   const claims = claimStrip('spi-boundary');
   for (const fact of [
     'partition-core calls IPartitionService.getPartition',
+    'partition-core-plus checks its configured VmCache',
+    'reads PostgreSQL on a miss',
     'Redis inside AKS with middleware credentials',
     'Workload Identity for the common Table Storage read',
     'same service process',
@@ -1511,6 +1531,10 @@ test('lesson 03 states its own prerequisite and place without changing orientati
   assert.match(chapter.intro, /one service inside the osdu namespace/);
   assert.match(chapter.intro, /partition in dev1/);
   assert.match(chapter.intro, /Service Provider Interface \(SPI\)/);
+  assert.match(
+    chapter.intro,
+    /community partition-core-plus implementation.*fork-owned Azure implementation/,
+  );
   const orientation = chapterScope('spi-boundary');
   assert.match(orientation, /This lesson answers/);
   assert.match(orientation, /By the end/);
