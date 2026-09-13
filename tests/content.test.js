@@ -16,6 +16,7 @@ import {
 } from '../src/components/architecture.js';
 import { infographics } from '../src/components/infographics.js';
 import { escapeHtml } from '../src/components/node.js';
+import { resolveDetail } from '../src/components/evidence.js';
 import {
   chapterOutcomes,
   chapterScope,
@@ -152,6 +153,164 @@ test('chapters connect to renderers, explanations, and named sources', () => {
     assert.ok(chapter.page, `${id}: page chapter names no renderer`);
 });
 
+test('evidence resolver applies chapter context without inferring ownership', () => {
+  const details = {
+    sample: {
+      label: 'Fallback context',
+      title: 'Base title.',
+      body: 'First sentence. Second sentence.',
+      artifact: { label: 'Base artifact', code: 'base' },
+      source: 'architecture',
+      goDeeper: ['lifecycle'],
+      here: {
+        lesson: {
+          context: 'Lesson context',
+          owner: 'Explicit owner',
+          summary: 'Authored summary.',
+          more: 'Authored detail.',
+          artifact: { label: 'Lesson artifact', code: 'lesson' },
+          source: 'ownership',
+        },
+        concise: {
+          summary: 'Concise summary.',
+          more: '',
+        },
+      },
+    },
+  };
+  const original = structuredClone(details);
+
+  const base = resolveDetail('sample', 'elsewhere', details);
+  assert.equal(base.label, 'Fallback context');
+  assert.equal(base.context, 'Fallback context');
+  assert.equal(base.owner, null);
+  assert.equal(base.summary, 'Base title. First sentence. Second sentence.');
+  assert.equal(base.more, '');
+  assert.deepEqual(base.goDeeper, ['lifecycle']);
+
+  const lesson = resolveDetail('sample', 'lesson', details);
+  assert.equal(lesson.context, 'Lesson context');
+  assert.equal(lesson.owner, 'Explicit owner');
+  assert.equal(lesson.summary, 'Authored summary.');
+  assert.equal(lesson.more, 'Authored detail.');
+  assert.deepEqual(lesson.artifact, {
+    label: 'Lesson artifact',
+    code: 'lesson',
+  });
+  assert.equal(lesson.source, 'ownership');
+
+  const concise = resolveDetail('sample', 'concise', details);
+  assert.equal(concise.more, '');
+  assert.equal(resolveDetail('missing', 'lesson', details), null);
+  assert.deepEqual(details, original);
+});
+
+test('lesson 01 claim evidence resolves all three claims in stack context', () => {
+  const details = chapters['running-stack'].outcomes.map(({ evidence }) =>
+    resolveDetail(evidence, 'running-stack'),
+  );
+
+  assert.deepEqual(
+    details.map(({ owner }) => owner),
+    [null, null, 'The partition service fork'],
+  );
+  assert.deepEqual(
+    details.map(({ source }) => source),
+    ['architecture', 'architecture', 'partitionPom'],
+  );
+  assert.match(details[0].summary, /resource group contains AKS/);
+  assert.match(details[0].summary, /--env dev1.*whole environment/);
+  assert.match(
+    details[1].summary,
+    /opendes.*Cosmos DB SQL account.*Storage account.*Service Bus namespace/,
+  );
+  assert.match(details[1].summary, /common Storage.*Gremlin.*service identity/);
+  assert.match(
+    details[2].summary,
+    /partition-core.*provider\/partition-azure.*one executable/,
+  );
+  assert.match(details[2].summary, /POM.*Spring Boot.*Dockerfile.*entry point/);
+});
+
+test('lesson 02 claim evidence resolves all three claims without false owners', () => {
+  const details = chapters['bring-up'].outcomes.map(({ evidence }) =>
+    resolveDetail(evidence, 'bring-up'),
+  );
+
+  assert.deepEqual(
+    details.map(({ owner }) => owner),
+    [null, null, null],
+  );
+  assert.deepEqual(
+    details.map(({ source }) => source),
+    ['architecture', 'lifecycle', 'lifecycle'],
+  );
+  assert.match(details[0].summary, /Bicep.*spi-cluster-config/);
+  assert.match(details[0].summary, /Flux.*controllers.*after the CLI exits/);
+  assert.match(details[1].summary, /successful spi up does not prove/);
+  assert.match(details[1].summary, /spi status --watch/);
+  assert.match(
+    details[1].summary,
+    /authenticated lookup proves the exercised API path, not every API/,
+  );
+  assert.match(details[2].summary, /deletes the cluster and application data/);
+  assert.match(
+    details[2].summary,
+    /reuse resource names and identity client IDs/,
+  );
+  assert.match(details[2].summary, /not the deleted application data/);
+});
+
+test('lesson 03 claim evidence resolves all three claims and cache-hop proof', () => {
+  const details = chapters['spi-boundary'].outcomes.map(({ evidence }) =>
+    resolveDetail(evidence, 'spi-boundary'),
+  );
+
+  assert.deepEqual(
+    details.map(({ owner }) => owner),
+    ['The partition service fork', 'The partition service fork', null],
+  );
+  assert.deepEqual(
+    details.map(({ source }) => source),
+    ['partitionProvider', 'partitionPom', 'ownership'],
+  );
+  assert.match(details[0].summary, /Redis inside AKS.*middleware credentials/);
+  assert.match(details[0].summary, /cache miss or caught read exception/);
+  assert.match(details[0].summary, /logged as a warning.*common Table Storage/);
+  assert.match(details[0].summary, /reachable and contains opendes/);
+  assert.match(details[0].summary, /Workload Identity/);
+  assert.match(
+    details[0].summary,
+    /does not visit.*Cosmos DB.*blob Storage.*Service Bus/,
+  );
+  assert.match(details[1].summary, /depends on partition-core/);
+  assert.match(details[1].summary, /Spring Boot repackage.*\/app\.jar/);
+  assert.match(details[1].summary, /one process, not across a network/);
+  assert.match(
+    details[2].summary,
+    /regenerates shared source separately from fork-owned Azure source/,
+  );
+  assert.match(details[2].summary, /removing.*upstream does not delete/);
+
+  for (const id of ['redis', 'azureclients']) {
+    const detail = resolveDetail(id, 'spi-boundary');
+    assert.equal(detail.source, 'partitionProvider');
+    assert.match(detail.summary, /miss or caught read exception/);
+    assert.match(detail.summary, /reachable and contains opendes/);
+  }
+  assert.equal(
+    details[2].title,
+    componentDetails.upstream.title,
+    'the upstream title remains shared with later lessons',
+  );
+  assert.deepEqual(details[2].artifact, componentDetails.upstream.artifact);
+  assert.equal(resolveDetail('image', 'fork-shape').source, 'ghcr');
+  assert.equal(
+    resolveDetail('upstream', 'fork-shape').source,
+    'synchronization',
+  );
+});
+
 test('every explanation names an artifact and a source', () => {
   for (const [id, detail] of Object.entries(componentDetails)) {
     for (const field of ['label', 'title', 'body'])
@@ -161,6 +320,19 @@ test('every explanation names an artifact and a source', () => {
     assert.ok(sources[detail.source], `${id}: source`);
     for (const source of detail.goDeeper || [])
       assert.ok(sources[source], `${id}: Go deeper source ${source}`);
+    for (const [chapterKey, override] of Object.entries(detail.here || {})) {
+      assert.ok(chapters[chapterKey], `${id}: unknown chapter ${chapterKey}`);
+      assert.ok(override.summary?.trim(), `${id}/${chapterKey}: summary`);
+      if (override.owner !== undefined)
+        assert.ok(override.owner.trim(), `${id}/${chapterKey}: owner`);
+      if (override.source)
+        assert.ok(sources[override.source], `${id}/${chapterKey}: source`);
+      for (const source of override.goDeeper || [])
+        assert.ok(
+          sources[source],
+          `${id}/${chapterKey}: Go deeper source ${source}`,
+        );
+    }
   }
   assert.equal(
     componentDetails.upstream.title,
@@ -195,11 +367,12 @@ test('readiness drawer distinguishes observed state from API proof', () => {
     assert.doesNotMatch(drawerCopy, new RegExp(phrase, 'i'));
 });
 
-test('Go deeper links preserve evidence order and single-source fallback', () => {
+test('Go deeper links put primary evidence before deduplicated depth', () => {
   const ordered = detailSourceLinks(componentDetails.azureimpl);
-  const expected = componentDetails.azureimpl.goDeeper.map(
-    (key) => sources[key].href,
-  );
+  const expected = [
+    componentDetails.azureimpl.source,
+    ...componentDetails.azureimpl.goDeeper,
+  ].map((key) => sources[key].href);
   assert.deepEqual(
     [...ordered.matchAll(/href="([^"]+)"/g)].map((match) => match[1]),
     expected,
@@ -210,7 +383,25 @@ test('Go deeper links preserve evidence order and single-source fallback', () =>
     [...fallback.matchAll(/href="([^"]+)"/g)].map((match) => match[1]),
     [sources[componentDetails.contract.source].href],
   );
+  const deduplicated = detailSourceLinks({
+    source: 'partitionProvider',
+    goDeeper: ['partitionProvider', 'ownership', 'partitionProvider'],
+  });
+  assert.deepEqual(
+    [...deduplicated.matchAll(/href="([^"]+)"/g)].map((match) => match[1]),
+    [sources.partitionProvider.href, sources.ownership.href],
+  );
+  assert.ok(
+    detailSourceLinks({ source: 'architecture', goDeeper: [] }).includes(
+      sources.architecture.href,
+    ),
+  );
+  assert.equal(detailSourceLinks(null), '');
   assert.match(ordered, /target="_blank" rel="noopener noreferrer"/);
+  assert.throws(
+    () => detailSourceLinks({ source: 'missing-source' }),
+    /Unknown source key: missing-source/,
+  );
   assert.throws(
     () =>
       detailSourceLinks({

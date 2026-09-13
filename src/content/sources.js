@@ -47,6 +47,24 @@ export const sources = {
     path: 'README.md',
     href: 'https://github.com/Azure/osdu-spi-partition',
   },
+  partitionPom: {
+    label: 'Partition Azure provider POM',
+    repo: 'osdu-spi-partition',
+    path: 'provider/partition-azure/pom.xml',
+    href: 'https://github.com/Azure/osdu-spi-partition/blob/main/provider/partition-azure/pom.xml',
+  },
+  partitionDockerfile: {
+    label: 'Partition service Dockerfile',
+    repo: 'osdu-spi-partition',
+    path: 'build/Dockerfile',
+    href: 'https://github.com/Azure/osdu-spi-partition/blob/main/build/Dockerfile',
+  },
+  partitionEntrypoint: {
+    label: 'Partition service entry point',
+    repo: 'osdu-spi-partition',
+    path: 'build/docker-entrypoint.sh',
+    href: 'https://github.com/Azure/osdu-spi-partition/blob/main/build/docker-entrypoint.sh',
+  },
   partitionProvider: {
     label: 'PartitionServiceImpl, the Azure provider',
     repo: 'osdu-spi-partition',

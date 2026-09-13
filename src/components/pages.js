@@ -36,7 +36,9 @@ function sourceLinks(keys) {
 }
 
 export function detailSourceLinks(detail) {
-  const keys = detail?.goDeeper || (detail?.source ? [detail.source] : []);
+  const keys = [
+    ...new Set([detail?.source, ...(detail?.goDeeper || [])].filter(Boolean)),
+  ];
   return keys.map(sourceAnchor).join('');
 }
 

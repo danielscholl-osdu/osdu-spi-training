@@ -965,6 +965,9 @@ details[open] summary span {
 .detail-kicker:first-child {
   margin-top: 0;
 }
+.detail-owner > .detail-kicker {
+  margin-top: 16px;
+}
 .inspector h3 {
   padding-right: 35px;
   font-size: 20px;

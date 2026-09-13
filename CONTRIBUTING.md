@@ -19,6 +19,7 @@ Install the pinned tools with `npm ci`, then start `npm run dev`. Work in `src/`
 | Azure / AKS map and creation-step interaction                   | `src/components/architecture.js`   |
 | SPI and engineering-system diagrams                             | `src/components/diagrams.js`       |
 | Shared clickable component markup                               | `src/components/node.js`           |
+| Chapter-aware evidence resolution                               | `src/components/evidence.js`       |
 | Page frame                                                      | `src/index.html`                   |
 | Chapter navigation and detail-panel behavior                    | `src/main.js`                      |
 | Typography, colors, spacing, and responsive layout              | `src/styles/`                      |
@@ -27,7 +28,11 @@ Chapter order follows the entries in `chapters.js`, grouped by `group` (`start`,
 
 Structured lessons add zero-based selection qualifiers when intent would otherwise be ambiguous: claim evidence uses `?detail=azureimpl&claim=0`, while a trace uses `?detail=azureimpl&hop=3`. Unqualified legacy URLs remain valid; when a component matches both, claim evidence wins, otherwise a matching hop restores the trace.
 
-Each component detail contains `label`, `title`, `body`, `artifact: { label, code }`, and a `source` key from `src/content/sources.js`. A diagram button's `data-detail` must match a key in that content. Audio markers, field checks, and poster links use site routes; the integrity checks parse each route and confirm that a `detail` names a component on that map and a `guide` names a field guide. They also catch missing explanations, duplicate component IDs within a scene, broken chapter-to-renderer connections, missing poster and audio files, and missing source files when sibling checkouts are present.
+Each component detail contains `label`, `title`, `body`, `artifact: { label, code }`, and a `source` key from `src/content/sources.js`. `resolveDetail` overlays an optional `here[chapterKey]` record without changing the base detail. `label` remains metadata and is the fallback for drawer context; it never implies ownership. Add `owner` only when the source or runtime owner is explicit. The complete owner row stays hidden when `owner` is absent.
+
+Use `summary` for an authored initial explanation and `more` only for deliberately optional detail. Without `summary`, the drawer shows the complete `title` and `body`; it does not split prose at punctuation or create an automatic disclosure. Source links always put the primary `source` first, then unique `goDeeper` keys in authored order.
+
+A diagram button's `data-detail` must match a key in that content. Audio markers, field checks, and poster links use site routes; the integrity checks parse each route and confirm that a `detail` names a component on that map and a `guide` names a field guide. They also catch missing explanations, duplicate component IDs within a scene, broken chapter-to-renderer connections, missing poster and audio files, and missing source files when sibling checkouts are present.
 
 The transcript modules are generated: to regenerate one, transcribe the audio to VTT (mlx-whisper, large-v3-turbo), replace the file in `docs/reference/`, and rebuild `src/content/transcripts/<episode>.js` with the same paragraph grouping. Marker times in `audio.js` are read from the transcript. A chapter's `listen` cues must start on a marker of the episode they name; the integrity checks enforce this. Content is trusted, repository-authored material; selected fields intentionally contain HTML. Do not feed external user input into those templates.
 

@@ -8,6 +8,13 @@ export const componentDetails = {
       code: '--env dev1 → resource group spi-stack-dev1',
     },
     source: 'architecture',
+    here: {
+      'running-stack': {
+        context: 'The dev1 environment boundary',
+        summary:
+          'The spi-stack-dev1 resource group contains AKS and the Azure data resources beside it. --env dev1 selects that whole environment; AKS is one part of the stack, not the stack itself.',
+      },
+    },
   },
   workstation: {
     label: 'Outside the stack',
@@ -68,6 +75,16 @@ export const componentDetails = {
       code: 'kubectl get kustomizations -n osdu-flux',
     },
     source: 'flux',
+    here: {
+      'bring-up': {
+        context: 'How dev1 converges',
+        summary:
+          'spi up --env dev1 creates Azure infrastructure with Bicep and supplies bootstrap inputs such as spi-cluster-config. Flux applies Kustomizations and HelmReleases, while Kubernetes controllers keep maintaining the workloads after the CLI exits.',
+        more: 'The Git source is suspended after deployment by default. Controllers still reconcile the cached configuration and live inputs, including osdu-image-lock; follow a blocked Kustomization’s dependsOn chain to the first unhealthy dependency.',
+        source: 'architecture',
+        goDeeper: ['lifecycle', 'flux'],
+      },
+    },
   },
   operators: {
     label: 'foundation',
@@ -98,6 +115,24 @@ export const componentDetails = {
       code: 'kubectl get deployments -n osdu',
     },
     source: 'architecture',
+    here: {
+      'running-stack': {
+        context: 'Inside the partition workload',
+        owner: 'The partition service fork',
+        summary:
+          'The partition workload in the osdu namespace packages shared partition-core with provider/partition-azure in one executable. The provider POM declares the partition-core dependency; Spring Boot repackages the application, and the Dockerfile and entry point run that JAR.',
+        artifact: {
+          label: 'Provider module dependency',
+          code: 'provider/partition-azure/pom.xml\n<artifactId>partition-core</artifactId>',
+        },
+        source: 'partitionPom',
+        goDeeper: [
+          'partitionDockerfile',
+          'partitionEntrypoint',
+          'architecture',
+        ],
+      },
+    },
   },
   provider: {
     label: 'Inside an OSDU service',
@@ -168,6 +203,12 @@ export const componentDetails = {
       code: 'opendes: SQL + Storage + Service Bus\nenvironment: Gremlin + common Storage',
     },
     source: 'architecture',
+    here: {
+      'running-stack': {
+        summary:
+          'opendes has its own Cosmos DB SQL account, Storage account, and Service Bus namespace. dev1 shares common Storage, Gremlin, the service identity, and Key Vault; partition-specific resources do not create a separate service identity.',
+      },
+    },
   },
   identity: {
     label: 'Azure managed identity',
@@ -218,6 +259,13 @@ export const componentDetails = {
       code: 'spi status --watch\nspi info --show-apis',
     },
     source: 'lifecycle',
+    here: {
+      'bring-up': {
+        context: 'Proof after spi up',
+        summary:
+          'For the opendes lookup in dev1, a successful spi up does not prove that the request path is ready. The CLI verifies the requested Git artifact revision while Flux overlaps its final work. spi status --watch observes configured workload health and initialization, and spi info --show-apis discovers the endpoint; only a successful authenticated lookup proves the exercised API path, not every API. A Running pod is not necessarily Ready, and an initialization Job should be Complete.',
+      },
+    },
   },
   connect: {
     label: 'Join an existing stack',
@@ -248,6 +296,12 @@ export const componentDetails = {
       code: 'az resource list --resource-group spi-stack-dev1 --output table',
     },
     source: 'lifecycle',
+    here: {
+      'bring-up': {
+        summary:
+          'Ordinary spi down deletes the cluster and application data while retaining managed identities, the resource group, and its naming tags. A rebuild can reuse resource names and identity client IDs, not the deleted application data; seed Secrets are lost and middleware passwords are regenerated.',
+      },
+    },
   },
   contract: {
     label: 'Service Provider Interface',
@@ -278,7 +332,15 @@ export const componentDetails = {
       code: 'PartitionServiceImpl.getPartition(id)\n  safeGet(cache, id)  → null on miss or exception (logged)\n  tableStore.getPartition(id)  when null\nPartitionServiceImplTest.java\n  should_fallBackToTableStore_when_cacheReadThrows_onGetPartition',
     },
     source: 'partitionProvider',
-    goDeeper: ['partitionCacheFix', 'ownership', 'partitionProvider'],
+    goDeeper: ['partitionCacheFix', 'ownership'],
+    here: {
+      'spi-boundary': {
+        context: 'The provider call',
+        owner: 'The partition service fork',
+        summary:
+          'The in-process interface call reaches PartitionServiceImpl, which asks Redis inside AKS using middleware credentials. A cache miss or caught read exception is logged as a warning before the provider reads common Table Storage outside AKS with Workload Identity; fallback succeeds only when that table is reachable and contains opendes. This lookup does not visit the partition’s Cosmos DB, blob Storage, or Service Bus.',
+      },
+    },
   },
   redis: {
     label: 'Inside AKS · outside the service image',
@@ -290,6 +352,8 @@ export const componentDetails = {
     },
     source: 'partitionProvider',
     goDeeper: ['partitionCacheFix', 'architecture', 'secrets'],
+    summary:
+      'Redis runs in the platform namespace inside AKS and is the first read for opendes. A miss or caught read exception is logged as a warning and returns control to PartitionServiceImpl, which can read common Table Storage when it is reachable and contains opendes. The service uses the middleware password from platform/redis-credentials for Redis.',
   },
   azureclients: {
     label: 'Outside AKS · common Storage',
@@ -299,8 +363,10 @@ export const componentDetails = {
       label: 'Durable read and non-fatal cache write-back',
       code: 'tableStore.getPartition(id)\ncache.put(id, partitionInfo)  // failure logged; answer kept',
     },
-    source: 'identity',
-    goDeeper: ['architecture', 'partitionProvider', 'partitionCacheFix'],
+    source: 'partitionProvider',
+    goDeeper: ['partitionCacheFix', 'identity', 'secrets', 'architecture'],
+    summary:
+      'After a Redis miss or caught read exception, PartitionServiceImpl uses Workload Identity to read opendes from common Table Storage outside AKS. Fallback succeeds only when that table is reachable and contains opendes; this lookup does not visit the partition’s Cosmos DB, blob Storage, or Service Bus. A failed Redis write-back is logged without replacing the durable answer.',
   },
   upstream: {
     label: 'Upstream tip',
@@ -312,6 +378,14 @@ export const componentDetails = {
       code: 'https://community.opengroup.org/osdu/platform/system/partition\nUPSTREAM_REPO_URL  (repository variable, set at initialization)',
     },
     source: 'synchronization',
+    here: {
+      'spi-boundary': {
+        summary:
+          'The engineering system regenerates shared source separately from fork-owned Azure source. provider/partition-azure remains outside that generated tree on the fork, so removing an Azure implementation upstream does not delete the fork’s provider.',
+        source: 'ownership',
+        goDeeper: ['synchronization'],
+      },
+    },
   },
   engineering: {
     label: 'osdu-spi, the template',
@@ -333,6 +407,20 @@ export const componentDetails = {
       code: 'ghcr.io/azure/osdu-spi-partition:sha-<commit>\nghcr.io/azure/osdu-spi-partition@sha256:<digest>\nSERVICE_NAME   (repository variable; unset on partition)',
     },
     source: 'ghcr',
+    here: {
+      'spi-boundary': {
+        context: 'One executable process',
+        owner: 'The partition service fork',
+        summary:
+          'provider/partition-azure/pom.xml depends on partition-core and uses Spring Boot repackage to produce the executable application. build/Dockerfile copies that JAR to /app.jar, and build/docker-entrypoint.sh starts it with java -jar /app.jar. The Java interface and its Azure implementation therefore run in one process, not across a network.',
+        artifact: {
+          label: 'Build and runtime chain',
+          code: 'partition-azure → partition-core\nspring-boot:repackage → /app.jar\ndocker-entrypoint.sh → java -jar /app.jar',
+        },
+        source: 'partitionPom',
+        goDeeper: ['partitionDockerfile', 'partitionEntrypoint'],
+      },
+    },
   },
   running: {
     label: 'The partition pod',
