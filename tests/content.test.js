@@ -450,3 +450,38 @@ test('the fork moments and the retired engineering route keep resolving', () => 
   for (const key of ['fork-shape', 'fork-day', 'handshake'])
     assert.ok(home.includes(`href="#${key}`), `home links ${key}`);
 });
+
+test('structured claims resolve their focus, evidence, and scopes on every scene', () => {
+  for (const [key, chapter] of mapChapters) {
+    const claims = (chapter.outcomes || []).filter(
+      (claim) => typeof claim !== 'string',
+    );
+    if (!claims.length) continue;
+    assert.ok(chapter.goal, `${key}: goal`);
+    for (const step of chapterSteps(key).length ? chapterSteps(key) : [null]) {
+      const markup = diagramRenderers[chapter.diagram]({ chapter: key, step });
+      const details = new Set(
+        [...markup.matchAll(/data-detail="([^"]+)"/g)].map((match) => match[1]),
+      );
+      const scopes = new Set(
+        [...markup.matchAll(/data-scope="([^"]+)"/g)].map((match) => match[1]),
+      );
+      claims.forEach((claim, index) => {
+        assert.ok(
+          Array.isArray(claim.focus) && Array.isArray(claim.scopes),
+          `${key}: claim ${index} focus and scopes are arrays`,
+        );
+        assert.equal(
+          typeof claim.crossing,
+          'string',
+          `${key}: claim ${index} crossing label`,
+        );
+        assert.ok(claim.text && claim.why, `${key}: claim copy`);
+        for (const id of [...claim.focus, claim.evidence])
+          assert.ok(details.has(id), `${key}/${step}: claim detail ${id}`);
+        for (const id of claim.scopes)
+          assert.ok(scopes.has(id), `${key}/${step}: claim scope ${id}`);
+      });
+    }
+  }
+});

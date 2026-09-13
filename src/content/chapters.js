@@ -57,6 +57,8 @@ export const chapters = {
       title: 'Follow a partition lookup',
       code: 'GET /api/partition/v1/partitions/opendes',
       step: 'request',
+      scopes: ['aks', 'service-boundary'],
+      crossing: 'Authenticated OSDU request',
       hops: [
         {
           detail: 'client',
@@ -82,10 +84,39 @@ export const chapters = {
       ],
       note: 'The answer describes where opendes lives. Other services use it to find their Cosmos, Storage, and Service Bus.',
     },
+    goal: 'You can point at the map and say which half is the cluster, which half is not, and where opendes lives in both.',
     outcomes: [
-      'A stack is a resource group: AKS plus the Azure data services around it, not the cluster alone.',
-      'My partition’s records, blobs, and events each have their own Azure resource; entitlements, identities, and Key Vault are shared by the environment.',
-      'The OSDU services run in the osdu namespace, and each one carries its Azure provider inside its own image.',
+      {
+        text: 'A stack is a resource group: AKS plus the Azure data services around it, not the cluster alone.',
+        why: 'Both halves are created by one spi up and named by one --env.',
+        focus: ['flux', 'gateway', 'cosmos', 'shared-data'],
+        scopes: ['environment', 'aks', 'resources'],
+        evidence: 'environment',
+        crossing: 'CLI provisions Azure and prepares AKS',
+      },
+      {
+        text: 'My partition’s records, blobs, and events each have their own Azure resource; entitlements, identities, and Key Vault are shared by the environment.',
+        why: 'opendes owns three resources. Everything else in the stack is shared with the next partition.',
+        focus: [
+          'cosmos',
+          'partition-storage',
+          'events',
+          'shared-data',
+          'identity',
+          'vault',
+        ],
+        scopes: ['resources'],
+        evidence: 'shared-data',
+        crossing: 'Per partition, or shared',
+      },
+      {
+        text: 'The OSDU services run in the osdu namespace, and each one carries its Azure provider inside its own image.',
+        why: 'There is no separate Azure adapter to find. The provider is in the pod.',
+        focus: ['gateway', 'service', 'provider'],
+        scopes: ['aks', 'service-boundary'],
+        evidence: 'service',
+        crossing: 'Authenticated OSDU request',
+      },
     ],
   },
   'bring-up': {
