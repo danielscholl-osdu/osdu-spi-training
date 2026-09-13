@@ -44,7 +44,7 @@ export const forkMoments = [
     name: 'Build and prove',
     owner: 'Validation · on PRs and on pushes',
     title: 'Every eligible commit gets a digest, and a turn in the stack.',
-    copy: 'Validation builds the image and pushes it as sha-<commit>. Deploy Gate then decides whether this run may borrow the stack: same-repository PRs and pushes to main qualify, before any release exists. That borrowed turn is view 06.',
+    copy: 'Validation builds the image and pushes it as sha-&lt;commit&gt;. Deploy Gate then decides whether this run may borrow the stack: same-repository PRs and pushes to main qualify, before any release exists. That borrowed turn is view 06.',
     action: 'Push the candidate digest, then borrow a slot in the stack',
     detail: 'candidate',
     time: 'On the PR, again on the merge',

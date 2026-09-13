@@ -245,7 +245,7 @@ const momentFlows = {
   },
   prove: {
     'main-branch': 'the merge commit · Validation runs again',
-    image: 'sha-<commit> pushed → one digest, the candidate',
+    image: 'sha-&lt;commit&gt; pushed → one digest, the candidate',
     stack: 'Deploy Gate → pin · verify · prove · restore',
   },
   release: {
