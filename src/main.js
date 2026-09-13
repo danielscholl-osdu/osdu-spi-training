@@ -24,7 +24,9 @@ import {
   resolveLessonSelection,
   selectExampleVariant,
   tryItBand,
+  frameVideoPlayer,
 } from './components/pages.js';
+import { frameVideo } from './content/audio.js';
 import { createPlayer } from './components/player.js';
 import { parseRoute, routeHref } from './router.js';
 
@@ -33,6 +35,7 @@ const learnOrder = order.filter((key) => chapters[key].group === 'learn');
 let previousRoute = null;
 let lastSelectedElement = null;
 const inspector = document.getElementById('inspector');
+const resources = document.getElementById('masthead-resources');
 const player = createPlayer(
   document.getElementById('deep-dive'),
   document.getElementById('audio-dock'),
@@ -407,6 +410,12 @@ function renderChapterFrame(route, scene) {
   document.getElementById('chapter-kicker').textContent = structured
     ? `Lesson ${positionLabel(key)}`
     : kicker;
+  document.getElementById('chapter-kicker').hidden = scene.page === 'home';
+  resources.open = false;
+  resources.querySelectorAll('a').forEach((link) => {
+    if (link.hash === `#${key}`) link.setAttribute('aria-current', 'page');
+    else link.removeAttribute('aria-current');
+  });
   document.getElementById('rail-current').textContent = kicker;
   setRailOpen(false);
   document.getElementById('premise').textContent = scene.premise || '';
@@ -769,14 +778,63 @@ document
   .getElementById('detail-toggle')
   .addEventListener('click', () => closeInspector());
 
-const lightbox = document.getElementById('lightbox');
+// Watch opens the video over the page. Closing pauses it and returns focus to
+// Watch at the same scroll position, unless the reader navigated meanwhile.
+const videoDialog = document.getElementById('video-dialog');
+let videoReturn = null;
 document.addEventListener('click', (event) => {
-  if (!event.target.closest('[data-play-frame-video]')) return;
-  const video = document.querySelector('[data-frame-video]');
-  if (!video) return;
-  video.scrollIntoView({ block: 'center' });
-  video.play();
+  const opener = event.target.closest('[data-video-open]');
+  if (!opener) return;
+  videoReturn = { opener, hash: location.hash, top: window.scrollY };
+  const body = document.getElementById('video-dialog-body');
+  if (!body.firstElementChild) {
+    document.getElementById('video-dialog-title').textContent =
+      frameVideo.title;
+    body.innerHTML = frameVideoPlayer();
+  }
+  videoDialog.showModal();
+  videoDialog
+    .querySelector('video')
+    .play()
+    .catch(() => {});
 });
+// Synchronous: the dialog's queued close event can lag in a background tab.
+function closeVideo() {
+  if (!videoDialog.open) return;
+  videoDialog.querySelector('video').pause();
+  videoDialog.close();
+  const target = videoReturn;
+  videoReturn = null;
+  if (!target || location.hash !== target.hash) return;
+  target.opener.focus({ preventScroll: true });
+  if (window.scrollY !== target.top)
+    window.scrollTo({ top: target.top, behavior: 'instant' });
+}
+videoDialog.addEventListener('keydown', (event) => {
+  if (event.key !== 'Tab') return;
+  const stops = [...videoDialog.querySelectorAll('button, video, summary')];
+  const edge = event.shiftKey ? stops[0] : stops.at(-1);
+  if (
+    document.activeElement !== edge &&
+    videoDialog.contains(document.activeElement)
+  )
+    return;
+  event.preventDefault();
+  (event.shiftKey ? stops.at(-1) : stops[0]).focus();
+});
+videoDialog.addEventListener('cancel', (event) => {
+  event.preventDefault();
+  closeVideo();
+});
+document
+  .getElementById('video-dialog-close')
+  .addEventListener('click', closeVideo);
+videoDialog.addEventListener('click', (event) => {
+  if (event.target === videoDialog) closeVideo();
+});
+window.addEventListener('hashchange', closeVideo);
+
+const lightbox = document.getElementById('lightbox');
 
 document.addEventListener('click', (event) => {
   const opener = event.target.closest('[data-lightbox]');
@@ -796,9 +854,19 @@ lightbox.addEventListener('click', (event) => {
 });
 
 document.addEventListener('keydown', (event) => {
-  if (event.key === 'Escape' && inspector.classList.contains('is-expanded')) {
+  if (event.key !== 'Escape') return;
+  if (resources.open) {
+    resources.open = false;
+    resources.querySelector('summary').focus();
+    return;
+  }
+  if (inspector.classList.contains('is-expanded')) {
     closeInspector();
   }
+});
+document.addEventListener('click', (event) => {
+  if (resources.open && !resources.contains(event.target))
+    resources.open = false;
 });
 function setRailOpen(open) {
   document.querySelector('.rail').dataset.open = String(open);

@@ -31,11 +31,35 @@ export const chapters = {
     group: 'start',
     title: 'Start here',
     subtitle: 'What this site is for',
-    headline: 'Understand the Azure stack<span>behind your OSDU APIs.</span>',
+    headline:
+      'Understand the Azure OSDU stack<span>and the engineering system behind it.</span>',
     intro:
-      'You know the OSDU APIs and data partitions. SPI is the Service Provider Interface, the seam inside each OSDU service between shared code and a cloud implementation; Microsoft maintains the Azure one. CIMPL provides the open-source community implementation, the reference this site keeps beside the Azure provider code, the Azure resources it calls, and the forks and test environment that maintain it.',
-    premise: 'For engineers who know OSDU and are new to SPI.',
+      'SPI stands for Service Provider Interface. It connects shared OSDU code to a cloud implementation. Learn how the Azure stack is assembled and how service forks sync upstream changes, build images, and test them against Azure resources.',
+    reference:
+      'CIMPL is the open-source community implementation used for comparison.',
     checked: 'September 2026',
+    index: [
+      {
+        label: 'The stack',
+        lessons: {
+          'running-stack': 'What runs in the stack?',
+          'bring-up': 'How is the stack created and made usable?',
+        },
+      },
+      {
+        label: 'Provider code and engineering',
+        lessons: {
+          'spi-boundary':
+            'Where does shared code hand off to the Azure provider?',
+          'fork-shape':
+            'Which paths does a service fork own, and which come from upstream?',
+          'fork-day': 'How does an upstream update become a candidate image?',
+          handshake: 'How is a candidate image tested in a running stack?',
+          'not-true':
+            'Which common assumptions does the documentation contradict?',
+        },
+      },
+    ],
     listen: [
       {
         episode: 'brief',

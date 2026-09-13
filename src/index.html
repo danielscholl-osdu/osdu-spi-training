@@ -31,11 +31,21 @@
         ><span>OSDU Azure SPI <strong>FIELDNOTES</strong></span></a
       >
       <nav class="masthead-nav" aria-label="Site">
-        <a href="#running-stack">Explore</a>
-        <a href="#listen" class="masthead-listen"
-          ><span aria-hidden="true">▶</span> Listen</a
-        >
-        <a href="#field-guides">Field guides</a>
+        <details class="masthead-resources" id="masthead-resources">
+          <summary>Resources <span aria-hidden="true">▾</span></summary>
+          <ul>
+            <li>
+              <a href="#listen"
+                ><b>Listen</b><small>Recording library</small></a
+              >
+            </li>
+            <li>
+              <a href="#field-guides"
+                ><b>Field guides</b><small>Posters and course maps</small></a
+              >
+            </li>
+          </ul>
+        </details>
       </nav>
     </header>
     <div class="shell">
@@ -215,6 +225,23 @@
         ×
       </button>
     </div>
+    <dialog
+      id="video-dialog"
+      class="video-dialog"
+      aria-labelledby="video-dialog-title"
+    >
+      <div class="video-dialog-bar">
+        <span id="video-dialog-title"></span>
+        <button
+          type="button"
+          id="video-dialog-close"
+          aria-label="Close the video"
+        >
+          ×
+        </button>
+      </div>
+      <div id="video-dialog-body" class="video-dialog-body"></div>
+    </dialog>
     <dialog id="lightbox" class="lightbox" aria-label="Poster at full size">
       <div class="lightbox-bar">
         <span id="lightbox-title"></span>

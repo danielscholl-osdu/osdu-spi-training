@@ -1,5 +1,5 @@
 import assert from 'node:assert/strict';
-import { existsSync } from 'node:fs';
+import { existsSync, readFileSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
 import test from 'node:test';
 import { chapters, chapterGroups } from '../src/content/chapters.js';
@@ -20,11 +20,14 @@ import { resolveDetail } from '../src/components/evidence.js';
 import {
   chapterOutcomes,
   chapterScope,
+  chapterNavigation,
   claimIndexForRoute,
   claimContext,
+  courseMaps,
   claimStrip,
   detailSourceLinks,
   exampleStrip,
+  frameVideoPlayer,
   guideFigure,
   hasClaims,
   hopIndexForRoute,
@@ -223,7 +226,8 @@ function verifyRoute(href, context) {
   }
   if (route.guide)
     assert.ok(
-      nativeGuides.some((guide) => guide.id === route.guide) ||
+      courseMaps.some((map) => map.id === route.guide) ||
+        nativeGuides.some((guide) => guide.id === route.guide) ||
         suppliedPosters.some((poster) => poster.id === route.guide),
       `${context}: ${href} names an unknown field guide`,
     );
@@ -1042,7 +1046,21 @@ test('audio markers are ordered, inside the recording, and point at real views',
       home.includes('data-listen-stop="112"'),
     'home carries the two-minute brief as its cue',
   );
-  assert.ok(home.includes('data-frame-video'), 'home carries the video');
+  assert.ok(
+    home.includes('data-video-open') && home.includes('aria-haspopup="dialog"'),
+    'home opens the video in a dialog',
+  );
+  assert.ok(
+    !home.includes('<video') && !home.includes('data-play-frame-video'),
+    'the video is not embedded in the page',
+  );
+  const player = frameVideoPlayer();
+  assert.ok(
+    player.includes('data-frame-video') &&
+      player.includes(`src="${frameVideo.captions}"`) &&
+      frameVideo.notes.every((note) => player.includes(escapeHtml(note))),
+    'the video dialog carries captions and the source-check notes',
+  );
   for (const file of [
     frameVideo.file,
     frameVideo.poster,
@@ -1054,20 +1072,92 @@ test('audio markers are ordered, inside the recording, and point at real views',
   assert.ok(frameVideo.duration > 0 && frameVideo.notes.length);
   assert.ok(home.includes('data-listen-now'), 'home cue has a live note line');
   assert.ok(
-    home.indexOf('class="path-cards"') < home.indexOf('class="home-frame"'),
-    'the path comes before the media on the start page',
+    !home.includes('href="#listen"') && !home.includes('All episodes'),
+    'the introduction lists no episodes',
+  );
+  const learnKeys = Object.keys(chapters).filter(
+    (key) => chapters[key].group === 'learn',
+  );
+  assert.deepEqual(
+    chapters.start.index.map((group) => group.label),
+    ['The stack', 'Provider code and engineering'],
+  );
+  assert.deepEqual(
+    chapters.start.index.flatMap((group) => Object.keys(group.lessons)),
+    learnKeys,
+    'the lesson index lists every lesson once, in order',
+  );
+  assert.deepEqual(Object.keys(chapters.start.index[0].lessons), [
+    'running-stack',
+    'bring-up',
+  ]);
+  for (const group of chapters.start.index)
+    assert.ok(home.includes(`>${group.label}</h3>`), group.label);
+  for (const key of learnKeys)
+    assert.equal(
+      home.split(`href="${routeHref(key)}"`).length - 1,
+      1,
+      `home links ${key} once`,
+    );
+  assert.match(
+    home,
+    new RegExp(
+      `<li class="is-first"><a href="${routeHref(learnKeys[0])}"><span class="lesson-number">01</span>`,
+    ),
+    '01 carries the starting emphasis',
   );
   assert.ok(
-    home.indexOf('data-play-frame-video') < home.indexOf('class="path-cards"'),
-    'the Start panel enters the introduction before the path',
+    home.indexOf('data-video-open') < home.indexOf('class="lesson-index"'),
+    'the introduction comes before the lesson index',
   );
+  for (const retired of [
+    'class="doors"',
+    'home-frame',
+    'path-cards',
+    'round-trip',
+    'zoom-ladder',
+    routeHref('running-stack', 'request'),
+    'guide-kicker',
+  ])
+    assert.ok(!home.includes(retired), `home no longer carries ${retired}`);
   assert.ok(
-    home.indexOf('class="doors"') < home.indexOf('class="path-cards"') &&
-      home.includes(`class="door" href="${routeHref('running-stack')}"`) &&
-      home.includes(
-        `class="door door-fork" href="${routeHref('spi-boundary')}"`,
-      ),
-    'the Start panel carries the two doors',
+    !spiNamesFigure().includes('<a '),
+    'the SPI meanings carry no lesson link each',
+  );
+  assert.equal(
+    home.split('class="source-cards"').length - 1,
+    1,
+    'one source area',
+  );
+  const html = readFileSync(
+    new URL('../src/index.html', import.meta.url),
+    'utf8',
+  );
+  const masthead = html.slice(
+    html.indexOf('<header class="masthead">'),
+    html.indexOf('</header>'),
+  );
+  assert.ok(!masthead.includes('Explore'), 'the masthead has no Explore link');
+  assert.ok(
+    masthead.includes('class="masthead-resources"') &&
+      masthead.includes('href="#listen"') &&
+      masthead.includes('href="#field-guides"'),
+    'Listen and Field guides sit under Resources',
+  );
+  assert.match(html, /<dialog\s+id="video-dialog"/);
+  const nav = chapterNavigation('running-stack');
+  assert.ok(
+    !nav.includes('href="#listen"') && !nav.includes('href="#field-guides"'),
+    'the rail carries chapters, not resources',
+  );
+  const base = readFileSync(
+    new URL('../src/styles/base.css', import.meta.url),
+    'utf8',
+  );
+  assert.match(
+    base,
+    /body\[data-page='home'\] \.rail \{\s*display: none;/,
+    'the start page has no rail',
   );
   assert.ok(
     !home.includes('Optional'),
@@ -1087,11 +1177,33 @@ test('audio markers are ordered, inside the recording, and point at real views',
     guides.indexOf('class="guide-set"') < guides.indexOf('class="poster-set"'),
     'built guides come before the supplied posters',
   );
-  for (const entry of [...nativeGuides, ...suppliedPosters])
+  for (const entry of [...courseMaps, ...nativeGuides, ...suppliedPosters])
     assert.ok(
       guides.includes(`?guide=${entry.id}"`),
       `guide index links ${entry.id}`,
     );
+  for (const key of Object.keys(chapters))
+    for (const [, href] of chapterScope(key).matchAll(/href="([^"]+)"/g))
+      verifyRoute(href, `${key} scope`);
+  for (const id of ['round-trip', 'ladder']) {
+    assert.ok(guides.includes(`id="guide-${id}"`), `field guides render ${id}`);
+    for (const href of [`#field-guides?guide=${id}`, `#start?guide=${id}`]) {
+      const route = parseRoute(href);
+      assert.deepEqual(
+        [route.chapter, route.guide],
+        ['field-guides', id],
+        `${href} lands on the Field guides page`,
+      );
+    }
+  }
+  assert.ok(guides.includes('class="round-trip"'));
+  assert.ok(guides.includes('class="zoom-ladder"'));
+  assert.equal(parseRoute('#start?guide=profiles').chapter, 'start');
+  assert.equal(
+    parseRoute('#__proto__?guide=constructor').chapter,
+    'start',
+    'moved guide lookup ignores inherited keys',
+  );
   const listen = pageRenderers.listen(parseRoute('#listen?episode=branches'));
   const branches = episodes.find((episode) => episode.id === 'branches');
   assert.ok(listen.includes(branches.title));
@@ -1440,9 +1552,13 @@ test('the fork moments and the retired engineering route keep resolving', () => 
   for (const [id, chapter] of Object.entries(chapters))
     if (chapter.group === 'learn') assert.ok(chapter.book, `${id}: book`);
   const home = pageRenderers.home(parseRoute('#start'));
-  assert.ok(home.includes('round-trip'));
-  for (const key of ['fork-shape', 'fork-day', 'handshake'])
-    assert.ok(home.includes(`href="#${key}`), `home links ${key}`);
+  const roundTrip = pageRenderers.guides(
+    parseRoute('#field-guides?guide=round-trip'),
+  );
+  for (const key of ['fork-shape', 'fork-day', 'handshake']) {
+    assert.ok(home.includes(`href="#${key}"`), `home links ${key}`);
+    assert.ok(roundTrip.includes(`href="#${key}`), `round trip links ${key}`);
+  }
 });
 
 test('structured claims resolve their focus, evidence, and scopes on every scene', () => {
@@ -1598,8 +1714,8 @@ test('lesson 01 editorial copy introduces its example and complete command', () 
   const lifecycle = architectureMap(1);
 
   assert.match(
-    chapters.start.intro,
-    /CIMPL provides the open-source community implementation/,
+    chapters.start.reference,
+    /CIMPL is the open-source community implementation/,
   );
   assert.equal(
     chapter.intro,

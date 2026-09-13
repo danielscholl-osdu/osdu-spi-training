@@ -190,88 +190,76 @@ function mythCard(myth, compact = false) {
   </article>`;
 }
 
-function pathCards() {
-  const learn = Object.entries(chapters).filter(
-    ([, chapter]) => chapter.group === 'learn',
-  );
-  return `<ol class="path-cards">${learn
-    .map(
-      ([key, chapter], index) =>
-        `<li class="path-book-${chapter.book.toLowerCase().replace(/\s+/g, '-')}"><a href="${routeHref(key)}"><span class="path-number">${String(index + 1).padStart(2, '0')}</span><small>${chapter.book}</small><b>${chapter.title}</b><em>${escapeHtml(chapter.question)}</em></a></li>`,
-    )
-    .join('')}</ol>`;
+// The video plays only inside the Start page's modal (see main.js). It pauses
+// the audio dock and the dock pauses it.
+export function frameVideoPlayer() {
+  return `<video controls preload="metadata" playsinline poster="${frameVideo.poster}" width="${frameVideo.width}" height="${frameVideo.height}" aria-label="${escapeHtml(frameVideo.title)}" data-frame-video>
+      <source src="${frameVideo.file}" type="video/mp4" />
+      <track kind="captions" src="${frameVideo.captions}" srclang="en" label="English" default />
+    </video>
+    <details class="frame-notes"><summary>Source checks</summary><ul>${frameVideo.notes.map((note) => `<li>${escapeHtml(note)}</li>`).join('')}</ul></details>`;
 }
 
-// The introduction at three depths: the two-minute brief as the page's cue,
-// a one-minute video in its own element, and a link to the full orientation.
-// The video pauses the audio dock and the dock pauses it.
-function frameSection() {
-  const conversation = episodeById('orientation');
-  return `<section class="home-frame" aria-label="The introduction, three minutes">
-      <div class="home-frame-copy">
-        <span class="guide-kicker">The introduction · three minutes</span>
-        <h2>Who maintains the Azure provider now, and where a change to it is proved.</h2>
-        <p>The one-minute video draws the split, the service forks, the candidate image, and the borrowed slot in a live stack. The two-minute brief, playable from the top of this page, tells the same story while you read. Both are generated from the introduction source; the source checks under the video say where its narration overreaches.</p>
-        <p class="home-frame-more"><a href="#listen?episode=${conversation.id}">${escapeHtml(conversation.short)} →</a><span>${escapeHtml(conversation.title)}: the full conversation, ${Math.round(conversation.duration / 60)} minutes, cued from the views as you go.</span></p>
-      </div>
-      <figure class="home-frame-video">
-        <video controls preload="metadata" playsinline poster="${frameVideo.poster}" width="${frameVideo.width}" height="${frameVideo.height}" aria-label="${escapeHtml(frameVideo.title)}" data-frame-video>
-          <source src="${frameVideo.file}" type="video/mp4" />
-          <track kind="captions" src="${frameVideo.captions}" srclang="en" label="English" default />
-        </video>
-        <figcaption><span class="guide-kicker">Watch · one minute</span><b>${escapeHtml(frameVideo.title)}</b><p>${escapeHtml(frameVideo.summary)}</p><details class="frame-notes"><summary>Source checks (${frameVideo.notes.length})</summary><ul>${frameVideo.notes.map((note) => `<li>${escapeHtml(note)}</li>`).join('')}</ul></details></figcaption>
-      </figure>
-    </section>`;
+function briefChip() {
+  const [cue] = chapters.start.listen;
+  return `<div class="home-listen"><button type="button" class="home-media-button" data-seek="${cue.time}" data-listen-episode="${cue.episode}" data-listen-end="${cue.end}" data-listen-stop="${cue.end}"><span class="play-glyph" aria-hidden="true">▶</span><span><b>Listen · ${Math.round((cue.end - cue.time) / 60)} min</b><small>${escapeHtml(cue.label)}</small></span></button><p class="listen-now" data-listen-now aria-live="polite" hidden></p></div>`;
+}
+
+function lessonIndex() {
+  const learnOrder = Object.keys(chapters).filter(
+    (key) => chapters[key].group === 'learn',
+  );
+  return chapters.start.index
+    .map(
+      (group, groupIndex) =>
+        `<section class="lesson-group" aria-labelledby="lesson-group-${groupIndex}"><h3 id="lesson-group-${groupIndex}">${escapeHtml(group.label)}</h3><ol class="lesson-index">${Object.entries(
+          group.lessons,
+        )
+          .map(([key, title]) => {
+            const number = learnOrder.indexOf(key) + 1;
+            const first = number === 1;
+            return `<li${first ? ' class="is-first"' : ''}><a href="${routeHref(key)}"><span class="lesson-number">${String(number).padStart(2, '0')}</span><b>${escapeHtml(title)}</b>${first ? '<span class="lesson-begin">Start here →</span>' : ''}</a></li>`;
+          })
+          .join('')}</ol></section>`,
+    )
+    .join('');
 }
 
 function homePage() {
   const start = chapters.start;
-  return `<p class="home-checked">Checked against the published docs and source, ${escapeHtml(start.checked)}. Each view links the pages and code it draws on.</p>
-    <section class="home-start" aria-label="Where to begin">
-      <div class="home-start-copy">
-        <span class="guide-kicker">Start</span>
-        <p>Six views in order, then the assumptions that cost an afternoon. The running example is a partition lookup for opendes and the cache fallback that keeps it answering; it starts real and turns illustrative at 04.</p>
-        <div class="doors">
-          <a class="door" href="${routeHref('running-stack')}"><span class="door-kicker">Just bring up OSDU on Azure</span><b>Start at 01 · What is a stack? →</b><p>Views 01 and 02. spi up builds the environment and records every service image in the lock; you never touch a fork.</p></a>
-          <a class="door door-fork" href="${routeHref('spi-boundary')}"><span class="door-kicker">Maintain or mirror a service fork</span><b>Start at 03 · The SPI boundary →</b><p>Views 03 to 06. The fork proves a change by borrowing a slot in a running stack, so you need one.</p></a>
-        </div>
-        <a class="home-cta-alt" href="${routeHref('running-stack', 'request')}">Or trace one API request through the stack first</a>
+  const moreSources = [
+    'designs',
+    'decisions',
+    'cimplArchitecture',
+    'communityPartitionProvider',
+  ];
+  return `<div class="home-promise">
+      <p>${escapeHtml(start.reference)}</p>
+      <p class="home-checked">Source-checked ${escapeHtml(start.checked)}</p>
+    </div>
+    <section class="home-introduction" aria-labelledby="home-introduction-title">
+      <h2 id="home-introduction-title">Introduction</h2>
+      <div class="home-media">
+        <button type="button" class="home-watch home-media-button" data-video-open aria-haspopup="dialog" aria-controls="video-dialog"><img src="${frameVideo.poster}" alt="" width="36" height="64" loading="lazy" /><span><b>Watch · ${Math.round(frameVideo.duration / 60)} min</b><small>${escapeHtml(frameVideo.title)}</small></span></button>
+        ${briefChip()}
       </div>
-      <div class="home-start-media">
-        <span class="guide-kicker">The introduction · three minutes</span>
-        <button type="button" class="home-watch" data-play-frame-video><img src="${frameVideo.poster}" alt="" width="44" height="78" loading="lazy" /><span><b>Watch · one minute</b><small>${escapeHtml(frameVideo.title)}</small></span></button>
-        ${listenChips('start', { kicker: 'Listen · two minutes' })}
-      </div>
     </section>
-    <section class="home-path" aria-label="The learning path">
-      <div class="section-heading"><span class="guide-kicker">The path</span><h2>Six views, in order, then the checks</h2><p>Each view builds on the one before; 07 collects the assumptions the documentation contradicts. Take them in order the first time. After that, any of them stands alone.</p></div>
-      ${pathCards()}
+    <section class="home-lessons" aria-labelledby="home-lessons-title">
+      <h2 id="home-lessons-title">Lessons</h2>
+      <div class="lesson-groups">${lessonIndex()}</div>
     </section>
-    ${frameSection()}
-    <section class="home-loop" id="guide-round-trip" aria-label="The round trip">
-      <div class="section-heading"><span class="guide-kicker">The shape of the site</span><h2>Down the stack, out to the fork, back in through the lock</h2><p>The stack is a resource group with a cluster and data services in it. The fork is a repository whose branches are regenerated, integrated, and released by scheduled workflows. They meet at one object, the image lock, and that is where the running example crosses from one to the other.</p></div>
-      ${roundTripFigure()}
-    </section>
-    <section class="home-names" aria-label="One word, three things">
-      <div class="section-heading"><span class="guide-kicker">The word</span><h2>SPI means three things here</h2><p>They are related, and the site says which one it means. In the order the views meet them: the environment, the interface, the engineering system.</p></div>
+    <section class="home-names" aria-labelledby="home-names-title">
+      <h2 id="home-names-title">SPI means three things here</h2>
       ${spiNamesFigure()}
     </section>
-    <section class="home-zoom" id="guide-ladder" aria-label="From the subscription to the source">
-      <div class="section-heading"><span class="guide-kicker">The mental map</span><h2>Six places, from the outside in</h2><p>Everything in this site sits at one of these places. The resource group holds the Azure data services and the cluster side by side; the cluster holds namespaces, and a namespace holds services. The sixth place is not inside any of them: it is the source a service is built from, and views 04 to 06 are about it.</p></div>
-      ${zoomLadder()}
-      ${ownerLegend()}
-    </section>
-    <section class="home-ways" aria-label="Alongside the path">
-      <a class="way way-listen" href="${routeHref('listen')}"><span class="way-icon" aria-hidden="true">▶</span><b>Listen</b><p>Four generated recordings, from a two-minute brief to hour-long discussions. Playback continues while you explore, every marker opens the matching view, and the map views carry short cues.</p><span class="way-cta">Open the player →</span></a>
-      <a class="way way-read" href="${routeHref('field-guides')}"><span class="way-icon" aria-hidden="true">≋</span><b>Field guides</b><p>The infographics from the views and the supplied posters, indexed by what you are trying to do, on one page you can print.</p><span class="way-cta">See the field guides →</span></a>
-    </section>
-    <section class="home-sources" aria-label="Source documentation">
-      <div class="section-heading"><span class="guide-kicker">Documentation</span><h2>Source documentation</h2><p>Three repositories. The stack and the engineering system are two of the three meanings of SPI; the interface lives inside each service fork, and the partition fork is the reference.</p></div>
+    <section class="home-sources" aria-labelledby="home-sources-title">
+      <h2 id="home-sources-title">Source documentation</h2>
       <div class="source-cards">
         <a href="${sources.architecture.href}" target="_blank" rel="noopener noreferrer"><b>osdu-spi-stack</b><p>Azure infrastructure, workload configuration, the spi CLI. Nine design guides and a register of decision records.</p><span>Architecture ↗</span></a>
-        <a href="${sources.partitionRepo.href}" target="_blank" rel="noopener noreferrer"><b>osdu-spi-partition</b><p>The reference service fork: shared code regenerated from upstream, the Azure provider behind the interface, and the acceptance descriptor it has not written yet.</p><span>Repository ↗</span></a>
+        <a href="${sources.partitionRepo.href}" target="_blank" rel="noopener noreferrer"><b>osdu-spi-partition</b><p>The reference service fork: shared code regenerated from upstream and the Azure provider behind the interface.</p><span>Repository ↗</span></a>
         <a href="${sources.engineering.href}" target="_blank" rel="noopener noreferrer"><b>osdu-spi</b><p>The engineering system behind every service fork: sync, cascade, build, validation, and fork tiers.</p><span>Architecture overview ↗</span></a>
       </div>
+      <p class="home-more-sources">${moreSources.map(sourceAnchor).join('')}</p>
     </section>`;
 }
 
@@ -415,7 +403,7 @@ export function chapterScope(key) {
     return `<p class="view-scope">${escapeHtml(chapter.builds)} ${escapeHtml(chapter.where)}</p>`;
   if (!chapter.where) return '';
   return `<p class="view-question"><span>This view answers</span>${escapeHtml(chapter.question || '')}${chapter.builds ? ` <em>${escapeHtml(chapter.builds)}</em>` : ''}</p>
-  <p class="view-scope"><span>In this view</span>${escapeHtml(chapter.where)} <a href="#start?guide=ladder">See the six places →</a></p>`;
+  <p class="view-scope"><span>In this view</span>${escapeHtml(chapter.where)} <a href="#field-guides?guide=ladder">See the six places →</a></p>`;
 }
 
 // The running example is optional depth after the lesson exit. Each hop can
@@ -571,9 +559,31 @@ export function listenChips(
   return `<div class="listen-chips" aria-label="${escapeHtml(kicker)}"><span class="guide-kicker">${escapeHtml(kicker)}</span>${lead ? `<p class="listen-lead">${lead}</p>` : ''}<div class="listen-chip-row">${chips}<a class="small-link" href="#listen">All episodes →</a></div><p class="listen-now" data-listen-now aria-live="polite" hidden></p></div>`;
 }
 
-// A short index by what the reader is trying to do. Native guides come first
-// on the page; the supplied posters follow as references.
+// Two maps of the whole course, each linking the lessons it draws.
+export const courseMaps = [
+  {
+    id: 'round-trip',
+    title: 'Down the stack, out to the fork, back in through the lock',
+    summary:
+      'The stack is a resource group with a cluster and data services in it. The fork is a repository whose branches are regenerated, integrated, and released by scheduled workflows. They meet at one object, the image lock, and that is where the running example crosses from one to the other.',
+    render: () => roundTripFigure(),
+  },
+  {
+    id: 'ladder',
+    title: 'Six places, from the outside in',
+    summary:
+      'Everything in this site sits at one of these places. The resource group holds the Azure data services and the cluster side by side; the cluster holds namespaces, and a namespace holds services. The sixth place is not inside any of them: it is the source a service is built from, and lessons 04 to 06 are about it.',
+    render: () => `${zoomLadder()}${ownerLegend()}`,
+  },
+];
+
+// A short index by what the reader is trying to do. The course maps and native
+// guides come first on the page; the supplied posters follow as references.
 const guideIndex = [
+  {
+    need: 'See the whole course',
+    ids: ['round-trip', 'ladder'],
+  },
   {
     need: 'Bring up a stack',
     ids: [
@@ -607,6 +617,7 @@ const guideIndex = [
 
 function guideIndexNav() {
   const byId = (id) =>
+    courseMaps.find((map) => map.id === id) ||
     nativeGuides.find((guide) => guide.id === id) ||
     suppliedPosters.find((poster) => poster.id === id);
   return `<nav class="guide-index" aria-label="Field guides by need">${guideIndex
@@ -625,6 +636,18 @@ function guideIndexNav() {
 
 function guidesPage() {
   return `${guideIndexNav()}
+    <section class="course-maps" aria-label="Maps of the course">
+      ${courseMaps
+        .map(
+          (
+            map,
+          ) => `<figure class="field-guide course-map" id="guide-${map.id}" data-guide="${map.id}">
+        <figcaption><h2>${map.title}</h2><p>${map.summary}</p></figcaption>
+        <div class="guide-body">${map.render()}</div>
+      </figure>`,
+        )
+        .join('')}
+    </section>
     <section class="guide-set" aria-label="Field guides built for this site">
       <div class="section-heading"><span class="guide-kicker">Built for this site</span><h2>${nativeGuides.length} field guides</h2><p>One idea each, built in HTML from the source documentation. Each also appears beside the view it explains. Print this page for the full set.</p></div>
       ${ownerLegend()}
@@ -663,6 +686,7 @@ export const pageRenderers = {
 export function chapterNavigation(current) {
   const start = chapters.start;
   const groups = chapterGroups
+    .filter((group) => group.numbered)
     .map((group) => {
       let number = 0;
       let book = null;

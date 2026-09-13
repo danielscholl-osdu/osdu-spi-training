@@ -14,7 +14,7 @@ This repository owns the learning site. Keep its files separate from `osdu-spi`,
 ## Source and workflow
 
 - Edit `src/`; `dist/` is generated build output and must not be committed.
-- Chapter copy and navigation live in `src/content/chapters.js`; the zoom ladder and the three meanings of SPI live in `src/content/concepts.js`; explanations, creation moments, fork moments, audio markers, field checks, and posters have separate files in that directory. Each learn chapter names its `book` (The stack, One service, The fork, The seam); the rail and the start page group by it. Page renderers live in `src/components/pages.js`; native field guides in `src/components/infographics.js`.
+- Chapter copy and navigation live in `src/content/chapters.js`; the zoom ladder and the three meanings of SPI live in `src/content/concepts.js`; explanations, creation moments, fork moments, audio markers, field checks, and posters have separate files in that directory. Each learn chapter names its `book` (The stack, One service, The fork, The seam); the rail groups by it. The start page's lesson index groups by the `index` on the start chapter. Page renderers live in `src/components/pages.js`; native field guides in `src/components/infographics.js`.
 - Diagram markup and behavior live in `src/components/`; shared navigation and detail handling live in `src/main.js`, with URL state in `src/router.js`.
 - Keep the vanilla JavaScript module structure. Add dependencies only for a concrete need.
 - Use `npm ci`, `npm run dev`, and `npm run check`. Use `npm run format` after editing.
