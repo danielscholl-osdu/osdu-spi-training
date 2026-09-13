@@ -2756,11 +2756,6 @@ body:has(.audio-dock:not([hidden])) main {
   font-size: 15px;
   line-height: 1.4;
 }
-.claim small {
-  color: var(--muted);
-  font-size: 13px;
-  line-height: 1.45;
-}
 .claim-count,
 .claim-evidence {
   color: var(--blue);
@@ -2799,6 +2794,31 @@ body:has(.audio-dock:not([hidden])) main {
 }
 .has-claims .visual-header {
   flex-wrap: wrap;
+}
+.claim-context {
+  flex: 1 0 100%;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 0.9fr);
+  gap: 8px 24px;
+  padding-top: 12px;
+  border-top: 1px solid var(--line);
+}
+.claim-context[hidden] {
+  display: none;
+}
+.claim-context p,
+.claim-context small {
+  margin: 0;
+  line-height: 1.5;
+}
+.claim-context p {
+  color: var(--ink);
+  font-size: 15px;
+  font-weight: 600;
+}
+.claim-context small {
+  color: var(--muted);
+  font-size: 13.5px;
 }
 .has-claims .diagram-toolbar,
 .has-claims .route-strip,
@@ -3293,6 +3313,7 @@ body:has(.audio-dock:not([hidden])) main {
 }
 @media (max-width: 760px) {
   .claim-list,
+  .claim-context,
   .partition-lookup-lanes,
   .partition-comparison-sources,
   .optional-grid {

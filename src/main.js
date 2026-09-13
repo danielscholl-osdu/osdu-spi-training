@@ -15,6 +15,7 @@ import {
   listenChips,
   hasClaims,
   claimStrip,
+  claimContext,
   guidePreview,
   detailSourceLinks,
   partitionComparison,
@@ -178,6 +179,18 @@ function applyPolicy() {
   const crossingLabel = tracing ? presentation.crossing : claim.crossing;
   if (crossing && typeof crossingLabel === 'string')
     crossing.textContent = crossingLabel;
+  const context = document.getElementById('claim-context');
+  if (tracing) {
+    const hop = presentation.hops[lessonState.hop];
+    const sentence = document.createElement('p');
+    const reason = document.createElement('small');
+    sentence.textContent = hop?.label || '';
+    reason.textContent = hop?.copy || '';
+    context.replaceChildren(sentence, reason);
+  } else {
+    context.innerHTML = claimContext(route.chapter, lessonState.claim);
+  }
+  context.hidden = !context.textContent.trim();
 }
 
 let detailOpener = null;
@@ -343,6 +356,9 @@ function renderChapterFrame(route, scene) {
   document.getElementById('lesson-optional').hidden = !structured;
   document.getElementById('map-policy').hidden = !structured;
   document.getElementById('map-hint').hidden = structured;
+  const context = document.getElementById('claim-context');
+  context.innerHTML = '';
+  context.hidden = !structured;
   if (structured) {
     document
       .getElementById('optional-listen')

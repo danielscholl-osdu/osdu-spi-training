@@ -21,6 +21,7 @@ import {
   chapterOutcomes,
   chapterScope,
   claimIndexForRoute,
+  claimContext,
   claimStrip,
   detailSourceLinks,
   exampleStrip,
@@ -1437,6 +1438,7 @@ test('structured claims resolve their focus, evidence, and scopes on every scene
     );
     assert.doesNotMatch(claimsMarkup, /claims, one map/);
     claims.forEach((claim, index) => {
+      const contextMarkup = claimContext(key, index);
       assert.ok(
         Array.isArray(claim.focus) && Array.isArray(claim.scopes),
         `${key}: claim ${index} focus and scopes are arrays`,
@@ -1461,6 +1463,18 @@ test('structured claims resolve their focus, evidence, and scopes on every scene
       assert.ok(
         outcomesMarkup.includes(escapeHtml(claim.text)),
         `${key}: claim ${index} is carried forward`,
+      );
+      assert.ok(
+        contextMarkup.includes(escapeHtml(claim.text)),
+        `${key}: claim ${index} sentence is beside the map`,
+      );
+      assert.ok(
+        contextMarkup.includes(escapeHtml(claim.why)),
+        `${key}: claim ${index} reason is beside the map`,
+      );
+      assert.ok(
+        !claimsMarkup.includes(escapeHtml(claim.why)),
+        `${key}: claim ${index} reason is absent from compact controls`,
       );
       assert.ok(
         claimsMarkup.includes(
@@ -1519,6 +1533,12 @@ test('structured claims resolve their focus, evidence, and scopes on every scene
   }
 });
 
+test('claim context escapes authored copy and excludes unstructured lessons', () => {
+  assert.equal(claimContext('fork-shape', 0), '');
+  assert.match(claimContext('running-stack', 0), /spi up --env &lt;name&gt;/);
+  assert.doesNotMatch(claimContext('running-stack', 0), /<name>/);
+});
+
 test('lesson 01 editorial copy introduces its example and complete command', () => {
   const chapter = chapters['running-stack'];
   const misconception = myths.find((myth) => myth.id === 'stack-is-only-aks');
@@ -1564,7 +1584,7 @@ test('lesson 01 editorial copy introduces its example and complete command', () 
     chapter.outcomes[0].why,
     'spi up --env <name> creates AKS and its Azure resources together.',
   );
-  assert.match(claimStrip('running-stack'), /spi up --env &lt;name&gt;/);
+  assert.match(claimContext('running-stack', 0), /spi up --env &lt;name&gt;/);
   assert.match(overview, /One development and test environment/);
   assert.doesNotMatch(overview, /Your environment ·/);
   assert.match(lifecycle, /Your environment · Azure resources created/);
@@ -1683,8 +1703,11 @@ test('lesson 02 claim rendering and example routes preserve lesson 01 behavior',
     '#bring-up/remove?detail=retained&claim=2',
   ];
   for (const [index, claim] of chapter.outcomes.entries()) {
+    const context = claimContext('bring-up', index);
     assert.ok(strip.includes(claim.headline), `claim ${index} headline`);
-    assert.ok(strip.includes(claim.why), `claim ${index} reason`);
+    assert.ok(!strip.includes(claim.why), `claim ${index} compact control`);
+    assert.ok(context.includes(claim.text), `claim ${index} context sentence`);
+    assert.ok(context.includes(claim.why), `claim ${index} context reason`);
     assert.ok(outcomes.includes(claim.text), `claim ${index} full outcome`);
     assert.ok(
       strip.includes(`href="${expectedEvidence[index]}"`),
@@ -1801,6 +1824,9 @@ test('lesson 03 claims keep the provider seam understandable without evidence', 
     );
 
   const claims = claimStrip('spi-boundary');
+  const contexts = chapter.outcomes
+    .map((_, index) => claimContext('spi-boundary', index))
+    .join('');
   for (const fact of [
     'partition-core calls IPartitionService.getPartition',
     'partition-core-plus checks its configured VmCache',
@@ -1811,7 +1837,8 @@ test('lesson 03 claims keep the provider seam understandable without evidence', 
     'not a network hop',
     'provider/partition-azure stays fork-owned',
   ])
-    assert.ok(claims.includes(fact), `claim surface includes ${fact}`);
+    assert.ok(contexts.includes(fact), `claim context includes ${fact}`);
+  assert.doesNotMatch(claims, /<small>/);
 
   const outcomes = chapterOutcomes('spi-boundary');
   for (const claim of chapter.outcomes)
