@@ -132,7 +132,7 @@ export const chapters = {
     title: 'How it comes to life',
     subtitle: 'Create, use, and remove',
     headline:
-      'One command creates the environment.<span>Flux finishes it.</span>',
+      'spi up creates the environment;<span>Flux continues the rollout.</span>',
     intro:
       'Build on lesson 01’s wide map: follow dev1 from your workstation into the resource group, AKS cluster, and namespaces, then remove it. Each moment shows who acts and what changes.',
     figure: 'Follow the environment',
@@ -218,7 +218,7 @@ export const chapters = {
       {
         headline:
           'CLI creates; Flux assembles; controllers keep workloads healthy.',
-        text: 'The CLI and Bicep create Azure and seed the cluster; Flux assembles the workloads; controllers keep them healthy. Different owners, different clocks.',
+        text: 'The CLI and Bicep create Azure and seed the cluster; Flux assembles the workloads; controllers keep them healthy. Flux and Kubernetes controllers continue after the CLI returns.',
         why: 'spi up drives Bicep and bootstrap while Flux begins reconciling before the CLI exits; Flux and Kubernetes controllers continue after the terminal returns.',
         step: 'provision',
         steps: ['start', 'provision', 'bootstrap', 'reconcile'],

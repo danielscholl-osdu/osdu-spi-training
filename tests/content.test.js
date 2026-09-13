@@ -1027,7 +1027,7 @@ test('lesson 01 editorial copy introduces its example and complete command', () 
 test('lesson 02 preserves its outcomes as three moment-aware claims', () => {
   const chapter = chapters['bring-up'];
   const expectedOutcomes = [
-    'The CLI and Bicep create Azure and seed the cluster; Flux assembles the workloads; controllers keep them healthy. Different owners, different clocks.',
+    'The CLI and Bicep create Azure and seed the cluster; Flux assembles the workloads; controllers keep them healthy. Flux and Kubernetes controllers continue after the CLI returns.',
     'A successful spi up does not establish API readiness. I follow workload health and initialization with spi status --watch, then verify the API path I need with an authenticated request.',
     'spi down removes compute and data but keeps identities and the resource group, so a rebuild reuses the same names.',
   ];
@@ -1066,6 +1066,19 @@ test('lesson 02 preserves its outcomes as three moment-aware claims', () => {
   assert.match(
     chapter.example.note,
     /does not visit.*Cosmos DB.*blob Storage.*Service Bus/,
+  );
+});
+
+test('lesson 02 editorial copy states the continuing rollout', () => {
+  const chapter = chapters['bring-up'];
+
+  assert.equal(
+    chapter.headline.replace(/<[^>]+>/g, ' ').trim(),
+    'spi up creates the environment; Flux continues the rollout.',
+  );
+  assert.match(
+    chapter.outcomes[0].text,
+    /Flux and Kubernetes controllers continue after the CLI returns/,
   );
 });
 
