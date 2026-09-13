@@ -232,14 +232,14 @@ function homePage() {
         <span class="guide-kicker">Start</span>
         <p>Six views in order, then the assumptions that cost an afternoon. The running example is a partition lookup for opendes and the cache fallback that keeps it answering; it starts real and turns illustrative at 04.</p>
         <div class="doors">
-          <a class="door" href="${routeHref('running-stack')}"><span class="door-kicker">Just bring up OSDU on Azure</span><b>Start at 01 · What is a stack? →</b><p>Views 01 and 02 cover it. spi up builds the environment and records every service image in the image lock. You never touch a fork.</p></a>
-          <a class="door door-fork" href="${routeHref('spi-boundary')}"><span class="door-kicker">Maintain or mirror a service fork</span><b>Start at 03 · The SPI boundary →</b><p>Views 03 to 06, and you will need a stack: the fork proves a change by borrowing a slot in a running one.</p></a>
+          <a class="door" href="${routeHref('running-stack')}"><span class="door-kicker">Just bring up OSDU on Azure</span><b>Start at 01 · What is a stack? →</b><p>Views 01 and 02. spi up builds the environment and records every service image in the lock; you never touch a fork.</p></a>
+          <a class="door door-fork" href="${routeHref('spi-boundary')}"><span class="door-kicker">Maintain or mirror a service fork</span><b>Start at 03 · The SPI boundary →</b><p>Views 03 to 06. The fork proves a change by borrowing a slot in a running stack, so you need one.</p></a>
         </div>
         <a class="home-cta-alt" href="${routeHref('running-stack', 'request')}">Or trace one API request through the stack first</a>
       </div>
       <div class="home-start-media">
         <span class="guide-kicker">The introduction · three minutes</span>
-        <button type="button" class="home-watch" data-play-frame-video><img src="${frameVideo.poster}" alt="" width="56" height="100" loading="lazy" /><span><b>Watch · one minute</b><small>${escapeHtml(frameVideo.title)}</small></span></button>
+        <button type="button" class="home-watch" data-play-frame-video><img src="${frameVideo.poster}" alt="" width="44" height="78" loading="lazy" /><span><b>Watch · one minute</b><small>${escapeHtml(frameVideo.title)}</small></span></button>
         ${listenChips('start', { kicker: 'Listen · two minutes' })}
       </div>
     </section>

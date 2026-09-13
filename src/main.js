@@ -749,7 +749,7 @@ document.addEventListener('click', (event) => {
   if (!event.target.closest('[data-play-frame-video]')) return;
   const video = document.querySelector('[data-frame-video]');
   if (!video) return;
-  video.scrollIntoView({ behavior: 'smooth', block: 'center' });
+  video.scrollIntoView({ block: 'center' });
   video.play();
 });
 
