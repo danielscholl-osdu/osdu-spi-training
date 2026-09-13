@@ -31,6 +31,7 @@ import {
   resolveExamplePresentation,
   resolveLessonSelection,
   selectExampleVariant,
+  tryItBand,
 } from '../src/components/pages.js';
 import { parseRoute, routeHref, chapterSteps } from '../src/router.js';
 import { forkMoments } from '../src/content/fork-moments.js';
@@ -1089,6 +1090,82 @@ test('tryIt validation rejects focused invalid clones', () => {
   assert.throws(
     () => verifyTryIt(unknownSource, 'unknown source'),
     /unknown source/,
+  );
+});
+
+test('tryIt renderer returns an inert, escaped native disclosure', () => {
+  assert.equal(tryItBand({}), '');
+
+  const single = tryItBand({ tryIt: singleVariantTryIt });
+  const multiple = tryItBand({ tryIt: multipleVariantTryIt });
+  assert.match(
+    single,
+    /Try it: trace the partition lookup<\/span><small> · browser only · About 5 minutes/,
+  );
+  for (const text of [
+    'Read the provider path',
+    'Prerequisites',
+    'What this changes',
+    'Active effort',
+    'Automated wait',
+    'Clean-up effort',
+    'Steps',
+    'Common alternate result',
+    'Clean up',
+    'What remains',
+    'Tested with',
+    'Sources:',
+    'executes nothing and reports no live environment state',
+  ])
+    assert.ok(single.includes(text), text);
+  assert.match(
+    multiple,
+    /Without Azure: workstation setup · About 5 minutes · With Azure: Azure resources billed separately · About 10 minutes/,
+  );
+  assert.match(multiple, /An Azure subscription and permissions/);
+  assert.match(multiple, /<code>spi up --env dev1<\/code>/);
+
+  for (const markup of [single, multiple]) {
+    assert.match(markup, /<details>/);
+    assert.doesNotMatch(markup, /<details[^>]*\sopen(?:\s|>)/);
+    assert.doesNotMatch(
+      markup,
+      /data-(?:detail|map-jump|evidence)|<(?:button|input|form)\b|\son[a-z]+=/,
+    );
+  }
+
+  const referenced = new Set();
+  for (const variant of multipleVariantTryIt.variants) {
+    for (const item of variant.prerequisites)
+      item.sources.forEach((key) => referenced.add(key));
+    for (const step of [...variant.steps, ...variant.cleanup.steps])
+      step.sources?.forEach((key) => referenced.add(key));
+    variant.sources.forEach((key) => referenced.add(key));
+  }
+  const renderedHrefs = [...multiple.matchAll(/href="([^"]+)"/g)].map(
+    ([, href]) => href,
+  );
+  assert.deepEqual(
+    new Set(renderedHrefs),
+    new Set([...referenced].map((key) => sources[key].href)),
+  );
+
+  const escapedFixture = structuredClone(singleVariantTryIt);
+  escapedFixture.activity = 'inspect <script>';
+  escapedFixture.variants[0].result = 'Keep <name> & source text literal.';
+  delete escapedFixture.variants[0].steps[0].click;
+  escapedFixture.variants[0].steps[0].command = 'printf "<name>&"';
+  const escaped = tryItBand({ tryIt: escapedFixture });
+  assert.match(escaped, /inspect &lt;script&gt;/);
+  assert.match(escaped, /Keep &lt;name&gt; &amp; source text literal/);
+  assert.match(escaped, /printf &quot;&lt;name&gt;&amp;&quot;/);
+  assert.doesNotMatch(escaped, /<script>|<name>/);
+
+  const unknownSource = structuredClone(singleVariantTryIt);
+  unknownSource.variants[0].sources = ['unknown'];
+  assert.throws(
+    () => tryItBand({ tryIt: unknownSource }),
+    /Unknown source key: unknown/,
   );
 });
 
