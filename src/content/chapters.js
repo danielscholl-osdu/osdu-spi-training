@@ -34,7 +34,7 @@ export const chapters = {
     title: 'Start here',
     subtitle: 'What this site is for',
     headline:
-      'Understand the Azure OSDU stack<span>and the engineering system behind it.</span>',
+      'Understand the Azure SPI machinery.<span>The stack, the provider inside each service, and the engineering that keeps them current.</span>',
     intro:
       'SPI stands for Service Provider Interface. It connects shared OSDU code to a cloud implementation. Learn how the Azure stack is assembled and how service forks sync upstream changes, build images, and test them against Azure resources.',
     reference:
