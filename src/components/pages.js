@@ -36,6 +36,104 @@ function sourceLinks(keys) {
     .join(' · ')}</p>`;
 }
 
+function tryItAction(step) {
+  const action = step.command
+    ? `<pre class="try-it-command"><code>${escapeHtml(step.command)}</code></pre>`
+    : `<p class="try-it-click"><b>Click:</b> ${escapeHtml(step.click)}</p>`;
+  return `${action}<p class="try-it-expect"><b>Look for:</b> ${escapeHtml(step.expect)}</p>${step.sources?.length ? sourceLinks(step.sources) : ''}`;
+}
+
+function tryItVariant(variant, index, count) {
+  const testedLabels = {
+    cli: 'CLI release',
+    stack: 'Stack ref',
+    template: 'Template commit',
+    shell: 'Shell',
+    os: 'Operating system',
+    date: 'Walked on',
+  };
+  return `<section class="try-it-variant" aria-labelledby="try-it-variant-${index}">
+    <header>
+      ${count > 1 ? `<span class="guide-kicker">Route ${index + 1}</span>` : ''}
+      <h3 id="try-it-variant-${index}">${escapeHtml(variant.label)}</h3>
+      <p class="try-it-result">${escapeHtml(variant.result)}</p>
+    </header>
+    <div class="try-it-access">
+      <p><b>Access:</b> ${escapeHtml(variant.access)}</p>
+      ${variant.accessNote ? `<p>${escapeHtml(variant.accessNote)}</p>` : ''}
+    </div>
+    <section class="try-it-prerequisites">
+      <h4>Prerequisites</h4>
+      <ul>${variant.prerequisites
+        .map(
+          (item) =>
+            `<li><span>${escapeHtml(item.text)}</span>${sourceLinks(item.sources)}</li>`,
+        )
+        .join('')}</ul>
+    </section>
+    <section class="try-it-effects">
+      <h4>What this changes</h4>
+      <p>${escapeHtml(variant.effects)}</p>
+    </section>
+    <dl class="try-it-time">
+      <div><dt>Active effort</dt><dd>${escapeHtml(variant.time.active)}</dd></div>
+      <div><dt>Automated wait</dt><dd>${escapeHtml(variant.time.wait)}</dd></div>
+      <div><dt>Clean-up effort</dt><dd>${escapeHtml(variant.time.cleanup)}</dd></div>
+    </dl>
+    <section class="try-it-steps">
+      <h4>Steps</h4>
+      <ol>${variant.steps.map((step) => `<li>${tryItAction(step)}</li>`).join('')}</ol>
+    </section>
+    <section class="try-it-alternate">
+      <h4>Common alternate result</h4>
+      <p><b>If you see:</b> ${escapeHtml(variant.alternate.observation)}</p>
+      <p><b>Then:</b> ${escapeHtml(variant.alternate.next)}</p>
+    </section>
+    <section class="try-it-cleanup">
+      <h4>Clean up</h4>
+      <ol>${variant.cleanup.steps.map((step) => `<li>${tryItAction(step)}</li>`).join('')}</ol>
+      <p><b>What remains:</b> ${escapeHtml(variant.cleanup.remains)}</p>
+    </section>
+    <section class="try-it-tested">
+      <h4>Tested with</h4>
+      <dl>${Object.entries(testedLabels)
+        .map(
+          ([key, label]) =>
+            `<div><dt>${label}</dt><dd>${escapeHtml(variant.tested[key])}</dd></div>`,
+        )
+        .join('')}</dl>
+    </section>
+    ${sourceLinks(variant.sources)}
+  </section>`;
+}
+
+export function tryItBand(chapter) {
+  if (!chapter.tryIt) return '';
+  const { activity, variants } = chapter.tryIt;
+  const summary =
+    variants.length === 1
+      ? `${variants[0].access} · ${variants[0].time.active}`
+      : variants
+          .map(
+            (variant) =>
+              `${variant.label}: ${variant.access} · ${variant.time.active}`,
+          )
+          .join(' · ');
+  return `<section class="try-it" aria-label="Try it: ${escapeHtml(activity)}">
+    <details>
+      <summary><span>Try it: ${escapeHtml(activity)}</span><small> · ${escapeHtml(summary)}</small></summary>
+      <div class="try-it-body">
+        <p class="try-it-safety">You run this activity in your own account. This site executes nothing and reports no live environment state.</p>
+        <div class="try-it-variants">${variants
+          .map((variant, index) =>
+            tryItVariant(variant, index, variants.length),
+          )
+          .join('')}</div>
+      </div>
+    </details>
+  </section>`;
+}
+
 export function detailSourceLinks(detail) {
   const keys = [
     ...new Set([detail?.source, ...(detail?.goDeeper || [])].filter(Boolean)),

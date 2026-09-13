@@ -21,6 +21,7 @@ import {
   resolveExamplePresentation,
   resolveLessonSelection,
   selectExampleVariant,
+  tryItBand,
 } from './components/pages.js';
 import { createPlayer } from './components/player.js';
 import { parseRoute, routeHref } from './router.js';
@@ -39,6 +40,7 @@ const movable = [
   'chapter-listen',
   'chapter-guides',
   'chapter-outcomes',
+  'chapter-try-it',
   'next-link',
   'scope-note',
   'source-details',
@@ -321,6 +323,9 @@ function renderChapterFrame(route, scene) {
   const structured = hasClaims(scene);
   movable.forEach(({ element, marker }) => marker.after(element));
   document.getElementById('lesson-next')?.remove();
+  const tryIt = document.getElementById('chapter-try-it');
+  tryIt.innerHTML = scene.group === 'learn' ? tryItBand(scene) : '';
+  tryIt.hidden = !tryIt.innerHTML;
   lessonState = {
     claim: 0,
     hop: -1,
@@ -360,6 +365,15 @@ function renderChapterFrame(route, scene) {
     nextBlock.innerHTML = `<span>${chapters[nextChapter(key)].question}</span>`;
     nextBlock.append(document.getElementById('next-link'));
     document.getElementById('chapter-outcomes').after(nextBlock);
+    nextBlock.after(tryIt);
+  } else if (scene.tryIt && nextChapter(key) === 'start') {
+    const nextBlock = document.createElement('div');
+    nextBlock.id = 'lesson-next';
+    nextBlock.className = 'lesson-next';
+    nextBlock.innerHTML = '<span>The learning path ends here.</span>';
+    nextBlock.append(document.getElementById('next-link'));
+    document.getElementById('chapter-outcomes').after(nextBlock);
+    nextBlock.after(tryIt);
   }
   document.getElementById('chapter-navigation').innerHTML =
     chapterNavigation(key);
