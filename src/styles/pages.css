@@ -2957,7 +2957,6 @@ body:has(.audio-dock:not([hidden])) main {
 }
 .try-it details {
   min-width: 0;
-  overflow: hidden;
   background: var(--white);
   border: 1px solid var(--line);
   border-radius: 8px;
