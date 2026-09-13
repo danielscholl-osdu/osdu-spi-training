@@ -27,7 +27,7 @@ export const chapters = {
     subtitle: 'Place familiar OSDU concepts',
     headline: 'AKS is one part<span>of the stack.</span>',
     intro:
-      'Your OSDU APIs run inside Kubernetes. Their data partitions reach Azure resources outside the cluster. The stack is both sides together, in one resource group, built for development and test. Start by finding the things you already know.',
+      'Your OSDU APIs run inside Kubernetes. Their data partitions reach Azure resources outside the cluster. The stack is both sides together, in one resource group, built for development and test. Use opendes, the example data partition, in the dev1 environment.',
     premise: 'You know OSDU. Start with the environment around it.',
     figure: 'Follow the boundaries',
     selected: 'environment',
@@ -86,12 +86,12 @@ export const chapters = {
         'The provider checks its cache, then Azure Table Storage in common Storage, returning stored configuration. This lookup does not visit the partition’s Cosmos, blob Storage, or Service Bus.',
       note: 'The answer describes where opendes lives. Other services use it to find their Cosmos, Storage, and Service Bus.',
     },
-    goal: 'You can point at the map and say which half is the cluster, which half is not, and where opendes lives in both.',
+    goal: 'You can distinguish the AKS cluster from the Azure resources around it and explain which resources opendes owns or shares in dev1.',
     outcomes: [
       {
         headline: 'The stack is AKS plus Azure data services.',
         text: 'A stack is a resource group: AKS plus the Azure data services around it, not the cluster alone.',
-        why: 'Both halves are created by one spi up and named by one --env.',
+        why: 'spi up --env dev1 creates AKS and its Azure resources together.',
         focus: ['flux', 'gateway', 'cosmos', 'shared-data'],
         scopes: ['environment', 'aks', 'resources'],
         evidence: 'environment',

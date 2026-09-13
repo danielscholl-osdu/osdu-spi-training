@@ -997,6 +997,20 @@ test('structured claims resolve their focus, evidence, and scopes on every scene
   }
 });
 
+test('lesson 01 editorial copy introduces its example and complete command', () => {
+  const chapter = chapters['running-stack'];
+
+  assert.match(
+    chapter.intro,
+    /opendes, the example data partition, in the dev1 environment/,
+  );
+  assert.equal(
+    chapter.outcomes[0].why,
+    'spi up --env dev1 creates AKS and its Azure resources together.',
+  );
+  assert.match(claimStrip('running-stack'), /spi up --env dev1/);
+});
+
 test('lesson 02 preserves its outcomes as three moment-aware claims', () => {
   const chapter = chapters['bring-up'];
   const expectedOutcomes = [
