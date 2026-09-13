@@ -1488,45 +1488,69 @@ test('lesson 01 editorial copy introduces its example and complete command', () 
   const chapter = chapters['running-stack'];
   const misconception = myths.find((myth) => myth.id === 'stack-is-only-aks');
   const callout = mythCallout(misconception.id, 'running-stack');
+  const overview = architectureMap();
+  const lifecycle = architectureMap(1);
 
   assert.match(
     chapters.start.intro,
     /CIMPL provides the open-source community implementation/,
   );
-  assert.match(
+  assert.equal(
     chapter.intro,
-    /CIMPL runs its supporting middleware in Kubernetes/,
+    "The stack is one development and test environment in an Azure resource group. OSDU services run in AKS; Azure data services sit alongside it. Some resources belong to a partition such as opendes, while others are shared. CIMPL runs supporting middleware in Kubernetes. Azure SPI uses Azure data services alongside AKS, while Elasticsearch, Redis, and Airflow's database remain in the cluster.",
   );
-  assert.match(chapter.intro, /Azure data services outside AKS/);
-  assert.match(
-    chapter.intro,
-    /Elasticsearch, Redis, and Airflow’s database remain inside the cluster/,
+  assert.equal(chapter.figure, 'The deployed stack');
+  assert.equal(
+    chapter.outcomes[1].headline,
+    'Partition resources and shared resources.',
   );
-  assert.match(
-    chapter.intro,
-    /opendes, the example data partition, in the environment you named/,
-  );
-  assert.match(
+  assert.equal(
     chapter.outcomes[1].why,
-    /^An OSDU data partition supplies the configuration and data context/,
+    'In this stack, opendes owns a Cosmos DB SQL account, Storage account, and Service Bus namespace; common Storage, the entitlements Gremlin database, Key Vault, and the service identity are shared.',
   );
-  assert.ok(
-    chapter.outcomes[1].why.indexOf('configuration and data context') <
-      chapter.outcomes[1].why.indexOf('Cosmos DB SQL account'),
+  assert.equal(
+    chapter.outcomes[2].why,
+    'Each service image includes its Azure provider.',
+  );
+  assert.equal(chapter.example.title, 'a partition lookup');
+  assert.match(
+    chapter.example.note,
+    /^The map uses opendes as its example partition\./,
+  );
+  assert.match(
+    chapter.example.providerPath,
+    /cache, then Azure Table Storage in common Storage/,
+  );
+  assert.match(
+    chapter.example.providerPath,
+    /does not visit the partition’s Cosmos, blob Storage, or Service Bus/,
   );
   assert.equal(
     chapter.outcomes[0].why,
     'spi up --env <name> creates AKS and its Azure resources together.',
   );
   assert.match(claimStrip('running-stack'), /spi up --env &lt;name&gt;/);
+  assert.match(overview, /One development and test environment/);
+  assert.doesNotMatch(overview, /Your environment ·/);
+  assert.match(lifecycle, /Your environment · Azure resources created/);
+  for (const label of [
+    'Outside the stack',
+    'Outside AKS',
+    'Per partition · opendes',
+  ])
+    assert.match(overview, new RegExp(label));
   assert.equal(chapter.mistakes.developer, misconception.id);
   assert.equal(misconception.source, 'architecture');
-  assert.equal(misconception.reality.match(/[.!?](?:\s|$)/g)?.length, 3);
+  assert.equal(misconception.reality.match(/[.!?](?:\s|$)/g)?.length, 2);
   assert.match(callout, /Cosmos DB, Storage, and Service Bus/);
+  assert.doesNotMatch(callout, /partition lookup|Table Storage/);
   assert.match(
     callout,
     /href="#running-stack\/developer\?detail=environment" data-map-jump/,
   );
+  assert.ok(chapter.sources.includes('architecture'));
+  assert.ok(chapter.sources.includes('cimplArchitecture'));
+  assert.ok(chapter.sources.includes('images'));
   assert.ok(chapter.guides.includes('profiles'));
   assert.equal(chapters['bring-up'].mistakes.start, 'profiles-save-money');
   assert.equal(chapters['bring-up'].mistakes.provision, 'profiles-save-money');
