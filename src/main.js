@@ -454,7 +454,10 @@ function renderChapterFrame(route, scene) {
   document.getElementById('premise').textContent = scene.premise || '';
   document.getElementById('premise').hidden = structured || !scene.premise;
   document.getElementById('headline').innerHTML = scene.headline;
-  document.getElementById('introduction').textContent = scene.intro;
+  document.getElementById('introduction').innerHTML = scene.intro;
+  const subhead = document.getElementById('subhead');
+  subhead.textContent = scene.subhead || '';
+  subhead.hidden = !scene.subhead;
   document.getElementById('scope-note').textContent = scene.scope || '';
   document.getElementById('scope-note').hidden = !scene.scope;
   document.getElementById('sources').innerHTML = scene.sources

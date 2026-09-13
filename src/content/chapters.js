@@ -33,21 +33,16 @@ export const chapters = {
     group: 'start',
     title: 'Start here',
     subtitle: 'What this site is for',
-    headline:
-      'Understand the Azure SPI machinery.<span>The stack, the provider inside each service, and the engineering that keeps them current.</span>',
+    headline: 'Understand the OSDU Azure SPI machinery.',
+    subhead:
+      'The stack, the provider inside each service, and the engineering that keeps them current.',
     intro:
-      'OSDU on Azure runs on machinery of its own: a stack in your subscription that runs the services, a provider inside each service where shared code hands off to Azure, and forks with scheduled workflows that keep that provider synced with upstream, built into images, and tested in a running stack. The seam where the hand-off happens is the Service Provider Interface, and SPI is the name this site uses for all three.',
+      'The machinery has three parts: a stack in your subscription that runs the services, a provider inside each service where shared code hands off to Azure, and forks with scheduled workflows that keep that provider synced with upstream, built into images, and tested in a running stack. The seam where the hand-off happens is the Service Provider Interface, and SPI is the name this site uses for all three. Where a design choice differs from the OSDU <a href="https://community.opengroup.org/osdu/platform/deployment-and-operations/cimpl-stack" target="_blank" rel="noopener noreferrer">Community Implementation (CIMPL)</a>, the lessons say so.',
     hero: {
       image: 'start/machinery.webp',
       width: 1400,
       height: 347,
       alt: 'Three meshing gears joined by a loop arrow: the Azure stack, the provider interface inside a service, and the fork workflows.',
-    },
-    reference:
-      'CIMPL is the open-source community implementation used for comparison.',
-    referenceLink: {
-      text: 'CIMPL',
-      href: 'https://community.opengroup.org/osdu/platform/deployment-and-operations/cimpl-stack',
     },
     index: [
       {
@@ -1227,7 +1222,7 @@ export const chapters = {
     kind: 'page',
     page: 'guides',
     group: 'supplement',
-    title: 'Field guides',
+    title: 'Visual field guides',
     subtitle: 'Posters and infographics',
     headline: 'Architecture and<span>troubleshooting reference.</span>',
     intro:

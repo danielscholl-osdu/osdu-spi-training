@@ -1182,7 +1182,7 @@ test('audio markers are ordered, inside the recording, and point at real views',
       masthead.includes('class="masthead-link" href="#listen"') &&
       masthead.includes('class="masthead-link" href="#field-guides"') &&
       masthead.split('class="masthead-icon"').length === 3,
-    'Audio deep dives and Field guides are two icon links',
+    'Audio deep dives and Visual field guides are two icon links',
   );
   assert.match(html, /<dialog\s+id="video-dialog"/);
   const nav = chapterNavigation('running-stack');
@@ -1205,10 +1205,19 @@ test('audio markers are ordered, inside the recording, and point at real views',
   );
   assert.match(chapters.start.intro, /Service Provider Interface/);
   assert.ok(
-    home.includes(
-      `href="${chapters.start.referenceLink.href}" target="_blank" rel="noopener noreferrer">CIMPL</a>`,
+    chapters.start.intro.includes(
+      'target="_blank" rel="noopener noreferrer">Community Implementation (CIMPL)</a>',
     ),
-    'CIMPL links to the community project',
+    'the intro links CIMPL to the community project',
+  );
+  assert.ok(
+    !chapters.start.intro.includes('OSDU on Azure'),
+    'no OSDU on Azure',
+  );
+  assert.ok(chapters.start.subhead.length > 20, 'the start page has a subhead');
+  assert.ok(
+    home.includes('start/watch.webp'),
+    'the Watch card uses the gear badge',
   );
   assert.ok(!home.includes('Source-checked'), 'no review-date line');
   assert.ok(!home.includes('Not quite'));
@@ -1801,10 +1810,7 @@ test('lesson 01 editorial copy introduces its example and complete command', () 
   const overview = architectureMap();
   const lifecycle = architectureMap(1);
 
-  assert.match(
-    chapters.start.reference,
-    /CIMPL is the open-source community implementation/,
-  );
+  assert.match(chapters.start.intro, /Community Implementation \(CIMPL\)/);
   assert.equal(
     chapter.intro,
     "The stack is one development and test environment in an Azure resource group. OSDU services run in AKS; Azure data services sit alongside it. Some resources belong to a partition such as opendes, while others are shared. CIMPL runs supporting middleware in Kubernetes. Azure SPI uses Azure data services alongside AKS, while Elasticsearch, Redis, and Airflow's database remain in the cluster.",
