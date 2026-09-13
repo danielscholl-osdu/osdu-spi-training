@@ -4,7 +4,7 @@ export const myths = [
     theme: 'readiness',
     claim: 'The command finished, so it is ready.',
     reality:
-      'A successful spi up exit means orchestration completed without a fatal error; it does not establish API readiness. Flux reconciliation and initialization Jobs may still be working. spi status --watch follows their configured health and completion, but does not make an API call. A successful authenticated request verifies only the path exercised. The schema Job’s 150-minute value is a deadline, not an expected wait.',
+      'A successful spi up exit means orchestration completed without a fatal error; it does not establish API readiness. Flux reconciliation and initialization Jobs may still be working, and spi status --watch follows them but does not make an API call. A successful authenticated request verifies only the path exercised. The schema Job’s 150-minute value is a deadline, not an expected wait.',
     check: 'spi status --watch',
     source: 'lifecycle',
     route: '#bring-up/inspect?detail=readiness',

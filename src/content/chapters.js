@@ -231,7 +231,7 @@ export const chapters = {
       {
         headline: 'CLI success is not API readiness.',
         text: 'A successful spi up does not establish API readiness. I follow workload health and initialization with spi status --watch, then verify the API path I need with an authenticated request.',
-        why: 'Read each signal by what it proves: a successful CLI exit establishes that orchestration completed without a fatal error. The requested Git artifact revision is verified before that exit, while Flux overlaps the final CLI stages. Ready Kustomizations and HelmReleases report configured workload health, Complete initialization Jobs report initialization, and a successful authenticated request proves only the exercised API path. spi status --watch observes health and initialization; it does not make that request.',
+        why: 'The requested Git artifact revision is verified before that exit, and Flux overlaps the final CLI stages. Ready Kustomizations and HelmReleases report workload health, Complete initialization Jobs report initialization, and a successful authenticated request proves only the exercised API path. spi status --watch observes the first two; it does not make that request.',
         step: 'inspect',
         steps: ['inspect'],
         evidenceStep: 'inspect',
