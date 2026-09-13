@@ -25,8 +25,10 @@ import {
   exampleStrip,
   guideFigure,
   hopIndexForRoute,
+  mythCallout,
   pageRenderers,
   resolveExamplePresentation,
+  resolveLessonSelection,
   selectExampleVariant,
 } from '../src/components/pages.js';
 import { parseRoute, routeHref, chapterSteps } from '../src/router.js';
@@ -253,7 +255,10 @@ test('look closer links resolve to every lifecycle moment target', () => {
     'the current moment has one Look closer link',
   );
   for (const moment of creationMoments) {
-    const href = routeHref('bring-up', moment.id, moment.detail);
+    const selection = ['provision', 'bootstrap'].includes(moment.id)
+      ? { claim: 0 }
+      : {};
+    const href = routeHref('bring-up', moment.id, moment.detail, selection);
     const momentMarkup = creationWalkthrough(
       parseRoute(routeHref('bring-up', moment.id)),
     );
@@ -330,7 +335,13 @@ test('SPI boundary map exposes one runtime seam and its source owners', () => {
 });
 
 test('deep links recover chapter, lifecycle moment, and component without module state', () => {
-  const base = { guide: null, episode: null, time: null };
+  const base = {
+    claim: null,
+    hop: null,
+    guide: null,
+    episode: null,
+    time: null,
+  };
   for (const moment of creationMoments) {
     assert.deepEqual(
       parseRoute(routeHref('bring-up', moment.id, moment.detail)),
@@ -353,8 +364,7 @@ test('deep links recover chapter, lifecycle moment, and component without module
     chapter: 'listen',
     step: '',
     detail: null,
-    guide: null,
-    episode: null,
+    ...base,
     time: 1234,
   });
   assert.equal(parseRoute('#listen?t=-5').time, null);
@@ -367,6 +377,195 @@ test('deep links recover chapter, lifecycle moment, and component without module
       detail: null,
       ...base,
     });
+  }
+});
+
+test('selection intent is additive and invalid qualifiers preserve legacy routes', () => {
+  const cases = [
+    {
+      href: routeHref('spi-boundary', '', 'azureimpl', { claim: 0 }),
+      expectedHref: '#spi-boundary?detail=azureimpl&claim=0',
+      claim: 0,
+      hop: null,
+    },
+    {
+      href: routeHref('spi-boundary', '', 'azureimpl', { hop: 3 }),
+      expectedHref: '#spi-boundary?detail=azureimpl&hop=3',
+      claim: null,
+      hop: 3,
+    },
+    {
+      href: routeHref('running-stack', 'request', 'gateway'),
+      expectedHref: '#running-stack/request?detail=gateway',
+      claim: null,
+      hop: null,
+    },
+    {
+      href: '#spi-boundary?detail=azureimpl&claim=',
+      expectedHref: '#spi-boundary?detail=azureimpl&claim=',
+      claim: null,
+      hop: null,
+    },
+    {
+      href: '#spi-boundary?detail=azureimpl&hop=-1',
+      expectedHref: '#spi-boundary?detail=azureimpl&hop=-1',
+      claim: null,
+      hop: null,
+    },
+    {
+      href: '#spi-boundary?detail=azureimpl&claim=0&hop=3',
+      expectedHref: '#spi-boundary?detail=azureimpl&claim=0&hop=3',
+      claim: null,
+      hop: null,
+    },
+    {
+      href: routeHref('spi-boundary', '', 'azureimpl', {
+        claim: 0,
+        hop: 3,
+      }),
+      expectedHref: '#spi-boundary?detail=azureimpl',
+      claim: null,
+      hop: null,
+    },
+  ];
+
+  for (const { href, expectedHref, claim, hop } of cases) {
+    assert.equal(href, expectedHref);
+    assert.deepEqual(
+      { claim: parseRoute(href).claim, hop: parseRoute(href).hop },
+      { claim, hop },
+      href,
+    );
+  }
+
+  const collisions = [
+    ['running-stack', 'request', 'shared-data', 1, 4],
+    ['running-stack', 'request', 'service', 2, 2],
+    ['spi-boundary', '', 'azureimpl', 0, 3],
+  ];
+  for (const [key, step, detail, claim, hop] of collisions) {
+    const chapter = chapters[key];
+    assert.deepEqual(
+      resolveLessonSelection(chapter, parseRoute(routeHref(key, step, detail))),
+      { claim, hop: -1, exampleOpen: false },
+      `${key}: legacy evidence`,
+    );
+    assert.deepEqual(
+      resolveLessonSelection(
+        chapter,
+        parseRoute(routeHref(key, step, detail, { claim })),
+      ),
+      { claim, hop: -1, exampleOpen: false },
+      `${key}: explicit evidence`,
+    );
+    assert.deepEqual(
+      resolveLessonSelection(
+        chapter,
+        parseRoute(routeHref(key, step, detail, { hop })),
+      ),
+      { claim, hop, exampleOpen: true },
+      `${key}: explicit trace`,
+    );
+  }
+
+  const inspectionLinks = [
+    [
+      creationWalkthrough(parseRoute('#bring-up/provision')),
+      '#bring-up/provision?detail=aks&claim=0',
+    ],
+    [
+      creationWalkthrough(parseRoute('#bring-up/bootstrap')),
+      '#bring-up/bootstrap?detail=bootstrap&claim=0',
+    ],
+    [infographics.familiar(), '#running-stack/request?detail=gateway&claim=2'],
+    [
+      mythCallout('certificate-means-encrypted', 'running-stack'),
+      '#running-stack/request?detail=gateway&claim=0',
+    ],
+    [
+      mythCallout('token-accepted-means-authorized', 'running-stack'),
+      '#running-stack/request?detail=gateway&claim=0',
+    ],
+    [
+      mythCallout('smoke-proves-api', 'bring-up'),
+      '#bring-up/inspect?detail=caller&claim=1',
+    ],
+  ];
+  for (const [markup, href] of inspectionLinks)
+    assert.ok(markup.includes(`href="${href}"`), href);
+
+  const structuredLessons = ['running-stack', 'bring-up', 'spi-boundary'];
+  for (const key of structuredLessons) {
+    const chapter = chapters[key];
+    const claimsMarkup = claimStrip(key);
+    for (const [claim, outcome] of chapter.outcomes.entries()) {
+      const step = outcome.evidenceStep || outcome.step || '';
+      const href = routeHref(key, step, outcome.evidence, { claim });
+      assert.ok(claimsMarkup.includes(`href="${href}"`), href);
+      assert.deepEqual(
+        resolveLessonSelection(chapter, parseRoute(href)),
+        { claim, hop: -1, exampleOpen: false },
+        href,
+      );
+    }
+
+    const exampleMarkup = exampleStrip(
+      key,
+      parseRoute(routeHref(key, chapter.example.step || '')),
+    );
+    for (const [hop, entry] of chapter.example.hops.entries()) {
+      const step = entry.step || chapter.example.step || '';
+      const href = routeHref(key, step, entry.detail, { hop });
+      assert.ok(exampleMarkup.includes(`href="${href}"`), href);
+      assert.deepEqual(
+        resolveLessonSelection(chapter, parseRoute(href)),
+        {
+          claim: claimIndexForRoute(chapter, parseRoute(href)),
+          hop,
+          exampleOpen: true,
+        },
+        href,
+      );
+    }
+  }
+
+  const fallbackCases = [
+    [
+      '#spi-boundary?detail=azureimpl&claim=99',
+      { claim: 0, hop: -1, exampleOpen: false },
+    ],
+    [
+      '#spi-boundary?detail=azureimpl&hop=99',
+      { claim: 0, hop: -1, exampleOpen: false },
+    ],
+    [
+      '#spi-boundary?detail=azureimpl&claim=nope',
+      { claim: 0, hop: -1, exampleOpen: false },
+    ],
+    [
+      '#spi-boundary?detail=azureimpl&claim=0&hop=3',
+      { claim: 0, hop: -1, exampleOpen: false },
+    ],
+    [
+      '#bring-up/provision?detail=aks&claim=2',
+      { claim: 0, hop: 0, exampleOpen: true },
+    ],
+    [
+      '#bring-up/bootstrap?detail=bootstrap&hop=0',
+      { claim: 0, hop: 2, exampleOpen: true },
+    ],
+    [
+      '#running-stack/request?detail=gateway',
+      { claim: 0, hop: 1, exampleOpen: true },
+    ],
+  ];
+  for (const [href, expected] of fallbackCases) {
+    const route = parseRoute(href);
+    assert.deepEqual(
+      resolveLessonSelection(chapters[route.chapter], route),
+      expected,
+      href,
+    );
   }
 });
 
@@ -747,6 +946,7 @@ test('structured claims resolve their focus, evidence, and scopes on every scene
             key,
             claim.evidenceStep || claim.step || null,
             claim.evidence,
+            { claim: index },
           ),
         ),
         `${key}: claim ${index} evidence destination`,
@@ -871,9 +1071,9 @@ test('lesson 02 claim rendering and example routes preserve lesson 01 behavior',
   const strip = claimStrip('bring-up');
   const outcomes = chapterOutcomes('bring-up');
   const expectedEvidence = [
-    '#bring-up/reconcile?detail=flux',
-    '#bring-up/inspect?detail=readiness',
-    '#bring-up/remove?detail=retained',
+    '#bring-up/reconcile?detail=flux&claim=0',
+    '#bring-up/inspect?detail=readiness&claim=1',
+    '#bring-up/remove?detail=retained&claim=2',
   ];
   for (const [index, claim] of chapter.outcomes.entries()) {
     assert.ok(strip.includes(claim.headline), `claim ${index} headline`);
@@ -912,7 +1112,7 @@ test('lesson 02 claim rendering and example routes preserve lesson 01 behavior',
     assert.equal(hopIndexForRoute(chapter, route), index);
     assert.ok(
       exampleMarkup.includes(
-        `href="${routeHref('bring-up', hop.step, hop.detail)}"`,
+        `href="${routeHref('bring-up', hop.step, hop.detail, { hop: index })}"`,
       ),
     );
   }
@@ -929,11 +1129,15 @@ test('lesson 02 claim rendering and example routes preserve lesson 01 behavior',
     parseRoute('#running-stack/request?detail=gateway'),
   );
   assert.ok(
-    lessonOneClaims.includes('href="#running-stack?detail=environment"'),
+    lessonOneClaims.includes(
+      'href="#running-stack?detail=environment&claim=0"',
+    ),
     'timeless claim evidence keeps its chapter-only route',
   );
   assert.ok(
-    lessonOneExample.includes('href="#running-stack/request?detail=gateway"'),
+    lessonOneExample.includes(
+      'href="#running-stack/request?detail=gateway&hop=1"',
+    ),
   );
   assert.equal(
     hopIndexForRoute(

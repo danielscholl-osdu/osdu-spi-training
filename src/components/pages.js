@@ -168,17 +168,29 @@ export function hasClaims(chapter) {
   return chapter.outcomes?.some((claim) => typeof claim !== 'string') || false;
 }
 
-export function claimIndexForRoute(chapter, route) {
+function evidenceClaimIndexForRoute(chapter, route) {
   const claims = chapter.outcomes || [];
-  const evidence = claims.findIndex(
+  return claims.findIndex(
     (claim) =>
       typeof claim !== 'string' &&
       claim.evidence === route.detail &&
       (claim.evidenceStep || claim.step || route.step) === route.step,
   );
+}
+
+function claimMatchesStep(claim, route) {
+  return (
+    typeof claim !== 'string' &&
+    (!claim.steps || claim.steps.includes(route.step))
+  );
+}
+
+export function claimIndexForRoute(chapter, route) {
+  const claims = chapter.outcomes || [];
+  const evidence = evidenceClaimIndexForRoute(chapter, route);
   if (evidence >= 0) return evidence;
-  const compatible = claims.findIndex(
-    (claim) => typeof claim !== 'string' && claim.steps?.includes(route.step),
+  const compatible = claims.findIndex((claim) =>
+    claimMatchesStep(claim, route),
   );
   return compatible >= 0 ? compatible : 0;
 }
@@ -193,6 +205,36 @@ export function hopIndexForRoute(chapter, route) {
   );
 }
 
+export function resolveLessonSelection(chapter, route) {
+  const claims = chapter.outcomes || [];
+  const fallbackClaim = claimIndexForRoute(chapter, route);
+  if (
+    route.claim !== null &&
+    claims[route.claim] &&
+    claimMatchesStep(claims[route.claim], route)
+  )
+    return { claim: route.claim, hop: -1, exampleOpen: false };
+
+  const explicitHop = chapter.example?.hops[route.hop];
+  if (
+    route.hop !== null &&
+    explicitHop?.detail === route.detail &&
+    (explicitHop.step || chapter.example.step || route.step) === route.step
+  )
+    return { claim: fallbackClaim, hop: route.hop, exampleOpen: true };
+
+  const evidenceClaim = evidenceClaimIndexForRoute(chapter, route);
+  if (evidenceClaim >= 0)
+    return { claim: evidenceClaim, hop: -1, exampleOpen: false };
+
+  const hop = hopIndexForRoute(chapter, route);
+  return {
+    claim: fallbackClaim,
+    hop,
+    exampleOpen: hop >= 0,
+  };
+}
+
 export function claimStrip(key) {
   const chapter = chapters[key];
   if (!hasClaims(chapter)) return '';
@@ -201,7 +243,7 @@ export function claimStrip(key) {
     <ol class="claim-list">${chapter.outcomes
       .map((claim, index) => {
         const c = typeof claim === 'string' ? { text: claim } : claim;
-        return `<li class="claim-item" data-claim-item="${index}"><button type="button" class="claim" data-claim="${index}" aria-pressed="${index === 0}"><b>${escapeHtml(c.headline || c.text)}</b><small>${escapeHtml(c.why || '')}</small><span class="claim-count">${index + 1} / ${chapter.outcomes.length}</span></button>${c.evidence ? `<a class="claim-evidence" data-evidence="${index}" href="${routeHref(key, c.evidenceStep || c.step || '', c.evidence)}">How we know →</a>` : ''}</li>`;
+        return `<li class="claim-item" data-claim-item="${index}"><button type="button" class="claim" data-claim="${index}" aria-pressed="${index === 0}"><b>${escapeHtml(c.headline || c.text)}</b><small>${escapeHtml(c.why || '')}</small><span class="claim-count">${index + 1} / ${chapter.outcomes.length}</span></button>${c.evidence ? `<a class="claim-evidence" data-evidence="${index}" href="${routeHref(key, c.evidenceStep || c.step || '', c.evidence, { claim: index })}">How we know →</a>` : ''}</li>`;
       })
       .join('')}</ol>
   </section>`;
@@ -293,7 +335,7 @@ export function exampleStrip(key, route, variant) {
     return `<details class="example-disclosure"><summary>Running example: ${escapeHtml(example.title)} → <code>${escapeHtml(example.code)}</code></summary>
     ${variantControls}
     <p class="example-crossing" data-example-crossing>${escapeHtml(presentation.crossing)}</p>
-    <ol class="journey" aria-label="${escapeHtml(example.title)}">${presentation.hops.map((hop, index) => `<li><a href="${routeHref(key, hop.step || example.step || route.step, hop.detail)}" data-map-jump data-hop="${index}" title="${escapeHtml(hop.copy)}" aria-label="${escapeHtml(`${index + 1}. ${hop.label}: ${hop.copy}`)}"><span>${index + 1}</span><b>${escapeHtml(hop.label)}</b><small data-hop-copy="${hop.detail}">${escapeHtml(hop.copy)}</small></a></li>`).join('')}</ol>
+    <ol class="journey" aria-label="${escapeHtml(example.title)}">${presentation.hops.map((hop, index) => `<li><a href="${routeHref(key, hop.step || example.step || route.step, hop.detail, { hop: index })}" data-map-jump data-hop="${index}" title="${escapeHtml(hop.copy)}" aria-label="${escapeHtml(`${index + 1}. ${hop.label}: ${hop.copy}`)}"><span>${index + 1}</span><b>${escapeHtml(hop.label)}</b><small data-hop-copy="${hop.detail}">${escapeHtml(hop.copy)}</small></a></li>`).join('')}</ol>
     <p class="example-note"><span class="example-provider-path">${escapeHtml(example.providerPath || '')}</span> <span data-example-note>${escapeHtml(presentation.note)}</span></p></details>`;
   }
   const current = hopIndexForRoute(chapters[key], route);
@@ -314,13 +356,23 @@ export function mythCallout(id, chapterKey) {
   const myth = myths.find((entry) => entry.id === id);
   if (!myth) return '';
   const source = sources[myth.source];
-  const sameView = parseRoute(myth.route).chapter === chapterKey;
+  const route = parseRoute(myth.route);
+  const sameView = route.chapter === chapterKey;
+  const chapter = chapters[chapterKey];
+  const claim = (chapter.outcomes || []).findIndex(
+    (entry) =>
+      claimMatchesStep(entry, route) && entry.focus?.includes(route.detail),
+  );
+  const href =
+    sameView && claim >= 0 && hopIndexForRoute(chapter, route) >= 0
+      ? routeHref(route.chapter, route.step, route.detail, { claim })
+      : myth.route;
   return `<aside class="easy-mistake" aria-label="Easy mistake">
     <div class="easy-mistake-head"><span class="guide-kicker">Easy mistake</span><a href="${routeHref('not-true')}">All ${myths.length}, by theme →</a></div>
     <p class="myth-claim">“${myth.claim}”</p>
     <p class="myth-reality">${myth.reality}</p>
     <code class="myth-check">${escapeHtml(myth.check)}</code>
-    <p class="myth-links"><a href="${myth.route}" ${sameView ? 'data-map-jump' : ''}>${sameView ? 'Show it on the map ↑' : `${myth.routeLabel} →`}</a><a href="${source.href}" target="_blank" rel="noopener noreferrer">${source.label} ↗</a></p>
+    <p class="myth-links"><a href="${href}" ${sameView ? 'data-map-jump' : ''}>${sameView ? 'Show it on the map ↑' : `${myth.routeLabel} →`}</a><a href="${source.href}" target="_blank" rel="noopener noreferrer">${source.label} ↗</a></p>
   </aside>`;
 }
 
