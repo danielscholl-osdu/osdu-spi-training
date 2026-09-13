@@ -334,6 +334,12 @@ test('every explanation names an artifact and a source', () => {
         );
     }
   }
+  assert.equal(
+    componentDetails.upstream.title,
+    'The community repository contains shared code and providers for several clouds.',
+  );
+  assert.equal(componentDetails.upstream.source, 'synchronization');
+  assert.match(componentDetails.upstream.artifact.code, /UPSTREAM_REPO_URL/);
 });
 
 test('readiness drawer distinguishes observed state from API proof', () => {
@@ -1114,6 +1120,13 @@ test('structured claims resolve their focus, evidence, and scopes on every scene
           `${key}/${step}: example scope ${id}`,
         );
     const claimsMarkup = claimStrip(key);
+    const outcomesMarkup = chapterOutcomes(key);
+    assert.match(
+      claimsMarkup,
+      /Select an idea to highlight it on the map\./,
+      `${key}: learner-facing claim instruction`,
+    );
+    assert.doesNotMatch(claimsMarkup, /claims, one map/);
     claims.forEach((claim, index) => {
       assert.ok(
         Array.isArray(claim.focus) && Array.isArray(claim.scopes),
@@ -1130,6 +1143,15 @@ test('structured claims resolve their focus, evidence, and scopes on every scene
           claim.headline.length < claim.text.length &&
           claim.headline.length <= 80,
         `${key}: claim ${index} headline is shorter than its sentence`,
+      );
+      if (key === 'running-stack')
+        assert.ok(
+          claim.headline.split(/\s+/).length < 12,
+          `${claim.headline}: fewer than twelve words`,
+        );
+      assert.ok(
+        outcomesMarkup.includes(escapeHtml(claim.text)),
+        `${key}: claim ${index} is carried forward`,
       );
       assert.ok(
         claimsMarkup.includes(
@@ -1188,10 +1210,37 @@ test('structured claims resolve their focus, evidence, and scopes on every scene
   }
 });
 
+test('lesson 01 editorial copy introduces its example and complete command', () => {
+  const chapter = chapters['running-stack'];
+  const misconception = myths.find((myth) => myth.id === 'stack-is-only-aks');
+  const callout = mythCallout(misconception.id, 'running-stack');
+
+  assert.match(
+    chapter.intro,
+    /opendes, the example data partition, in the dev1 environment/,
+  );
+  assert.equal(
+    chapter.outcomes[0].why,
+    'spi up --env dev1 creates AKS and its Azure resources together.',
+  );
+  assert.match(claimStrip('running-stack'), /spi up --env dev1/);
+  assert.equal(chapter.mistakes.developer, misconception.id);
+  assert.equal(misconception.source, 'architecture');
+  assert.equal(misconception.reality.match(/[.!?](?:\s|$)/g)?.length, 3);
+  assert.match(callout, /Cosmos DB, Storage, and Service Bus/);
+  assert.match(
+    callout,
+    /href="#running-stack\/developer\?detail=environment" data-map-jump/,
+  );
+  assert.ok(chapter.guides.includes('profiles'));
+  assert.equal(chapters['bring-up'].mistakes.start, 'profiles-save-money');
+  assert.equal(chapters['bring-up'].mistakes.provision, 'profiles-save-money');
+});
+
 test('lesson 02 preserves its outcomes as three moment-aware claims', () => {
   const chapter = chapters['bring-up'];
   const expectedOutcomes = [
-    'The CLI and Bicep create Azure and seed the cluster; Flux assembles the workloads; controllers keep them healthy. Different owners, different clocks.',
+    'The CLI and Bicep create Azure and seed the cluster; Flux assembles the workloads; controllers keep them healthy. Flux and Kubernetes controllers continue after the CLI returns.',
     'A successful spi up does not establish API readiness. I follow workload health and initialization with spi status --watch, then verify the API path I need with an authenticated request.',
     'spi down removes compute and data but keeps identities and the resource group, so a rebuild reuses the same names.',
   ];
@@ -1230,6 +1279,19 @@ test('lesson 02 preserves its outcomes as three moment-aware claims', () => {
   assert.match(
     chapter.example.note,
     /does not visit.*Cosmos DB.*blob Storage.*Service Bus/,
+  );
+});
+
+test('lesson 02 editorial copy states the continuing rollout', () => {
+  const chapter = chapters['bring-up'];
+
+  assert.equal(
+    chapter.headline.replace(/<[^>]+>/g, ' ').trim(),
+    'spi up creates the environment. Flux continues the rollout.',
+  );
+  assert.match(
+    chapter.outcomes[0].text,
+    /Flux and Kubernetes controllers continue after the CLI returns/,
   );
 });
 
@@ -1391,7 +1453,7 @@ test('lesson 03 claims keep the provider seam understandable without evidence', 
     'Workload Identity for the common Table Storage read',
     'same service process',
     'not a network hop',
-    'provider/&lt;svc&gt;-azure stays fork-owned',
+    'provider/partition-azure stays fork-owned',
   ])
     assert.ok(claims.includes(fact), `claim surface includes ${fact}`);
 
@@ -1417,6 +1479,42 @@ test('lesson 03 states its own prerequisite and place without changing orientati
   assert.ok(!orientation.includes(chapter.where));
   assert.ok(
     !chapterScope('running-stack').includes(chapters['running-stack'].builds),
+  );
+});
+
+test('lesson 03 editorial copy stays at the provider boundary', () => {
+  const chapter = chapters['spi-boundary'];
+  const requiredCopy = [
+    chapter.question,
+    chapter.goal,
+    ...chapter.outcomes.flatMap(({ headline, text, why }) => [
+      headline,
+      text,
+      why,
+    ]),
+    diagramRenderers.spi(),
+  ].join(' ');
+
+  assert.equal(
+    chapter.question,
+    'Where does shared code hand the lookup to the Azure provider?',
+  );
+  assert.equal(
+    chapter.goal,
+    'Trace the lookup from shared code into the Azure provider, and explain what happens when the cache fails.',
+  );
+  assert.equal(
+    chapter.outcomes[2].text,
+    'The fork maintains the Azure provider separately from generated shared code.',
+  );
+  assert.equal(
+    chapter.outcomes[2].why,
+    'Shared code is regenerated from the community repository, while provider/partition-azure stays fork-owned, so removal of upstream’s Azure copy does not delete the fork’s provider.',
+  );
+  assert.match(requiredCopy, /come from the community repository/);
+  assert.doesNotMatch(
+    requiredCopy,
+    /\bfork_upstream\b|\bfork_integration\b|\bmain\b/,
   );
 });
 

@@ -27,7 +27,7 @@ export const chapters = {
     subtitle: 'Place familiar OSDU concepts',
     headline: 'AKS is one part<span>of the stack.</span>',
     intro:
-      'Your OSDU APIs run inside Kubernetes. Their data partitions reach Azure resources outside the cluster. The stack is both sides together, in one resource group, built for development and test. Start by finding the things you already know.',
+      'Your OSDU APIs run inside Kubernetes. Their data partitions reach Azure resources outside the cluster. The stack is both sides together, in one resource group, built for development and test. Use opendes, the example data partition, in the dev1 environment.',
     premise: 'You know OSDU. Start with the environment around it.',
     figure: 'Follow the boundaries',
     selected: 'environment',
@@ -43,7 +43,7 @@ export const chapters = {
     ],
     guides: ['familiar', 'inside-the-cluster', 'profiles'],
     mistakes: {
-      developer: 'profiles-save-money',
+      developer: 'stack-is-only-aks',
       request: 'certificate-means-encrypted',
     },
     scope:
@@ -86,12 +86,12 @@ export const chapters = {
         'The provider checks its cache, then Azure Table Storage in common Storage, returning stored configuration. This lookup does not visit the partition’s Cosmos, blob Storage, or Service Bus.',
       note: 'The answer describes where opendes lives. Other services use it to find their Cosmos, Storage, and Service Bus.',
     },
-    goal: 'You can point at the map and say which half is the cluster, which half is not, and where opendes lives in both.',
+    goal: 'You can distinguish the AKS cluster from the Azure resources around it and explain which resources opendes owns or shares in dev1.',
     outcomes: [
       {
         headline: 'The stack is AKS plus Azure data services.',
         text: 'A stack is a resource group: AKS plus the Azure data services around it, not the cluster alone.',
-        why: 'Both halves are created by one spi up and named by one --env.',
+        why: 'spi up --env dev1 creates AKS and its Azure resources together.',
         focus: ['flux', 'gateway', 'cosmos', 'shared-data'],
         scopes: ['environment', 'aks', 'resources'],
         evidence: 'environment',
@@ -132,7 +132,7 @@ export const chapters = {
     title: 'How it comes to life',
     subtitle: 'Create, use, and remove',
     headline:
-      'One command creates the environment.<span>Flux finishes it.</span>',
+      'spi up creates the environment.<span>Flux continues the rollout.</span>',
     intro:
       'Build on lesson 01’s wide map: follow dev1 from your workstation into the resource group, AKS cluster, and namespaces, then remove it. Each moment shows who acts and what changes.',
     figure: 'Follow the environment',
@@ -218,7 +218,7 @@ export const chapters = {
       {
         headline:
           'CLI creates; Flux assembles; controllers keep workloads healthy.',
-        text: 'The CLI and Bicep create Azure and seed the cluster; Flux assembles the workloads; controllers keep them healthy. Different owners, different clocks.',
+        text: 'The CLI and Bicep create Azure and seed the cluster; Flux assembles the workloads; controllers keep them healthy. Flux and Kubernetes controllers continue after the CLI returns.',
         why: 'spi up drives Bicep and bootstrap while Flux begins reconciling before the CLI exits; Flux and Kubernetes controllers continue after the terminal returns.',
         step: 'provision',
         steps: ['start', 'provision', 'bootstrap', 'reconcile'],
@@ -292,7 +292,7 @@ export const chapters = {
       'partitionProvider',
       'partitionCacheFix',
     ],
-    question: 'Where inside a service does OSDU stop and Azure begin?',
+    question: 'Where does shared code hand the lookup to the Azure provider?',
     builds:
       'Zooms into the partition service from 01 and follows the same lookup through its provider.',
     where:
@@ -375,7 +375,7 @@ export const chapters = {
       providerPath:
         'The provider checks Redis inside AKS with middleware credentials, then reads Azure Table Storage in common Storage outside AKS with Workload Identity, returning stored configuration. This lookup does not visit the partition’s Cosmos, blob Storage, or Service Bus.',
     },
-    goal: 'With the drawer closed, you can point to where shared code ends and Azure provider code begins, explain why the interface is not a network hop, and say what survives a cache exception.',
+    goal: 'Trace the lookup from shared code into the Azure provider, and explain what happens when the cache fails.',
     outcomes: [
       {
         headline: 'Common code calls Azure through a provider interface.',
@@ -397,8 +397,8 @@ export const chapters = {
       },
       {
         headline: 'The fork keeps Azure source outside the generated tree.',
-        text: 'Upstream may delete its Azure implementations; the fork owns provider/<svc>-azure and keeps it outside the generated upstream tree.',
-        why: 'The engineering system regenerates fork_upstream from upstream while provider/<svc>-azure stays fork-owned on fork_integration and main.',
+        text: 'The fork maintains the Azure provider separately from generated shared code.',
+        why: 'Shared code is regenerated from the community repository, while provider/partition-azure stays fork-owned, so removal of upstream’s Azure copy does not delete the fork’s provider.',
         focus: ['upstream', 'azureimpl', 'engineering'],
         scopes: ['spi-provider', 'spi-sources'],
         evidence: 'upstream',
