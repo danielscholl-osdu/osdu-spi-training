@@ -1892,7 +1892,7 @@ body:has(.audio-dock:not([hidden])) main {
   .zoom-siblings {
     grid-template-columns: 1fr;
   }
-  .masthead-resources summary {
+  .masthead-link {
     font-size: 13px;
     padding: 7px 8px;
   }

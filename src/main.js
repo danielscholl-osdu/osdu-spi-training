@@ -37,7 +37,7 @@ const learnOrder = order.filter((key) => chapters[key].group === 'learn');
 let previousRoute = null;
 let lastSelectedElement = null;
 const inspector = document.getElementById('inspector');
-const resources = document.getElementById('masthead-resources');
+const mastheadLinks = document.querySelectorAll('.masthead-nav a');
 const masthead = document.querySelector('.masthead');
 function syncMastheadHeight() {
   document.documentElement.style.setProperty(
@@ -437,8 +437,7 @@ function renderChapterFrame(route, scene) {
     ? `Lesson ${positionLabel(key)}`
     : kicker;
   document.getElementById('chapter-kicker').hidden = scene.page === 'home';
-  resources.open = false;
-  resources.querySelectorAll('a').forEach((link) => {
+  mastheadLinks.forEach((link) => {
     if (link.hash === `#${key}`) link.setAttribute('aria-current', 'page');
     else link.removeAttribute('aria-current');
   });
@@ -938,18 +937,9 @@ lightbox.addEventListener('close', () => {
 
 document.addEventListener('keydown', (event) => {
   if (event.key !== 'Escape') return;
-  if (resources.open) {
-    resources.open = false;
-    resources.querySelector('summary').focus();
-    return;
-  }
   if (inspector.classList.contains('is-expanded')) {
     closeInspector();
   }
-});
-document.addEventListener('click', (event) => {
-  if (resources.open && !resources.contains(event.target))
-    resources.open = false;
 });
 function setRailOpen(open) {
   document.querySelector('.rail').dataset.open = String(open);

@@ -1203,7 +1203,7 @@ export const chapters = {
     kind: 'page',
     page: 'listen',
     group: 'supplement',
-    title: 'Listen',
+    title: 'Audio deep dives',
     subtitle: 'Four recordings',
     headline:
       'Listen to the introduction<span>or a technical discussion.</span>',

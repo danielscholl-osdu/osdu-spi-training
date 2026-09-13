@@ -1165,10 +1165,11 @@ test('audio markers are ordered, inside the recording, and point at real views',
   );
   assert.ok(!masthead.includes('Explore'), 'the masthead has no Explore link');
   assert.ok(
-    masthead.includes('class="masthead-resources"') &&
-      masthead.includes('href="#listen"') &&
-      masthead.includes('href="#field-guides"'),
-    'Listen and Field guides sit under Resources',
+    !masthead.includes('<details') &&
+      masthead.includes('class="masthead-link" href="#listen"') &&
+      masthead.includes('class="masthead-link" href="#field-guides"') &&
+      masthead.split('class="masthead-icon"').length === 3,
+    'Audio deep dives and Field guides are two icon links',
   );
   assert.match(html, /<dialog\s+id="video-dialog"/);
   const nav = chapterNavigation('running-stack');
