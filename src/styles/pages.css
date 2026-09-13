@@ -460,6 +460,9 @@
   display: grid;
   gap: 8px;
 }
+.guide-milestones code {
+  white-space: pre-wrap;
+}
 .guide-milestones li {
   display: grid;
   grid-template-columns: minmax(0, 1fr);
