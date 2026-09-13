@@ -391,6 +391,109 @@ export const chapters = {
       providerPath:
         'The provider checks Redis inside AKS with middleware credentials, then reads Azure Table Storage in common Storage outside AKS with Workload Identity, returning stored configuration. This lookup does not visit the partition’s Cosmos, blob Storage, or Service Bus.',
     },
+    comparison: {
+      title: 'Compare the partition lookup',
+      operation: 'GET /api/partition/v1/partitions/opendes',
+      intro:
+        'Both implementations answer the shared Partition API through IPartitionService.getPartition, but two separately built service images connect that call to different dependencies.',
+      community: {
+        label: 'Community implementation',
+        image: 'Community Partition service image',
+        revision: 'Partition 5aa406b9 · CIMPL Stack fe56aa1b',
+        hosting: 'Kubernetes in the CIMPL cluster',
+        process: {
+          label: 'Inside the community service process',
+          steps: [
+            {
+              label: 'Shared Partition API',
+              detail: 'Receives the illustrative opendes lookup',
+            },
+            {
+              label: 'IPartitionService.getPartition',
+              detail: 'Calls the selected implementation in process',
+            },
+            {
+              label: 'partition-core-plus',
+              detail: 'Runs the community implementation',
+            },
+            {
+              label: 'Configured VmCache',
+              detail: 'Returns early on a cache hit',
+            },
+            {
+              label: 'OsmPartitionPropertyRepository + PostgreSQL driver',
+              detail: 'Reads stored properties after a cache miss',
+            },
+          ],
+        },
+        dependencies: [
+          {
+            when: 'On a cache miss',
+            label: 'PostgreSQL',
+            detail: 'Separate dependency inside the CIMPL Kubernetes cluster',
+          },
+        ],
+        sources: [
+          'communityPartitionInterface',
+          'communityPartitionProvider',
+          'communityPartitionCache',
+          'communityPartitionRepository',
+          'communityPartitionPom',
+          'cimplArchitecture',
+          'cimplPartitionSecrets',
+        ],
+      },
+      azure: {
+        label: 'Azure implementation',
+        image: 'Azure Partition service image',
+        revision: 'osdu-spi-partition 3a5690d · SPI Stack dc2c956',
+        hosting: 'Partition service pod in AKS for dev1',
+        process: {
+          label: 'Inside the Azure service process',
+          steps: [
+            {
+              label: 'Shared Partition API',
+              detail: 'Receives the opendes lookup in dev1',
+            },
+            {
+              label: 'IPartitionService.getPartition',
+              detail: 'Calls the selected implementation in process',
+            },
+            {
+              label: 'provider/partition-azure',
+              detail: 'Runs the fork-owned Azure implementation',
+            },
+          ],
+        },
+        dependencies: [
+          {
+            when: 'First lookup',
+            label: 'Redis',
+            detail: 'Separate middleware dependency inside AKS',
+          },
+          {
+            when: 'On a miss or handled cache-read exception',
+            label: 'Common Table Storage',
+            detail: 'Azure PaaS dependency outside AKS',
+          },
+        ],
+        sources: [
+          'communityPartitionInterface',
+          'partitionProvider',
+          'partitionRedis',
+          'partitionTableStore',
+          'partitionPom',
+          'architecture',
+        ],
+      },
+      limitations: [
+        'The arrows show lookup and control flow; a cache server does not forward the request to storage, and a cache hit returns early.',
+        'The Azure fallback succeeds only when common Table Storage is reachable and opendes exists. This comparison does not assign the same cache-exception behavior to the community implementation.',
+        'This lookup returns stored configuration. It does not visit the partition’s Cosmos DB, Blob Storage, or Service Bus.',
+        'The community lane uses opendes only to compare the operation; it does not claim a default CIMPL deployment contains that partition, and dev1 names only the Azure environment.',
+        'Returned properties can differ. Hosting and registry origin do not identify the implementation, and source snapshots do not prove a deployed image digest or acceptance-test result.',
+      ],
+    },
     goal: 'Trace the lookup from shared code into the Azure provider, and explain what happens when the cache fails.',
     outcomes: [
       {
