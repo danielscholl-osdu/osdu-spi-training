@@ -1339,8 +1339,6 @@ body:has(.audio-dock:not([hidden])) main {
 
 /* Learn views: scope sentence and the running example */
 .view-scope {
-  display: grid;
-  gap: 12px;
   margin: -6px 0 22px;
   max-width: 820px;
   font-size: 14.5px;
@@ -1348,34 +1346,6 @@ body:has(.audio-dock:not([hidden])) main {
   color: #3e596e;
   border-left: 3px solid var(--line);
   padding-left: 14px;
-}
-.view-scope p {
-  margin: 0;
-}
-.view-question {
-  margin: -6px 0 10px;
-  max-width: 820px;
-  font-size: 15px;
-  line-height: 1.55;
-  color: var(--ink);
-  border-left: 3px solid var(--navy);
-  padding-left: 14px;
-}
-.view-question span {
-  display: block;
-  font-size: 11px;
-  font-weight: 700;
-  letter-spacing: 0.12em;
-  text-transform: uppercase;
-  color: var(--blue);
-  margin-bottom: 2px;
-}
-.view-question em {
-  display: block;
-  font-style: normal;
-  font-size: 13.5px;
-  color: var(--muted);
-  margin-top: 2px;
 }
 
 /* Learn views: the running example, drawn as hops above the map */
@@ -1451,41 +1421,14 @@ body:has(.audio-dock:not([hidden])) main {
   border-left: 4px solid #c9542f;
   background: #fff8f1;
 }
-.easy-mistake-head {
-  display: flex;
-  justify-content: space-between;
-  align-items: baseline;
-  gap: 12px;
-}
 .easy-mistake-head .guide-kicker {
   color: #b4561b;
-}
-.easy-mistake-head a {
-  font-size: 13px;
-  font-weight: 600;
-  text-decoration: none;
 }
 .easy-mistake .myth-claim,
 .easy-mistake .myth-reality,
 .easy-mistake .myth-links {
   margin: 0;
 }
-.view-scope span {
-  display: block;
-  font-size: 11px;
-  font-weight: 700;
-  letter-spacing: 0.12em;
-  text-transform: uppercase;
-  color: var(--muted);
-  margin-bottom: 2px;
-}
-.view-scope a {
-  font-size: 13px;
-  font-weight: 600;
-  text-decoration: none;
-  white-space: nowrap;
-}
-
 /* Learn views: zoom breadcrumb and candidate journey inside the diagram */
 .zoom-crumb {
   display: flex;
@@ -1725,7 +1668,7 @@ body:has(.audio-dock:not([hidden])) main {
   }
 }
 
-/* Learn views: carry forward */
+/* Learn views: outcomes */
 .outcomes {
   margin-top: 26px;
   padding: 20px 22px 18px;
@@ -1739,9 +1682,6 @@ body:has(.audio-dock:not([hidden])) main {
   font-weight: 800;
   letter-spacing: -0.02em;
   margin: 2px 0 12px;
-}
-.outcomes .guide-kicker {
-  color: #8fd3ec;
 }
 .outcomes ol {
   margin: 0;
@@ -2781,20 +2721,7 @@ body:has(.audio-dock:not([hidden])) main {
   }
 }
 
-/* Lesson 01: claims lead; evidence and reference material are optional. */
-.lesson-orientation {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 28px;
-  padding: 15px 0;
-  margin: 22px 0 26px;
-  border-block: 1px solid var(--line);
-}
-.lesson-orientation p {
-  margin: 5px 0 0;
-  font-size: 14px;
-  line-height: 1.5;
-}
+/* Structured lessons: claims lead; evidence and reference material are optional. */
 .claims {
   margin-bottom: 18px;
 }
@@ -3365,7 +3292,6 @@ body:has(.audio-dock:not([hidden])) main {
   display: none;
 }
 @media (max-width: 760px) {
-  .lesson-orientation,
   .claim-list,
   .partition-lookup-lanes,
   .partition-comparison-sources,

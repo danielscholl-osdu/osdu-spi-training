@@ -25,6 +25,7 @@ import {
   detailSourceLinks,
   exampleStrip,
   guideFigure,
+  hasClaims,
   hopIndexForRoute,
   mythCallout,
   pageRenderers,
@@ -1253,7 +1254,7 @@ test('comparison source URLs require approved repositories and immutable revisio
   );
 });
 
-test('learn views state a question, what they build on, their scope, and outcomes', () => {
+test('learn views retain authored lesson metadata and omit repeated scaffolding', () => {
   const learn = Object.entries(chapters).filter(
     ([, chapter]) => chapter.group === 'learn',
   );
@@ -1262,6 +1263,40 @@ test('learn views state a question, what they build on, their scope, and outcome
     assert.ok(chapter.builds?.trim(), `${id}: builds`);
     assert.ok(chapter.outcomes?.length >= 2, `${id}: outcomes`);
     assert.ok(chapter.where?.trim(), `${id}: where`);
+    const scope = chapterScope(id);
+    const outcomes = chapterOutcomes(id);
+    for (const label of [
+      'This lesson answers',
+      'This view answers',
+      'By the end',
+      'In this view',
+    ])
+      assert.doesNotMatch(scope, new RegExp(label), `${id}: ${label}`);
+    assert.ok(!scope.includes(chapter.question), `${id}: visible question`);
+    if (chapter.goal)
+      assert.ok(!scope.includes(chapter.goal), `${id}: visible goal`);
+    if (hasClaims(chapter)) assert.equal(scope, '', `${id}: structured scope`);
+    else {
+      assert.ok(scope.includes(chapter.builds), `${id}: prerequisite`);
+      assert.ok(scope.includes(chapter.where), `${id}: location`);
+    }
+    assert.equal(
+      outcomes.match(/<h2>What you can now say<\/h2>/g)?.length,
+      1,
+      `${id}: outcome heading`,
+    );
+    assert.doesNotMatch(outcomes, /Carry forward/, `${id}: outcome kicker`);
+
+    const mistakeIds = Array.isArray(chapter.mistakes)
+      ? chapter.mistakes
+      : Object.values(chapter.mistakes || {});
+    for (const mistakeId of new Set(mistakeIds)) {
+      const myth = myths.find(({ id: mythId }) => mythId === mistakeId);
+      const callout = mythCallout(mistakeId, id);
+      assert.doesNotMatch(callout, /All \d+, by theme/, `${id}: collection`);
+      assert.ok(callout.includes(myth.reality), `${id}: correction`);
+      assert.ok(callout.includes(sources[myth.source].href), `${id}: source`);
+    }
   }
   for (const level of zoomLevels) {
     verifyRoute(level.href, `zoom level ${level.id}`);
@@ -1786,7 +1821,7 @@ test('lesson 03 claims keep the provider seam understandable without evidence', 
     );
 });
 
-test('lesson 03 states its own prerequisite and place without changing orientation', () => {
+test('lesson 03 states its prerequisite and place in its lead', () => {
   const chapter = chapters['spi-boundary'];
   assert.match(chapter.intro, /^Builds on the partition lookup from 01/);
   assert.match(chapter.intro, /one service inside the osdu namespace/);
@@ -1796,15 +1831,8 @@ test('lesson 03 states its own prerequisite and place without changing orientati
     chapter.intro,
     /community partition-core-plus implementation.*fork-owned Azure implementation/,
   );
-  const orientation = chapterScope('spi-boundary');
-  assert.match(orientation, /This lesson answers/);
-  assert.match(orientation, /By the end/);
-  assert.ok(orientation.includes(chapter.goal));
-  assert.ok(!orientation.includes(chapter.builds));
-  assert.ok(!orientation.includes(chapter.where));
-  assert.ok(
-    !chapterScope('running-stack').includes(chapters['running-stack'].builds),
-  );
+  assert.equal(chapterScope('spi-boundary'), '');
+  assert.equal(chapterScope('running-stack'), '');
 });
 
 test('lesson 03 editorial copy stays at the provider boundary', () => {

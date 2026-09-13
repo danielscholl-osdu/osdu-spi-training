@@ -388,7 +388,7 @@ export function chapterOutcomes(key) {
   );
   const next = learn[learn.indexOf(key) + 1];
   return `<section class="outcomes" aria-label="What you can now say">
-    <div class="outcomes-head"><span class="guide-kicker">Carry forward</span><h2>What you can now say</h2></div>
+    <div class="outcomes-head"><h2>What you can now say</h2></div>
     <ol>${chapter.outcomes.map((line) => `<li>${escapeHtml(typeof line === 'string' ? line : line.text)}</li>`).join('')}</ol>
     ${
       key === 'handshake'
@@ -402,8 +402,9 @@ export function chapterOutcomes(key) {
 
 export function chapterScope(key) {
   const chapter = chapters[key];
-  if (hasClaims(chapter))
-    return `<div class="lesson-orientation"><div><span class="guide-kicker">This lesson answers</span><p>${escapeHtml(chapter.question)}</p></div><div><span class="guide-kicker">By the end</span><p>${escapeHtml(chapter.goal)}</p></div></div>`;
+  if (chapter.group === 'learn' && hasClaims(chapter)) return '';
+  if (chapter.group === 'learn')
+    return `<p class="view-scope">${escapeHtml(chapter.builds)} ${escapeHtml(chapter.where)}</p>`;
   if (!chapter.where) return '';
   return `<p class="view-question"><span>This view answers</span>${escapeHtml(chapter.question || '')}${chapter.builds ? ` <em>${escapeHtml(chapter.builds)}</em>` : ''}</p>
   <p class="view-scope"><span>In this view</span>${escapeHtml(chapter.where)} <a href="#start?guide=ladder">See the six places →</a></p>`;
@@ -491,7 +492,7 @@ export function mythCallout(id, chapterKey) {
       ? routeHref(route.chapter, route.step, route.detail, { claim })
       : myth.route;
   return `<aside class="easy-mistake" aria-label="Easy mistake">
-    <div class="easy-mistake-head"><span class="guide-kicker">Easy mistake</span><a href="${routeHref('not-true')}">All ${myths.length}, by theme →</a></div>
+    <div class="easy-mistake-head"><span class="guide-kicker">Easy mistake</span></div>
     <p class="myth-claim">“${myth.claim}”</p>
     <p class="myth-reality">${myth.reality}</p>
     <code class="myth-check">${escapeHtml(myth.check)}</code>
