@@ -44,8 +44,19 @@ const mapChapters = Object.entries(chapters).filter(
 const pageChapters = Object.entries(chapters).filter(
   ([, chapter]) => chapter.kind === 'page',
 );
-const partitionSourcePattern =
-  /^https:\/\/github.com\/Azure\/osdu-spi-partition(?:\/blob\/main\/|\/commit\/[0-9a-f]{40}$|$)/;
+const fullRevision = '[0-9a-f]{40}';
+const partitionSourcePattern = new RegExp(
+  `^https://github\\.com/Azure/osdu-spi-partition(?:/blob/(?:main|${fullRevision})/|/commit/${fullRevision}$|$)`,
+);
+const stackSourcePattern = new RegExp(
+  `^https://github\\.com/Azure/osdu-spi-stack/blob/(?:main|${fullRevision})/`,
+);
+const communityPartitionSourcePattern = new RegExp(
+  `^https://community\\.opengroup\\.org/osdu/platform/system/partition/-/blob/${fullRevision}/`,
+);
+const cimplStackSourcePattern = new RegExp(
+  `^https://community\\.opengroup\\.org/osdu/platform/deployment-and-operations/cimpl-stack/-/blob/${fullRevision}/`,
+);
 
 function verifyDetails(markup, context) {
   const ids = [...markup.matchAll(/data-detail="([^"]+)"/g)].map(
@@ -956,11 +967,11 @@ test('source links use readable documentation and match a sibling checkout when 
       assert.ok(url.pathname.startsWith('/osdu-spi/'), key);
     } else if (source.repo === 'osdu-spi-partition')
       assert.match(source.href, partitionSourcePattern);
-    else
-      assert.match(
-        source.href,
-        /^https:\/\/github.com\/Azure\/osdu-spi-stack\/blob\/main\//,
-      );
+    else if (source.repo === 'partition')
+      assert.match(source.href, communityPartitionSourcePattern);
+    else if (source.repo === 'cimpl-stack')
+      assert.match(source.href, cimplStackSourcePattern);
+    else assert.match(source.href, stackSourcePattern);
     const checkout = new URL(`../../${source.repo}/`, import.meta.url);
     if (existsSync(checkout)) {
       const target = new URL(source.path, checkout);
@@ -969,14 +980,43 @@ test('source links use readable documentation and match a sibling checkout when 
   }
 });
 
-test('partition source links accept pinned commits but reject unrelated URLs', () => {
+test('comparison source URLs require approved repositories and immutable revisions', () => {
   assert.match(sources.partitionCacheFix.href, partitionSourcePattern);
-  for (const href of [
-    'https://github.com/Azure/osdu-spi-partition/commit/fc2dfbf',
-    'https://github.com/Azure/osdu-spi-stack/commit/fc2dfbf6f1a3038a804441aba615bf5ebadb3332',
-    'https://example.com/Azure/osdu-spi-partition/commit/fc2dfbf6f1a3038a804441aba615bf5ebadb3332',
-  ])
-    assert.doesNotMatch(href, partitionSourcePattern);
+  const pinnedSources = [
+    ['architecture', stackSourcePattern],
+    ['partitionProvider', partitionSourcePattern],
+    ['partitionPom', partitionSourcePattern],
+    ['partitionRedis', partitionSourcePattern],
+    ['partitionTableStore', partitionSourcePattern],
+    ['communityPartitionInterface', communityPartitionSourcePattern],
+    ['communityPartitionProvider', communityPartitionSourcePattern],
+    ['communityPartitionCache', communityPartitionSourcePattern],
+    ['communityPartitionRepository', communityPartitionSourcePattern],
+    ['communityPartitionPom', communityPartitionSourcePattern],
+    ['cimplArchitecture', cimplStackSourcePattern],
+    ['cimplPartitionSecrets', cimplStackSourcePattern],
+  ];
+
+  for (const [key, pattern] of pinnedSources) {
+    const source = sources[key];
+    assert.match(source.href, pattern, key);
+    assert.ok(source.href.endsWith(`/${source.path}`), key);
+    assert.ok(source.href.includes(`/blob/${source.revision}/`), key);
+    assert.match(source.label, new RegExp(source.revision.slice(0, 7)), key);
+  }
+
+  assert.doesNotMatch(
+    'https://community.opengroup.org/osdu/platform/system/partition/-/blob/main/partition-core/pom.xml',
+    communityPartitionSourcePattern,
+  );
+  assert.doesNotMatch(
+    'https://community.opengroup.org/osdu/platform/deployment-and-operations/cimpl-stack/-/blob/fe56aa1b/docs/architecture.md',
+    cimplStackSourcePattern,
+  );
+  assert.doesNotMatch(
+    'https://github.com/other/osdu-spi-partition/blob/3a5690da3147d022ca9a2402858cd7b96e4688cf/pom.xml',
+    partitionSourcePattern,
+  );
 });
 
 test('learn views state a question, what they build on, their scope, and outcomes', () => {
