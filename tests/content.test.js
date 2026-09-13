@@ -1240,7 +1240,7 @@ test('lesson 03 claims keep the provider seam understandable without evidence', 
     'Workload Identity for the common Table Storage read',
     'same service process',
     'not a network hop',
-    'provider/&lt;svc&gt;-azure stays fork-owned',
+    'provider/partition-azure stays fork-owned',
   ])
     assert.ok(claims.includes(fact), `claim surface includes ${fact}`);
 
@@ -1266,6 +1266,42 @@ test('lesson 03 states its own prerequisite and place without changing orientati
   assert.ok(!orientation.includes(chapter.where));
   assert.ok(
     !chapterScope('running-stack').includes(chapters['running-stack'].builds),
+  );
+});
+
+test('lesson 03 editorial copy stays at the provider boundary', () => {
+  const chapter = chapters['spi-boundary'];
+  const requiredCopy = [
+    chapter.question,
+    chapter.goal,
+    ...chapter.outcomes.flatMap(({ headline, text, why }) => [
+      headline,
+      text,
+      why,
+    ]),
+    diagramRenderers.spi(),
+  ].join(' ');
+
+  assert.equal(
+    chapter.question,
+    'Where does shared code hand the lookup to the Azure provider?',
+  );
+  assert.equal(
+    chapter.goal,
+    'Trace the lookup from shared code into the Azure provider, and explain what happens when the cache fails.',
+  );
+  assert.equal(
+    chapter.outcomes[2].text,
+    'The fork maintains the Azure provider separately from generated shared code.',
+  );
+  assert.equal(
+    chapter.outcomes[2].why,
+    'Shared code is regenerated from the community repository, while provider/partition-azure stays fork-owned, so removal of upstream’s Azure copy does not delete the fork’s provider.',
+  );
+  assert.match(requiredCopy, /come from the community repository/);
+  assert.doesNotMatch(
+    requiredCopy,
+    /\bfork_upstream\b|\bfork_integration\b|\bmain\b/,
   );
 });
 

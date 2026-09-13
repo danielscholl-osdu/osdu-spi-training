@@ -292,7 +292,7 @@ export const chapters = {
       'partitionProvider',
       'partitionCacheFix',
     ],
-    question: 'Where inside a service does OSDU stop and Azure begin?',
+    question: 'Where does shared code hand the lookup to the Azure provider?',
     builds:
       'Zooms into the partition service from 01 and follows the same lookup through its provider.',
     where:
@@ -375,7 +375,7 @@ export const chapters = {
       providerPath:
         'The provider checks Redis inside AKS with middleware credentials, then reads Azure Table Storage in common Storage outside AKS with Workload Identity, returning stored configuration. This lookup does not visit the partition’s Cosmos, blob Storage, or Service Bus.',
     },
-    goal: 'With the drawer closed, you can point to where shared code ends and Azure provider code begins, explain why the interface is not a network hop, and say what survives a cache exception.',
+    goal: 'Trace the lookup from shared code into the Azure provider, and explain what happens when the cache fails.',
     outcomes: [
       {
         headline: 'Common code calls Azure through a provider interface.',
@@ -397,8 +397,8 @@ export const chapters = {
       },
       {
         headline: 'The fork keeps Azure source outside the generated tree.',
-        text: 'Upstream may delete its Azure implementations; the fork owns provider/<svc>-azure and keeps it outside the generated upstream tree.',
-        why: 'The engineering system regenerates fork_upstream from upstream while provider/<svc>-azure stays fork-owned on fork_integration and main.',
+        text: 'The fork maintains the Azure provider separately from generated shared code.',
+        why: 'Shared code is regenerated from the community repository, while provider/partition-azure stays fork-owned, so removal of upstream’s Azure copy does not delete the fork’s provider.',
         focus: ['upstream', 'azureimpl', 'engineering'],
         scopes: ['spi-provider', 'spi-sources'],
         evidence: 'upstream',
