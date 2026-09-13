@@ -1,8 +1,7 @@
 # Iteration 7 · Lesson 02 lifecycle claims
 
 Lesson 02 now uses the claims-first grammar established by lesson 01 while
-retaining all six lifecycle moments and their stable routes. The implementation
-is on `keelson/beads-work/5cba8359` for Beads issue `fn-cca`.
+retaining all six lifecycle moments and their stable routes.
 
 ## What changed
 
@@ -48,27 +47,10 @@ The focused Node tests cover stable lifecycle routes, real evidence targets,
 moment-aware claim focus, canonical evidence links, all five example hops, and
 unchanged lesson 01 paths.
 
-The off-repository CDP probe at
-`/Users/danielscholl/.copilot/session-state/820e764e-b550-434d-b92b-b17f8487c606/files/lesson-02-dom-check.mjs`
-passes at 1440px and 390px. It checks bare-route drawer state, claim and moment
+An off-repository Chrome DevTools Protocol probe passes at 1440px and 390px. It checks bare-route drawer state, claim and moment
 synchronization, repeat selection, Look closer and node focus return,
 Back/Forward hop restoration, modifier clicks, grammar order, all six visible
-moment controls, and horizontal overflow. Its result and visible text are in
-`lesson-02-dom-results.json`, `lesson-02-dom-check.log`, and
-`lesson-02-visible-text.txt` in the same directory.
-
-The screenshot set in that directory contains:
-
-- `lesson-02-start-1440.png` and `lesson-02-start-390.png`
-- `lesson-02-provision-map-1440.png`,
-  `lesson-02-bootstrap-map-1440.png`, and
-  `lesson-02-reconcile-map-1440.png`
-- `lesson-02-inspect-map-1440.png`, `lesson-02-inspect-map-390.png`, and
-  `lesson-02-remove-map-1440.png`
-- `lesson-02-readiness-drawer-1440.png` and
-  `lesson-02-readiness-drawer-390.png`
-- `lesson-02-inspect-exit-1440.png` and `lesson-02-remove-exit-390.png`
-- `lesson-01-regression-1440.png` and `handshake-regression-390.png`
+moment controls, and horizontal overflow.
 
 With the drawer, running example, and optional disclosures closed, the lesson
 supports this account: the CLI drives Bicep to create Azure and seeds AKS; Flux
@@ -81,17 +63,6 @@ identities and the resource group’s naming footprint.
 An independent agent reviewed `origin/main..HEAD` for missing targets, stale
 claim or hop state, drawer intent and focus restoration, and lesson 01
 regressions. It reported no substantive findings.
-
-## Commits
-
-- `3daf506` exposes a real evidence target and Look closer route for every
-  lifecycle moment.
-- `0c2a6fb` encodes the three claims, their moment metadata, and source-backed
-  explanations.
-- `1b0f784` renders moment-aware evidence routes and shared route-selection
-  helpers.
-- `76c68bd` synchronizes claims, moments, history, hops, and drawer intent.
-- `f5e0bab` fits Look closer into the shared responsive lesson layout.
 
 ## Not done, on purpose
 

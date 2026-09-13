@@ -275,9 +275,10 @@ export const componentDetails = {
     body: 'PartitionServiceImpl.getPartition asks the cache for opendes. When the cache misses, or when the read throws, it reads the stored configuration from the partition table in common Storage; a cache failure is logged as a warning and the lookup still answers. The code lives in provider/partition-azure, which the fork owns: it stays on fork_integration and main, outside the tree regenerated from upstream (osdu-spi ADR-038), so upstream’s planned removal of its Azure implementations deletes nothing here.',
     artifact: {
       label: 'The fallback, with its tests',
-      code: 'PartitionServiceImpl.getPartition(id)\n  safeGet(cache, id)  → null on miss or exception (logged)\n  tableStore.getPartition(id)  when null\nPartitionServiceImplCacheTest.java',
+      code: 'PartitionServiceImpl.getPartition(id)\n  safeGet(cache, id)  → null on miss or exception (logged)\n  tableStore.getPartition(id)  when null\nPartitionServiceImplTest.java\n  should_fallBackToTableStore_when_cacheReadThrows_onGetPartition',
     },
     source: 'partitionProvider',
+    goDeeper: ['partitionCacheFix', 'ownership', 'partitionProvider'],
   },
   azureclients: {
     label: 'Inside the provider',

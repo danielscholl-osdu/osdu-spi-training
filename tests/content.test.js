@@ -15,13 +15,18 @@ import {
   creationWalkthrough,
 } from '../src/components/architecture.js';
 import { infographics } from '../src/components/infographics.js';
+import { escapeHtml } from '../src/components/node.js';
 import {
-  pageRenderers,
   chapterOutcomes,
+  chapterScope,
   claimIndexForRoute,
   claimStrip,
+  detailSourceLinks,
   exampleStrip,
   hopIndexForRoute,
+  pageRenderers,
+  resolveExamplePresentation,
+  selectExampleVariant,
 } from '../src/components/pages.js';
 import { parseRoute, routeHref, chapterSteps } from '../src/router.js';
 import { forkMoments } from '../src/content/fork-moments.js';
@@ -35,6 +40,8 @@ const mapChapters = Object.entries(chapters).filter(
 const pageChapters = Object.entries(chapters).filter(
   ([, chapter]) => chapter.kind === 'page',
 );
+const partitionSourcePattern =
+  /^https:\/\/github.com\/Azure\/osdu-spi-partition(?:\/blob\/main\/|\/commit\/[0-9a-f]{40}$|$)/;
 
 function verifyDetails(markup, context) {
   const ids = [...markup.matchAll(/data-detail="([^"]+)"/g)].map(
@@ -149,7 +156,35 @@ test('every explanation names an artifact and a source', () => {
     assert.ok(detail.artifact?.label?.trim(), `${id}: artifact label`);
     assert.ok(detail.artifact?.code?.trim(), `${id}: artifact`);
     assert.ok(sources[detail.source], `${id}: source`);
+    for (const source of detail.goDeeper || [])
+      assert.ok(sources[source], `${id}: Go deeper source ${source}`);
   }
+});
+
+test('Go deeper links preserve evidence order and single-source fallback', () => {
+  const ordered = detailSourceLinks(componentDetails.azureimpl);
+  const expected = componentDetails.azureimpl.goDeeper.map(
+    (key) => sources[key].href,
+  );
+  assert.deepEqual(
+    [...ordered.matchAll(/href="([^"]+)"/g)].map((match) => match[1]),
+    expected,
+  );
+
+  const fallback = detailSourceLinks(componentDetails.contract);
+  assert.deepEqual(
+    [...fallback.matchAll(/href="([^"]+)"/g)].map((match) => match[1]),
+    [sources[componentDetails.contract.source].href],
+  );
+  assert.match(ordered, /target="_blank" rel="noopener noreferrer"/);
+  assert.throws(
+    () =>
+      detailSourceLinks({
+        source: 'partitionProvider',
+        goDeeper: ['missing-source'],
+      }),
+    /Unknown source key: missing-source/,
+  );
 });
 
 test('every lifecycle state and request path has unambiguous component selections', () => {
@@ -209,6 +244,35 @@ test('look closer links resolve to every lifecycle moment target', () => {
         `${moment.id}: sequence omits ${sequenceMoment.id}`,
       );
   }
+});
+
+test('SPI boundary map exposes one runtime seam and its source owners', () => {
+  const markup = diagramRenderers.spi();
+  const details = [...markup.matchAll(/data-detail="([^"]+)"/g)].map(
+    (match) => match[1],
+  );
+  assert.deepEqual(details, [
+    'client',
+    'image',
+    'core',
+    'contract',
+    'azureimpl',
+    'azureclients',
+    'upstream',
+    'engineering',
+  ]);
+  for (const scope of [
+    'spi-image',
+    'spi-shared',
+    'spi-provider',
+    'spi-sources',
+  ])
+    assert.match(markup, new RegExp(`data-scope="${scope}"`));
+  assert.match(markup, /partition-core/);
+  assert.match(markup, /IPartitionService\.getPartition/);
+  assert.match(markup, /provider\/partition-azure/);
+  assert.match(markup, /no network hop/);
+  assert.equal([...markup.matchAll(/data-trace-status=/g)].length, 2);
 });
 
 test('deep links recover chapter, lifecycle moment, and component without module state', () => {
@@ -380,10 +444,7 @@ test('source links use readable documentation and match a sibling checkout when 
       assert.equal(url.hostname, 'azure.github.io', key);
       assert.ok(url.pathname.startsWith('/osdu-spi/'), key);
     } else if (source.repo === 'osdu-spi-partition')
-      assert.match(
-        source.href,
-        /^https:\/\/github.com\/Azure\/osdu-spi-partition(\/blob\/main\/|$)/,
-      );
+      assert.match(source.href, partitionSourcePattern);
     else
       assert.match(
         source.href,
@@ -395,6 +456,16 @@ test('source links use readable documentation and match a sibling checkout when 
       assert.ok(existsSync(target), `${key}: missing ${fileURLToPath(target)}`);
     }
   }
+});
+
+test('partition source links accept pinned commits but reject unrelated URLs', () => {
+  assert.match(sources.partitionCacheFix.href, partitionSourcePattern);
+  for (const href of [
+    'https://github.com/Azure/osdu-spi-partition/commit/fc2dfbf',
+    'https://github.com/Azure/osdu-spi-stack/commit/fc2dfbf6f1a3038a804441aba615bf5ebadb3332',
+    'https://example.com/Azure/osdu-spi-partition/commit/fc2dfbf6f1a3038a804441aba615bf5ebadb3332',
+  ])
+    assert.doesNotMatch(href, partitionSourcePattern);
 });
 
 test('learn views state a question, what they build on, their scope, and outcomes', () => {
@@ -531,6 +602,13 @@ test('structured claims resolve their focus, evidence, and scopes on every scene
         ),
       };
     };
+    for (const step of chapterSceneSteps)
+      for (const id of chapter.example.scopes || [])
+        assert.ok(
+          scene(step).scopes.has(id),
+          `${key}/${step}: example scope ${id}`,
+        );
+    const claimsMarkup = claimStrip(key);
     claims.forEach((claim, index) => {
       assert.ok(
         Array.isArray(claim.focus) && Array.isArray(claim.scopes),
@@ -547,6 +625,16 @@ test('structured claims resolve their focus, evidence, and scopes on every scene
           claim.headline.length < claim.text.length &&
           claim.headline.length <= 80,
         `${key}: claim ${index} headline is shorter than its sentence`,
+      );
+      assert.ok(
+        claimsMarkup.includes(
+          routeHref(
+            key,
+            claim.evidenceStep || claim.step || null,
+            claim.evidence,
+          ),
+        ),
+        `${key}: claim ${index} evidence destination`,
       );
       if (claim.steps) {
         assert.ok(claim.step, `${key}: claim ${index} entry step`);
@@ -719,4 +807,207 @@ test('lesson 02 claim rendering and example routes preserve lesson 01 behavior',
     lessonOneExample,
     /The provider checks its cache, then Azure Table Storage/,
   );
+});
+
+test('lesson 03 claims keep the provider seam understandable without evidence', () => {
+  const chapter = chapters['spi-boundary'];
+  assert.equal(
+    chapter.headline.replace(/<[^>]+>/g, ' ').trim(),
+    'The provider lives inside the service.',
+  );
+  assert.equal(chapter.outcomes.length, 3);
+  assert.deepEqual(
+    chapter.outcomes.map(({ headline, focus, evidence, scopes }) => ({
+      headline,
+      focus,
+      evidence,
+      scopes,
+    })),
+    [
+      {
+        headline: 'Common code calls Azure through a provider interface.',
+        focus: ['core', 'contract', 'azureimpl', 'azureclients'],
+        evidence: 'azureimpl',
+        scopes: ['spi-shared', 'spi-provider'],
+      },
+      {
+        headline: 'The interface and implementation ship in one image.',
+        focus: ['contract', 'azureimpl', 'image'],
+        evidence: 'image',
+        scopes: ['spi-image'],
+      },
+      {
+        headline: 'The fork keeps Azure source outside the generated tree.',
+        focus: ['upstream', 'azureimpl', 'engineering'],
+        evidence: 'upstream',
+        scopes: ['spi-provider', 'spi-sources'],
+      },
+    ],
+  );
+  for (const claim of chapter.outcomes)
+    assert.ok(
+      claim.headline.split(/\s+/).length < 12,
+      `${claim.headline}: fewer than twelve words`,
+    );
+
+  const claims = claimStrip('spi-boundary');
+  for (const fact of [
+    'partition-core calls IPartitionService.getPartition',
+    'Workload Identity for Azure access',
+    'The Table Storage read still happens when the cache throws.',
+    'same service process',
+    'not a network hop',
+    'provider/&lt;svc&gt;-azure stays fork-owned',
+  ])
+    assert.ok(claims.includes(fact), `claim surface includes ${fact}`);
+
+  const outcomes = chapterOutcomes('spi-boundary');
+  for (const claim of chapter.outcomes)
+    assert.ok(
+      outcomes.includes(escapeHtml(claim.text)),
+      `carry forward repeats: ${claim.headline}`,
+    );
+});
+
+test('lesson 03 states its own prerequisite and place without changing orientation', () => {
+  const chapter = chapters['spi-boundary'];
+  assert.match(chapter.intro, /^Builds on the partition lookup from 01/);
+  assert.match(chapter.intro, /one service inside the osdu namespace/);
+  assert.match(chapter.intro, /partition in dev1/);
+  assert.match(chapter.intro, /Service Provider Interface \(SPI\)/);
+  const orientation = chapterScope('spi-boundary');
+  assert.match(orientation, /This lesson answers/);
+  assert.match(orientation, /By the end/);
+  assert.ok(orientation.includes(chapter.goal));
+  assert.ok(!orientation.includes(chapter.builds));
+  assert.ok(!orientation.includes(chapter.where));
+  assert.ok(
+    !chapterScope('running-stack').includes(chapters['running-stack'].builds),
+  );
+});
+
+test('example variants present two states of one canonical five-hop trace', () => {
+  const example = chapters['spi-boundary'].example;
+  const canonical = structuredClone(example.hops);
+  const normal = resolveExamplePresentation(example);
+  const cacheDown = resolveExamplePresentation(example, 'cache-down');
+
+  assert.equal(normal.selectedVariant, 'normal');
+  assert.deepEqual(
+    normal.hops.map(({ detail }) => detail),
+    ['client', 'core', 'contract', 'azureimpl', 'azureclients'],
+  );
+  assert.deepEqual(
+    cacheDown.hops.map(({ detail }) => detail),
+    normal.hops.map(({ detail }) => detail),
+  );
+  assert.equal(normal.hops[3].copy, 'Healthy cache miss');
+  assert.equal(normal.hops[4].copy, 'Stored configuration for opendes');
+  assert.equal(cacheDown.hops[3].copy, 'Cache read throws; treated as a miss');
+  assert.equal(cacheDown.hops[4].copy, 'Table Storage answers anyway');
+  assert.deepEqual(example.hops, canonical);
+
+  const route = parseRoute('#spi-boundary');
+  const normalMarkup = exampleStrip('spi-boundary', route);
+  const cacheDownMarkup = exampleStrip('spi-boundary', route, 'cache-down');
+  for (const markup of [normalMarkup, cacheDownMarkup]) {
+    assert.equal((markup.match(/<ol class="journey"/g) || []).length, 1);
+    assert.equal((markup.match(/data-hop="/g) || []).length, 5);
+    assert.equal((markup.match(/data-example-variant=/g) || []).length, 2);
+  }
+  const links = (markup) =>
+    [...markup.matchAll(/<a href="([^"]+)" data-map-jump data-hop/g)].map(
+      (match) => match[1],
+    );
+  assert.deepEqual(links(cacheDownMarkup), links(normalMarkup));
+  assert.match(normalMarkup, /healthy cache miss/i);
+  assert.match(cacheDownMarkup, /Cache read throws; treated as a miss/);
+  assert.match(cacheDownMarkup, /Table Storage answers anyway/);
+});
+
+test('example compatibility keeps provider paths in content and controls optional', () => {
+  for (const key of ['running-stack', 'spi-boundary']) {
+    const example = chapters[key].example;
+    assert.match(example.providerPath, /Azure Table Storage in common Storage/);
+    assert.match(
+      example.providerPath,
+      /does not visit the partition’s Cosmos, blob Storage, or Service Bus/,
+    );
+  }
+
+  const lessonOne = exampleStrip(
+    'running-stack',
+    parseRoute('#running-stack/request'),
+  );
+  assert.ok(!lessonOne.includes('data-example-variant'));
+  assert.match(lessonOne, /The answer describes where opendes lives/);
+  assert.match(lessonOne, /does not visit the partition’s Cosmos/);
+});
+
+test('lesson trace state keeps variants local and preserves an active hop', () => {
+  const initial = {
+    claim: 0,
+    hop: -1,
+    policy: 'learn',
+    exampleOpen: false,
+    variant: 'normal',
+  };
+  const cacheDown = selectExampleVariant(initial, 'cache-down', 5);
+  assert.deepEqual(cacheDown, {
+    ...initial,
+    hop: 4,
+    exampleOpen: true,
+    variant: 'cache-down',
+  });
+  const atProvider = { ...cacheDown, hop: 3 };
+  assert.deepEqual(selectExampleVariant(atProvider, 'normal', 5), {
+    ...atProvider,
+    variant: 'normal',
+  });
+  assert.deepEqual(initial, {
+    claim: 0,
+    hop: -1,
+    policy: 'learn',
+    exampleOpen: false,
+    variant: 'normal',
+  });
+});
+
+test('lesson 03 evidence deep links stay step-less and map to claims', () => {
+  const chapter = chapters['spi-boundary'];
+  for (const [detail, claim] of [
+    ['azureimpl', 0],
+    ['image', 1],
+    ['upstream', 2],
+  ]) {
+    const route = parseRoute(`#spi-boundary?detail=${detail}`);
+    assert.equal(route.step, '');
+    assert.equal(
+      chapter.outcomes.findIndex((entry) => entry.evidence === route.detail),
+      claim,
+    );
+  }
+  assert.equal(
+    parseRoute('#running-stack/request?detail=provider').step,
+    'request',
+  );
+});
+
+test('example renderers preserve structured and unconverted lessons', () => {
+  const fixtures = [
+    ['running-stack', '#running-stack/request', true],
+    ['spi-boundary', '#spi-boundary', true],
+    ['bring-up', '#bring-up/provision', true],
+    ['fork-shape', '#fork-shape', false],
+  ];
+  for (const [key, href, structured] of fixtures) {
+    const markup = exampleStrip(key, parseRoute(href));
+    assert.ok(markup.includes('class="journey"'), key);
+    assert.equal(markup.includes('example-disclosure'), structured, key);
+    assert.equal(
+      (markup.match(/data-example-variant=/g) || []).length,
+      key === 'spi-boundary' ? 2 : 0,
+      key,
+    );
+  }
 });

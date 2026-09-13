@@ -396,9 +396,11 @@ h3 {
   color: #fff;
 }
 .node.shared-code small,
-.node.shared-code .node-label,
-.node.shared-code .node-open {
+.node.shared-code .node-label {
   color: #c7deee;
+}
+.node.shared-code .node-open {
+  color: var(--navy);
 }
 .node.fork-code {
   background: var(--orange-bg);

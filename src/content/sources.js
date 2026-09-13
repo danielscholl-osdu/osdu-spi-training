@@ -53,6 +53,12 @@ export const sources = {
     path: 'provider/partition-azure/src/main/java/org/opengroup/osdu/partition/provider/azure/service/PartitionServiceImpl.java',
     href: 'https://github.com/Azure/osdu-spi-partition/blob/main/provider/partition-azure/src/main/java/org/opengroup/osdu/partition/provider/azure/service/PartitionServiceImpl.java',
   },
+  partitionCacheFix: {
+    label: 'Cache-read fallback fix (fc2dfbf)',
+    repo: 'osdu-spi-partition',
+    path: 'provider/partition-azure/src/main/java/org/opengroup/osdu/partition/provider/azure/service/PartitionServiceImpl.java',
+    href: 'https://github.com/Azure/osdu-spi-partition/commit/fc2dfbf6f1a3038a804441aba615bf5ebadb3332',
+  },
   ownership: {
     label: 'Why Azure source belongs to the fork',
     repo: 'osdu-spi',
