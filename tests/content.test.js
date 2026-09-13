@@ -36,7 +36,13 @@ import {
   selectExampleVariant,
   tryItBand,
 } from '../src/components/pages.js';
-import { parseRoute, routeHref, chapterSteps } from '../src/router.js';
+import {
+  chapterAliases,
+  chapterSteps,
+  parseRoute,
+  retiredDetails,
+  routeHref,
+} from '../src/router.js';
 import { forkMoments } from '../src/content/fork-moments.js';
 import { zoomLevels, spiMeanings } from '../src/content/concepts.js';
 import { mythThemes } from '../src/content/myths.js';
@@ -711,6 +717,51 @@ test('deep links recover chapter, lifecycle moment, and component without module
       detail: null,
       ...base,
     });
+  }
+});
+
+test('every published chapter, step, alias, and retired detail resolves', () => {
+  for (const [key, chapter] of Object.entries(chapters)) {
+    const steps = chapterSteps(key);
+    const bare = parseRoute(routeHref(key));
+    assert.equal(bare.chapter, key, `${key}: chapter`);
+    assert.equal(bare.step, steps[0] || '', `${key}: default step`);
+    for (const step of steps) {
+      const route = parseRoute(routeHref(key, step));
+      assert.equal(route.chapter, key, `${key}/${step}: chapter`);
+      assert.equal(route.step, step, `${key}/${step}: step`);
+    }
+    if (chapter.kind !== 'map') continue;
+    for (const step of steps.length ? steps : ['']) {
+      const route = parseRoute(routeHref(key, step));
+      verifyDetails(
+        diagramRenderers[chapter.diagram](route),
+        `${key}/${step || 'default'}`,
+      );
+    }
+  }
+
+  for (const [alias, target] of Object.entries(chapterAliases))
+    assert.equal(parseRoute(`#${alias}`).chapter, target, `${alias}: alias`);
+
+  for (const [sourceChapter, details] of Object.entries(retiredDetails)) {
+    for (const [sourceDetail, [chapter, step, detail]] of Object.entries(
+      details,
+    )) {
+      const route = parseRoute(`#${sourceChapter}?detail=${sourceDetail}`);
+      assert.deepEqual(
+        [route.chapter, route.step, route.detail],
+        [chapter, step || chapterSteps(chapter)[0] || '', detail],
+        `${sourceChapter}: ${sourceDetail}`,
+      );
+      const target = chapters[chapter];
+      assert.equal(target.kind, 'map', `${sourceDetail}: map target`);
+      assert.match(
+        diagramRenderers[target.diagram](route),
+        new RegExp(`data-detail="${detail}"`),
+        `${sourceDetail}: target component`,
+      );
+    }
   }
 });
 
