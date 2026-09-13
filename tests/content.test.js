@@ -24,8 +24,10 @@ import {
   detailSourceLinks,
   exampleStrip,
   hopIndexForRoute,
+  mythCallout,
   pageRenderers,
   resolveExamplePresentation,
+  resolveLessonSelection,
   selectExampleVariant,
 } from '../src/components/pages.js';
 import { parseRoute, routeHref, chapterSteps } from '../src/router.js';
@@ -378,6 +380,62 @@ test('selection intent is additive and invalid qualifiers preserve legacy routes
       href,
     );
   }
+
+  const collisions = [
+    ['running-stack', 'request', 'shared-data', 1, 4],
+    ['running-stack', 'request', 'service', 2, 2],
+    ['spi-boundary', '', 'azureimpl', 0, 3],
+  ];
+  for (const [key, step, detail, claim, hop] of collisions) {
+    const chapter = chapters[key];
+    assert.deepEqual(
+      resolveLessonSelection(chapter, parseRoute(routeHref(key, step, detail))),
+      { claim, hop: -1, exampleOpen: false },
+      `${key}: legacy evidence`,
+    );
+    assert.deepEqual(
+      resolveLessonSelection(
+        chapter,
+        parseRoute(routeHref(key, step, detail, { claim })),
+      ),
+      { claim, hop: -1, exampleOpen: false },
+      `${key}: explicit evidence`,
+    );
+    assert.deepEqual(
+      resolveLessonSelection(
+        chapter,
+        parseRoute(routeHref(key, step, detail, { hop })),
+      ),
+      { claim, hop, exampleOpen: true },
+      `${key}: explicit trace`,
+    );
+  }
+
+  const inspectionLinks = [
+    [
+      creationWalkthrough(parseRoute('#bring-up/provision')),
+      '#bring-up/provision?detail=aks&claim=0',
+    ],
+    [
+      creationWalkthrough(parseRoute('#bring-up/bootstrap')),
+      '#bring-up/bootstrap?detail=bootstrap&claim=0',
+    ],
+    [infographics.familiar(), '#running-stack/request?detail=gateway&claim=2'],
+    [
+      mythCallout('certificate-means-encrypted', 'running-stack'),
+      '#running-stack/request?detail=gateway&claim=0',
+    ],
+    [
+      mythCallout('token-accepted-means-authorized', 'running-stack'),
+      '#running-stack/request?detail=gateway&claim=0',
+    ],
+    [
+      mythCallout('smoke-proves-api', 'bring-up'),
+      '#bring-up/inspect?detail=caller&claim=1',
+    ],
+  ];
+  for (const [markup, href] of inspectionLinks)
+    assert.ok(markup.includes(`href="${href}"`), href);
 });
 
 test('field checks name a source, a command, and a place on the site', () => {
@@ -696,6 +754,7 @@ test('structured claims resolve their focus, evidence, and scopes on every scene
             key,
             claim.evidenceStep || claim.step || null,
             claim.evidence,
+            { claim: index },
           ),
         ),
         `${key}: claim ${index} evidence destination`,
@@ -796,9 +855,9 @@ test('lesson 02 claim rendering and example routes preserve lesson 01 behavior',
   const strip = claimStrip('bring-up');
   const outcomes = chapterOutcomes('bring-up');
   const expectedEvidence = [
-    '#bring-up/reconcile?detail=flux',
-    '#bring-up/inspect?detail=readiness',
-    '#bring-up/remove?detail=retained',
+    '#bring-up/reconcile?detail=flux&claim=0',
+    '#bring-up/inspect?detail=readiness&claim=1',
+    '#bring-up/remove?detail=retained&claim=2',
   ];
   for (const [index, claim] of chapter.outcomes.entries()) {
     assert.ok(strip.includes(claim.headline), `claim ${index} headline`);
@@ -837,7 +896,7 @@ test('lesson 02 claim rendering and example routes preserve lesson 01 behavior',
     assert.equal(hopIndexForRoute(chapter, route), index);
     assert.ok(
       exampleMarkup.includes(
-        `href="${routeHref('bring-up', hop.step, hop.detail)}"`,
+        `href="${routeHref('bring-up', hop.step, hop.detail, { hop: index })}"`,
       ),
     );
   }
@@ -854,11 +913,15 @@ test('lesson 02 claim rendering and example routes preserve lesson 01 behavior',
     parseRoute('#running-stack/request?detail=gateway'),
   );
   assert.ok(
-    lessonOneClaims.includes('href="#running-stack?detail=environment"'),
+    lessonOneClaims.includes(
+      'href="#running-stack?detail=environment&claim=0"',
+    ),
     'timeless claim evidence keeps its chapter-only route',
   );
   assert.ok(
-    lessonOneExample.includes('href="#running-stack/request?detail=gateway"'),
+    lessonOneExample.includes(
+      'href="#running-stack/request?detail=gateway&hop=1"',
+    ),
   );
   assert.equal(
     hopIndexForRoute(

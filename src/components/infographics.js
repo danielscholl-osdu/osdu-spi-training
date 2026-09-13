@@ -332,7 +332,7 @@ const familiar = [
       'Istio gateway, then a sidecar that identifies the caller, then the service',
     owner: 'you',
     where: 'AKS · aks-istio-ingress',
-    href: '#running-stack/request?detail=gateway',
+    href: '#running-stack/request?detail=gateway&claim=2',
     detail: 'gateway',
   },
   {
