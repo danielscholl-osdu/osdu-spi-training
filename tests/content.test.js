@@ -161,6 +161,31 @@ test('every explanation names an artifact and a source', () => {
   }
 });
 
+test('readiness drawer distinguishes observed state from API proof', () => {
+  const readiness = componentDetails.readiness;
+  const drawerCopy = `${readiness.label} ${readiness.title} ${readiness.body}`;
+
+  assert.equal(readiness.source, 'lifecycle');
+  assert.match(readiness.artifact.code, /spi status --watch/);
+  assert.match(readiness.artifact.code, /spi info --show-apis/);
+  assert.match(readiness.body, /opendes lookup in dev1/);
+  assert.match(
+    readiness.body,
+    /CLI verifies the requested Git artifact revision/,
+  );
+  assert.match(readiness.body, /Flux overlaps the final CLI work/);
+  assert.match(readiness.body, /observes configured workload health/);
+  assert.match(readiness.body, /discovers the endpoint/);
+  assert.match(
+    readiness.body,
+    /authenticated lookup proves that exercised API path, not every API/,
+  );
+  assert.match(readiness.body, /Running phase is not necessarily Ready/);
+  assert.match(readiness.body, /Job should be Complete rather than Running/);
+  for (const phrase of ['first of five', 'the rest', 'later milestone'])
+    assert.doesNotMatch(drawerCopy, new RegExp(phrase, 'i'));
+});
+
 test('Go deeper links preserve evidence order and single-source fallback', () => {
   const ordered = detailSourceLinks(componentDetails.azureimpl);
   const expected = componentDetails.azureimpl.goDeeper.map(
