@@ -686,7 +686,7 @@ test('lesson 02 preserves its outcomes as three moment-aware claims', () => {
   const chapter = chapters['bring-up'];
   const expectedOutcomes = [
     'The CLI and Bicep create Azure and seed the cluster; Flux assembles the workloads; controllers keep them healthy. Different owners, different clocks.',
-    'A successful spi up exit is the first of five milestones, not readiness. spi status --watch is how I follow the rest.',
+    'A successful spi up does not establish API readiness. I follow workload health and initialization with spi status --watch, then verify the API path I need with an authenticated request.',
     'spi down removes compute and data but keeps identities and the resource group, so a rebuild reuses the same names.',
   ];
   assert.equal(chapter.outcomes.length, 3);
@@ -725,6 +725,30 @@ test('lesson 02 preserves its outcomes as three moment-aware claims', () => {
     chapter.example.note,
     /does not visit.*Cosmos DB.*blob Storage.*Service Bus/,
   );
+});
+
+test('lesson 02 readiness signals separate orchestration from API proof', () => {
+  const readiness = chapters['bring-up'].outcomes[1];
+  const visibleCopy = `${readiness.text} ${readiness.why}`;
+
+  assert.equal(readiness.headline, 'CLI success is not API readiness.');
+  assert.match(readiness.text, /spi up does not establish API readiness/);
+  assert.match(readiness.text, /spi status --watch/);
+  assert.match(readiness.text, /authenticated request/);
+  assert.match(
+    readiness.why,
+    /requested Git artifact revision is verified before that exit/,
+  );
+  assert.match(readiness.why, /Flux overlaps the final CLI stages/);
+  assert.match(readiness.why, /Ready Kustomizations and HelmReleases/);
+  assert.match(readiness.why, /Complete initialization Jobs/);
+  assert.match(
+    readiness.why,
+    /authenticated request proves only the exercised API path/,
+  );
+  assert.match(readiness.why, /does not make that request/);
+  for (const phrase of ['first of five', 'the rest', 'later milestone'])
+    assert.doesNotMatch(visibleCopy, new RegExp(phrase, 'i'));
 });
 
 test('lesson 02 claim rendering and example routes preserve lesson 01 behavior', () => {
