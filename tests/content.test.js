@@ -10,7 +10,10 @@ import { myths } from '../src/content/myths.js';
 import { suppliedPosters, nativeGuides } from '../src/content/posters.js';
 import { episodes, frameVideo } from '../src/content/audio.js';
 import { diagramRenderers } from '../src/components/diagrams.js';
-import { architectureMap } from '../src/components/architecture.js';
+import {
+  architectureMap,
+  creationWalkthrough,
+} from '../src/components/architecture.js';
 import { infographics } from '../src/components/infographics.js';
 import { pageRenderers } from '../src/components/pages.js';
 import { parseRoute, routeHref, chapterSteps } from '../src/router.js';
@@ -52,12 +55,8 @@ function verifyRoute(href, context) {
     const scene = chapters[route.chapter];
     assert.equal(scene.kind, 'map', `${context}: ${href} selects on a page`);
     const markup = diagramRenderers[scene.diagram](route);
-    const momentDefault = creationMoments.find(
-      (moment) => moment.id === route.step,
-    )?.detail;
     assert.ok(
-      markup.includes(`data-detail="${route.detail}"`) ||
-        route.detail === momentDefault,
+      markup.includes(`data-detail="${route.detail}"`),
       `${context}: ${href} names a component that is not on that map`,
     );
   }
@@ -147,16 +146,61 @@ test('every explanation names an artifact and a source', () => {
 });
 
 test('every lifecycle state and request path has unambiguous component selections', () => {
+  const momentIds = [
+    'start',
+    'provision',
+    'bootstrap',
+    'reconcile',
+    'inspect',
+    'remove',
+  ];
   for (const path of ['developer', 'request'])
     verifyDetails(architectureMap(null, path), path);
   assert.equal(
     new Set(creationMoments.map((moment) => moment.id)).size,
     creationMoments.length,
   );
+  assert.deepEqual(
+    creationMoments.map((moment) => moment.id),
+    momentIds,
+  );
   for (const [index, moment] of creationMoments.entries()) {
     assert.ok(componentDetails[moment.detail], moment.id);
     assert.ok(moment.commands.length, `${moment.id}: commands`);
-    verifyDetails(architectureMap(index), moment.name);
+    const markup = architectureMap(index);
+    verifyDetails(markup, moment.name);
+    assert.equal(
+      markup.match(new RegExp(`data-detail="${moment.detail}"`, 'g'))?.length,
+      1,
+      `${moment.id}: default detail must have exactly one map target`,
+    );
+  }
+});
+
+test('look closer links resolve to every lifecycle moment target', () => {
+  const markup = creationWalkthrough(parseRoute('#bring-up'));
+  assert.equal(
+    [...markup.matchAll(/data-look-closer/g)].length,
+    1,
+    'the current moment has one Look closer link',
+  );
+  for (const moment of creationMoments) {
+    const href = routeHref('bring-up', moment.id, moment.detail);
+    const momentMarkup = creationWalkthrough(
+      parseRoute(routeHref('bring-up', moment.id)),
+    );
+    assert.ok(
+      momentMarkup.includes(`href="${href}" data-look-closer`),
+      `${moment.id}: missing Look closer route`,
+    );
+    verifyRoute(href, `${moment.id} Look closer`);
+    for (const sequenceMoment of creationMoments)
+      assert.ok(
+        momentMarkup.includes(
+          `href="${routeHref('bring-up', sequenceMoment.id)}"`,
+        ),
+        `${moment.id}: sequence omits ${sequenceMoment.id}`,
+      );
   }
 });
 
