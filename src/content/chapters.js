@@ -34,7 +34,7 @@ export const chapters = {
     subtitle: 'Place familiar OSDU concepts',
     headline: 'AKS is one part<span>of the stack.</span>',
     intro:
-      'Use opendes, the example data partition, in the dev1 environment. CIMPL runs its supporting middleware in Kubernetes. The Azure implementation also runs its APIs in Kubernetes, but reaches Azure data services outside AKS. Elasticsearch, Redis, and Airflow’s database remain inside the cluster. The complete development-and-test stack is both sides together in one resource group.',
+      'Your OSDU APIs run inside Kubernetes. CIMPL runs its supporting middleware in Kubernetes too; the Azure implementation reaches Azure data services outside AKS, while Elasticsearch, Redis, and Airflow’s database remain inside the cluster. The stack is both sides together in one resource group, built for development and test. Use opendes, the example data partition, in the dev1 environment.',
     premise: 'You know OSDU. Start with the environment around it.',
     figure: 'Follow the boundaries',
     selected: 'environment',
@@ -498,7 +498,7 @@ export const chapters = {
     outcomes: [
       {
         headline: 'Common code calls Azure through a provider interface.',
-        text: 'Common service code calls a provider interface. The community implementation checks its configured VmCache and reads PostgreSQL on a miss. The Azure implementation checks Redis inside AKS with middleware credentials, then reads common Table Storage outside AKS with Workload Identity on a miss or handled cache exception.',
+        text: 'Common service code calls a provider interface. The Azure implementation behind it checks Redis inside AKS with middleware credentials, then reads common Table Storage outside AKS with Workload Identity on a miss. The table read still happens when the cache throws.',
         why: 'partition-core calls IPartitionService.getPartition. partition-core-plus checks its configured VmCache, then reads PostgreSQL on a miss. provider/partition-azure checks Redis inside AKS with middleware credentials, then uses Workload Identity for the common Table Storage read after a miss or handled cache exception.',
         focus: ['core', 'contract', 'azureimpl', 'redis', 'azureclients'],
         scopes: ['spi-shared', 'spi-provider', 'spi-cache', 'spi-tables'],

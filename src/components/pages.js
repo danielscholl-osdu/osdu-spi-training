@@ -71,7 +71,7 @@ export function partitionComparison(key) {
     <div class="partition-comparison-body">
       ${partitionLookupFigure(comparison)}
       <section class="partition-comparison-notes" aria-label="Comparison limits">
-        <h3>Read the boundaries literally</h3>
+        <h3>What this comparison does not claim</h3>
         <ul>${comparison.limitations.map((note) => `<li>${escapeHtml(note)}</li>`).join('')}</ul>
       </section>
       <div class="partition-comparison-sources">
