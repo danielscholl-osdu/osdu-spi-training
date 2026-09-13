@@ -45,6 +45,17 @@ export const myths = [
     routeLabel: 'The gateway',
   },
   {
+    id: 'stack-is-only-aks',
+    theme: 'estate',
+    claim: 'The stack is just AKS.',
+    reality:
+      'AKS runs the Kubernetes workloads, while the same resource group also contains Azure data services outside the cluster. For opendes, those resources include Cosmos DB, Storage, and Service Bus. The partition lookup shown here does not call those per-partition resources; it reads stored configuration from common Table Storage.',
+    check: 'az resource list -g spi-stack-dev1 --output table',
+    source: 'architecture',
+    route: '#running-stack/developer?detail=environment',
+    routeLabel: 'The stack boundary',
+  },
+  {
     id: 'profiles-save-money',
     theme: 'estate',
     claim: 'Profiles save money.',

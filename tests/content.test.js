@@ -999,6 +999,8 @@ test('structured claims resolve their focus, evidence, and scopes on every scene
 
 test('lesson 01 editorial copy introduces its example and complete command', () => {
   const chapter = chapters['running-stack'];
+  const misconception = myths.find((myth) => myth.id === 'stack-is-only-aks');
+  const callout = mythCallout(misconception.id, 'running-stack');
 
   assert.match(
     chapter.intro,
@@ -1009,6 +1011,17 @@ test('lesson 01 editorial copy introduces its example and complete command', () 
     'spi up --env dev1 creates AKS and its Azure resources together.',
   );
   assert.match(claimStrip('running-stack'), /spi up --env dev1/);
+  assert.equal(chapter.mistakes.developer, misconception.id);
+  assert.equal(misconception.source, 'architecture');
+  assert.equal(misconception.reality.match(/[.!?](?:\s|$)/g)?.length, 3);
+  assert.match(callout, /Cosmos DB, Storage, and Service Bus/);
+  assert.match(
+    callout,
+    /href="#running-stack\/developer\?detail=environment" data-map-jump/,
+  );
+  assert.ok(chapter.guides.includes('profiles'));
+  assert.equal(chapters['bring-up'].mistakes.start, 'profiles-save-money');
+  assert.equal(chapters['bring-up'].mistakes.provision, 'profiles-save-money');
 });
 
 test('lesson 02 preserves its outcomes as three moment-aware claims', () => {

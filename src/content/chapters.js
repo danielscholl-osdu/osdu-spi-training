@@ -43,7 +43,7 @@ export const chapters = {
     ],
     guides: ['familiar', 'inside-the-cluster', 'profiles'],
     mistakes: {
-      developer: 'profiles-save-money',
+      developer: 'stack-is-only-aks',
       request: 'certificate-means-encrypted',
     },
     scope:
