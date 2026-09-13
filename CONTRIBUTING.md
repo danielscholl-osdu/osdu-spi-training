@@ -4,25 +4,25 @@ Install the pinned tools with `npm ci`, then start `npm run dev`. Work in `src/`
 
 ## Where to make a change
 
-| Change                                                          | File or directory                  |
-| --------------------------------------------------------------- | ---------------------------------- |
-| Chapter titles, introductions, source keys, or navigation order | `src/content/chapters.js`          |
-| Episodes, their markers, source-check notes, and notebook links | `src/content/audio.js`             |
-| Things that are not true                                        | `src/content/myths.js`             |
-| Poster captions, takeaways, and field-guide summaries           | `src/content/posters.js`           |
-| A native field guide’s content or drawing                       | `src/components/infographics.js`   |
-| Home, Listen, Field guides, and Not true page layout            | `src/components/pages.js`          |
-| Player and dock behavior                                        | `src/components/player.js`         |
-| Explanation shown when a component is selected                  | `src/content/component-details.js` |
-| Creation-step copy, command examples, and ownership             | `src/content/creation-moments.js`  |
-| The five moments of a day in the fork                           | `src/content/fork-moments.js`      |
-| Azure / AKS map and creation-step interaction                   | `src/components/architecture.js`   |
-| SPI and engineering-system diagrams                             | `src/components/diagrams.js`       |
-| Shared clickable component markup                               | `src/components/node.js`           |
-| Chapter-aware evidence resolution                               | `src/components/evidence.js`       |
-| Page frame                                                      | `src/index.html`                   |
-| Chapter navigation and detail-panel behavior                    | `src/main.js`                      |
-| Typography, colors, spacing, and responsive layout              | `src/styles/`                      |
+| Change                                                                              | File or directory                  |
+| ----------------------------------------------------------------------------------- | ---------------------------------- |
+| Chapter titles, introductions, comparison records, source keys, or navigation order | `src/content/chapters.js`          |
+| Episodes, their markers, source-check notes, and notebook links                     | `src/content/audio.js`             |
+| Things that are not true                                                            | `src/content/myths.js`             |
+| Poster captions, takeaways, and field-guide summaries                               | `src/content/posters.js`           |
+| A native field guide or specialized comparison drawing                              | `src/components/infographics.js`   |
+| Page layouts and chapter-local disclosure rendering                                 | `src/components/pages.js`          |
+| Player and dock behavior                                                            | `src/components/player.js`         |
+| Explanation shown when a component is selected                                      | `src/content/component-details.js` |
+| Creation-step copy, command examples, and ownership                                 | `src/content/creation-moments.js`  |
+| The five moments of a day in the fork                                               | `src/content/fork-moments.js`      |
+| Azure / AKS map and creation-step interaction                                       | `src/components/architecture.js`   |
+| SPI and engineering-system diagrams                                                 | `src/components/diagrams.js`       |
+| Shared clickable component markup                                                   | `src/components/node.js`           |
+| Chapter-aware evidence resolution                                                   | `src/components/evidence.js`       |
+| Page frame and chapter-local comparison slot                                        | `src/index.html`                   |
+| Chapter navigation, comparison population, and detail-panel behavior                | `src/main.js`                      |
+| Typography, colors, spacing, and responsive layout                                  | `src/styles/`                      |
 
 Chapter order follows the entries in `chapters.js`, grouped by `group` (`start`, `learn`, `supplement`). A chapter is either `kind: 'map'` (a diagram renderer plus the inspector) or `kind: 'page'` (a renderer in `pages.js`). To add a map chapter, give it a stable route key, select or add a diagram renderer, and connect its component explanations; list any field guides it should show beneath the map in `guides`. Keep existing route keys stable so bookmarked chapters continue to work. Routes are parsed in `src/router.js`; examples are `#bring-up/remove`, `#fork-day/cascade?detail=labels`, and `#running-stack/request?detail=events`. A chapter that has been split or renamed keeps its old key in `chapterAliases` so published links still resolve. A chapter-only lifecycle link always starts at the empty footprint.
 
@@ -31,6 +31,8 @@ Structured lessons add zero-based selection qualifiers when intent would otherwi
 Each component detail contains `label`, `title`, `body`, `artifact: { label, code }`, and a `source` key from `src/content/sources.js`. `resolveDetail` overlays an optional `here[chapterKey]` record without changing the base detail. `label` remains metadata and is the fallback for drawer context; it never implies ownership. Add `owner` only when the source or runtime owner is explicit. The complete owner row stays hidden when `owner` is absent.
 
 Use `summary` for an authored initial explanation and `more` only for deliberately optional detail. Without `summary`, the drawer shows the complete `title` and `body`; it does not split prose at punctuation or create an automatic disclosure. Source links always put the primary `source` first, then unique `goDeeper` keys in authored order.
+
+A chapter-local comparison keeps its authored record in `chapters.js`, its specialized native figure in `infographics.js`, and its disclosure wrapper in `pages.js`. Cite community implementation behavior from the service repository, environment bindings from the stack configuration, and identify both with pinned source snapshots.
 
 A diagram button's `data-detail` must match a key in that content. Audio markers, field checks, and poster links use site routes; the integrity checks parse each route and confirm that a `detail` names a component on that map and a `guide` names a field guide. They also catch missing explanations, duplicate component IDs within a scene, broken chapter-to-renderer connections, missing poster and audio files, and missing source files when sibling checkouts are present.
 

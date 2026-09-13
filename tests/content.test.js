@@ -1264,7 +1264,10 @@ test('lesson 01 editorial copy introduces its example and complete command', () 
     chapters.start.intro,
     /CIMPL provides the open-source community implementation/,
   );
-  assert.match(chapter.intro, /CIMPL runs its supporting middleware in Kubernetes/);
+  assert.match(
+    chapter.intro,
+    /CIMPL runs its supporting middleware in Kubernetes/,
+  );
   assert.match(chapter.intro, /Azure data services outside AKS/);
   assert.match(
     chapter.intro,
