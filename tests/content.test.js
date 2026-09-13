@@ -257,6 +257,7 @@ test('SPI boundary map exposes one runtime seam and its source owners', () => {
     'core',
     'contract',
     'azureimpl',
+    'redis',
     'azureclients',
     'upstream',
     'engineering',
@@ -265,6 +266,8 @@ test('SPI boundary map exposes one runtime seam and its source owners', () => {
     'spi-image',
     'spi-shared',
     'spi-provider',
+    'spi-cache',
+    'spi-tables',
     'spi-sources',
   ])
     assert.match(markup, new RegExp(`data-scope="${scope}"`));
@@ -272,7 +275,32 @@ test('SPI boundary map exposes one runtime seam and its source owners', () => {
   assert.match(markup, /IPartitionService\.getPartition/);
   assert.match(markup, /provider\/partition-azure/);
   assert.match(markup, /no network hop/);
-  assert.equal([...markup.matchAll(/data-trace-status=/g)].length, 2);
+  assert.deepEqual(
+    [...markup.matchAll(/data-trace-status="([^"]+)"/g)].map(
+      (match) => match[1],
+    ),
+    ['redis', 'azureclients'],
+  );
+
+  const runtime = markup.slice(
+    markup.indexOf('<div class="spi-runtime">'),
+    markup.indexOf('<section class="spi-source-boundary"'),
+  );
+  const imageEnd = runtime.indexOf('</section>');
+  const redisStart = runtime.indexOf('data-scope="spi-cache"');
+  const tablesStart = runtime.indexOf('data-scope="spi-tables"');
+  assert.ok(imageEnd < redisStart && redisStart < tablesStart);
+  const redisLane = runtime.slice(redisStart, tablesStart);
+  const tableLane = runtime.slice(tablesStart);
+  assert.match(redisLane, /Redis cache · inside AKS · middleware credentials/);
+  assert.match(redisLane, /Outside the service image/);
+  assert.doesNotMatch(redisLane, /Workload Identity/);
+  assert.match(
+    tableLane,
+    /Common Table Storage · outside AKS · Workload Identity/,
+  );
+  assert.match(tableLane, /Outside the service image/);
+  assert.doesNotMatch(tableLane, /middleware credentials/);
 });
 
 test('deep links recover chapter, lifecycle moment, and component without module state', () => {
@@ -826,9 +854,9 @@ test('lesson 03 claims keep the provider seam understandable without evidence', 
     [
       {
         headline: 'Common code calls Azure through a provider interface.',
-        focus: ['core', 'contract', 'azureimpl', 'azureclients'],
+        focus: ['core', 'contract', 'azureimpl', 'redis', 'azureclients'],
         evidence: 'azureimpl',
-        scopes: ['spi-shared', 'spi-provider'],
+        scopes: ['spi-shared', 'spi-provider', 'spi-cache', 'spi-tables'],
       },
       {
         headline: 'The interface and implementation ship in one image.',
@@ -853,8 +881,8 @@ test('lesson 03 claims keep the provider seam understandable without evidence', 
   const claims = claimStrip('spi-boundary');
   for (const fact of [
     'partition-core calls IPartitionService.getPartition',
-    'Workload Identity for Azure access',
-    'The Table Storage read still happens when the cache throws.',
+    'Redis inside AKS with middleware credentials',
+    'Workload Identity for the common Table Storage read',
     'same service process',
     'not a network hop',
     'provider/&lt;svc&gt;-azure stays fork-owned',
@@ -886,7 +914,7 @@ test('lesson 03 states its own prerequisite and place without changing orientati
   );
 });
 
-test('example variants present two states of one canonical five-hop trace', () => {
+test('example variants present two states of one canonical six-hop trace', () => {
   const example = chapters['spi-boundary'].example;
   const canonical = structuredClone(example.hops);
   const normal = resolveExamplePresentation(example);
@@ -895,16 +923,23 @@ test('example variants present two states of one canonical five-hop trace', () =
   assert.equal(normal.selectedVariant, 'normal');
   assert.deepEqual(
     normal.hops.map(({ detail }) => detail),
-    ['client', 'core', 'contract', 'azureimpl', 'azureclients'],
+    ['client', 'core', 'contract', 'azureimpl', 'redis', 'azureclients'],
   );
   assert.deepEqual(
     cacheDown.hops.map(({ detail }) => detail),
     normal.hops.map(({ detail }) => detail),
   );
-  assert.equal(normal.hops[3].copy, 'Healthy cache miss');
-  assert.equal(normal.hops[4].copy, 'Stored configuration for opendes');
-  assert.equal(cacheDown.hops[3].copy, 'Cache read throws; treated as a miss');
-  assert.equal(cacheDown.hops[4].copy, 'Table Storage answers anyway');
+  for (const presentation of [normal, cacheDown]) {
+    const hops = Object.fromEntries(
+      presentation.hops.map((hop) => [hop.detail, hop]),
+    );
+    assert.match(hops.redis.copy, /inside AKS/i);
+    assert.match(hops.azureclients.copy, /outside AKS|Workload Identity/i);
+  }
+  assert.equal(normal.hops[4].state, 'normal');
+  assert.equal(normal.hops[5].state, 'normal');
+  assert.equal(cacheDown.hops[4].state, 'handled-failure');
+  assert.equal(cacheDown.hops[5].state, 'fallback');
   assert.deepEqual(example.hops, canonical);
 
   const route = parseRoute('#spi-boundary');
@@ -912,7 +947,7 @@ test('example variants present two states of one canonical five-hop trace', () =
   const cacheDownMarkup = exampleStrip('spi-boundary', route, 'cache-down');
   for (const markup of [normalMarkup, cacheDownMarkup]) {
     assert.equal((markup.match(/<ol class="journey"/g) || []).length, 1);
-    assert.equal((markup.match(/data-hop="/g) || []).length, 5);
+    assert.equal((markup.match(/data-hop="/g) || []).length, 6);
     assert.equal((markup.match(/data-example-variant=/g) || []).length, 2);
   }
   const links = (markup) =>
@@ -921,8 +956,8 @@ test('example variants present two states of one canonical five-hop trace', () =
     );
   assert.deepEqual(links(cacheDownMarkup), links(normalMarkup));
   assert.match(normalMarkup, /healthy cache miss/i);
-  assert.match(cacheDownMarkup, /Cache read throws; treated as a miss/);
-  assert.match(cacheDownMarkup, /Table Storage answers anyway/);
+  assert.match(cacheDownMarkup, /read throws.*treated as a miss/i);
+  assert.match(cacheDownMarkup, /Table Storage answers anyway/i);
 });
 
 test('example compatibility keeps provider paths in content and controls optional', () => {
@@ -945,6 +980,12 @@ test('example compatibility keeps provider paths in content and controls optiona
 });
 
 test('lesson trace state keeps variants local and preserves an active hop', () => {
+  const example = chapters['spi-boundary'].example;
+  const hopCount = example.hops.length;
+  const redisHop = example.hops.findIndex(({ detail }) => detail === 'redis');
+  const tableHop = example.hops.findIndex(
+    ({ detail }) => detail === 'azureclients',
+  );
   const initial = {
     claim: 0,
     hop: -1,
@@ -952,16 +993,16 @@ test('lesson trace state keeps variants local and preserves an active hop', () =
     exampleOpen: false,
     variant: 'normal',
   };
-  const cacheDown = selectExampleVariant(initial, 'cache-down', 5);
+  const cacheDown = selectExampleVariant(initial, 'cache-down', hopCount);
   assert.deepEqual(cacheDown, {
     ...initial,
-    hop: 4,
+    hop: tableHop,
     exampleOpen: true,
     variant: 'cache-down',
   });
-  const atProvider = { ...cacheDown, hop: 3 };
-  assert.deepEqual(selectExampleVariant(atProvider, 'normal', 5), {
-    ...atProvider,
+  const atRedis = { ...cacheDown, hop: redisHop };
+  assert.deepEqual(selectExampleVariant(atRedis, 'normal', hopCount), {
+    ...atRedis,
     variant: 'normal',
   });
   assert.deepEqual(initial, {
@@ -975,6 +1016,8 @@ test('lesson trace state keeps variants local and preserves an active hop', () =
 
 test('lesson 03 evidence deep links stay step-less and map to claims', () => {
   const chapter = chapters['spi-boundary'];
+  for (const detail of ['redis', 'azureclients'])
+    verifyRoute(`#spi-boundary?detail=${detail}`, `lesson 03 ${detail}`);
   for (const [detail, claim] of [
     ['azureimpl', 0],
     ['image', 1],
@@ -990,6 +1033,21 @@ test('lesson 03 evidence deep links stay step-less and map to claims', () => {
   assert.equal(
     parseRoute('#running-stack/request?detail=provider').step,
     'request',
+  );
+
+  const stack = episodes.find((episode) => episode.id === 'stack');
+  const outboundIdentity = stack.markers.find((marker) => marker.time === 2035);
+  assert.match(
+    outboundIdentity.note,
+    /Workload Identity replaces stored keys for Azure data services, not every credential/,
+  );
+  assert.match(
+    outboundIdentity.note,
+    /Redis remains in the platform namespace.*middleware password.*Kubernetes Secrets.*Key Vault/,
+  );
+  assert.match(
+    outboundIdentity.note,
+    /common Table Storage read uses Azure identity/,
   );
 });
 

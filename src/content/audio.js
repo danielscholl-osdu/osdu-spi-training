@@ -99,6 +99,7 @@ const stackMarkers = [
     copy: 'A pod exchanges a projected ServiceAccount token for an Azure access token. No usable Azure data-plane key or connection string is stored in the cluster.',
     route: '#field-guides?guide=identity',
     routeLabel: 'Identity field guide',
+    note: 'Source check — Workload Identity replaces stored keys for Azure data services, not every credential. Redis remains in the platform namespace and authenticates with a middleware password stored in Kubernetes Secrets and mirrored into Key Vault; the partition provider’s common Table Storage read uses Azure identity. Follow the linked Identity field guide.',
   },
   {
     time: 2222,

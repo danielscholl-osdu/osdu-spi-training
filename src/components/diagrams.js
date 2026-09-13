@@ -22,16 +22,21 @@ function spiBoundaryDiagram() {
         <div class="spi-lane-head"><h3>Fork-owned Azure code</h3><p>Maintained in the service repository</p></div>
         <div class="spi-step" aria-hidden="true">↓ implements the interface</div>
         ${node('azureimpl', 'provider/partition-azure', 'The Azure implementation', 'fork-code')}
-        <p class="spi-trace-status" data-trace-status="azureimpl" hidden></p>
       </div>
     </section>
-    <div class="spi-step" aria-hidden="true">↓ Azure SDK calls leave the image</div>
-    <div class="spi-lane spi-azure-resources" data-scope="spi-provider">
-      <div class="spi-lane-head"><h3>Azure data services</h3><p>Outside the service image · accessed with Workload Identity</p></div>
-      ${node('azureclients', 'Cache, then Table Storage', 'Redis · common Storage tables · Workload Identity, no stored keys')}
-      <p class="spi-trace-status" data-trace-status="azureclients" hidden></p>
-      <div class="spi-step" aria-hidden="true">↓ the row for opendes</div>
-      <a class="spi-terminal" href="#running-stack/developer?detail=shared-data"><small>Back on the map · shared by the environment</small><b>Stored configuration for opendes · common Storage tables</b><span>The answer names the partition’s Cosmos, Storage, and Service Bus. See them in 01 →</span></a>
+    <div class="spi-step" aria-hidden="true">↓ the cache call leaves the image but stays inside AKS</div>
+    <div class="spi-lane" data-scope="spi-cache">
+    <div class="spi-lane-head"><h3>Redis cache · inside AKS · middleware credentials</h3><small>Outside the service image</small></div>
+    ${node('redis', 'Redis in the platform namespace', 'A cache hit returns without reading the table')}
+    <div class="spi-trace-status" data-trace-status="redis" hidden></div>
+    </div>
+    <div class="spi-step" aria-hidden="true">↓ after a miss or handled read exception, the provider calls the table</div>
+    <div class="spi-lane spi-azure-resources" data-scope="spi-tables">
+    <div class="spi-lane-head"><h3>Common Table Storage · outside AKS · Workload Identity</h3><small>Outside the service image</small></div>
+    ${node('azureclients', 'Partition table in common Storage', 'The durable configuration for opendes')}
+    <div class="spi-trace-status" data-trace-status="azureclients" hidden></div>
+    <div class="spi-step" aria-hidden="true">↓ the row for opendes</div>
+    <a class="spi-terminal" href="#running-stack/developer?detail=shared-data"><small>Back on the map · shared by the environment</small><b>Stored configuration for opendes · common Storage tables</b><span>The answer names the partition’s Cosmos, Storage, and Service Bus. See them in 01 →</span></a>
     </div>
     </div>
     <section class="spi-source-boundary" data-scope="spi-sources">
@@ -43,7 +48,7 @@ function spiBoundaryDiagram() {
       <p><code>provider/partition-azure</code> remains fork-owned even when upstream removes its Azure provider.</p>
     </section>
   </div>
-  <div class="ownership-legend"><span><i class="shared-swatch"></i>Shared OSDU source</span><span><i class="fork-swatch"></i>Fork-owned Azure source</span><span>Azure services sit outside the image.</span></div>`;
+  <div class="ownership-legend"><span><i class="shared-swatch"></i>Shared OSDU source</span><span><i class="fork-swatch"></i>Fork-owned Azure source</span><span>Both backends sit outside the image; only Table Storage sits outside AKS.</span></div>`;
 }
 
 // View 04: the repository read by owner. Rows are paths, columns are branches.
