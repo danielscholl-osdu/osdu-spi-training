@@ -168,6 +168,31 @@ export function hasClaims(chapter) {
   return chapter.outcomes?.some((claim) => typeof claim !== 'string') || false;
 }
 
+export function claimIndexForRoute(chapter, route) {
+  const claims = chapter.outcomes || [];
+  const evidence = claims.findIndex(
+    (claim) =>
+      typeof claim !== 'string' &&
+      claim.evidence === route.detail &&
+      (claim.evidenceStep || claim.step || route.step) === route.step,
+  );
+  if (evidence >= 0) return evidence;
+  const compatible = claims.findIndex(
+    (claim) => typeof claim !== 'string' && claim.steps?.includes(route.step),
+  );
+  return compatible >= 0 ? compatible : 0;
+}
+
+export function hopIndexForRoute(chapter, route) {
+  const example = chapter.example;
+  if (!example || !route.detail) return -1;
+  return example.hops.findIndex(
+    (hop) =>
+      hop.detail === route.detail &&
+      (hop.step || example.step || route.step) === route.step,
+  );
+}
+
 export function claimStrip(key) {
   const chapter = chapters[key];
   if (!hasClaims(chapter)) return '';
@@ -176,7 +201,7 @@ export function claimStrip(key) {
     <ol class="claim-list">${chapter.outcomes
       .map((claim, index) => {
         const c = typeof claim === 'string' ? { text: claim } : claim;
-        return `<li class="claim-item" data-claim-item="${index}"><button type="button" class="claim" data-claim="${index}" aria-pressed="${index === 0}"><b>${escapeHtml(c.headline || c.text)}</b><small>${escapeHtml(c.why || '')}</small><span class="claim-count">${index + 1} / ${chapter.outcomes.length}</span></button>${c.evidence ? `<a class="claim-evidence" data-evidence="${index}" href="${routeHref(key, null, c.evidence)}">How we know →</a>` : ''}</li>`;
+        return `<li class="claim-item" data-claim-item="${index}"><button type="button" class="claim" data-claim="${index}" aria-pressed="${index === 0}"><b>${escapeHtml(c.headline || c.text)}</b><small>${escapeHtml(c.why || '')}</small><span class="claim-count">${index + 1} / ${chapter.outcomes.length}</span></button>${c.evidence ? `<a class="claim-evidence" data-evidence="${index}" href="${routeHref(key, c.evidenceStep || c.step || '', c.evidence)}">How we know →</a>` : ''}</li>`;
       })
       .join('')}</ol>
   </section>`;
@@ -271,12 +296,7 @@ export function exampleStrip(key, route, variant) {
     <ol class="journey" aria-label="${escapeHtml(example.title)}">${presentation.hops.map((hop, index) => `<li><a href="${routeHref(key, hop.step || example.step || route.step, hop.detail)}" data-map-jump data-hop="${index}" title="${escapeHtml(hop.copy)}" aria-label="${escapeHtml(`${index + 1}. ${hop.label}: ${hop.copy}`)}"><span>${index + 1}</span><b>${escapeHtml(hop.label)}</b><small data-hop-copy="${hop.detail}">${escapeHtml(hop.copy)}</small></a></li>`).join('')}</ol>
     <p class="example-note"><span class="example-provider-path">${escapeHtml(example.providerPath || '')}</span> <span data-example-note>${escapeHtml(presentation.note)}</span></p></details>`;
   }
-  const current = example.hops.findIndex(
-    (hop) =>
-      hop.detail === route.detail &&
-      (!hop.step || hop.step === route.step) &&
-      (!example.step || example.step === route.step),
-  );
+  const current = hopIndexForRoute(chapters[key], route);
   return `<div class="example-head"><span class="guide-kicker">Running example</span><b>${escapeHtml(example.title)}</b><code>${escapeHtml(example.code)}</code></div>
     <ol class="journey" aria-label="${escapeHtml(example.title)}">${example.hops
       .map((hop, index) => {

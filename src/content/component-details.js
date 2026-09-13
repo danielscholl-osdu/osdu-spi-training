@@ -210,7 +210,7 @@ export const componentDetails = {
     source: 'lifecycle',
   },
   readiness: {
-    label: 'Three readiness signals',
+    label: 'Readiness milestones',
     title: 'CLI success is the first signal, not the last.',
     body: 'Check configured workload health and initialization completion with spi status --watch, then discover endpoints with spi info --show-apis. An authenticated response proves the particular API path you exercised. A pod in Running phase and a completed Job are different signals.',
     artifact: {

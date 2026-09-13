@@ -32,7 +32,7 @@ export function architectureMap(stage = null, path = 'developer') {
           <div class="command-lines">${commands.map((command) => `<code>${escapeHtml(command)}</code>`).join('')}</div>
         </div>
         ${stage === 0 ? '<a class="small-link" href="https://github.com/Azure/osdu-spi-stack/blob/main/docs/install.md" target="_blank" rel="noopener noreferrer">Installation guide ↗</a>' : ''}
-        ${stage === 4 ? `<div class="join-actions">${node('connect', 'Connect to a shared stack', 'Use the owner’s cluster coordinates')}${node('caller', 'Get an API caller', 'spi token · app-only bearer')}</div>` : ''}
+        ${stage === 4 ? `<div class="join-actions">${node('connect', 'Connect to a shared stack', 'Use the owner’s cluster coordinates')}${node('readiness', 'Observe readiness', 'Health · initialization · API response')}${node('caller', 'Get an API caller', 'spi token · app-only bearer')}</div>` : ''}
         ${!building ? node('client', 'OSDU API client', 'Bearer + data-partition-id', request ? 'path-emphasis' : '') : ''}
       </section>
       ${workloads ? `<section class="external-inputs" aria-label="Sources outside the deployed stack"><span class="group-label">Outside the deployed stack</span>${node('config-source', 'osdu-spi-stack Git', 'Workload configuration → Flux')}${node('image-source', 'GitLab / GHCR', 'Community / fork images')}</section>` : ''}
@@ -108,7 +108,7 @@ export function creationWalkthrough(route) {
   const moment = creationMoments[index];
   return `<div class="creation-intro"><span>Illustrated lifecycle</span><a href="${routeHref('bring-up', 'inspect', 'connect')}" class="small-link">Already have a stack? Connect to it →</a></div>
     <nav class="creation-steps" aria-label="Lifecycle moments">${creationMoments.map((item, i) => `<a href="${routeHref('bring-up', item.id)}" data-route-key="${item.id}" ${i === index ? 'aria-current="step"' : ''}><span>${String(i + 1).padStart(2, '0')}</span><b>${item.name}</b></a>`).join('')}</nav>
-    <div class="creation-story"><div><span class="group-label">${moment.owner}</span><h3>${moment.title}</h3><p>${moment.copy}</p></div><div class="timing"><b>${moment.time}</b><small>${moment.timeKind}</small></div></div>
+    <div class="creation-story"><div><span class="group-label">${moment.owner}</span><h3>${moment.title}</h3><p>${moment.copy}</p><a class="small-link look-closer" href="${routeHref('bring-up', moment.id, moment.detail)}" data-look-closer>Look closer ↗</a></div><div class="timing"><b>${moment.time}</b><small>${moment.timeKind}</small></div></div>
     ${architectureMap(index)}
     <div class="creation-controls">${index ? `<a href="${routeHref('bring-up', creationMoments[index - 1].id)}" data-route-key="previous">← Previous</a>` : '<span></span>'}<span>${index + 1} / ${creationMoments.length}</span><a href="${routeHref('bring-up', creationMoments[(index + 1) % creationMoments.length].id)}" data-route-key="next">${index === creationMoments.length - 1 ? 'Return to the empty footprint ↺' : 'Continue →'}</a></div>`;
 }

@@ -2820,6 +2820,11 @@ body:has(.audio-dock:not([hidden])) main {
 .has-claims .example-strip {
   padding: 12px 16px;
 }
+.has-claims .creation-story .look-closer {
+  display: inline-block;
+  margin-top: 8px;
+  overflow-wrap: anywhere;
+}
 .example-disclosure summary {
   cursor: pointer;
   color: var(--blue);

@@ -10,15 +10,20 @@ import { myths } from '../src/content/myths.js';
 import { suppliedPosters, nativeGuides } from '../src/content/posters.js';
 import { episodes, frameVideo } from '../src/content/audio.js';
 import { diagramRenderers } from '../src/components/diagrams.js';
-import { architectureMap } from '../src/components/architecture.js';
+import {
+  architectureMap,
+  creationWalkthrough,
+} from '../src/components/architecture.js';
 import { infographics } from '../src/components/infographics.js';
 import { escapeHtml } from '../src/components/node.js';
 import {
   chapterOutcomes,
   chapterScope,
+  claimIndexForRoute,
   claimStrip,
   detailSourceLinks,
   exampleStrip,
+  hopIndexForRoute,
   pageRenderers,
   resolveExamplePresentation,
   selectExampleVariant,
@@ -64,12 +69,8 @@ function verifyRoute(href, context) {
     const scene = chapters[route.chapter];
     assert.equal(scene.kind, 'map', `${context}: ${href} selects on a page`);
     const markup = diagramRenderers[scene.diagram](route);
-    const momentDefault = creationMoments.find(
-      (moment) => moment.id === route.step,
-    )?.detail;
     assert.ok(
-      markup.includes(`data-detail="${route.detail}"`) ||
-        route.detail === momentDefault,
+      markup.includes(`data-detail="${route.detail}"`),
       `${context}: ${href} names a component that is not on that map`,
     );
   }
@@ -187,16 +188,61 @@ test('Go deeper links preserve evidence order and single-source fallback', () =>
 });
 
 test('every lifecycle state and request path has unambiguous component selections', () => {
+  const momentIds = [
+    'start',
+    'provision',
+    'bootstrap',
+    'reconcile',
+    'inspect',
+    'remove',
+  ];
   for (const path of ['developer', 'request'])
     verifyDetails(architectureMap(null, path), path);
   assert.equal(
     new Set(creationMoments.map((moment) => moment.id)).size,
     creationMoments.length,
   );
+  assert.deepEqual(
+    creationMoments.map((moment) => moment.id),
+    momentIds,
+  );
   for (const [index, moment] of creationMoments.entries()) {
     assert.ok(componentDetails[moment.detail], moment.id);
     assert.ok(moment.commands.length, `${moment.id}: commands`);
-    verifyDetails(architectureMap(index), moment.name);
+    const markup = architectureMap(index);
+    verifyDetails(markup, moment.name);
+    assert.equal(
+      markup.match(new RegExp(`data-detail="${moment.detail}"`, 'g'))?.length,
+      1,
+      `${moment.id}: default detail must have exactly one map target`,
+    );
+  }
+});
+
+test('look closer links resolve to every lifecycle moment target', () => {
+  const markup = creationWalkthrough(parseRoute('#bring-up'));
+  assert.equal(
+    [...markup.matchAll(/data-look-closer/g)].length,
+    1,
+    'the current moment has one Look closer link',
+  );
+  for (const moment of creationMoments) {
+    const href = routeHref('bring-up', moment.id, moment.detail);
+    const momentMarkup = creationWalkthrough(
+      parseRoute(routeHref('bring-up', moment.id)),
+    );
+    assert.ok(
+      momentMarkup.includes(`href="${href}" data-look-closer`),
+      `${moment.id}: missing Look closer route`,
+    );
+    verifyRoute(href, `${moment.id} Look closer`);
+    for (const sequenceMoment of creationMoments)
+      assert.ok(
+        momentMarkup.includes(
+          `href="${routeHref('bring-up', sequenceMoment.id)}"`,
+        ),
+        `${moment.id}: sequence omits ${sequenceMoment.id}`,
+      );
   }
 });
 
@@ -538,45 +584,229 @@ test('structured claims resolve their focus, evidence, and scopes on every scene
       `${key}: a lesson carries two to four claims`,
     );
     assert.ok(chapter.goal, `${key}: goal`);
-    for (const step of chapterSteps(key).length ? chapterSteps(key) : [null]) {
+    const chapterSceneSteps = chapterSteps(key).length
+      ? chapterSteps(key)
+      : [null];
+    const scene = (step) => {
       const markup = diagramRenderers[chapter.diagram]({ chapter: key, step });
-      const details = new Set(
-        [...markup.matchAll(/data-detail="([^"]+)"/g)].map((match) => match[1]),
-      );
-      const scopes = new Set(
-        [...markup.matchAll(/data-scope="([^"]+)"/g)].map((match) => match[1]),
-      );
+      return {
+        details: new Set(
+          [...markup.matchAll(/data-detail="([^"]+)"/g)].map(
+            (match) => match[1],
+          ),
+        ),
+        scopes: new Set(
+          [...markup.matchAll(/data-scope="([^"]+)"/g)].map(
+            (match) => match[1],
+          ),
+        ),
+      };
+    };
+    for (const step of chapterSceneSteps)
       for (const id of chapter.example.scopes || [])
-        assert.ok(scopes.has(id), `${key}/${step}: example scope ${id}`);
-      const claimsMarkup = claimStrip(key);
-      claims.forEach((claim, index) => {
         assert.ok(
-          Array.isArray(claim.focus) && Array.isArray(claim.scopes),
-          `${key}: claim ${index} focus and scopes are arrays`,
+          scene(step).scopes.has(id),
+          `${key}/${step}: example scope ${id}`,
         );
-        assert.equal(
-          typeof claim.crossing,
-          'string',
-          `${key}: claim ${index} crossing label`,
-        );
-        assert.ok(claim.text && claim.why, `${key}: claim copy`);
+    const claimsMarkup = claimStrip(key);
+    claims.forEach((claim, index) => {
+      assert.ok(
+        Array.isArray(claim.focus) && Array.isArray(claim.scopes),
+        `${key}: claim ${index} focus and scopes are arrays`,
+      );
+      assert.equal(
+        typeof claim.crossing,
+        'string',
+        `${key}: claim ${index} crossing label`,
+      );
+      assert.ok(claim.text && claim.why, `${key}: claim copy`);
+      assert.ok(
+        typeof claim.headline === 'string' &&
+          claim.headline.length < claim.text.length &&
+          claim.headline.length <= 80,
+        `${key}: claim ${index} headline is shorter than its sentence`,
+      );
+      assert.ok(
+        claimsMarkup.includes(
+          routeHref(
+            key,
+            claim.evidenceStep || claim.step || null,
+            claim.evidence,
+          ),
+        ),
+        `${key}: claim ${index} evidence destination`,
+      );
+      if (claim.steps) {
+        assert.ok(claim.step, `${key}: claim ${index} entry step`);
         assert.ok(
-          typeof claim.headline === 'string' &&
-            claim.headline.length < claim.text.length &&
-            claim.headline.length <= 80,
-          `${key}: claim ${index} headline is shorter than its sentence`,
+          claim.steps.includes(claim.step),
+          `${key}: claim ${index} coverage includes its entry`,
         );
+        for (const step of [...claim.steps, claim.evidenceStep || claim.step])
+          assert.ok(
+            chapterSceneSteps.includes(step),
+            `${key}: claim ${index} uses unknown step ${step}`,
+          );
+        const foundFocus = new Set();
+        for (const step of claim.steps) {
+          const { details, scopes } = scene(step);
+          const availableFocus = claim.focus.filter((id) => details.has(id));
+          assert.ok(
+            availableFocus.length,
+            `${key}/${step}: claim ${index} has no available focus`,
+          );
+          availableFocus.forEach((id) => foundFocus.add(id));
+          for (const id of claim.scopes)
+            assert.ok(scopes.has(id), `${key}/${step}: claim scope ${id}`);
+        }
+        for (const id of claim.focus)
+          assert.ok(
+            foundFocus.has(id),
+            `${key}: claim ${index} focus ${id} is absent from its coverage`,
+          );
+        const evidenceScene = scene(claim.evidenceStep || claim.step);
+        assert.ok(
+          evidenceScene.details.has(claim.evidence),
+          `${key}: claim ${index} evidence ${claim.evidence}`,
+        );
+        return;
+      }
+      for (const step of chapterSceneSteps) {
+        const { details, scopes } = scene(step);
         for (const id of [...claim.focus, claim.evidence])
           assert.ok(details.has(id), `${key}/${step}: claim detail ${id}`);
         for (const id of claim.scopes)
           assert.ok(scopes.has(id), `${key}/${step}: claim scope ${id}`);
-        assert.ok(
-          claimsMarkup.includes(routeHref(key, null, claim.evidence)),
-          `${key}: claim ${index} evidence destination`,
-        );
-      });
-    }
+      }
+    });
   }
+});
+
+test('lesson 02 preserves its outcomes as three moment-aware claims', () => {
+  const chapter = chapters['bring-up'];
+  const expectedOutcomes = [
+    'The CLI and Bicep create Azure and seed the cluster; Flux assembles the workloads; controllers keep them healthy. Different owners, different clocks.',
+    'A successful spi up exit is the first of five milestones, not readiness. spi status --watch is how I follow the rest.',
+    'spi down removes compute and data but keeps identities and the resource group, so a rebuild reuses the same names.',
+  ];
+  assert.equal(chapter.outcomes.length, 3);
+  assert.deepEqual(
+    chapter.outcomes.map((claim) => claim.text),
+    expectedOutcomes,
+  );
+  assert.deepEqual(
+    chapter.outcomes.map((claim) => claim.step),
+    ['provision', 'inspect', 'remove'],
+  );
+  assert.deepEqual(
+    chapter.outcomes.map((claim) => claim.evidenceStep),
+    ['reconcile', 'inspect', 'remove'],
+  );
+  for (const claim of chapter.outcomes) {
+    const words = claim.headline
+      .replace(/<[^>]+>/g, ' ')
+      .trim()
+      .split(/\s+/);
+    assert.ok(words.length < 12, `${claim.headline}: fewer than twelve words`);
+    for (const field of ['headline', 'text', 'why', 'evidence', 'crossing'])
+      assert.ok(claim[field]?.trim(), `lesson 02 claim: ${field}`);
+  }
+  assert.deepEqual(Object.keys(chapter.mistakes), [
+    'start',
+    'provision',
+    'bootstrap',
+    'reconcile',
+    'inspect',
+    'remove',
+  ]);
+  assert.match(chapter.example.note, /cache/);
+  assert.match(chapter.example.note, /Azure Table Storage/);
+  assert.match(
+    chapter.example.note,
+    /does not visit.*Cosmos DB.*blob Storage.*Service Bus/,
+  );
+});
+
+test('lesson 02 claim rendering and example routes preserve lesson 01 behavior', () => {
+  const chapter = chapters['bring-up'];
+  const strip = claimStrip('bring-up');
+  const outcomes = chapterOutcomes('bring-up');
+  const expectedEvidence = [
+    '#bring-up/reconcile?detail=flux',
+    '#bring-up/inspect?detail=readiness',
+    '#bring-up/remove?detail=retained',
+  ];
+  for (const [index, claim] of chapter.outcomes.entries()) {
+    assert.ok(strip.includes(claim.headline), `claim ${index} headline`);
+    assert.ok(strip.includes(claim.why), `claim ${index} reason`);
+    assert.ok(outcomes.includes(claim.text), `claim ${index} full outcome`);
+    assert.ok(
+      strip.includes(`href="${expectedEvidence[index]}"`),
+      `claim ${index} evidence route`,
+    );
+  }
+
+  const momentClaims = {
+    start: 0,
+    provision: 0,
+    bootstrap: 0,
+    reconcile: 0,
+    inspect: 1,
+    remove: 2,
+  };
+  for (const [step, index] of Object.entries(momentClaims))
+    assert.equal(
+      claimIndexForRoute(chapter, parseRoute(`#bring-up/${step}`)),
+      index,
+      `${step}: compatible claim`,
+    );
+  assert.equal(
+    claimIndexForRoute(chapter, parseRoute('#bring-up/reconcile?detail=flux')),
+    0,
+  );
+
+  const exampleMarkup = exampleStrip('bring-up', parseRoute('#bring-up/start'));
+  assert.ok(exampleMarkup.startsWith('<details'));
+  assert.ok(!exampleMarkup.startsWith('<details open'));
+  for (const [index, hop] of chapter.example.hops.entries()) {
+    const route = parseRoute(routeHref('bring-up', hop.step, hop.detail));
+    assert.equal(hopIndexForRoute(chapter, route), index);
+    assert.ok(
+      exampleMarkup.includes(
+        `href="${routeHref('bring-up', hop.step, hop.detail)}"`,
+      ),
+    );
+  }
+  assert.equal(
+    hopIndexForRoute(chapter, parseRoute('#bring-up/inspect?detail=service')),
+    -1,
+    'a hop only restores at its own moment',
+  );
+
+  const lessonOne = chapters['running-stack'];
+  const lessonOneClaims = claimStrip('running-stack');
+  const lessonOneExample = exampleStrip(
+    'running-stack',
+    parseRoute('#running-stack/request?detail=gateway'),
+  );
+  assert.ok(
+    lessonOneClaims.includes('href="#running-stack?detail=environment"'),
+    'timeless claim evidence keeps its chapter-only route',
+  );
+  assert.ok(
+    lessonOneExample.includes('href="#running-stack/request?detail=gateway"'),
+  );
+  assert.equal(
+    hopIndexForRoute(
+      lessonOne,
+      parseRoute('#running-stack/request?detail=gateway'),
+    ),
+    1,
+  );
+  assert.match(
+    lessonOneExample,
+    /The provider checks its cache, then Azure Table Storage/,
+  );
 });
 
 test('lesson 03 claims keep the provider seam understandable without evidence', () => {
@@ -767,7 +997,8 @@ test('example renderers preserve structured and unconverted lessons', () => {
   const fixtures = [
     ['running-stack', '#running-stack/request', true],
     ['spi-boundary', '#spi-boundary', true],
-    ['bring-up', '#bring-up/prepare', false],
+    ['bring-up', '#bring-up/provision', true],
+    ['fork-shape', '#fork-shape', false],
   ];
   for (const [key, href, structured] of fixtures) {
     const markup = exampleStrip(key, parseRoute(href));
