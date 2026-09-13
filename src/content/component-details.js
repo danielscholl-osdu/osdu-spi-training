@@ -285,7 +285,7 @@ export const componentDetails = {
     title: 'Redis can return the partition before the table is read.',
     body: 'PartitionServiceImpl asks Redis in the platform namespace for opendes. A hit returns the cached configuration without a table read; a miss or caught read exception returns control to the provider, which reads the table, and the exception is logged as a warning. Redis authenticates with a middleware password from platform/redis-credentials, whose redis-password value is mirrored into Key Vault. The provider client is inside provider/partition-azure; Redis itself is outside the service image.',
     artifact: {
-      label: 'Credential artifacts, not values to print',
+      label: 'Where the credential lives',
       code: 'platform/redis-credentials\nredis-password  → mirrored into Key Vault',
     },
     source: 'partitionProvider',

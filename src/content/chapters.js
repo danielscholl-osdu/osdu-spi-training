@@ -307,32 +307,32 @@ export const chapters = {
         {
           detail: 'client',
           label: 'OSDU API',
-          copy: 'The client sends the familiar OSDU partition request.',
+          copy: 'The contract you know',
         },
         {
           detail: 'core',
           label: 'Common code',
-          copy: 'Shared code checks the caller, then invokes the interface.',
+          copy: 'Caller check, then the interface',
         },
         {
           detail: 'contract',
           label: 'The interface',
-          copy: 'IPartitionService.getPartition(id) crosses no network boundary.',
+          copy: 'getPartition(id), no network hop',
         },
         {
           detail: 'azureimpl',
           label: 'Azure implementation',
-          copy: 'The Azure provider checks Redis before choosing the table fallback.',
+          copy: 'Checks the cache, then chooses the fallback',
         },
         {
           detail: 'redis',
           label: 'Redis cache',
-          copy: 'Redis in platform uses middleware credentials for the cache read.',
+          copy: 'Inside AKS, middleware credentials',
         },
         {
           detail: 'azureclients',
           label: 'Table Storage',
-          copy: 'Common Table Storage outside AKS uses Workload Identity to return opendes.',
+          copy: 'Outside AKS, Workload Identity; returns opendes',
         },
       ],
       defaultVariant: 'normal',
@@ -343,12 +343,12 @@ export const chapters = {
           note: 'Normal shows a healthy cache miss, so hop six is required. Common Table Storage is reachable and contains opendes; a cache hit would stop before it.',
           overrides: {
             redis: {
-              copy: 'Redis in platform uses middleware credentials; this healthy cache miss returns control to the provider.',
+              copy: 'Healthy cache miss, inside AKS',
               mapStatus: 'Healthy cache miss',
               state: 'normal',
             },
             azureclients: {
-              copy: 'Common Table Storage outside AKS uses Workload Identity and returns opendes.',
+              copy: 'Stored configuration for opendes, outside AKS',
               mapStatus: 'Table Storage returns opendes',
               state: 'normal',
             },
@@ -360,12 +360,12 @@ export const chapters = {
           note: 'Cache down assumes common Table Storage is reachable and contains opendes. It does not promise to swallow Table Storage failures or missing-partition errors.',
           overrides: {
             redis: {
-              copy: 'Redis in platform uses middleware credentials; its read throws and the provider handles the warning as a miss.',
+              copy: 'Cache read throws inside AKS; treated as a miss',
               mapStatus: 'Cache read throws; treated as a miss',
               state: 'handled-failure',
             },
             azureclients: {
-              copy: 'Common Table Storage outside AKS uses Workload Identity and returns opendes after the cache exception.',
+              copy: 'Table Storage answers anyway, with Workload Identity',
               mapStatus: 'Table Storage answers anyway',
               state: 'fallback',
             },
@@ -373,14 +373,14 @@ export const chapters = {
         },
       },
       providerPath:
-        'The provider checks Redis in platform with middleware credentials, then reads Azure Table Storage in common Storage outside AKS with Workload Identity, returning stored configuration. This lookup does not visit the partition’s Cosmos, blob Storage, or Service Bus.',
+        'The provider checks Redis inside AKS with middleware credentials, then reads Azure Table Storage in common Storage outside AKS with Workload Identity, returning stored configuration. This lookup does not visit the partition’s Cosmos, blob Storage, or Service Bus.',
     },
     goal: 'With the drawer closed, you can point to where shared code ends and Azure provider code begins, explain why the interface is not a network hop, and say what survives a cache exception.',
     outcomes: [
       {
         headline: 'Common code calls Azure through a provider interface.',
-        text: 'Common service code calls a provider interface; the Azure implementation behind it checks Redis in platform with middleware credentials, then calls common Table Storage outside AKS with Workload Identity on a miss. The table read still happens when the cache throws.',
-        why: 'partition-core calls IPartitionService.getPartition. provider/partition-azure checks Redis in platform with middleware credentials, then uses Workload Identity for the common Table Storage read after a miss or handled cache exception.',
+        text: 'Common service code calls a provider interface. The Azure implementation behind it checks Redis inside AKS with middleware credentials, then reads common Table Storage outside AKS with Workload Identity on a miss. The table read still happens when the cache throws.',
+        why: 'partition-core calls IPartitionService.getPartition. provider/partition-azure checks Redis inside AKS with middleware credentials, then uses Workload Identity for the common Table Storage read after a miss or handled cache exception.',
         focus: ['core', 'contract', 'azureimpl', 'redis', 'azureclients'],
         scopes: ['spi-shared', 'spi-provider', 'spi-cache', 'spi-tables'],
         evidence: 'azureimpl',

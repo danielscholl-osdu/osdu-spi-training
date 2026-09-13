@@ -27,7 +27,7 @@ function spiBoundaryDiagram() {
     <div class="spi-step" aria-hidden="true">↓ the cache call leaves the image but stays inside AKS</div>
     <div class="spi-lane" data-scope="spi-cache">
     <div class="spi-lane-head"><h3>Redis cache · inside AKS · middleware credentials</h3><small>Outside the service image</small></div>
-    ${node('redis', 'Redis in platform', 'A cache hit returns without reading the table')}
+    ${node('redis', 'Redis in the platform namespace', 'A cache hit returns without reading the table')}
     <div class="spi-trace-status" data-trace-status="redis" hidden></div>
     </div>
     <div class="spi-step" aria-hidden="true">↓ after a miss or handled read exception, the provider calls the table</div>

@@ -881,7 +881,7 @@ test('lesson 03 claims keep the provider seam understandable without evidence', 
   const claims = claimStrip('spi-boundary');
   for (const fact of [
     'partition-core calls IPartitionService.getPartition',
-    'Redis in platform with middleware credentials',
+    'Redis inside AKS with middleware credentials',
     'Workload Identity for the common Table Storage read',
     'same service process',
     'not a network hop',
@@ -933,11 +933,8 @@ test('example variants present two states of one canonical six-hop trace', () =>
     const hops = Object.fromEntries(
       presentation.hops.map((hop) => [hop.detail, hop]),
     );
-    assert.match(hops.redis.copy, /Redis in platform.*middleware credentials/);
-    assert.match(
-      hops.azureclients.copy,
-      /Common Table Storage outside AKS.*Workload Identity/,
-    );
+    assert.match(hops.redis.copy, /inside AKS/i);
+    assert.match(hops.azureclients.copy, /outside AKS|Workload Identity/i);
   }
   assert.equal(normal.hops[4].state, 'normal');
   assert.equal(normal.hops[5].state, 'normal');
@@ -959,8 +956,8 @@ test('example variants present two states of one canonical six-hop trace', () =>
     );
   assert.deepEqual(links(cacheDownMarkup), links(normalMarkup));
   assert.match(normalMarkup, /healthy cache miss/i);
-  assert.match(cacheDownMarkup, /read throws.*handles the warning as a miss/i);
-  assert.match(cacheDownMarkup, /returns opendes after the cache exception/i);
+  assert.match(cacheDownMarkup, /read throws.*treated as a miss/i);
+  assert.match(cacheDownMarkup, /Table Storage answers anyway/i);
 });
 
 test('example compatibility keeps provider paths in content and controls optional', () => {
