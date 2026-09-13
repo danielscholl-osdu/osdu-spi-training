@@ -352,6 +352,31 @@ test('field checks name a source, a command, and a place on the site', () => {
   }
 });
 
+test('readiness misconception separates possible convergence from API proof', () => {
+  const readiness = myths.find((myth) => myth.id === 'finished-means-ready');
+  const misconceptionCopy = `${readiness.reality} ${readiness.routeLabel}`;
+
+  assert.equal(readiness.claim, 'The command finished, so it is ready.');
+  assert.equal(readiness.check, 'spi status --watch');
+  assert.equal(readiness.source, 'lifecycle');
+  assert.equal(readiness.route, '#bring-up/inspect?detail=readiness');
+  assert.equal(readiness.routeLabel, 'Readiness signals');
+  assert.match(readiness.reality, /does not establish API readiness/);
+  assert.match(
+    readiness.reality,
+    /Flux reconciliation and initialization Jobs may still be working/,
+  );
+  assert.match(readiness.reality, /does not make an API call/);
+  assert.match(
+    readiness.reality,
+    /authenticated request verifies only the path exercised/,
+  );
+  assert.match(readiness.reality, /150-minute value is a deadline/);
+  assert.match(readiness.reality, /not an expected wait/);
+  for (const phrase of ['first of five', 'the rest', 'later milestone'])
+    assert.doesNotMatch(misconceptionCopy, new RegExp(phrase, 'i'));
+});
+
 test('audio markers are ordered, inside the recording, and point at real views', () => {
   assert.equal(
     new Set(episodes.map((episode) => episode.id)).size,
