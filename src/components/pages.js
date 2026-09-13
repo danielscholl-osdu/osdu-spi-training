@@ -354,10 +354,18 @@ export function claimStrip(key) {
     <ol class="claim-list">${chapter.outcomes
       .map((claim, index) => {
         const c = typeof claim === 'string' ? { text: claim } : claim;
-        return `<li class="claim-item" data-claim-item="${index}"><button type="button" class="claim" data-claim="${index}" aria-pressed="${index === 0}"><b>${escapeHtml(c.headline || c.text)}</b><small>${escapeHtml(c.why || '')}</small><span class="claim-count">${index + 1} / ${chapter.outcomes.length}</span></button>${c.evidence ? `<a class="claim-evidence" data-evidence="${index}" href="${routeHref(key, c.evidenceStep || c.step || '', c.evidence, { claim: index })}">How we know →</a>` : ''}</li>`;
+        return `<li class="claim-item" data-claim-item="${index}"><button type="button" class="claim" data-claim="${index}" aria-pressed="${index === 0}"><b>${escapeHtml(c.headline || c.text)}</b><span class="claim-count">${index + 1} / ${chapter.outcomes.length}</span></button>${c.evidence ? `<a class="claim-evidence" data-evidence="${index}" href="${routeHref(key, c.evidenceStep || c.step || '', c.evidence, { claim: index })}">How we know →</a>` : ''}</li>`;
       })
       .join('')}</ol>
   </section>`;
+}
+
+export function claimContext(key, index) {
+  const chapter = chapters[key];
+  if (!hasClaims(chapter)) return '';
+  const claim = chapter.outcomes[index];
+  if (!claim || typeof claim === 'string') return '';
+  return `<p>${escapeHtml(claim.text)}</p><small>${escapeHtml(claim.why)}</small>`;
 }
 
 export function guidePreview(id) {
@@ -376,7 +384,7 @@ export function chapterOutcomes(key) {
   );
   const next = learn[learn.indexOf(key) + 1];
   return `<section class="outcomes" aria-label="What you can now say">
-    <div class="outcomes-head"><span class="guide-kicker">Carry forward</span><h2>What you can now say</h2></div>
+    <div class="outcomes-head"><h2>What you can now say</h2></div>
     <ol>${chapter.outcomes.map((line) => `<li>${escapeHtml(typeof line === 'string' ? line : line.text)}</li>`).join('')}</ol>
     ${
       key === 'handshake'
@@ -390,15 +398,16 @@ export function chapterOutcomes(key) {
 
 export function chapterScope(key) {
   const chapter = chapters[key];
-  if (hasClaims(chapter))
-    return `<div class="lesson-orientation"><div><span class="guide-kicker">This lesson answers</span><p>${escapeHtml(chapter.question)}</p></div><div><span class="guide-kicker">By the end</span><p>${escapeHtml(chapter.goal)}</p></div></div>`;
+  if (chapter.group === 'learn' && hasClaims(chapter)) return '';
+  if (chapter.group === 'learn')
+    return `<p class="view-scope">${escapeHtml(chapter.builds)} ${escapeHtml(chapter.where)}</p>`;
   if (!chapter.where) return '';
   return `<p class="view-question"><span>This view answers</span>${escapeHtml(chapter.question || '')}${chapter.builds ? ` <em>${escapeHtml(chapter.builds)}</em>` : ''}</p>
   <p class="view-scope"><span>In this view</span>${escapeHtml(chapter.where)} <a href="#field-guides?guide=ladder">See the six places →</a></p>`;
 }
 
-// The running example, drawn as hops above the map. Each hop selects a
-// component on the map; the current hop and the ones before it are marked.
+// The running example is optional depth after the lesson exit. Each hop can
+// deliberately return to its component on the map.
 export function resolveExamplePresentation(example, variant) {
   const variants = example?.variants || null;
   const selectedVariant =
@@ -432,33 +441,24 @@ export function exampleStrip(key, route, variant) {
   const example = chapters[key].example;
   if (!example) return '';
   const presentation = resolveExamplePresentation(example, variant);
-  if (hasClaims(chapters[key])) {
-    const variantControls = example.variants
-      ? `<div class="example-variant-row"><span>Trace condition</span><div class="example-variants" role="group" aria-label="Trace condition">${Object.entries(
-          example.variants,
+  const structured = hasClaims(chapters[key]);
+  const current = hopIndexForRoute(chapters[key], route);
+  const variantControls = example.variants
+    ? `<div class="example-variant-row"><span>Trace condition</span><div class="example-variants" role="group" aria-label="Trace condition">${Object.entries(
+        example.variants,
+      )
+        .map(
+          ([id, option]) =>
+            `<button type="button" data-example-variant="${id}" aria-pressed="${presentation.selectedVariant === id}">${escapeHtml(option.label)}</button>`,
         )
-          .map(
-            ([id, option]) =>
-              `<button type="button" data-example-variant="${id}" aria-pressed="${presentation.selectedVariant === id}">${escapeHtml(option.label)}</button>`,
-          )
-          .join('')}</div></div>`
-      : '';
-    return `<details class="example-disclosure"><summary>Running example: ${escapeHtml(example.title)} → <code>${escapeHtml(example.code)}</code></summary>
+        .join('')}</div></div>`
+    : '';
+  return `<details class="example-disclosure"><summary>Example: ${escapeHtml(example.title)}</summary>
+    <div class="example-head"><code>${escapeHtml(example.code)}</code></div>
     ${variantControls}
     <p class="example-crossing" data-example-crossing>${escapeHtml(presentation.crossing)}</p>
-    <ol class="journey" aria-label="${escapeHtml(example.title)}">${presentation.hops.map((hop, index) => `<li><a href="${routeHref(key, hop.step || example.step || route.step, hop.detail, { hop: index })}" data-map-jump data-hop="${index}" title="${escapeHtml(hop.copy)}" aria-label="${escapeHtml(`${index + 1}. ${hop.label}: ${hop.copy}`)}"><span>${index + 1}</span><b>${escapeHtml(hop.label)}</b><small data-hop-copy="${hop.detail}">${escapeHtml(hop.copy)}</small></a></li>`).join('')}</ol>
+    <ol class="journey" aria-label="${escapeHtml(example.title)}">${presentation.hops.map((hop, index) => `<li class="${index === current ? 'is-current' : index < current ? 'is-done' : ''}"><a href="${routeHref(key, hop.step || example.step || route.step, hop.detail, structured ? { hop: index } : {})}" data-map-jump data-hop="${index}" ${index === current ? 'aria-current="true"' : ''} title="${escapeHtml(hop.copy)}" aria-label="${escapeHtml(`${index + 1}. ${hop.label}: ${hop.copy}`)}"><span>${index + 1}</span><b>${escapeHtml(hop.label)}</b><small data-hop-copy="${hop.detail}">${escapeHtml(hop.copy)}</small></a></li>`).join('')}</ol>
     <p class="example-note"><span class="example-provider-path">${escapeHtml(example.providerPath || '')}</span> <span data-example-note>${escapeHtml(presentation.note)}</span></p></details>`;
-  }
-  const current = hopIndexForRoute(chapters[key], route);
-  return `<div class="example-head"><span class="guide-kicker">Running example</span><b>${escapeHtml(example.title)}</b><code>${escapeHtml(example.code)}</code></div>
-    <ol class="journey" aria-label="${escapeHtml(example.title)}">${example.hops
-      .map((hop, index) => {
-        const state =
-          index === current ? 'is-current' : index < current ? 'is-done' : '';
-        return `<li class="${state}"><a href="${routeHref(key, hop.step || example.step || route.step, hop.detail)}" data-map-jump ${index === current ? 'aria-current="true"' : ''}><span>${index + 1}</span><b>${escapeHtml(hop.label)}</b><small>${escapeHtml(hop.copy)}</small></a></li>`;
-      })
-      .join('')}</ol>
-    <p class="example-note">${escapeHtml(example.providerPath || '')} ${escapeHtml(example.note)}</p>`;
 }
 
 // One entry from the myths, directly under the map. A link back into the same
@@ -479,7 +479,7 @@ export function mythCallout(id, chapterKey) {
       ? routeHref(route.chapter, route.step, route.detail, { claim })
       : myth.route;
   return `<aside class="easy-mistake" aria-label="Easy mistake">
-    <div class="easy-mistake-head"><span class="guide-kicker">Easy mistake</span><a href="${routeHref('not-true')}">All ${myths.length}, by theme →</a></div>
+    <div class="easy-mistake-head"><span class="guide-kicker">Easy mistake</span></div>
     <p class="myth-claim">“${myth.claim}”</p>
     <p class="myth-reality">${myth.reality}</p>
     <code class="myth-check">${escapeHtml(myth.check)}</code>

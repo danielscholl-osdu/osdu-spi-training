@@ -22,12 +22,14 @@ import {
   chapterScope,
   chapterNavigation,
   claimIndexForRoute,
+  claimContext,
   courseMaps,
   claimStrip,
   detailSourceLinks,
   exampleStrip,
   frameVideoPlayer,
   guideFigure,
+  hasClaims,
   hopIndexForRoute,
   mythCallout,
   pageRenderers,
@@ -37,7 +39,13 @@ import {
   selectExampleVariant,
   tryItBand,
 } from '../src/components/pages.js';
-import { parseRoute, routeHref, chapterSteps } from '../src/router.js';
+import {
+  chapterAliases,
+  chapterSteps,
+  parseRoute,
+  retiredDetails,
+  routeHref,
+} from '../src/router.js';
 import { forkMoments } from '../src/content/fork-moments.js';
 import { zoomLevels, spiMeanings } from '../src/content/concepts.js';
 import { mythThemes } from '../src/content/myths.js';
@@ -716,6 +724,51 @@ test('deep links recover chapter, lifecycle moment, and component without module
   }
 });
 
+test('every published chapter, step, alias, and retired detail resolves', () => {
+  for (const [key, chapter] of Object.entries(chapters)) {
+    const steps = chapterSteps(key);
+    const bare = parseRoute(routeHref(key));
+    assert.equal(bare.chapter, key, `${key}: chapter`);
+    assert.equal(bare.step, steps[0] || '', `${key}: default step`);
+    for (const step of steps) {
+      const route = parseRoute(routeHref(key, step));
+      assert.equal(route.chapter, key, `${key}/${step}: chapter`);
+      assert.equal(route.step, step, `${key}/${step}: step`);
+    }
+    if (chapter.kind !== 'map') continue;
+    for (const step of steps.length ? steps : ['']) {
+      const route = parseRoute(routeHref(key, step));
+      verifyDetails(
+        diagramRenderers[chapter.diagram](route),
+        `${key}/${step || 'default'}`,
+      );
+    }
+  }
+
+  for (const [alias, target] of Object.entries(chapterAliases))
+    assert.equal(parseRoute(`#${alias}`).chapter, target, `${alias}: alias`);
+
+  for (const [sourceChapter, details] of Object.entries(retiredDetails)) {
+    for (const [sourceDetail, [chapter, step, detail]] of Object.entries(
+      details,
+    )) {
+      const route = parseRoute(`#${sourceChapter}?detail=${sourceDetail}`);
+      assert.deepEqual(
+        [route.chapter, route.step, route.detail],
+        [chapter, step || chapterSteps(chapter)[0] || '', detail],
+        `${sourceChapter}: ${sourceDetail}`,
+      );
+      const target = chapters[chapter];
+      assert.equal(target.kind, 'map', `${sourceDetail}: map target`);
+      assert.match(
+        diagramRenderers[target.diagram](route),
+        new RegExp(`data-detail="${detail}"`),
+        `${sourceDetail}: target component`,
+      );
+    }
+  }
+});
+
 test('selection intent is additive and invalid qualifiers preserve legacy routes', () => {
   const cases = [
     {
@@ -1365,7 +1418,7 @@ test('comparison source URLs require approved repositories and immutable revisio
   );
 });
 
-test('learn views state a question, what they build on, their scope, and outcomes', () => {
+test('learn views retain authored lesson metadata and omit repeated scaffolding', () => {
   const learn = Object.entries(chapters).filter(
     ([, chapter]) => chapter.group === 'learn',
   );
@@ -1374,6 +1427,40 @@ test('learn views state a question, what they build on, their scope, and outcome
     assert.ok(chapter.builds?.trim(), `${id}: builds`);
     assert.ok(chapter.outcomes?.length >= 2, `${id}: outcomes`);
     assert.ok(chapter.where?.trim(), `${id}: where`);
+    const scope = chapterScope(id);
+    const outcomes = chapterOutcomes(id);
+    for (const label of [
+      'This lesson answers',
+      'This view answers',
+      'By the end',
+      'In this view',
+    ])
+      assert.doesNotMatch(scope, new RegExp(label), `${id}: ${label}`);
+    assert.ok(!scope.includes(chapter.question), `${id}: visible question`);
+    if (chapter.goal)
+      assert.ok(!scope.includes(chapter.goal), `${id}: visible goal`);
+    if (hasClaims(chapter)) assert.equal(scope, '', `${id}: structured scope`);
+    else {
+      assert.ok(scope.includes(chapter.builds), `${id}: prerequisite`);
+      assert.ok(scope.includes(chapter.where), `${id}: location`);
+    }
+    assert.equal(
+      outcomes.match(/<h2>What you can now say<\/h2>/g)?.length,
+      1,
+      `${id}: outcome heading`,
+    );
+    assert.doesNotMatch(outcomes, /Carry forward/, `${id}: outcome kicker`);
+
+    const mistakeIds = Array.isArray(chapter.mistakes)
+      ? chapter.mistakes
+      : Object.values(chapter.mistakes || {});
+    for (const mistakeId of new Set(mistakeIds)) {
+      const myth = myths.find(({ id: mythId }) => mythId === mistakeId);
+      const callout = mythCallout(mistakeId, id);
+      assert.doesNotMatch(callout, /All \d+, by theme/, `${id}: collection`);
+      assert.ok(callout.includes(myth.reality), `${id}: correction`);
+      assert.ok(callout.includes(sources[myth.source].href), `${id}: source`);
+    }
   }
   for (const level of zoomLevels) {
     verifyRoute(level.href, `zoom level ${level.id}`);
@@ -1518,6 +1605,7 @@ test('structured claims resolve their focus, evidence, and scopes on every scene
     );
     assert.doesNotMatch(claimsMarkup, /claims, one map/);
     claims.forEach((claim, index) => {
+      const contextMarkup = claimContext(key, index);
       assert.ok(
         Array.isArray(claim.focus) && Array.isArray(claim.scopes),
         `${key}: claim ${index} focus and scopes are arrays`,
@@ -1542,6 +1630,18 @@ test('structured claims resolve their focus, evidence, and scopes on every scene
       assert.ok(
         outcomesMarkup.includes(escapeHtml(claim.text)),
         `${key}: claim ${index} is carried forward`,
+      );
+      assert.ok(
+        contextMarkup.includes(escapeHtml(claim.text)),
+        `${key}: claim ${index} sentence is beside the map`,
+      );
+      assert.ok(
+        contextMarkup.includes(escapeHtml(claim.why)),
+        `${key}: claim ${index} reason is beside the map`,
+      );
+      assert.ok(
+        !claimsMarkup.includes(escapeHtml(claim.why)),
+        `${key}: claim ${index} reason is absent from compact controls`,
       );
       assert.ok(
         claimsMarkup.includes(
@@ -1600,49 +1700,79 @@ test('structured claims resolve their focus, evidence, and scopes on every scene
   }
 });
 
+test('claim context escapes authored copy and excludes unstructured lessons', () => {
+  assert.equal(claimContext('fork-shape', 0), '');
+  assert.match(claimContext('running-stack', 0), /spi up --env &lt;name&gt;/);
+  assert.doesNotMatch(claimContext('running-stack', 0), /<name>/);
+});
+
 test('lesson 01 editorial copy introduces its example and complete command', () => {
   const chapter = chapters['running-stack'];
   const misconception = myths.find((myth) => myth.id === 'stack-is-only-aks');
   const callout = mythCallout(misconception.id, 'running-stack');
+  const overview = architectureMap();
+  const lifecycle = architectureMap(1);
 
   assert.match(
     chapters.start.reference,
     /CIMPL is the open-source community implementation/,
   );
-  assert.match(
+  assert.equal(
     chapter.intro,
-    /CIMPL runs its supporting middleware in Kubernetes/,
+    "The stack is one development and test environment in an Azure resource group. OSDU services run in AKS; Azure data services sit alongside it. Some resources belong to a partition such as opendes, while others are shared. CIMPL runs supporting middleware in Kubernetes. Azure SPI uses Azure data services alongside AKS, while Elasticsearch, Redis, and Airflow's database remain in the cluster.",
   );
-  assert.match(chapter.intro, /Azure data services outside AKS/);
-  assert.match(
-    chapter.intro,
-    /Elasticsearch, Redis, and Airflow’s database remain inside the cluster/,
+  assert.equal(chapter.figure, 'The deployed stack');
+  assert.equal(
+    chapter.outcomes[1].headline,
+    'Partition resources and shared resources.',
   );
-  assert.match(
-    chapter.intro,
-    /opendes, the example data partition, in the environment you named/,
-  );
-  assert.match(
+  assert.equal(
     chapter.outcomes[1].why,
-    /^An OSDU data partition supplies the configuration and data context/,
+    'In this stack, opendes owns a Cosmos DB SQL account, Storage account, and Service Bus namespace; common Storage, the entitlements Gremlin database, Key Vault, and the service identity are shared.',
   );
-  assert.ok(
-    chapter.outcomes[1].why.indexOf('configuration and data context') <
-      chapter.outcomes[1].why.indexOf('Cosmos DB SQL account'),
+  assert.equal(
+    chapter.outcomes[2].why,
+    'Each service image includes its Azure provider.',
+  );
+  assert.equal(chapter.example.title, 'a partition lookup');
+  assert.match(
+    chapter.example.note,
+    /^The map uses opendes as its example partition\./,
+  );
+  assert.match(
+    chapter.example.providerPath,
+    /cache, then Azure Table Storage in common Storage/,
+  );
+  assert.match(
+    chapter.example.providerPath,
+    /does not visit the partition’s Cosmos, blob Storage, or Service Bus/,
   );
   assert.equal(
     chapter.outcomes[0].why,
     'spi up --env <name> creates AKS and its Azure resources together.',
   );
-  assert.match(claimStrip('running-stack'), /spi up --env &lt;name&gt;/);
+  assert.match(claimContext('running-stack', 0), /spi up --env &lt;name&gt;/);
+  assert.match(overview, /One development and test environment/);
+  assert.doesNotMatch(overview, /Your environment ·/);
+  assert.match(lifecycle, /Your environment · Azure resources created/);
+  for (const label of [
+    'Outside the stack',
+    'Outside AKS',
+    'Per partition · opendes',
+  ])
+    assert.match(overview, new RegExp(label));
   assert.equal(chapter.mistakes.developer, misconception.id);
   assert.equal(misconception.source, 'architecture');
-  assert.equal(misconception.reality.match(/[.!?](?:\s|$)/g)?.length, 3);
+  assert.equal(misconception.reality.match(/[.!?](?:\s|$)/g)?.length, 2);
   assert.match(callout, /Cosmos DB, Storage, and Service Bus/);
+  assert.doesNotMatch(callout, /partition lookup|Table Storage/);
   assert.match(
     callout,
     /href="#running-stack\/developer\?detail=environment" data-map-jump/,
   );
+  assert.ok(chapter.sources.includes('architecture'));
+  assert.ok(chapter.sources.includes('cimplArchitecture'));
+  assert.ok(chapter.sources.includes('images'));
   assert.ok(chapter.guides.includes('profiles'));
   assert.equal(chapters['bring-up'].mistakes.start, 'profiles-save-money');
   assert.equal(chapters['bring-up'].mistakes.provision, 'profiles-save-money');
@@ -1740,8 +1870,11 @@ test('lesson 02 claim rendering and example routes preserve lesson 01 behavior',
     '#bring-up/remove?detail=retained&claim=2',
   ];
   for (const [index, claim] of chapter.outcomes.entries()) {
+    const context = claimContext('bring-up', index);
     assert.ok(strip.includes(claim.headline), `claim ${index} headline`);
-    assert.ok(strip.includes(claim.why), `claim ${index} reason`);
+    assert.ok(!strip.includes(claim.why), `claim ${index} compact control`);
+    assert.ok(context.includes(claim.text), `claim ${index} context sentence`);
+    assert.ok(context.includes(claim.why), `claim ${index} context reason`);
     assert.ok(outcomes.includes(claim.text), `claim ${index} full outcome`);
     assert.ok(
       strip.includes(`href="${expectedEvidence[index]}"`),
@@ -1858,6 +1991,9 @@ test('lesson 03 claims keep the provider seam understandable without evidence', 
     );
 
   const claims = claimStrip('spi-boundary');
+  const contexts = chapter.outcomes
+    .map((_, index) => claimContext('spi-boundary', index))
+    .join('');
   for (const fact of [
     'partition-core calls IPartitionService.getPartition',
     'partition-core-plus checks its configured VmCache',
@@ -1868,7 +2004,8 @@ test('lesson 03 claims keep the provider seam understandable without evidence', 
     'not a network hop',
     'provider/partition-azure stays fork-owned',
   ])
-    assert.ok(claims.includes(fact), `claim surface includes ${fact}`);
+    assert.ok(contexts.includes(fact), `claim context includes ${fact}`);
+  assert.doesNotMatch(claims, /<small>/);
 
   const outcomes = chapterOutcomes('spi-boundary');
   for (const claim of chapter.outcomes)
@@ -1878,7 +2015,7 @@ test('lesson 03 claims keep the provider seam understandable without evidence', 
     );
 });
 
-test('lesson 03 states its own prerequisite and place without changing orientation', () => {
+test('lesson 03 states its prerequisite and place in its lead', () => {
   const chapter = chapters['spi-boundary'];
   assert.match(chapter.intro, /^Builds on the partition lookup from 01/);
   assert.match(chapter.intro, /one service inside the osdu namespace/);
@@ -1888,15 +2025,8 @@ test('lesson 03 states its own prerequisite and place without changing orientati
     chapter.intro,
     /community partition-core-plus implementation.*fork-owned Azure implementation/,
   );
-  const orientation = chapterScope('spi-boundary');
-  assert.match(orientation, /This lesson answers/);
-  assert.match(orientation, /By the end/);
-  assert.ok(orientation.includes(chapter.goal));
-  assert.ok(!orientation.includes(chapter.builds));
-  assert.ok(!orientation.includes(chapter.where));
-  assert.ok(
-    !chapterScope('running-stack').includes(chapters['running-stack'].builds),
-  );
+  assert.equal(chapterScope('spi-boundary'), '');
+  assert.equal(chapterScope('running-stack'), '');
 });
 
 test('lesson 03 editorial copy stays at the provider boundary', () => {
@@ -2176,21 +2306,87 @@ test('lesson 03 evidence deep links stay step-less and map to claims', () => {
   );
 });
 
-test('example renderers preserve structured and unconverted lessons', () => {
-  const fixtures = [
-    ['running-stack', '#running-stack/request', true],
-    ['spi-boundary', '#spi-boundary', true],
-    ['bring-up', '#bring-up/provision', true],
-    ['fork-shape', '#fork-shape', false],
-  ];
-  for (const [key, href, structured] of fixtures) {
-    const markup = exampleStrip(key, parseRoute(href));
-    assert.ok(markup.includes('class="journey"'), key);
-    assert.equal(markup.includes('example-disclosure'), structured, key);
+test('all map lesson examples use one closed disclosure and preserve routes', () => {
+  const exampleLessons = mapChapters.filter(([, chapter]) => chapter.example);
+  assert.deepEqual(
+    exampleLessons.map(([key]) => key),
+    [
+      'running-stack',
+      'bring-up',
+      'spi-boundary',
+      'fork-shape',
+      'fork-day',
+      'handshake',
+    ],
+  );
+  for (const [key, chapter] of exampleLessons) {
+    const steps = chapterSteps(key).length ? chapterSteps(key) : [''];
+    for (const step of steps) {
+      const href = routeHref(key, step);
+      const markup = exampleStrip(key, parseRoute(href));
+      assert.match(markup, /^<details class="example-disclosure">/, href);
+      assert.doesNotMatch(markup, /^<details[^>]*\bopen\b/, href);
+      assert.ok(
+        markup.includes(
+          `<summary>Example: ${escapeHtml(chapter.example.title)}</summary>`,
+        ),
+        href,
+      );
+      assert.ok(
+        markup.indexOf('</summary>') <
+          markup.indexOf(escapeHtml(chapter.example.code)),
+        `${href}: command follows summary`,
+      );
+      assert.equal(
+        (markup.match(/data-hop="/g) || []).length,
+        chapter.example.hops.length,
+        href,
+      );
+      assert.ok(markup.includes('data-map-jump'), href);
+      for (const [index, hop] of chapter.example.hops.entries()) {
+        const options = hasClaims(chapter) ? { hop: index } : {};
+        const hopHref = routeHref(
+          key,
+          hop.step || chapter.example.step || step,
+          hop.detail,
+          options,
+        );
+        assert.ok(
+          markup.includes(`href="${hopHref}"`),
+          `${href}: hop ${index}`,
+        );
+        const hopRoute = parseRoute(hopHref);
+        if (hasClaims(chapter))
+          assert.equal(
+            resolveLessonSelection(chapter, hopRoute).exampleOpen,
+            true,
+            hopHref,
+          );
+        else assert.equal(hopIndexForRoute(chapter, hopRoute), index, hopHref);
+        assert.match(
+          exampleStrip(key, hopRoute),
+          new RegExp(
+            `<li class="is-current"><a href="${hopHref.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}"`,
+          ),
+          `${hopHref}: current hop`,
+        );
+      }
+      const presentation = resolveExamplePresentation(chapter.example);
+      if (presentation.crossing)
+        assert.ok(markup.includes(escapeHtml(presentation.crossing)), href);
+      if (presentation.providerPath)
+        assert.ok(markup.includes(escapeHtml(presentation.providerPath)), href);
+      assert.ok(markup.includes(escapeHtml(presentation.note)), href);
+    }
+    const markup = exampleStrip(key, parseRoute(routeHref(key)));
     assert.equal(
       (markup.match(/data-example-variant=/g) || []).length,
       key === 'spi-boundary' ? 2 : 0,
       key,
     );
   }
+  assert.match(
+    exampleStrip('running-stack', parseRoute('#running-stack')),
+    /^<details class="example-disclosure"><summary>Example: a partition lookup<\/summary>/,
+  );
 });

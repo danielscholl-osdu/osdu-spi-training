@@ -85,9 +85,9 @@ export const chapters = {
     subtitle: 'Place familiar OSDU concepts',
     headline: 'AKS is one part<span>of the stack.</span>',
     intro:
-      'Your OSDU APIs run inside Kubernetes. CIMPL runs its supporting middleware in Kubernetes too; the Azure implementation reaches Azure data services outside AKS, while Elasticsearch, Redis, and Airflow’s database remain inside the cluster. The stack is both sides together in one resource group, built for development and test. Use opendes, the example data partition, in the environment you named.',
+      "The stack is one development and test environment in an Azure resource group. OSDU services run in AKS; Azure data services sit alongside it. Some resources belong to a partition such as opendes, while others are shared. CIMPL runs supporting middleware in Kubernetes. Azure SPI uses Azure data services alongside AKS, while Elasticsearch, Redis, and Airflow's database remain in the cluster.",
     premise: 'You know OSDU. Start with the environment around it.',
-    figure: 'Follow the boundaries',
+    figure: 'The deployed stack',
     selected: 'environment',
     diagram: 'overview',
     listen: [
@@ -182,7 +182,7 @@ export const chapters = {
     where:
       'Wide: the resource group, the Azure resources in it, the cluster, and its namespaces. No service is opened yet.',
     example: {
-      title: 'Follow a partition lookup',
+      title: 'a partition lookup',
       code: 'GET /api/partition/v1/partitions/opendes',
       step: 'request',
       scopes: ['aks', 'service-boundary'],
@@ -212,7 +212,7 @@ export const chapters = {
       ],
       providerPath:
         'The provider checks its cache, then Azure Table Storage in common Storage, returning stored configuration. This lookup does not visit the partition’s Cosmos, blob Storage, or Service Bus.',
-      note: 'The answer describes where opendes lives. Other services use it to find their Cosmos, Storage, and Service Bus.',
+      note: 'The map uses opendes as its example partition. The answer describes where opendes lives. Other services use it to find their Cosmos, Storage, and Service Bus.',
     },
     goal: 'You can distinguish the AKS cluster from the Azure resources around it and explain which resources opendes owns or shares in the environment.',
     outcomes: [
@@ -226,10 +226,9 @@ export const chapters = {
         crossing: 'CLI provisions Azure and prepares AKS',
       },
       {
-        headline:
-          'Partitions own data resources; the environment shares platform resources.',
+        headline: 'Partition resources and shared resources.',
         text: 'My partition’s records, blobs, and events each have their own Azure resource; entitlements, identities, and Key Vault are shared by the environment.',
-        why: 'An OSDU data partition supplies the configuration and data context that services use. In this stack, opendes owns a Cosmos DB SQL account, Storage account, and Service Bus namespace; common Storage, the entitlements Gremlin database, Key Vault, and the service identity are shared.',
+        why: 'In this stack, opendes owns a Cosmos DB SQL account, Storage account, and Service Bus namespace; common Storage, the entitlements Gremlin database, Key Vault, and the service identity are shared.',
         focus: [
           'cosmos',
           'partition-storage',
@@ -245,7 +244,7 @@ export const chapters = {
       {
         headline: 'The Azure provider lives inside each OSDU service.',
         text: 'The OSDU services run in the osdu namespace, and each one carries its Azure provider inside its own image.',
-        why: 'There is no separate Azure adapter to find. The provider is in the pod.',
+        why: 'Each service image includes its Azure provider.',
         focus: ['gateway', 'service', 'provider'],
         scopes: ['aks', 'service-boundary'],
         evidence: 'service',

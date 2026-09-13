@@ -15,8 +15,10 @@ import {
   listenChips,
   hasClaims,
   claimStrip,
+  claimContext,
   guidePreview,
   detailSourceLinks,
+  hopIndexForRoute,
   partitionComparison,
   resolveExamplePresentation,
   resolveLessonSelection,
@@ -44,6 +46,7 @@ const movable = [
   'chapter-guides',
   'chapter-outcomes',
   'chapter-try-it',
+  'example-strip',
   'next-link',
   'scope-note',
   'source-details',
@@ -181,6 +184,18 @@ function applyPolicy() {
   const crossingLabel = tracing ? presentation.crossing : claim.crossing;
   if (crossing && typeof crossingLabel === 'string')
     crossing.textContent = crossingLabel;
+  const context = document.getElementById('claim-context');
+  if (tracing) {
+    const hop = presentation.hops[lessonState.hop];
+    const sentence = document.createElement('p');
+    const reason = document.createElement('small');
+    sentence.textContent = hop?.label || '';
+    reason.textContent = hop?.copy || '';
+    context.replaceChildren(sentence, reason);
+  } else {
+    context.innerHTML = claimContext(route.chapter, lessonState.claim);
+  }
+  context.hidden = !context.textContent.trim();
 }
 
 let detailOpener = null;
@@ -346,6 +361,9 @@ function renderChapterFrame(route, scene) {
   document.getElementById('lesson-optional').hidden = !structured;
   document.getElementById('map-policy').hidden = !structured;
   document.getElementById('map-hint').hidden = structured;
+  const context = document.getElementById('claim-context');
+  context.innerHTML = '';
+  context.hidden = !structured;
   if (structured) {
     document
       .getElementById('optional-listen')
@@ -362,13 +380,18 @@ function renderChapterFrame(route, scene) {
     document
       .getElementById('chapter-mistake')
       .after(document.getElementById('chapter-outcomes'));
+  }
+  if (scene.kind === 'map' && scene.group === 'learn') {
     const nextBlock = document.createElement('div');
     nextBlock.id = 'lesson-next';
     nextBlock.className = 'lesson-next';
-    nextBlock.innerHTML = `<span>${chapters[nextChapter(key)].question}</span>`;
+    nextBlock.innerHTML = structured
+      ? `<span>${chapters[nextChapter(key)].question}</span>`
+      : '';
     nextBlock.append(document.getElementById('next-link'));
     document.getElementById('chapter-outcomes').after(nextBlock);
     nextBlock.after(tryIt);
+    tryIt.after(document.getElementById('example-strip'));
   } else if (scene.tryIt && nextChapter(key) === 'start') {
     const nextBlock = document.createElement('div');
     nextBlock.id = 'lesson-next';
@@ -530,6 +553,7 @@ function render() {
   const strip = document.getElementById('example-strip');
   const structured = hasClaims(scene);
   const selection = structured ? resolveLessonSelection(scene, route) : null;
+  const legacyHop = structured ? -1 : hopIndexForRoute(scene, route);
   const requestedOpener = pendingOpener;
   const openerHop = requestedOpener?.dataset.hop;
   const openerWasLookCloser = requestedOpener?.hasAttribute('data-look-closer');
@@ -550,6 +574,10 @@ function render() {
     lessonState.exampleOpen = selection.exampleOpen;
     strip.querySelector('details').open = selection.exampleOpen;
     applyPolicy();
+  } else if (scene.example) {
+    lessonState.hop = legacyHop;
+    lessonState.exampleOpen = legacyHop >= 0;
+    strip.querySelector('details').open = lessonState.exampleOpen;
   }
   if (element) {
     if (requestedOpener?.isConnected) {
@@ -694,28 +722,25 @@ document.getElementById('chapter-claims').addEventListener('click', (event) => {
   if (evidence && isModifiedClick(event)) return;
   event.preventDefault();
   const index = Number(evidence?.dataset.evidence ?? button.dataset.claim);
-  const repeat =
-    index === lessonState.claim &&
-    lessonState.hop < 0 &&
-    !inspector.classList.contains('is-expanded');
+  const previousClaim = lessonState.claim;
+  const route = parseRoute(location.hash);
+  const claim = chapters[route.chapter].outcomes[index];
   lessonState.claim = index;
   lessonState.hop = -1;
   lessonState.policy = 'learn';
-  if (evidence || repeat) {
-    const route = parseRoute(location.hash);
-    const claim = chapters[route.chapter].outcomes[index];
+  if (evidence) {
     const id = claim.evidence;
     const step = claim.evidenceStep || claim.step || '';
-    pendingOpener = evidence || button;
+    pendingOpener = evidence;
     const href = routeHref(route.chapter, step, id, { claim: index });
     if (location.hash === href) render();
     else location.hash = href;
     return;
   }
   closeInspector(false);
-  const route = parseRoute(location.hash);
-  const claim = chapters[route.chapter].outcomes[index];
-  if (claim.step) {
+  const currentStepIsCompatible =
+    !claim.steps || claim.steps.includes(route.step);
+  if (claim.step && (index !== previousClaim || !currentStepIsCompatible)) {
     const href = routeHref(route.chapter, claim.step);
     if (location.hash === href) render();
     else location.hash = href;
