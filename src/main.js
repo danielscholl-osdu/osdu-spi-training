@@ -17,6 +17,7 @@ import {
   claimStrip,
   guidePreview,
   detailSourceLinks,
+  partitionComparison,
   resolveExamplePresentation,
   resolveLessonSelection,
   selectExampleVariant,
@@ -335,6 +336,10 @@ function renderChapterFrame(route, scene) {
   document.body.classList.toggle('has-claims', structured);
   delete document.getElementById('diagram').dataset.policy;
   document.getElementById('chapter-claims').innerHTML = claimStrip(key);
+  const comparison = partitionComparison(key);
+  const comparisonSlot = document.getElementById('chapter-comparison');
+  comparisonSlot.innerHTML = comparison;
+  comparisonSlot.hidden = !comparison;
   document.getElementById('lesson-optional').hidden = !structured;
   document.getElementById('map-policy').hidden = !structured;
   document.getElementById('map-hint').hidden = structured;

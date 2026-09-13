@@ -10,6 +10,7 @@ import {
   zoomLadder,
   spiNamesFigure,
   roundTripFigure,
+  partitionLookupFigure,
 } from './infographics.js';
 import { routeHref, parseRoute } from '../router.js';
 
@@ -158,6 +159,25 @@ export function guideFigure(id, { heading = 'h3', compact = false } = {}) {
     <div class="guide-body">${infographics[id]()}</div>
     <div class="guide-foot">${sourceLinks(guide.sources)}${compact ? `<a class="small-link" href="${routeHref('field-guides')}?guide=${id}">All field guides →</a>` : `<a class="small-link" href="${guide.appearsIn.href}">Explore: ${guide.appearsIn.label} →</a>`}</div>
   </figure>`;
+}
+
+export function partitionComparison(key) {
+  const comparison = chapters[key]?.comparison;
+  if (!comparison) return '';
+  return `<details class="partition-comparison">
+    <summary><b>${escapeHtml(comparison.title)}</b><span aria-hidden="true">+</span></summary>
+    <div class="partition-comparison-body">
+      ${partitionLookupFigure(comparison)}
+      <section class="partition-comparison-notes" aria-label="Comparison limits">
+        <h3>What this comparison does not claim</h3>
+        <ul>${comparison.limitations.map((note) => `<li>${escapeHtml(note)}</li>`).join('')}</ul>
+      </section>
+      <div class="partition-comparison-sources">
+        <section><h3>${escapeHtml(comparison.community.label)} sources</h3>${sourceLinks(comparison.community.sources)}</section>
+        <section><h3>${escapeHtml(comparison.azure.label)} sources</h3>${sourceLinks(comparison.azure.sources)}</section>
+      </div>
+    </div>
+  </details>`;
 }
 
 function mythCard(myth, compact = false) {

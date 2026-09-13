@@ -28,6 +28,7 @@ import {
   hopIndexForRoute,
   mythCallout,
   pageRenderers,
+  partitionComparison,
   resolveExamplePresentation,
   resolveLessonSelection,
   selectExampleVariant,
@@ -37,7 +38,11 @@ import { parseRoute, routeHref, chapterSteps } from '../src/router.js';
 import { forkMoments } from '../src/content/fork-moments.js';
 import { zoomLevels, spiMeanings } from '../src/content/concepts.js';
 import { mythThemes } from '../src/content/myths.js';
-import { zoomLadder, spiNamesFigure } from '../src/components/infographics.js';
+import {
+  partitionLookupFigure,
+  zoomLadder,
+  spiNamesFigure,
+} from '../src/components/infographics.js';
 import { multipleVariantTryIt, singleVariantTryIt } from './fixtures/try-it.js';
 
 const mapChapters = Object.entries(chapters).filter(
@@ -46,8 +51,19 @@ const mapChapters = Object.entries(chapters).filter(
 const pageChapters = Object.entries(chapters).filter(
   ([, chapter]) => chapter.kind === 'page',
 );
-const partitionSourcePattern =
-  /^https:\/\/github.com\/Azure\/osdu-spi-partition(?:\/blob\/main\/|\/commit\/[0-9a-f]{40}$|$)/;
+const fullRevision = '[0-9a-f]{40}';
+const partitionSourcePattern = new RegExp(
+  `^https://github\\.com/Azure/osdu-spi-partition(?:/blob/(?:main|${fullRevision})/|/commit/${fullRevision}$|$)`,
+);
+const stackSourcePattern = new RegExp(
+  `^https://github\\.com/Azure/osdu-spi-stack/blob/(?:main|${fullRevision})/`,
+);
+const communityPartitionSourcePattern = new RegExp(
+  `^https://community\\.opengroup\\.org/osdu/platform/system/partition/-/blob/${fullRevision}/`,
+);
+const cimplStackSourcePattern = new RegExp(
+  `^https://community\\.opengroup\\.org/osdu/platform/deployment-and-operations/cimpl-stack/-/blob/${fullRevision}/`,
+);
 const tryItAccess = new Set([
   'browser only',
   'workstation setup',
@@ -64,11 +80,11 @@ function verifySourceRecord(key, source) {
     assert.ok(url.pathname.startsWith('/osdu-spi/'), key);
   } else if (source.repo === 'osdu-spi-partition')
     assert.match(source.href, partitionSourcePattern);
-  else
-    assert.match(
-      source.href,
-      /^https:\/\/github.com\/Azure\/osdu-spi-stack\/blob\/main\//,
-    );
+  else if (source.repo === 'partition')
+    assert.match(source.href, communityPartitionSourcePattern);
+  else if (source.repo === 'cimpl-stack')
+    assert.match(source.href, cimplStackSourcePattern);
+  else assert.match(source.href, stackSourcePattern);
   const checkout = new URL(`../../${source.repo}/`, import.meta.url);
   if (existsSync(checkout)) {
     const target = new URL(source.path, checkout);
@@ -1169,14 +1185,43 @@ test('tryIt renderer returns an inert, escaped native disclosure', () => {
   );
 });
 
-test('partition source links accept pinned commits but reject unrelated URLs', () => {
+test('comparison source URLs require approved repositories and immutable revisions', () => {
   assert.match(sources.partitionCacheFix.href, partitionSourcePattern);
-  for (const href of [
-    'https://github.com/Azure/osdu-spi-partition/commit/fc2dfbf',
-    'https://github.com/Azure/osdu-spi-stack/commit/fc2dfbf6f1a3038a804441aba615bf5ebadb3332',
-    'https://example.com/Azure/osdu-spi-partition/commit/fc2dfbf6f1a3038a804441aba615bf5ebadb3332',
-  ])
-    assert.doesNotMatch(href, partitionSourcePattern);
+  const pinnedSources = [
+    ['architecture', stackSourcePattern],
+    ['partitionProvider', partitionSourcePattern],
+    ['partitionPom', partitionSourcePattern],
+    ['partitionRedis', partitionSourcePattern],
+    ['partitionTableStore', partitionSourcePattern],
+    ['communityPartitionInterface', communityPartitionSourcePattern],
+    ['communityPartitionProvider', communityPartitionSourcePattern],
+    ['communityPartitionCache', communityPartitionSourcePattern],
+    ['communityPartitionRepository', communityPartitionSourcePattern],
+    ['communityPartitionPom', communityPartitionSourcePattern],
+    ['cimplArchitecture', cimplStackSourcePattern],
+    ['cimplPartitionSecrets', cimplStackSourcePattern],
+  ];
+
+  for (const [key, pattern] of pinnedSources) {
+    const source = sources[key];
+    assert.match(source.href, pattern, key);
+    assert.ok(source.href.endsWith(`/${source.path}`), key);
+    assert.ok(source.href.includes(`/blob/${source.revision}/`), key);
+    assert.match(source.label, new RegExp(source.revision.slice(0, 7)), key);
+  }
+
+  assert.doesNotMatch(
+    'https://community.opengroup.org/osdu/platform/system/partition/-/blob/main/partition-core/pom.xml',
+    communityPartitionSourcePattern,
+  );
+  assert.doesNotMatch(
+    'https://community.opengroup.org/osdu/platform/deployment-and-operations/cimpl-stack/-/blob/fe56aa1b/docs/architecture.md',
+    cimplStackSourcePattern,
+  );
+  assert.doesNotMatch(
+    'https://github.com/other/osdu-spi-partition/blob/3a5690da3147d022ca9a2402858cd7b96e4688cf/pom.xml',
+    partitionSourcePattern,
+  );
 });
 
 test('learn views state a question, what they build on, their scope, and outcomes', () => {
@@ -1416,8 +1461,29 @@ test('lesson 01 editorial copy introduces its example and complete command', () 
   const callout = mythCallout(misconception.id, 'running-stack');
 
   assert.match(
+    chapters.start.intro,
+    /CIMPL provides the open-source community implementation/,
+  );
+  assert.match(
+    chapter.intro,
+    /CIMPL runs its supporting middleware in Kubernetes/,
+  );
+  assert.match(chapter.intro, /Azure data services outside AKS/);
+  assert.match(
+    chapter.intro,
+    /Elasticsearch, Redis, and Airflow’s database remain inside the cluster/,
+  );
+  assert.match(
     chapter.intro,
     /opendes, the example data partition, in the dev1 environment/,
+  );
+  assert.match(
+    chapter.outcomes[1].why,
+    /^An OSDU data partition supplies the configuration and data context/,
+  );
+  assert.ok(
+    chapter.outcomes[1].why.indexOf('configuration and data context') <
+      chapter.outcomes[1].why.indexOf('Cosmos DB SQL account'),
   );
   assert.equal(
     chapter.outcomes[0].why,
@@ -1649,6 +1715,8 @@ test('lesson 03 claims keep the provider seam understandable without evidence', 
   const claims = claimStrip('spi-boundary');
   for (const fact of [
     'partition-core calls IPartitionService.getPartition',
+    'partition-core-plus checks its configured VmCache',
+    'reads PostgreSQL on a miss',
     'Redis inside AKS with middleware credentials',
     'Workload Identity for the common Table Storage read',
     'same service process',
@@ -1671,6 +1739,10 @@ test('lesson 03 states its own prerequisite and place without changing orientati
   assert.match(chapter.intro, /one service inside the osdu namespace/);
   assert.match(chapter.intro, /partition in dev1/);
   assert.match(chapter.intro, /Service Provider Interface \(SPI\)/);
+  assert.match(
+    chapter.intro,
+    /community partition-core-plus implementation.*fork-owned Azure implementation/,
+  );
   const orientation = chapterScope('spi-boundary');
   assert.match(orientation, /This lesson answers/);
   assert.match(orientation, /By the end/);
@@ -1715,6 +1787,110 @@ test('lesson 03 editorial copy stays at the provider boundary', () => {
   assert.doesNotMatch(
     requiredCopy,
     /\bfork_upstream\b|\bfork_integration\b|\bmain\b/,
+  );
+});
+
+test('partition comparison record renders one closed, bounded two-lane disclosure', () => {
+  const entries = Object.entries(chapters).filter(([, chapter]) =>
+    Boolean(chapter.comparison),
+  );
+  assert.deepEqual(
+    entries.map(([key]) => key),
+    ['spi-boundary'],
+  );
+
+  const comparison = entries[0][1].comparison;
+  assert.equal(
+    comparison.operation,
+    'GET /api/partition/v1/partitions/opendes',
+  );
+  assert.equal(
+    comparison.community.revision,
+    'Partition 5aa406b9 · CIMPL Stack fe56aa1b',
+  );
+  assert.equal(
+    comparison.azure.revision,
+    'osdu-spi-partition 3a5690d · SPI Stack dc2c956',
+  );
+  assert.deepEqual(comparison.community.sources, [
+    'communityPartitionInterface',
+    'communityPartitionProvider',
+    'communityPartitionCache',
+    'communityPartitionRepository',
+    'communityPartitionPom',
+    'cimplArchitecture',
+    'cimplPartitionSecrets',
+  ]);
+  assert.deepEqual(comparison.azure.sources, [
+    'communityPartitionInterface',
+    'partitionProvider',
+    'partitionRedis',
+    'partitionTableStore',
+    'partitionPom',
+    'architecture',
+  ]);
+
+  const markup = partitionComparison('spi-boundary');
+  assert.match(markup, /^<details class="partition-comparison">/);
+  assert.doesNotMatch(markup, /<details[^>]*\bopen\b/);
+  assert.match(markup, /<summary><b>Compare the partition lookup<\/b>/);
+  assert.equal(markup.match(/class="partition-lookup-lane /g)?.length, 2);
+  for (const label of [
+    'Inside the community service process',
+    'PostgreSQL',
+    'inside the CIMPL Kubernetes cluster',
+    'Inside the Azure service process',
+    'Redis',
+    'inside AKS',
+    'Common Table Storage',
+    'outside AKS',
+  ])
+    assert.ok(markup.includes(label), label);
+
+  const orderedLabels = [
+    'partition-core-plus',
+    'Configured VmCache',
+    'OsmPartitionPropertyRepository + PostgreSQL driver',
+    'PostgreSQL',
+    'provider/partition-azure',
+    'Redis',
+    'Common Table Storage',
+  ];
+  let previous = -1;
+  for (const label of orderedLabels) {
+    const position = markup.indexOf(label, previous + 1);
+    assert.ok(position > previous, `${label}: lookup order`);
+    previous = position;
+  }
+  for (const phrase of [
+    'cache server does not forward',
+    'reachable and opendes exists',
+    'does not visit the partition’s Cosmos DB, Blob Storage, or Service Bus',
+    'two separately built service images',
+    'does not claim a default CIMPL deployment contains that partition',
+    'Returned properties can differ',
+    'do not identify the implementation',
+    'do not prove a deployed image digest or acceptance-test result',
+  ])
+    assert.ok(markup.includes(phrase), phrase);
+  for (const key of [
+    ...comparison.community.sources,
+    ...comparison.azure.sources,
+  ])
+    assert.ok(markup.includes(`href="${sources[key].href}"`), key);
+
+  assert.equal(partitionComparison('running-stack'), '');
+  assert.doesNotMatch(
+    markup,
+    /data-detail|data-guide|data-map-jump|data-listen|<button|href="#/,
+  );
+  assert.doesNotMatch(markup, /\sid="/);
+  const escaped = structuredClone(comparison);
+  escaped.community.label = '<Community>';
+  assert.match(partitionLookupFigure(escaped), /&lt;Community&gt;/);
+  assert.deepEqual(
+    chapters['spi-boundary'].example.hops.map(({ detail }) => detail),
+    ['client', 'core', 'contract', 'azureimpl', 'redis', 'azureclients'],
   );
 });
 

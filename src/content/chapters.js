@@ -33,7 +33,7 @@ export const chapters = {
     subtitle: 'What this site is for',
     headline: 'Understand the Azure stack<span>behind your OSDU APIs.</span>',
     intro:
-      'Follow a partition lookup through the Azure stack, then follow a provider change through its service fork and back into the environment. Each view explains one part of that journey and links to the source documentation.',
+      'You know the OSDU APIs and data partitions. CIMPL provides the open-source community implementation. This course uses it as a reference while following the Azure provider code, the Azure resources it calls, and the forks and test environment used to maintain it.',
     premise: 'For engineers who know OSDU and are new to SPI.',
     listen: [
       {
@@ -43,7 +43,14 @@ export const chapters = {
         label: 'Azure SPI in two minutes',
       },
     ],
-    sources: ['architecture', 'engineering', 'designs', 'decisions'],
+    sources: [
+      'cimplArchitecture',
+      'communityPartitionProvider',
+      'architecture',
+      'engineering',
+      'designs',
+      'decisions',
+    ],
   },
   'running-stack': {
     kind: 'map',
@@ -53,7 +60,7 @@ export const chapters = {
     subtitle: 'Place familiar OSDU concepts',
     headline: 'AKS is one part<span>of the stack.</span>',
     intro:
-      'Your OSDU APIs run inside Kubernetes. Their data partitions reach Azure resources outside the cluster. The stack is both sides together, in one resource group, built for development and test. Use opendes, the example data partition, in the dev1 environment.',
+      'Your OSDU APIs run inside Kubernetes. CIMPL runs its supporting middleware in Kubernetes too; the Azure implementation reaches Azure data services outside AKS, while Elasticsearch, Redis, and Airflow’s database remain inside the cluster. The stack is both sides together in one resource group, built for development and test. Use opendes, the example data partition, in the dev1 environment.',
     premise: 'You know OSDU. Start with the environment around it.',
     figure: 'Follow the boundaries',
     selected: 'environment',
@@ -74,7 +81,7 @@ export const chapters = {
     },
     scope:
       'Development and test only. OSDU services share a managed identity and middleware credentials. This stack provides no backup, disaster recovery, or per-service Azure access isolation.',
-    sources: ['architecture', 'identity', 'images'],
+    sources: ['cimplArchitecture', 'architecture', 'identity', 'images'],
     question: 'What is actually running when someone says “the stack”?',
     builds: 'Starts from what you already know: OSDU APIs and data partitions.',
     where:
@@ -127,7 +134,7 @@ export const chapters = {
         headline:
           'Partitions own data resources; the environment shares platform resources.',
         text: 'My partition’s records, blobs, and events each have their own Azure resource; entitlements, identities, and Key Vault are shared by the environment.',
-        why: 'opendes owns three resources. Everything else in the stack is shared with the next partition.',
+        why: 'An OSDU data partition supplies the configuration and data context that services use. In this stack, opendes owns a Cosmos DB SQL account, Storage account, and Service Bus namespace; common Storage, the entitlements Gremlin database, Key Vault, and the service identity are shared.',
         focus: [
           'cosmos',
           'partition-storage',
@@ -288,7 +295,7 @@ export const chapters = {
     subtitle: 'Find where the Azure code sits',
     headline: 'The provider lives<span>inside the service.</span>',
     intro:
-      'Builds on the partition lookup from 01 and works at one service inside the osdu namespace: partition in dev1. Inside it, a Service Provider Interface (SPI) connects shared behavior to fork-owned Azure code. Follow the opendes lookup across that seam.',
+      'Builds on the partition lookup from 01 and works at one service inside the osdu namespace: partition in dev1. Inside it, a Service Provider Interface (SPI) connects shared behavior to an implementation. The community partition-core-plus implementation and the fork-owned Azure implementation connect that interface to different dependencies. Follow the opendes lookup across the Azure seam.',
     figure: 'One service, two source owners',
     selected: 'azureimpl',
     diagram: 'spi',
@@ -316,7 +323,16 @@ export const chapters = {
       'identity',
       'secrets',
       'partitionProvider',
+      'partitionRedis',
+      'partitionTableStore',
       'partitionCacheFix',
+      'communityPartitionInterface',
+      'communityPartitionProvider',
+      'communityPartitionCache',
+      'communityPartitionRepository',
+      'communityPartitionPom',
+      'cimplArchitecture',
+      'cimplPartitionSecrets',
     ],
     question: 'Where does shared code hand the lookup to the Azure provider?',
     builds:
@@ -401,12 +417,115 @@ export const chapters = {
       providerPath:
         'The provider checks Redis inside AKS with middleware credentials, then reads Azure Table Storage in common Storage outside AKS with Workload Identity, returning stored configuration. This lookup does not visit the partition’s Cosmos, blob Storage, or Service Bus.',
     },
+    comparison: {
+      title: 'Compare the partition lookup',
+      operation: 'GET /api/partition/v1/partitions/opendes',
+      intro:
+        'Both implementations answer the shared Partition API through IPartitionService.getPartition, but two separately built service images connect that call to different dependencies.',
+      community: {
+        label: 'Community implementation',
+        image: 'Community Partition service image',
+        revision: 'Partition 5aa406b9 · CIMPL Stack fe56aa1b',
+        hosting: 'Kubernetes in the CIMPL cluster',
+        process: {
+          label: 'Inside the community service process',
+          steps: [
+            {
+              label: 'Shared Partition API',
+              detail: 'Receives the illustrative opendes lookup',
+            },
+            {
+              label: 'IPartitionService.getPartition',
+              detail: 'Calls the selected implementation in process',
+            },
+            {
+              label: 'partition-core-plus',
+              detail: 'Runs the community implementation',
+            },
+            {
+              label: 'Configured VmCache',
+              detail: 'Returns early on a cache hit',
+            },
+            {
+              label: 'OsmPartitionPropertyRepository + PostgreSQL driver',
+              detail: 'Reads stored properties after a cache miss',
+            },
+          ],
+        },
+        dependencies: [
+          {
+            when: 'On a cache miss',
+            label: 'PostgreSQL',
+            detail: 'Separate dependency inside the CIMPL Kubernetes cluster',
+          },
+        ],
+        sources: [
+          'communityPartitionInterface',
+          'communityPartitionProvider',
+          'communityPartitionCache',
+          'communityPartitionRepository',
+          'communityPartitionPom',
+          'cimplArchitecture',
+          'cimplPartitionSecrets',
+        ],
+      },
+      azure: {
+        label: 'Azure implementation',
+        image: 'Azure Partition service image',
+        revision: 'osdu-spi-partition 3a5690d · SPI Stack dc2c956',
+        hosting: 'Partition service pod in AKS for dev1',
+        process: {
+          label: 'Inside the Azure service process',
+          steps: [
+            {
+              label: 'Shared Partition API',
+              detail: 'Receives the opendes lookup in dev1',
+            },
+            {
+              label: 'IPartitionService.getPartition',
+              detail: 'Calls the selected implementation in process',
+            },
+            {
+              label: 'provider/partition-azure',
+              detail: 'Runs the fork-owned Azure implementation',
+            },
+          ],
+        },
+        dependencies: [
+          {
+            when: 'First lookup',
+            label: 'Redis',
+            detail: 'Separate middleware dependency inside AKS',
+          },
+          {
+            when: 'On a miss or handled cache-read exception',
+            label: 'Common Table Storage',
+            detail: 'Azure PaaS dependency outside AKS',
+          },
+        ],
+        sources: [
+          'communityPartitionInterface',
+          'partitionProvider',
+          'partitionRedis',
+          'partitionTableStore',
+          'partitionPom',
+          'architecture',
+        ],
+      },
+      limitations: [
+        'The arrows show lookup and control flow; a cache server does not forward the request to storage, and a cache hit returns early.',
+        'The Azure fallback succeeds only when common Table Storage is reachable and opendes exists. This comparison does not assign the same cache-exception behavior to the community implementation.',
+        'This lookup returns stored configuration. It does not visit the partition’s Cosmos DB, Blob Storage, or Service Bus.',
+        'The community lane uses opendes only to compare the operation; it does not claim a default CIMPL deployment contains that partition, and dev1 names only the Azure environment.',
+        'Returned properties can differ. Hosting and registry origin do not identify the implementation, and source snapshots do not prove a deployed image digest or acceptance-test result.',
+      ],
+    },
     goal: 'Trace the lookup from shared code into the Azure provider, and explain what happens when the cache fails.',
     outcomes: [
       {
         headline: 'Common code calls Azure through a provider interface.',
         text: 'Common service code calls a provider interface. The Azure implementation behind it checks Redis inside AKS with middleware credentials, then reads common Table Storage outside AKS with Workload Identity on a miss. The table read still happens when the cache throws.',
-        why: 'partition-core calls IPartitionService.getPartition. provider/partition-azure checks Redis inside AKS with middleware credentials, then uses Workload Identity for the common Table Storage read after a miss or handled cache exception.',
+        why: 'partition-core calls IPartitionService.getPartition. partition-core-plus checks its configured VmCache, then reads PostgreSQL on a miss. provider/partition-azure checks Redis inside AKS with middleware credentials, then uses Workload Identity for the common Table Storage read after a miss or handled cache exception.',
         focus: ['core', 'contract', 'azureimpl', 'redis', 'azureclients'],
         scopes: ['spi-shared', 'spi-provider', 'spi-cache', 'spi-tables'],
         evidence: 'azureimpl',
