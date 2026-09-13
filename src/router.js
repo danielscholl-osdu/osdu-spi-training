@@ -31,6 +31,12 @@ export function chapterSteps(chapter) {
   return [];
 }
 
+function selectionIndex(value) {
+  if (!/^(0|[1-9]\d*)$/.test(value || '')) return null;
+  const index = Number(value);
+  return Number.isSafeInteger(index) ? index : null;
+}
+
 export function parseRoute(hash) {
   const [path = '', query = ''] = hash.replace(/^#/, '').split('?');
   const [requestedChapter, requestedStepRaw] = path.split('/');
@@ -50,10 +56,18 @@ export function parseRoute(hash) {
   const steps = chapterSteps(chapter);
   const step = steps.includes(requestedStep) ? requestedStep : steps[0] || '';
   const seconds = Number(params.get('t'));
+  let claim = selectionIndex(params.get('claim'));
+  let hop = selectionIndex(params.get('hop'));
+  if (claim !== null && hop !== null) {
+    claim = null;
+    hop = null;
+  }
   return {
     chapter,
     step,
     detail,
+    claim,
+    hop,
     guide: params.get('guide'),
     episode: params.get('episode'),
     time:
@@ -63,6 +77,15 @@ export function parseRoute(hash) {
   };
 }
 
-export function routeHref(chapter, step = '', detail = null) {
-  return `#${chapter}${step ? `/${step}` : ''}${detail ? `?detail=${encodeURIComponent(detail)}` : ''}`;
+export function routeHref(chapter, step = '', detail = null, selection = {}) {
+  const params = new URLSearchParams();
+  if (detail) params.set('detail', detail);
+  const claim = selectionIndex(selection.claim?.toString());
+  const hop = selectionIndex(selection.hop?.toString());
+  if (detail && (claim === null || hop === null)) {
+    if (claim !== null) params.set('claim', claim);
+    if (hop !== null) params.set('hop', hop);
+  }
+  const query = params.toString();
+  return `#${chapter}${step ? `/${step}` : ''}${query ? `?${query}` : ''}`;
 }

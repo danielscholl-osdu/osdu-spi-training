@@ -276,7 +276,13 @@ test('SPI boundary map exposes one runtime seam and its source owners', () => {
 });
 
 test('deep links recover chapter, lifecycle moment, and component without module state', () => {
-  const base = { guide: null, episode: null, time: null };
+  const base = {
+    claim: null,
+    hop: null,
+    guide: null,
+    episode: null,
+    time: null,
+  };
   for (const moment of creationMoments) {
     assert.deepEqual(
       parseRoute(routeHref('bring-up', moment.id, moment.detail)),
@@ -299,8 +305,7 @@ test('deep links recover chapter, lifecycle moment, and component without module
     chapter: 'listen',
     step: '',
     detail: null,
-    guide: null,
-    episode: null,
+    ...base,
     time: 1234,
   });
   assert.equal(parseRoute('#listen?t=-5').time, null);
@@ -313,6 +318,65 @@ test('deep links recover chapter, lifecycle moment, and component without module
       detail: null,
       ...base,
     });
+  }
+});
+
+test('selection intent is additive and invalid qualifiers preserve legacy routes', () => {
+  const cases = [
+    {
+      href: routeHref('spi-boundary', '', 'azureimpl', { claim: 0 }),
+      expectedHref: '#spi-boundary?detail=azureimpl&claim=0',
+      claim: 0,
+      hop: null,
+    },
+    {
+      href: routeHref('spi-boundary', '', 'azureimpl', { hop: 3 }),
+      expectedHref: '#spi-boundary?detail=azureimpl&hop=3',
+      claim: null,
+      hop: 3,
+    },
+    {
+      href: routeHref('running-stack', 'request', 'gateway'),
+      expectedHref: '#running-stack/request?detail=gateway',
+      claim: null,
+      hop: null,
+    },
+    {
+      href: '#spi-boundary?detail=azureimpl&claim=',
+      expectedHref: '#spi-boundary?detail=azureimpl&claim=',
+      claim: null,
+      hop: null,
+    },
+    {
+      href: '#spi-boundary?detail=azureimpl&hop=-1',
+      expectedHref: '#spi-boundary?detail=azureimpl&hop=-1',
+      claim: null,
+      hop: null,
+    },
+    {
+      href: '#spi-boundary?detail=azureimpl&claim=0&hop=3',
+      expectedHref: '#spi-boundary?detail=azureimpl&claim=0&hop=3',
+      claim: null,
+      hop: null,
+    },
+    {
+      href: routeHref('spi-boundary', '', 'azureimpl', {
+        claim: 0,
+        hop: 3,
+      }),
+      expectedHref: '#spi-boundary?detail=azureimpl',
+      claim: null,
+      hop: null,
+    },
+  ];
+
+  for (const { href, expectedHref, claim, hop } of cases) {
+    assert.equal(href, expectedHref);
+    assert.deepEqual(
+      { claim: parseRoute(href).claim, hop: parseRoute(href).hop },
+      { claim, hop },
+      href,
+    );
   }
 });
 
