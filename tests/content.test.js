@@ -23,6 +23,7 @@ import {
   claimStrip,
   detailSourceLinks,
   exampleStrip,
+  guideFigure,
   hopIndexForRoute,
   pageRenderers,
   resolveExamplePresentation,
@@ -458,6 +459,42 @@ test('posters and field guides resolve their images, renderers, sources, and lin
     for (const key of guide.sources) assert.ok(sources[key], guide.id);
     verifyRoute(guide.appearsIn.href, guide.id);
   }
+});
+
+test('readiness signals guide compares five proof scopes without ordering them', () => {
+  const guide = nativeGuides.find((entry) => entry.id === 'milestones');
+  const body = infographics.milestones();
+  const compact = guideFigure('milestones', { compact: true });
+  const full = guideFigure('milestones');
+  const renderedCopy = `${guide.title} ${guide.summary} ${body}`;
+
+  assert.equal(guide.appearsIn.href, '#bring-up/inspect');
+  assert.deepEqual(guide.sources, ['lifecycle']);
+  assert.match(guide.summary, /separate signals, not deployment steps/);
+  assert.match(
+    guide.summary,
+    /verifies the requested Git artifact revision before exit/,
+  );
+  assert.match(guide.summary, /Flux overlaps the final CLI work/);
+  assert.match(body, /<ul role="list" class="guide-milestones">/);
+  assert.equal(body.match(/<li class="owner-/g)?.length, 5);
+  assert.doesNotMatch(body, /<ol|milestone-number|Only the fifth/);
+  assert.match(body, /orchestration completed without a fatal error/);
+  assert.match(body, /Flux has the requested revision to reconcile/);
+  assert.match(body, /status\.artifact\.revision/);
+  assert.match(body, /configured health checks/);
+  assert.match(body, /bootstrap and schema loading finished/);
+  assert.match(body, /particular request path you exercised is usable/);
+  assert.match(body, /without making an authenticated request/);
+  assert.match(body, /request proves only the exercised API path/);
+  assert.match(body, /Running phase is not necessarily Ready/);
+  assert.match(body, /Job should be Complete rather than Running/);
+  for (const markup of [compact, full]) {
+    assert.match(markup, /Readiness signals and what they prove/);
+    assert.match(markup, /<ul role="list" class="guide-milestones">/);
+  }
+  for (const phrase of ['first of five', 'the rest', 'later milestone'])
+    assert.doesNotMatch(renderedCopy, new RegExp(phrase, 'i'));
 });
 
 test('source links use readable documentation and match a sibling checkout when present', () => {
