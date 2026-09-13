@@ -1197,7 +1197,12 @@ test('audio markers are ordered, inside the recording, and point at real views',
   assert.match(
     base,
     /body\[data-page='home'\] \.rail \{\s*display: none;/,
-    'the start page has no rail',
+    'the home rail rule',
+  );
+  assert.match(
+    base,
+    /body\[data-page='listen'\] \.rail,\s*body\[data-page='guides'\] \.rail \{\s*display: none;/,
+    'the supplement pages have no rail',
   );
   assert.ok(
     !home.includes('Optional'),

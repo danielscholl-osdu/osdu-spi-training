@@ -209,6 +209,14 @@ body[data-page='home'] .shell {
 body[data-page='home'] .rail {
   display: none;
 }
+body[data-page='listen'] .shell,
+body[data-page='guides'] .shell {
+  display: block;
+}
+body[data-page='listen'] .rail,
+body[data-page='guides'] .rail {
+  display: none;
+}
 body[data-page='home'] main {
   max-width: 1000px;
   margin-inline: auto;
