@@ -392,7 +392,7 @@ function levelTags(level) {
     .join('')}</span>`;
 }
 
-// Nested boxes for the start page. Levels 1–5 nest; level 6 stands beside
+// Nested boxes for the Field guides page. Levels 1–5 nest; level 6 stands beside
 // them because source is where a service comes from, not somewhere inside it.
 // The resource group holds the data services and the cluster side by side; the
 // cluster nests namespaces and one service. The source sits outside, feeding in.
@@ -412,7 +412,7 @@ export function zoomLadder() {
   </div>`;
 }
 
-// The start page's shape: the lookup goes down the stack, the fix goes out to
+// The course's shape: the lookup goes down the stack, the fix goes out to
 // the fork and back in through the lock. Each box links the view that draws it.
 export function roundTripFigure() {
   const stop = (href, number, title, sub) =>
@@ -448,7 +448,6 @@ export function spiNamesFigure() {
       <h3>${meaning.name}</h3>
       <p>${meaning.copy}</p>
       <code>${escapeHtml(meaning.lives)}</code>
-      <a href="${meaning.href}">${meaning.hrefLabel} →</a>
     </article>`,
     )
     .join('')}</div>`;

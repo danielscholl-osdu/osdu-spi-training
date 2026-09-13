@@ -6,6 +6,10 @@ import { forkMoments } from './content/fork-moments.js';
 // A retired chapter maps to a new chapter, and each of its components to the
 // component that now carries the same meaning.
 export const chapterAliases = { 'engineering-system': 'handshake' };
+// Guide anchors that moved off a page keep resolving on the page that has them.
+export const movedGuides = {
+  start: { 'round-trip': 'field-guides', ladder: 'field-guides' },
+};
 export const retiredDetails = {
   'engineering-system': {
     repo: ['fork-shape', null, 'main-branch'],
@@ -45,6 +49,13 @@ export function parseRoute(hash) {
   let resolved = chapterAliases[requestedChapter] || requestedChapter;
   let requestedStep = requestedStepRaw;
   let detail = params.get('detail');
+  const guide = params.get('guide');
+  const from = movedGuides[requestedChapter || 'start'];
+  if (
+    Object.hasOwn(movedGuides, requestedChapter || 'start') &&
+    Object.hasOwn(from, guide ?? '')
+  )
+    resolved = from[guide];
   const retired = retiredDetails[requestedChapter]?.[detail];
   if (retired) {
     [resolved, requestedStep, detail] = [
@@ -69,7 +80,7 @@ export function parseRoute(hash) {
     detail,
     claim,
     hop,
-    guide: params.get('guide'),
+    guide,
     episode: params.get('episode'),
     time:
       params.has('t') && Number.isFinite(seconds) && seconds >= 0
