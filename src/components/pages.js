@@ -23,13 +23,19 @@ export function formatTime(seconds) {
     : `${m}:${String(s).padStart(2, '0')}`;
 }
 
+function sourceAnchor(key) {
+  return `<a href="${sources[key].href}" target="_blank" rel="noopener noreferrer">${sources[key].label} ↗</a>`;
+}
+
 function sourceLinks(keys) {
   return `<p class="guide-sources">Sources: ${keys
-    .map(
-      (key) =>
-        `<a href="${sources[key].href}" target="_blank" rel="noopener noreferrer">${sources[key].label} ↗</a>`,
-    )
+    .map(sourceAnchor)
     .join(' · ')}</p>`;
+}
+
+export function detailSourceLinks(detail) {
+  const keys = detail?.goDeeper || (detail?.source ? [detail.source] : []);
+  return keys.map(sourceAnchor).join('');
 }
 
 export function posterInline(id) {

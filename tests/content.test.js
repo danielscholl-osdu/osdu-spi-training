@@ -12,7 +12,10 @@ import { episodes, frameVideo } from '../src/content/audio.js';
 import { diagramRenderers } from '../src/components/diagrams.js';
 import { architectureMap } from '../src/components/architecture.js';
 import { infographics } from '../src/components/infographics.js';
-import { pageRenderers } from '../src/components/pages.js';
+import {
+  detailSourceLinks,
+  pageRenderers,
+} from '../src/components/pages.js';
 import { parseRoute, routeHref, chapterSteps } from '../src/router.js';
 import { forkMoments } from '../src/content/fork-moments.js';
 import { zoomLevels, spiMeanings } from '../src/content/concepts.js';
@@ -143,7 +146,30 @@ test('every explanation names an artifact and a source', () => {
     assert.ok(detail.artifact?.label?.trim(), `${id}: artifact label`);
     assert.ok(detail.artifact?.code?.trim(), `${id}: artifact`);
     assert.ok(sources[detail.source], `${id}: source`);
+    for (const source of detail.goDeeper || [])
+      assert.ok(sources[source], `${id}: Go deeper source ${source}`);
   }
+});
+
+test('Go deeper links preserve evidence order and single-source fallback', () => {
+  const ordered = detailSourceLinks(componentDetails.azureimpl);
+  const expected = componentDetails.azureimpl.goDeeper.map(
+    (key) => sources[key].href,
+  );
+  assert.deepEqual(
+    [...ordered.matchAll(/href="([^"]+)"/g)].map((match) => match[1]),
+    expected,
+  );
+
+  const fallback = detailSourceLinks(componentDetails.contract);
+  assert.deepEqual(
+    [...fallback.matchAll(/href="([^"]+)"/g)].map((match) => match[1]),
+    [sources[componentDetails.contract.source].href],
+  );
+  assert.match(
+    ordered,
+    /target="_blank" rel="noopener noreferrer"/,
+  );
 });
 
 test('every lifecycle state and request path has unambiguous component selections', () => {
@@ -331,7 +357,7 @@ test('source links use readable documentation and match a sibling checkout when 
     } else if (source.repo === 'osdu-spi-partition')
       assert.match(
         source.href,
-        /^https:\/\/github.com\/Azure\/osdu-spi-partition(\/blob\/main\/|$)/,
+        /^https:\/\/github.com\/Azure\/osdu-spi-partition(?:\/blob\/main\/|\/commit\/[0-9a-f]{40}$|$)/,
       );
     else
       assert.match(

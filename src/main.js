@@ -16,6 +16,7 @@ import {
   hasClaims,
   claimStrip,
   guidePreview,
+  detailSourceLinks,
 } from './components/pages.js';
 import { createPlayer } from './components/player.js';
 import { parseRoute, routeHref } from './router.js';
@@ -204,13 +205,10 @@ export function selectDetail(id, element = null) {
   document.getElementById('artifact-code').textContent =
     detail?.artifact?.code || '';
   document.getElementById('detail-artifact').hidden = !detail;
-  const source = detail && sources[detail.source];
+  const sourceMarkup = detailSourceLinks(detail);
   const link = document.getElementById('detail-source');
-  link.hidden = !source;
-  if (source) {
-    link.href = source.href;
-    link.textContent = `${source.label} ↗`;
-  }
+  link.hidden = !sourceMarkup;
+  link.innerHTML = sourceMarkup;
   document.getElementById('diagram').dataset.selected = id;
   // The seam's state panel can sit above the fold; repeat its lock and pod
   // for the selected step where the explanation opens.

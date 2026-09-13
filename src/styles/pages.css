@@ -1370,6 +1370,15 @@ body:has(.audio-dock:not([hidden])) main {
   box-shadow: 0 0 0 3px #c9e6f6;
   border-color: #388dbc;
 }
+.detail-sources {
+  display: grid;
+  justify-items: start;
+  gap: 6px;
+}
+.detail-sources a {
+  font-size: 14px;
+  line-height: 1.5;
+}
 
 /* Learn views: one easy mistake directly under the map */
 #chapter-mistake:not(:empty) {
