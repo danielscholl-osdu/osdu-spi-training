@@ -217,9 +217,9 @@ export const chapters = {
     book: 'One service',
     title: 'The SPI boundary',
     subtitle: 'Find where the Azure code sits',
-    headline: 'Shared OSDU behavior.<span>Fork-owned Azure code.</span>',
+    headline: 'The provider lives<span>inside the service.</span>',
     intro:
-      'Inside each service, a Service Provider Interface connects common behavior to its Azure implementation. Follow the same lookup through the partition service, then watch what the provider does when its cache is down. The Azure code sits in a service fork, the GitHub repository Microsoft maintains for each service; 04 opens it.',
+      'Builds on the partition lookup from 01 and works at one service inside the osdu namespace: partition in dev1. Inside it, a Service Provider Interface (SPI) connects shared behavior to fork-owned Azure code. Follow the opendes lookup across that seam.',
     figure: 'One service, two source owners',
     selected: 'azureimpl',
     diagram: 'spi',
@@ -239,7 +239,14 @@ export const chapters = {
     mistakes: ['token-accepted-means-authorized'],
     scope:
       'Upstream plans to remove its Azure implementations (community ADR 61; osdu-spi ADR-038). As of September 2026 the upstream directory is still there, and the fork keeps its own copy outside the generated shared-code branch so that removal deletes nothing on the fork side whenever it lands. The cache fallback is real: commit fc2dfbf in osdu-spi-partition, 30 July 2026, with regression tests. It reached the fork from upstream on 25 August, before the filter existed; from 04 on, the example follows a fix like it made in the fork today.',
-    sources: ['ownership', 'concepts', 'engineering'],
+    sources: [
+      'ownership',
+      'concepts',
+      'engineering',
+      'identity',
+      'partitionProvider',
+      'partitionCacheFix',
+    ],
     question: 'Where inside a service does OSDU stop and Azure begin?',
     builds:
       'Zooms into the partition service from 01 and follows the same lookup through its provider.',
@@ -273,10 +280,36 @@ export const chapters = {
       ],
       note: 'The provider treats a broken cache as a miss and reads the row from common Storage. That fallback is the fix the next three views follow out through the fork and back.',
     },
+    goal:
+      'With the drawer closed, you can point to where shared code ends and Azure provider code begins, explain why the interface is not a network hop, and say what survives a cache exception.',
     outcomes: [
-      'Common service code calls a provider interface; the Azure implementation behind it does the Azure work with Workload Identity. For the partition service that is a cache, then a Table Storage read, and the read still happens when the cache throws.',
-      'The interface and its implementation ship in one image. There is no network hop between them.',
-      'Upstream may delete its Azure implementations; the fork owns provider/<svc>-azure and keeps it outside the generated upstream tree.',
+      {
+        headline: 'Common code calls Azure through a provider interface.',
+        text: 'Common service code calls a provider interface; the Azure implementation behind it uses Workload Identity for Azure access, checking its cache before common Table Storage for this lookup. The Table Storage read still happens when the cache throws.',
+        why: 'partition-core calls IPartitionService.getPartition. provider/partition-azure uses Workload Identity for Azure access, checking cache then common Table Storage on a miss. The Table Storage read still happens when the cache throws.',
+        focus: ['core', 'contract', 'azureimpl', 'azureclients'],
+        scopes: ['spi-shared', 'spi-provider'],
+        evidence: 'azureimpl',
+        crossing: 'Shared call to Azure implementation',
+      },
+      {
+        headline: 'The interface and implementation ship in one image.',
+        text: 'The provider interface and Azure implementation execute in the same service process and ship in one image, so crossing the Java interface is not a network hop.',
+        why: 'IPartitionService and provider/partition-azure execute in the same service process. Crossing that Java interface is not a network hop.',
+        focus: ['contract', 'azureimpl', 'image'],
+        scopes: ['spi-image'],
+        evidence: 'image',
+        crossing: 'One process, no network hop',
+      },
+      {
+        headline: 'The fork keeps Azure source outside the generated tree.',
+        text: 'The fork owns provider/<svc>-azure outside generated fork_upstream, so upstream deleting its own Azure provider does not delete the fork’s copy.',
+        why: 'The engineering system regenerates fork_upstream from upstream while provider/<svc>-azure stays fork-owned on fork_integration and main.',
+        focus: ['upstream', 'azureimpl', 'engineering'],
+        scopes: ['spi-provider', 'spi-sources'],
+        evidence: 'upstream',
+        crossing: 'Generated source beside fork-owned source',
+      },
     ],
   },
   'fork-shape': {

@@ -12,7 +12,11 @@ import { episodes, frameVideo } from '../src/content/audio.js';
 import { diagramRenderers } from '../src/components/diagrams.js';
 import { architectureMap } from '../src/components/architecture.js';
 import { infographics } from '../src/components/infographics.js';
+import { escapeHtml } from '../src/components/node.js';
 import {
+  chapterOutcomes,
+  chapterScope,
+  claimStrip,
   detailSourceLinks,
   pageRenderers,
 } from '../src/components/pages.js';
@@ -552,4 +556,75 @@ test('structured claims resolve their focus, evidence, and scopes on every scene
       });
     }
   }
+});
+
+test('lesson 03 claims keep the provider seam understandable without evidence', () => {
+  const chapter = chapters['spi-boundary'];
+  assert.equal(chapter.outcomes.length, 3);
+  assert.deepEqual(
+    chapter.outcomes.map(({ headline, focus, evidence, scopes }) => ({
+      headline,
+      focus,
+      evidence,
+      scopes,
+    })),
+    [
+      {
+        headline: 'Common code calls Azure through a provider interface.',
+        focus: ['core', 'contract', 'azureimpl', 'azureclients'],
+        evidence: 'azureimpl',
+        scopes: ['spi-shared', 'spi-provider'],
+      },
+      {
+        headline: 'The interface and implementation ship in one image.',
+        focus: ['contract', 'azureimpl', 'image'],
+        evidence: 'image',
+        scopes: ['spi-image'],
+      },
+      {
+        headline: 'The fork keeps Azure source outside the generated tree.',
+        focus: ['upstream', 'azureimpl', 'engineering'],
+        evidence: 'upstream',
+        scopes: ['spi-provider', 'spi-sources'],
+      },
+    ],
+  );
+  for (const claim of chapter.outcomes)
+    assert.ok(
+      claim.headline.split(/\s+/).length < 12,
+      `${claim.headline}: fewer than twelve words`,
+    );
+
+  const claims = claimStrip('spi-boundary');
+  for (const fact of [
+    'partition-core calls IPartitionService.getPartition',
+    'Workload Identity for Azure access',
+    'The Table Storage read still happens when the cache throws.',
+    'same service process',
+    'not a network hop',
+    'provider/&lt;svc&gt;-azure stays fork-owned',
+  ])
+    assert.ok(claims.includes(fact), `claim surface includes ${fact}`);
+
+  const outcomes = chapterOutcomes('spi-boundary');
+  for (const claim of chapter.outcomes)
+    assert.ok(
+      outcomes.includes(escapeHtml(claim.text)),
+      `carry forward repeats: ${claim.headline}`,
+    );
+});
+
+test('lesson 03 states its own prerequisite and place without changing orientation', () => {
+  const chapter = chapters['spi-boundary'];
+  assert.match(chapter.intro, /^Builds on the partition lookup from 01/);
+  assert.match(chapter.intro, /one service inside the osdu namespace/);
+  assert.match(chapter.intro, /partition in dev1/);
+  assert.match(chapter.intro, /Service Provider Interface \(SPI\)/);
+  const orientation = chapterScope('spi-boundary');
+  assert.match(orientation, /This lesson answers/);
+  assert.match(orientation, /By the end/);
+  assert.ok(orientation.includes(chapter.goal));
+  assert.ok(!orientation.includes(chapter.builds));
+  assert.ok(!orientation.includes(chapter.where));
+  assert.ok(!chapterScope('running-stack').includes(chapters['running-stack'].builds));
 });
