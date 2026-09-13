@@ -186,6 +186,38 @@ test('every lifecycle state and request path has unambiguous component selection
   }
 });
 
+test('SPI boundary map exposes one runtime seam and its source owners', () => {
+  const markup = diagramRenderers.spi();
+  const details = [...markup.matchAll(/data-detail="([^"]+)"/g)].map(
+    (match) => match[1],
+  );
+  assert.deepEqual(details, [
+    'client',
+    'image',
+    'core',
+    'contract',
+    'azureimpl',
+    'azureclients',
+    'upstream',
+    'engineering',
+  ]);
+  for (const scope of [
+    'spi-image',
+    'spi-shared',
+    'spi-provider',
+    'spi-sources',
+  ])
+    assert.match(markup, new RegExp(`data-scope="${scope}"`));
+  assert.match(markup, /partition-core/);
+  assert.match(markup, /IPartitionService\.getPartition/);
+  assert.match(markup, /provider\/partition-azure/);
+  assert.match(markup, /no network hop/);
+  assert.equal(
+    [...markup.matchAll(/data-trace-status=/g)].length,
+    2,
+  );
+});
+
 test('deep links recover chapter, lifecycle moment, and component without module state', () => {
   const base = { guide: null, episode: null, time: null };
   for (const moment of creationMoments) {

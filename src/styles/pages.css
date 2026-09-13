@@ -1514,7 +1514,7 @@ body:has(.audio-dock:not([hidden])) main {
 .spi-flow {
   display: grid;
   gap: 10px;
-  max-width: 560px;
+  max-width: 680px;
 }
 .spi-lane {
   display: grid;
@@ -1535,6 +1535,66 @@ body:has(.audio-dock:not([hidden])) main {
   margin: 0;
 }
 .spi-fork .spi-lane-head h3 {
+  color: var(--fork);
+}
+.spi-image-boundary {
+  display: grid;
+  gap: 10px;
+  padding: 12px;
+  border: 2px solid var(--navy);
+  border-radius: 12px;
+  background: #f8fbfd;
+}
+.spi-image-node {
+  border-color: var(--navy);
+  background: #edf4f9;
+}
+.spi-crossing-label {
+  padding: 7px 10px;
+  border-block: 1px dashed var(--line);
+  color: var(--muted);
+  font-size: 12px;
+  font-weight: 700;
+  text-align: center;
+}
+.spi-azure-resources {
+  border-top: 4px solid var(--cli);
+  background: var(--cli-bg);
+}
+.spi-trace-status {
+  margin: 0;
+  padding: 7px 9px;
+  border-radius: 5px;
+  background: #eef4f9;
+  color: var(--ink);
+  font-size: 12px;
+  font-weight: 700;
+}
+.spi-source-boundary {
+  display: grid;
+  gap: 10px;
+  margin-top: 12px;
+  padding: 14px;
+  border: 1px dashed var(--line);
+  border-radius: 10px;
+  background: #fff;
+}
+.spi-source-boundary h3,
+.spi-source-boundary p {
+  margin: 0;
+}
+.spi-source-boundary header p,
+.spi-source-boundary > p {
+  color: var(--muted);
+  font-size: 12.5px;
+  line-height: 1.5;
+}
+.spi-source-columns {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 10px;
+}
+.spi-source-boundary code {
   color: var(--fork);
 }
 .spi-lane-head p {
@@ -1574,6 +1634,16 @@ body:has(.audio-dock:not([hidden])) main {
   font-size: 12.5px;
   font-weight: 600;
   color: var(--blue);
+}
+@media (max-width: 560px) {
+  .spi-image-boundary,
+  .spi-lane,
+  .spi-source-boundary {
+    padding: 10px;
+  }
+  .spi-source-columns {
+    grid-template-columns: 1fr;
+  }
 }
 
 /* Learn views: carry forward */
