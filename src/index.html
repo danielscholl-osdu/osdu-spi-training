@@ -62,6 +62,7 @@
           <p id="introduction"></p>
         </div>
         <div id="view-scope"></div>
+        <div id="chapter-claims"></div>
         <section
           class="exploration"
           id="exploration"
@@ -69,7 +70,20 @@
         >
           <header class="visual-header">
             <h2 id="figure-title"></h2>
-            <span>Select a component to look closer ↗</span>
+            <span id="map-hint">Select a component to look closer ↗</span>
+            <div
+              id="map-policy"
+              class="map-policy"
+              role="group"
+              aria-label="Map policy"
+              hidden
+            >
+              <button type="button" data-policy="learn" aria-pressed="true">
+                Lesson focus</button
+              ><button type="button" data-policy="explore" aria-pressed="false">
+                Explore map
+              </button>
+            </div>
           </header>
           <div id="example-strip" class="example-strip" hidden></div>
           <div class="visual-workspace">
@@ -77,20 +91,19 @@
             <aside
               id="inspector"
               class="inspector"
+              inert
+              aria-hidden="true"
               aria-label="Selected component explanation"
             >
-              <div class="inspector-heading">
-                <span id="detail-label" class="detail-label"></span>
-                <h3 id="detail-title"></h3>
-                <button
-                  type="button"
-                  id="detail-toggle"
-                  aria-expanded="false"
-                  aria-controls="detail-body"
-                >
-                  Read explanation ↑
-                </button>
-              </div>
+              <button
+                type="button"
+                id="detail-toggle"
+                aria-label="Close explanation"
+                aria-expanded="false"
+                aria-controls="detail-body"
+              >
+                ×
+              </button>
               <div id="detail-state" class="detail-state" hidden></div>
               <div
                 id="detail-body"
@@ -98,11 +111,24 @@
                 aria-live="polite"
                 aria-atomic="true"
               >
+                <span class="detail-kicker">Inspecting</span>
+                <h3 id="detail-title" tabindex="-1"></h3>
+                <span class="detail-kicker">Owned by</span>
+                <p id="detail-label" class="detail-label"></p>
+                <span class="detail-kicker">What it is</span>
+                <p id="detail-what"></p>
+                <span class="detail-kicker">Why it matters here</span>
                 <p id="detail-copy"></p>
+                <details id="detail-more">
+                  <summary>More</summary>
+                  <p id="detail-more-copy"></p>
+                </details>
+                <span class="detail-kicker">Verify it</span>
                 <div class="detail-artifact" id="detail-artifact">
                   <span id="artifact-label"></span>
                   <pre><code id="artifact-code"></code></pre>
                 </div>
+                <span class="detail-kicker">Go deeper</span>
                 <a
                   id="detail-source"
                   target="_blank"
@@ -126,6 +152,14 @@
             <div id="sources"></div>
           </details>
         </div>
+        <section id="lesson-optional" class="lesson-optional" hidden>
+          <p class="guide-kicker">Optional · go deeper</p>
+          <div class="optional-grid">
+            <div id="optional-listen"></div>
+            <div id="optional-guides"><h2>Field guides</h2></div>
+            <div id="optional-sources"><h2>Sources and scope</h2></div>
+          </div>
+        </section>
         <footer class="chapter-footer">
           <span id="chapter-position"></span><a id="next-link"></a>
         </footer>

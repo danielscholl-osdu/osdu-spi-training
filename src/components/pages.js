@@ -156,6 +156,32 @@ function mythsPage() {
     .join('');
 }
 
+export function hasClaims(chapter) {
+  return chapter.outcomes?.some((claim) => typeof claim !== 'string') || false;
+}
+
+export function claimStrip(key) {
+  const chapter = chapters[key];
+  if (!hasClaims(chapter)) return '';
+  return `<section class="claims" aria-label="Lesson claims">
+    <p class="guide-kicker">Three claims, one map · select one to see it</p>
+    <ol class="claim-list">${chapter.outcomes
+      .map((claim, index) => {
+        const c = typeof claim === 'string' ? { text: claim } : claim;
+        return `<li class="claim-item" data-claim-item="${index}"><button type="button" class="claim" data-claim="${index}" aria-pressed="${index === 0}"><b>${escapeHtml(c.text)}</b><small>${escapeHtml(c.why || '')}</small><span class="claim-count">${index + 1} / ${chapter.outcomes.length}</span></button>${c.evidence ? `<a class="claim-evidence" data-evidence="${index}" href="${routeHref(key, null, c.evidence)}">How we know →</a>` : ''}</li>`;
+      })
+      .join('')}</ol>
+  </section>`;
+}
+
+export function guidePreview(id) {
+  if (suppliedPosters.some((poster) => poster.id === id))
+    return posterInline(id);
+  const guide = nativeGuides.find((entry) => entry.id === id);
+  if (!guide) return '';
+  return `<div class="guide-preview"><h3>${guide.title}</h3><p>${guide.summary.split(/(?<=[.!?])\s/)[0]}</p><details><summary>Open here</summary>${guideFigure(id, { compact: true })}</details></div>`;
+}
+
 export function chapterOutcomes(key) {
   const chapter = chapters[key];
   if (!chapter.outcomes) return '';
@@ -165,11 +191,11 @@ export function chapterOutcomes(key) {
   const next = learn[learn.indexOf(key) + 1];
   return `<section class="outcomes" aria-label="What you can now say">
     <div class="outcomes-head"><span class="guide-kicker">Carry forward</span><h2>What you can now say</h2></div>
-    <ol>${chapter.outcomes.map((line) => `<li>${escapeHtml(line)}</li>`).join('')}</ol>
+    <ol>${chapter.outcomes.map((line) => `<li>${escapeHtml(typeof line === 'string' ? line : line.text)}</li>`).join('')}</ol>
     ${
       key === 'handshake'
         ? `<div class="outcomes-close"><p><b>That is the round trip.</b> A request went down to its Azure provider, a change to that provider went out through the fork, and a candidate image came back in through the lock. From here, choose:</p><ul><li><a href="${routeHref('not-true')}">07 · ${chapters['not-true'].title} →</a><span>The assumptions the documentation contradicts, with a command for each.</span></li><li><a href="${routeHref('listen')}">Listen →</a><span>The recordings, cued from the views you have seen.</span></li><li><a href="${routeHref('field-guides')}">Field guides →</a><span>The diagrams from the views on one printable page.</span></li></ul></div>`
-        : next
+        : next && !hasClaims(chapter)
           ? `<p class="outcomes-next"><b>Next, ${chapters[next].title}</b> asks: ${escapeHtml(chapters[next].question)} <span>${escapeHtml(chapters[next].builds)}</span></p>`
           : ''
     }
@@ -178,6 +204,8 @@ export function chapterOutcomes(key) {
 
 export function chapterScope(key) {
   const chapter = chapters[key];
+  if (hasClaims(chapter))
+    return `<div class="lesson-orientation"><div><span class="guide-kicker">This lesson answers</span><p>${escapeHtml(chapter.question)}</p></div><div><span class="guide-kicker">By the end</span><p>${escapeHtml(chapter.goal)}</p></div></div>`;
   if (!chapter.where) return '';
   return `<p class="view-question"><span>This view answers</span>${escapeHtml(chapter.question || '')}${chapter.builds ? ` <em>${escapeHtml(chapter.builds)}</em>` : ''}</p>
   <p class="view-scope"><span>In this view</span>${escapeHtml(chapter.where)} <a href="#start?guide=ladder">See the six places →</a></p>`;
@@ -188,6 +216,10 @@ export function chapterScope(key) {
 export function exampleStrip(key, route) {
   const example = chapters[key].example;
   if (!example) return '';
+  if (hasClaims(chapters[key]))
+    return `<details class="example-disclosure"><summary>Running example: ${escapeHtml(example.title)} → <code>${escapeHtml(example.code)}</code></summary>
+    <ol class="journey" aria-label="${escapeHtml(example.title)}">${example.hops.map((hop, index) => `<li><a href="${routeHref(key, hop.step || example.step || route.step, hop.detail)}" data-map-jump data-hop="${index}" title="${escapeHtml(hop.copy)}"><span>${index + 1}</span> ${escapeHtml(hop.label)}</a></li>`).join('')}</ol>
+    <p class="example-note">The provider checks its cache, then Azure Table Storage in common Storage, returning stored configuration. This lookup does not visit the partition’s Cosmos, blob Storage, or Service Bus. ${escapeHtml(example.note)}</p></details>`;
   const current = example.hops.findIndex(
     (hop) =>
       hop.detail === route.detail &&
