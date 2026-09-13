@@ -75,6 +75,76 @@ export const chapters = {
       },
     ],
     guides: ['familiar', 'inside-the-cluster', 'profiles'],
+    tryIt: {
+      activity: 'prepare your workstation',
+      variants: [
+        {
+          label: 'Install the CLI and check the tools',
+          result:
+            'The spi CLI and its five prerequisite tools are installed, and you can tell tool readiness from Azure access: nothing in this activity signs you in.',
+          access: 'workstation setup',
+          accessNote:
+            'No Azure subscription or GitHub account is needed for this activity; it is preparation for lesson 02.',
+          prerequisites: [
+            {
+              text: 'uv installed, and az, kubectl, kubelogin, and flux installed or installable with your package manager. bicep can come from the az CLI extension.',
+              sources: ['install'],
+            },
+          ],
+          time: {
+            active:
+              'About 10 minutes when uv and the tools are already present; longer if you install them.',
+            wait: 'No automated waiting.',
+            cleanup: 'Under a minute.',
+          },
+          effects:
+            'Installs the spi tool into uv’s tool directory and puts it on PATH. Nothing is created or changed in Azure or GitHub; spi check reads tool versions only.',
+          steps: [
+            {
+              command:
+                'uv tool install "$(curl -fsSL https://api.github.com/repos/Azure/osdu-spi-stack/releases/latest \\\n  | grep -o \'https://github.com/Azure/osdu-spi-stack/releases/download/[^"]*-py3-none-any.whl\')"\nspi --version',
+              expect:
+                'uv installs the spi tool, and spi --version prints the release, for example spi 0.16.0. The macOS and Linux form is shown; the install guide has the PowerShell form.',
+              sources: ['install'],
+            },
+            {
+              command: 'spi check',
+              expect:
+                'A table titled SPI Stack Prerequisites with five rows, az, bicep, kubectl, kubelogin, and flux, each OK with a version, then “All 5 tools available.” Nothing asked you to sign in: the check reads tool versions and says nothing about your subscription.',
+            },
+            {
+              command: 'spi up --help',
+              expect:
+                'Read, do not run. --env is required; --profile offers bare, minimal, and core, with core the default; --location defaults to westus3; --partition can repeat; --tag pins an immutable release of the GitOps source.',
+            },
+          ],
+          alternate: {
+            observation:
+              'A row in the spi check table shows a status other than OK.',
+            next: 'Install that tool with your package manager and rerun spi check. bicep is found through the az CLI’s bicep extension even when no bicep binary is on your PATH, and the check reports it OK.',
+          },
+          cleanup: {
+            steps: [
+              {
+                command: 'uv tool uninstall spi',
+                expect: 'uv removes the spi tool and its entry on PATH.',
+              },
+            ],
+            remains:
+              'The five prerequisite tools stay installed. Nothing was created in Azure or GitHub.',
+          },
+          sources: ['install'],
+          tested: {
+            cli: 'spi 0.16.0, already installed on the test machine; the install command is quoted from the install guide and was not re-run',
+            stack: 'osdu-spi-stack dc2c956 (release 0.16.0)',
+            template: 'Not applicable: no fork is used in this activity.',
+            shell: 'zsh',
+            os: 'macOS 26.6.2 on Apple silicon',
+            date: '2026-09-13',
+          },
+        },
+      ],
+    },
     mistakes: {
       developer: 'stack-is-only-aks',
       request: 'certificate-means-encrypted',
