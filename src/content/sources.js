@@ -449,4 +449,25 @@ export const sources = {
     path: 'docs/decisions/032-environment-deploy-identity.md',
     href: 'https://github.com/Azure/osdu-spi-stack/blob/main/docs/decisions/032-environment-deploy-identity.md',
   },
+  cli: {
+    label: 'SPI CLI options (dc2c956)',
+    repo: 'osdu-spi-stack',
+    path: 'src/spi/cli.py',
+    href: 'https://github.com/Azure/osdu-spi-stack/blob/dc2c95638ded6459538085cfdb2ada46b692c27b/src/spi/cli.py',
+    revision: 'dc2c95638ded6459538085cfdb2ada46b692c27b',
+  },
+  ciSetup: {
+    label: 'CI setup: subscription roles (dc2c956)',
+    repo: 'osdu-spi-stack',
+    path: 'docs/CI_SETUP.md',
+    href: 'https://github.com/Azure/osdu-spi-stack/blob/dc2c95638ded6459538085cfdb2ada46b692c27b/docs/CI_SETUP.md',
+    revision: 'dc2c95638ded6459538085cfdb2ada46b692c27b',
+  },
+  partitionRelease: {
+    label: 'Partition HelmRelease (dc2c956)',
+    repo: 'osdu-spi-stack',
+    path: 'software/stacks/osdu/services/partition.yaml',
+    href: 'https://github.com/Azure/osdu-spi-stack/blob/dc2c95638ded6459538085cfdb2ada46b692c27b/software/stacks/osdu/services/partition.yaml',
+    revision: 'dc2c95638ded6459538085cfdb2ada46b692c27b',
+  },
 };

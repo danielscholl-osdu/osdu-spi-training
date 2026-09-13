@@ -261,6 +261,203 @@ export const chapters = {
       inspect: ['milestones'],
       remove: ['credentials'],
     },
+    tryIt: {
+      activity: 'bring up an environment',
+      variants: [
+        {
+          label: 'Read a run without Azure',
+          result:
+            'You can name the five readiness signals as separate signals, say what the CLI verifies before it returns, and say what ordinary spi down keeps, without creating anything.',
+          access: 'browser only',
+          accessNote:
+            'The three --help commands read the CLI installed in lesson 01 and contact no subscription; skip them if it is not installed.',
+          prerequisites: [
+            {
+              text: 'A browser. The spi CLI from lesson 01 if you want to read its help; no Azure subscription and no sign-in.',
+              sources: ['install'],
+            },
+          ],
+          time: {
+            active: 'About 15 minutes of reading.',
+            wait: 'No automated waiting.',
+            cleanup: 'Nothing to clean up.',
+          },
+          effects:
+            'Nothing is created or changed. The linked documents are read in the browser, and --help prints option text without calling Azure.',
+          steps: [
+            {
+              click:
+                'Open the deployment lifecycle document and read “From invocation to CLI exit”.',
+              expect:
+                'A stage table that ends in Git-source finalization: the CLI waits for the source, verifies the requested artifact revision, then suspends the source and writes the deploy record before it returns. Under the table: “Flux runs concurrently with those final CLI stages”; there is no moment when the CLI stops and Flux starts.',
+              sources: ['lifecycle'],
+            },
+            {
+              click: 'In the same document, read “Timing and readiness”.',
+              expect:
+                'A five-row signal table: the CLI exits successfully, the Git source has an artifact, Kustomizations and HelmReleases are Ready, initialization Jobs are Complete, an authenticated API request succeeds. Each establishes a different thing and none implies the next. The 45 to 50 minute figure is a centralus planning estimate from prior runs, not a measurement or a guarantee.',
+              sources: ['lifecycle'],
+            },
+            {
+              click: 'Read “Steady state and teardown”.',
+              expect:
+                'Ordinary spi down deletes data and compute; managed identities, the resource group spi-stack-dev1, and its tags survive, so the next spi up reuses the same names. spi down --env dev1 --purge is a separate destructive choice that deletes the group and its identities after external-grant cleanup.',
+              sources: ['lifecycle'],
+            },
+            {
+              command: 'spi up --help',
+              expect:
+                'Read, do not run. --env is required; --profile defaults to core; --location defaults to westus3 and its help names eastus2 and centralus as regions with capacity constraints; --tag pins an immutable release tag; --dry-run says it creates the resource group. This needs only the CLI from lesson 01 and makes no Azure call.',
+              sources: ['cli'],
+            },
+            {
+              command: 'spi status --help',
+              expect:
+                'Two options besides --help: --watch (-w) for continuous refresh, and --json. The description is deployment health and reconciliation progress; nothing about API requests.',
+              sources: ['cli'],
+            },
+            {
+              command: 'spi down --help',
+              expect:
+                '--env is required. The description says managed identities survive unless --purge, and --purge deletes the resource group itself, including the managed identities.',
+              sources: ['cli'],
+            },
+          ],
+          alternate: {
+            observation:
+              'spi: command not found, or spi --version reports a release other than 0.16.0.',
+            next: 'The three commands are optional here. Install the CLI with lesson 01’s band, or read the same options in cli.py at the reviewed revision.',
+          },
+          cleanup: {
+            steps: [
+              {
+                click: 'Close the document tabs.',
+                expect: 'Nothing to remove; --help changed nothing.',
+              },
+            ],
+            remains: 'Nothing was created.',
+          },
+          sources: ['lifecycle', 'cli'],
+          tested: {
+            cli: 'spi 0.16.0',
+            stack: 'osdu-spi-stack dc2c956 (release 0.16.0)',
+            template: 'Not applicable: no fork is used.',
+            shell: 'zsh',
+            os: 'macOS 26.6.2 on Apple silicon',
+            date: '2026-09-13',
+          },
+        },
+        {
+          label: 'Run it in your subscription',
+          result:
+            'An environment you provisioned yourself, observed to readiness with spi status --watch and proven on one API path with an authenticated partition lookup, then a deliberate keep-or-remove choice.',
+          access: 'Azure resources billed separately',
+          accessNote:
+            'Your identity must create resource groups, deploy the Azure services, and create role assignments; the stack’s own CI runs with Contributor plus User Access Administrator at subscription scope. AKS Automatic capacity varies by region: westus3 is the default, and the CLI help names eastus2 and centralus as constrained. Commands are quoted from cli.py at dc2c956; this route has not yet been walked end to end and waits for the recorded walkthrough (fn-dt3).',
+          prerequisites: [
+            {
+              text: 'The spi CLI and its five tools from lesson 01, with spi --version reporting spi 0.16.0.',
+              sources: ['install'],
+            },
+            {
+              text: 'An Azure subscription you may bill, with the roles above, and curl on the workstation.',
+              sources: ['ciSetup'],
+            },
+          ],
+          time: {
+            active:
+              'About 30 minutes at the keyboard across the steps, most of it after provisioning.',
+            wait: 'Fresh provisioning was observed at roughly 45 to 50 minutes in centralus, and application readiness can take longer; these are planning estimates from prior runs, not guarantees for the current release or another region.',
+            cleanup:
+              'A few minutes of effort; spi down itself waits up to 45 minutes.',
+          },
+          effects:
+            'spi up creates a resource group named spi-stack-<name> and, in it, an AKS Automatic cluster, Cosmos DB, Storage, Service Bus, Key Vault, and managed identities, then seeds the cluster and activates Flux. Everything in that group is billed to your subscription for as long as it exists. --dry-run alone creates or updates the resource group and its naming tag.',
+          steps: [
+            {
+              command: 'az login\naz account show',
+              expect:
+                'The subscription you mean to bill, by name and id. Switch with az account set before going further.',
+            },
+            {
+              command: 'spi up --env <name> --dry-run',
+              expect:
+                'This needs Azure access. The CLI creates or updates the resource group and its naming tag, then runs what-if previews of the AKS and PaaS templates and prints “Dry-run complete”. It is a preview of the stack, not a no-op: the group now exists and needs the same cleanup as a real run. Resources that depend on the AKS OIDC issuer are missing from the preview.',
+              sources: ['lifecycle', 'cli'],
+            },
+            {
+              command: 'spi up --env <name> --tag <release>',
+              expect:
+                'The default core profile. <release> is the tag matching your CLI, vX.Y.Z, so v0.16.0 for spi 0.16.0; the CLI refuses a tag whose version differs from its own, which keeps the tested pair reproducible. Each az and kubectl command is shown before it runs. When the CLI returns it has verified the requested Git revision and suspended Git fetching, and it says Flux is reconciling in the background. That is CLI exit, not readiness.',
+              sources: ['lifecycle', 'cli'],
+            },
+            {
+              command: 'spi status --watch',
+              expect:
+                'Workload health and initialization: Kustomizations and HelmReleases turning Ready, then initialization Jobs reaching Complete. It makes no API request, and a Running pod is not necessarily ready.',
+              sources: ['lifecycle'],
+            },
+            {
+              command: 'spi info --show-apis',
+              expect:
+                'The cluster’s endpoints with the full OSDU API list, including the partition base URL /api/partition/v1/ under your environment’s host. Copy that host for the next step.',
+              sources: ['cli'],
+            },
+            {
+              command:
+                'curl -sS -H "Authorization: Bearer $(spi token)" \\\n  "https://<host>/api/partition/v1/partitions/opendes"',
+              expect:
+                'spi token mints a ten-minute bearer as the deploy identity and writes only the token to stdout, so it composes into the header. A JSON body of stored configuration for opendes. This proves only that path: one authenticated partition lookup, nothing about search, storage, or ingestion.',
+              sources: ['workloadIdentity', 'cli'],
+            },
+            {
+              click:
+                'Decide: keep the environment for lesson 06, or remove it now.',
+              expect:
+                'Keeping it costs money for every hour it runs and saves a second 45 to 50 minute provisioning later. Removing it now is the first clean-up step below.',
+            },
+          ],
+          alternate: {
+            observation:
+              'spi up fails in the AKS or PaaS stage with a regional capacity or quota error.',
+            next: 'Rerun with --location <region> to choose another region, keeping the same --env, partition list, and ingress settings. The resource group from the failed run already exists and needs the same cleanup as a completed one, so run spi down --env <name> when you are done, whether or not provisioning finished.',
+          },
+          cleanup: {
+            steps: [
+              {
+                command: 'spi down --env <name>',
+                expect:
+                  'Deletes the cluster, the data services, and their data, waiting up to 45 minutes; that is a timeout, not a promise. An incomplete delete exits nonzero and lists what remains, so rerun it. Managed identities, the resource group, and its naming tags stay.',
+                sources: ['lifecycle'],
+              },
+              {
+                command: 'spi down --env <name> --purge',
+                expect:
+                  'When you are done for good: removes the identities’ external grants, then deletes the resource group itself within the same 45-minute deadline. az group exists --name spi-stack-<name> prints false.',
+                sources: ['lifecycle'],
+              },
+            ],
+            remains:
+              'After ordinary spi down: the resource group spi-stack-<name>, its managed identities, and its naming tags, so a later spi up reuses the same names. After --purge: nothing of the environment.',
+          },
+          sources: [
+            'lifecycle',
+            'cli',
+            'architecture',
+            'ciSetup',
+            'workloadIdentity',
+          ],
+          tested: {
+            cli: 'spi 0.16.0; commands quoted from cli.py at dc2c956; Azure route not walked',
+            stack: 'osdu-spi-stack dc2c956 (release 0.16.0)',
+            template: 'Not applicable: no fork is used.',
+            shell: 'zsh',
+            os: 'macOS 26.6.2 on Apple silicon',
+            date: '2026-09-13',
+          },
+        },
+      ],
+    },
     mistakes: {
       start: 'profiles-save-money',
       provision: 'profiles-save-money',
@@ -382,6 +579,100 @@ export const chapters = {
       },
     ],
     guides: ['one-request', 'identity'],
+    tryIt: {
+      activity: 'trace the partition lookup',
+      variants: [
+        {
+          label: 'Follow the lookup in the source',
+          result:
+            'You can point at the line where the Azure provider reads its cache, the line where it falls back to Table Storage, and the build steps that put both into the one image the partition Deployment runs.',
+          access: 'browser only',
+          accessNote:
+            'The last step is optional and needs a stack from lesson 02 with kubectl connected; everything else is reading on GitHub.',
+          prerequisites: [
+            {
+              text: 'A browser. For the optional last step only, a stack from lesson 02 and kubectl connected with spi connect.',
+              sources: ['partitionProvider', 'lifecycle'],
+            },
+          ],
+          time: {
+            active: 'About 15 minutes.',
+            wait: 'No automated waiting.',
+            cleanup: 'Under a minute.',
+          },
+          effects:
+            'Nothing is created or changed. The steps read the reference fork at a pinned commit; the optional kubectl step reads one field of one Deployment.',
+          steps: [
+            {
+              click:
+                'Open PartitionServiceImpl at 3a5690d and find getPartition.',
+              expect:
+                'The first line of work is safeGet(partitionServiceCache, partitionId). Only when that returns null does the method call tableStore.getPartition(partitionId), build a PartitionInfo from the map, and safePut it back into the cache. An empty map raises 404 “partition not found”.',
+              sources: ['partitionProvider'],
+            },
+            {
+              click:
+                'Scroll to the private safeGet method near the end of the same file.',
+              expect:
+                'The cache read is wrapped in try/catch: an exception is logged as a warning, “Partition cache (Redis/AMR) read failed … treating as cache miss and using durable store”, and null is returned. A cache outage becomes a miss, so the Table Storage read still happens.',
+              sources: ['partitionProvider', 'partitionCacheFix'],
+            },
+            {
+              click:
+                'Open the provider POM and find partition-core, then spring-boot-maven-plugin.',
+              expect:
+                'A dependency on org.opengroup.osdu:partition-core at the project version: the shared service code is compiled into this module. Under build, spring-boot-maven-plugin runs the repackage goal with mainClass PartitionApplication: one executable JAR holds the shared code and the Azure implementation together.',
+              sources: ['partitionPom'],
+            },
+            {
+              click: 'Open build/Dockerfile.',
+              expect:
+                'COPY ${JAR_FILE} /app.jar onto an MCR OpenJDK 17 base, and no Maven runs in the image. One image, one JAR, both source owners inside it.',
+              sources: ['partitionDockerfile'],
+            },
+            {
+              command:
+                "kubectl get deployment partition -n osdu -o jsonpath='{.spec.template.spec.containers[0].image}'",
+              expect:
+                'Optional, with a stack up. The image reference the cluster runs for partition: the HelmRelease named partition in osdu-flux installs the osdu-spi-service chart into the osdu namespace, so the Deployment is named partition. A fresh stack runs a community image resolved into the image lock; a fork-built candidate appears only in lesson 06, when a workflow pins one.',
+              sources: ['partitionRelease', 'images'],
+            },
+          ],
+          alternate: {
+            observation:
+              'A link opens main instead of 3a5690d, or a symbol is not where this band says.',
+            next: 'Use the pinned links in the sources; the fork moves as template sync and upstream sync land. The revision in each link is the one this band was checked against.',
+          },
+          cleanup: {
+            steps: [
+              {
+                click: 'Close the tabs.',
+                expect:
+                  'Nothing to remove; the optional kubectl step read one field.',
+              },
+            ],
+            remains: 'Nothing was created.',
+          },
+          sources: [
+            'partitionProvider',
+            'partitionPom',
+            'partitionDockerfile',
+            'partitionRelease',
+            'images',
+          ],
+          tested: {
+            cli: 'Not applicable for the browser steps; the optional kubectl step was written against a spi 0.16.0 stack layout and not run.',
+            stack:
+              'osdu-spi-stack dc2c956 (release 0.16.0) for the Deployment name and namespace',
+            template:
+              'Not applicable: reads the reference fork’s source at osdu-spi-partition 3a5690d; no fork is created.',
+            shell: 'zsh, for the optional kubectl step',
+            os: 'macOS 26.6.2 on Apple silicon',
+            date: '2026-09-13',
+          },
+        },
+      ],
+    },
     mistakes: ['token-accepted-means-authorized'],
     scope:
       'Upstream plans to remove its Azure implementations (community ADR 61; osdu-spi ADR-038). As of September 2026 the upstream directory is still there, and the fork keeps its own copy outside the generated shared-code branch so that removal deletes nothing on the fork side whenever it lands. The cache fallback is real: commit fc2dfbf in osdu-spi-partition, 30 July 2026, with regression tests. It reached the fork from upstream on 25 August, before the filter existed; from 04 on, the example follows a fix like it made in the fork today.',
