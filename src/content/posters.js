@@ -321,9 +321,9 @@ export const nativeGuides = [
   },
   {
     id: 'milestones',
-    title: 'Five milestones, not one',
+    title: 'Readiness signals and what they prove',
     summary:
-      'An operator who conflates these will misdiagnose. Each has its own signal and its own command.',
+      'These rows are separate signals, not deployment steps. The CLI verifies the requested Git artifact revision before exit while Flux overlaps the final CLI work.',
     appearsIn: { label: 'Use the stack', href: '#bring-up/inspect' },
     sources: ['lifecycle'],
   },

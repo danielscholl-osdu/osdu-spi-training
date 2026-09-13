@@ -210,9 +210,9 @@ export const componentDetails = {
     source: 'lifecycle',
   },
   readiness: {
-    label: 'Readiness milestones',
-    title: 'CLI success is the first signal, not the last.',
-    body: 'Check configured workload health and initialization completion with spi status --watch, then discover endpoints with spi info --show-apis. An authenticated response proves the particular API path you exercised. A pod in Running phase and a completed Job are different signals.',
+    label: 'Readiness signals',
+    title: 'CLI success does not establish API readiness.',
+    body: 'For the opendes lookup in dev1, a successful spi up does not prove that the request path is ready. Before exiting, the CLI verifies the requested Git artifact revision while Flux overlaps the final CLI work; these signals are not a first-to-last checklist. spi status --watch observes configured workload health and initialization, and spi info --show-apis discovers the endpoint. Only a successful authenticated lookup proves that exercised API path, not every API. A pod in Running phase is not necessarily Ready, and a completed initialization Job should be Complete rather than Running.',
     artifact: {
       label: 'Observe the environment',
       code: 'spi status --watch\nspi info --show-apis',
@@ -272,7 +272,7 @@ export const componentDetails = {
   azureimpl: {
     label: 'The Azure implementation',
     title: 'The provider checks its cache, then reads Table Storage.',
-    body: 'PartitionServiceImpl.getPartition asks the cache for opendes. When the cache misses, or when the read throws, it reads the stored configuration from the partition table in common Storage; a cache failure is logged as a warning and the lookup still answers. The code lives in provider/partition-azure, which the fork owns: it stays on fork_integration and main, outside the tree regenerated from upstream (osdu-spi ADR-038), so upstream’s planned removal of its Azure implementations deletes nothing here.',
+    body: 'PartitionServiceImpl.getPartition asks the cache for opendes. When the cache misses, or when the read throws, it reads the stored configuration from the partition table in common Storage; the cache failure is logged as a warning, and the lookup still answers when that table is reachable and contains opendes. The code lives in provider/partition-azure, which the fork owns: it stays on fork_integration and main, outside the tree regenerated from upstream (osdu-spi ADR-038), so upstream’s planned removal of its Azure implementations deletes nothing here.',
     artifact: {
       label: 'The fallback, with its tests',
       code: 'PartitionServiceImpl.getPartition(id)\n  safeGet(cache, id)  → null on miss or exception (logged)\n  tableStore.getPartition(id)  when null\nPartitionServiceImplTest.java\n  should_fallBackToTableStore_when_cacheReadThrows_onGetPartition',
@@ -280,16 +280,27 @@ export const componentDetails = {
     source: 'partitionProvider',
     goDeeper: ['partitionCacheFix', 'ownership', 'partitionProvider'],
   },
-  azureclients: {
-    label: 'Inside the provider',
-    title:
-      'Cache first. Table Storage when the cache misses, or when it throws.',
-    body: 'The Azure implementation asks a Redis cache for opendes. On a miss it reads the partition row from Table Storage in common Storage, using a Workload Identity token rather than a stored key, and writes the answer back to the cache. Since commit fc2dfbf a cache that throws is treated as a miss too: the lookup still answers from the table, and a warning is logged. That fallback is the running example for the rest of the site.',
+  redis: {
+    label: 'Inside AKS · outside the service image',
+    title: 'Redis can return the partition before the table is read.',
+    body: 'PartitionServiceImpl asks Redis in the platform namespace for opendes. A hit returns the cached configuration without a table read; a miss or caught read exception returns control to the provider, which reads the table, and the exception is logged as a warning. Redis authenticates with a middleware password from platform/redis-credentials, whose redis-password value is mirrored into Key Vault. The provider client is inside provider/partition-azure; Redis itself is outside the service image.',
     artifact: {
-      label: 'The fallback, in the provider',
-      code: 'safeGet(cache, id)      // exception → null, logged\nif (pi == null) pi = tableStore.getPartition(id)',
+      label: 'Where the credential lives',
+      code: 'platform/redis-credentials\nredis-password  → mirrored into Key Vault',
     },
     source: 'partitionProvider',
+    goDeeper: ['partitionCacheFix', 'architecture', 'secrets'],
+  },
+  azureclients: {
+    label: 'Outside AKS · common Storage',
+    title: 'The provider reads the durable row with Workload Identity.',
+    body: 'After a cache miss or caught read exception, PartitionServiceImpl reads opendes from the partition table in common Storage. The table is outside AKS and the service image; the fork-owned client inside provider/partition-azure uses a Workload Identity token instead of a stored Storage key. A successful fallback requires a reachable table containing opendes. After the read, the provider attempts to write the answer back to Redis; if that write fails, it logs the failure without invalidating the durable answer.',
+    artifact: {
+      label: 'Durable read and non-fatal cache write-back',
+      code: 'tableStore.getPartition(id)\ncache.put(id, partitionInfo)  // failure logged; answer kept',
+    },
+    source: 'identity',
+    goDeeper: ['architecture', 'partitionProvider', 'partitionCacheFix'],
   },
   upstream: {
     label: 'Upstream tip',

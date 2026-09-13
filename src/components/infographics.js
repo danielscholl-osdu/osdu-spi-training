@@ -76,8 +76,9 @@ const milestones = [
   {
     owner: 'flux',
     signal: 'The Git source has an artifact',
-    proves: 'Flux has manifests to reconcile at the requested revision.',
-    check: 'kubectl get gitrepository -n osdu-flux',
+    proves: 'Flux has the requested revision to reconcile.',
+    check:
+      'kubectl get gitrepository osdu-spi-stack-system -n osdu-flux -o yaml\n# status.artifact.revision',
   },
   {
     owner: 'flux',
@@ -100,15 +101,14 @@ const milestones = [
 ];
 
 function milestonesGuide() {
-  return `<ol class="guide-milestones">${milestones
+  return `<ul role="list" class="guide-milestones">${milestones
     .map(
-      (m, i) => `<li class="owner-${m.owner}">
-        <span class="milestone-number">${i + 1}</span>
+      (m) => `<li class="owner-${m.owner}">
         <div><b>${m.signal}</b><p>${m.proves}</p><code>${escapeHtml(m.check)}</code></div>
       </li>`,
     )
-    .join('')}</ol>
-    <p class="guide-thesis">Only the fifth means the environment works for you. A pod in Running phase is not necessarily ready, and a completed Job is not supposed to still be running.</p>`;
+    .join('')}</ul>
+    <p class="guide-thesis">spi status --watch observes configured health and initialization without making an authenticated request. A successful request proves only the exercised API path. A pod in Running phase is not necessarily Ready, and a completed Job should be Complete rather than Running.</p>`;
 }
 
 const profileLayers = [

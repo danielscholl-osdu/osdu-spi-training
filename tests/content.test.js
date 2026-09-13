@@ -23,6 +23,7 @@ import {
   claimStrip,
   detailSourceLinks,
   exampleStrip,
+  guideFigure,
   hopIndexForRoute,
   mythCallout,
   pageRenderers,
@@ -163,6 +164,31 @@ test('every explanation names an artifact and a source', () => {
   }
 });
 
+test('readiness drawer distinguishes observed state from API proof', () => {
+  const readiness = componentDetails.readiness;
+  const drawerCopy = `${readiness.label} ${readiness.title} ${readiness.body}`;
+
+  assert.equal(readiness.source, 'lifecycle');
+  assert.match(readiness.artifact.code, /spi status --watch/);
+  assert.match(readiness.artifact.code, /spi info --show-apis/);
+  assert.match(readiness.body, /opendes lookup in dev1/);
+  assert.match(
+    readiness.body,
+    /CLI verifies the requested Git artifact revision/,
+  );
+  assert.match(readiness.body, /Flux overlaps the final CLI work/);
+  assert.match(readiness.body, /observes configured workload health/);
+  assert.match(readiness.body, /discovers the endpoint/);
+  assert.match(
+    readiness.body,
+    /authenticated lookup proves that exercised API path, not every API/,
+  );
+  assert.match(readiness.body, /Running phase is not necessarily Ready/);
+  assert.match(readiness.body, /Job should be Complete rather than Running/);
+  for (const phrase of ['first of five', 'the rest', 'later milestone'])
+    assert.doesNotMatch(drawerCopy, new RegExp(phrase, 'i'));
+});
+
 test('Go deeper links preserve evidence order and single-source fallback', () => {
   const ordered = detailSourceLinks(componentDetails.azureimpl);
   const expected = componentDetails.azureimpl.goDeeper.map(
@@ -262,6 +288,7 @@ test('SPI boundary map exposes one runtime seam and its source owners', () => {
     'core',
     'contract',
     'azureimpl',
+    'redis',
     'azureclients',
     'upstream',
     'engineering',
@@ -270,6 +297,8 @@ test('SPI boundary map exposes one runtime seam and its source owners', () => {
     'spi-image',
     'spi-shared',
     'spi-provider',
+    'spi-cache',
+    'spi-tables',
     'spi-sources',
   ])
     assert.match(markup, new RegExp(`data-scope="${scope}"`));
@@ -277,7 +306,32 @@ test('SPI boundary map exposes one runtime seam and its source owners', () => {
   assert.match(markup, /IPartitionService\.getPartition/);
   assert.match(markup, /provider\/partition-azure/);
   assert.match(markup, /no network hop/);
-  assert.equal([...markup.matchAll(/data-trace-status=/g)].length, 2);
+  assert.deepEqual(
+    [...markup.matchAll(/data-trace-status="([^"]+)"/g)].map(
+      (match) => match[1],
+    ),
+    ['redis', 'azureclients'],
+  );
+
+  const runtime = markup.slice(
+    markup.indexOf('<div class="spi-runtime">'),
+    markup.indexOf('<section class="spi-source-boundary"'),
+  );
+  const imageEnd = runtime.indexOf('</section>');
+  const redisStart = runtime.indexOf('data-scope="spi-cache"');
+  const tablesStart = runtime.indexOf('data-scope="spi-tables"');
+  assert.ok(imageEnd < redisStart && redisStart < tablesStart);
+  const redisLane = runtime.slice(redisStart, tablesStart);
+  const tableLane = runtime.slice(tablesStart);
+  assert.match(redisLane, /Redis cache · inside AKS · middleware credentials/);
+  assert.match(redisLane, /Outside the service image/);
+  assert.doesNotMatch(redisLane, /Workload Identity/);
+  assert.match(
+    tableLane,
+    /Common Table Storage · outside AKS · Workload Identity/,
+  );
+  assert.match(tableLane, /Outside the service image/);
+  assert.doesNotMatch(tableLane, /middleware credentials/);
 });
 
 test('deep links recover chapter, lifecycle moment, and component without module state', () => {
@@ -525,6 +579,31 @@ test('field checks name a source, a command, and a place on the site', () => {
   }
 });
 
+test('readiness misconception separates possible convergence from API proof', () => {
+  const readiness = myths.find((myth) => myth.id === 'finished-means-ready');
+  const misconceptionCopy = `${readiness.reality} ${readiness.routeLabel}`;
+
+  assert.equal(readiness.claim, 'The command finished, so it is ready.');
+  assert.equal(readiness.check, 'spi status --watch');
+  assert.equal(readiness.source, 'lifecycle');
+  assert.equal(readiness.route, '#bring-up/inspect?detail=readiness');
+  assert.equal(readiness.routeLabel, 'Readiness signals');
+  assert.match(readiness.reality, /does not establish API readiness/);
+  assert.match(
+    readiness.reality,
+    /Flux reconciliation and initialization Jobs may still be working/,
+  );
+  assert.match(readiness.reality, /does not make an API call/);
+  assert.match(
+    readiness.reality,
+    /authenticated request verifies only the path exercised/,
+  );
+  assert.match(readiness.reality, /150-minute value is a deadline/);
+  assert.match(readiness.reality, /not an expected wait/);
+  for (const phrase of ['first of five', 'the rest', 'later milestone'])
+    assert.doesNotMatch(misconceptionCopy, new RegExp(phrase, 'i'));
+});
+
 test('audio markers are ordered, inside the recording, and point at real views', () => {
   assert.equal(
     new Set(episodes.map((episode) => episode.id)).size,
@@ -632,6 +711,42 @@ test('posters and field guides resolve their images, renderers, sources, and lin
     for (const key of guide.sources) assert.ok(sources[key], guide.id);
     verifyRoute(guide.appearsIn.href, guide.id);
   }
+});
+
+test('readiness signals guide compares five proof scopes without ordering them', () => {
+  const guide = nativeGuides.find((entry) => entry.id === 'milestones');
+  const body = infographics.milestones();
+  const compact = guideFigure('milestones', { compact: true });
+  const full = guideFigure('milestones');
+  const renderedCopy = `${guide.title} ${guide.summary} ${body}`;
+
+  assert.equal(guide.appearsIn.href, '#bring-up/inspect');
+  assert.deepEqual(guide.sources, ['lifecycle']);
+  assert.match(guide.summary, /separate signals, not deployment steps/);
+  assert.match(
+    guide.summary,
+    /verifies the requested Git artifact revision before exit/,
+  );
+  assert.match(guide.summary, /Flux overlaps the final CLI work/);
+  assert.match(body, /<ul role="list" class="guide-milestones">/);
+  assert.equal(body.match(/<li class="owner-/g)?.length, 5);
+  assert.doesNotMatch(body, /<ol|milestone-number|Only the fifth/);
+  assert.match(body, /orchestration completed without a fatal error/);
+  assert.match(body, /Flux has the requested revision to reconcile/);
+  assert.match(body, /status\.artifact\.revision/);
+  assert.match(body, /configured health checks/);
+  assert.match(body, /bootstrap and schema loading finished/);
+  assert.match(body, /particular request path you exercised is usable/);
+  assert.match(body, /without making an authenticated request/);
+  assert.match(body, /request proves only the exercised API path/);
+  assert.match(body, /Running phase is not necessarily Ready/);
+  assert.match(body, /Job should be Complete rather than Running/);
+  for (const markup of [compact, full]) {
+    assert.match(markup, /Readiness signals and what they prove/);
+    assert.match(markup, /<ul role="list" class="guide-milestones">/);
+  }
+  for (const phrase of ['first of five', 'the rest', 'later milestone'])
+    assert.doesNotMatch(renderedCopy, new RegExp(phrase, 'i'));
 });
 
 test('source links use readable documentation and match a sibling checkout when present', () => {
@@ -886,7 +1001,7 @@ test('lesson 02 preserves its outcomes as three moment-aware claims', () => {
   const chapter = chapters['bring-up'];
   const expectedOutcomes = [
     'The CLI and Bicep create Azure and seed the cluster; Flux assembles the workloads; controllers keep them healthy. Different owners, different clocks.',
-    'A successful spi up exit is the first of five milestones, not readiness. spi status --watch is how I follow the rest.',
+    'A successful spi up does not establish API readiness. I follow workload health and initialization with spi status --watch, then verify the API path I need with an authenticated request.',
     'spi down removes compute and data but keeps identities and the resource group, so a rebuild reuses the same names.',
   ];
   assert.equal(chapter.outcomes.length, 3);
@@ -925,6 +1040,30 @@ test('lesson 02 preserves its outcomes as three moment-aware claims', () => {
     chapter.example.note,
     /does not visit.*Cosmos DB.*blob Storage.*Service Bus/,
   );
+});
+
+test('lesson 02 readiness signals separate orchestration from API proof', () => {
+  const readiness = chapters['bring-up'].outcomes[1];
+  const visibleCopy = `${readiness.text} ${readiness.why}`;
+
+  assert.equal(readiness.headline, 'CLI success is not API readiness.');
+  assert.match(readiness.text, /spi up does not establish API readiness/);
+  assert.match(readiness.text, /spi status --watch/);
+  assert.match(readiness.text, /authenticated request/);
+  assert.match(
+    readiness.why,
+    /requested Git artifact revision is verified before that exit/,
+  );
+  assert.match(readiness.why, /Flux overlaps the final CLI stages/);
+  assert.match(readiness.why, /Ready Kustomizations and HelmReleases/);
+  assert.match(readiness.why, /Complete initialization Jobs/);
+  assert.match(
+    readiness.why,
+    /authenticated request proves only the exercised API path/,
+  );
+  assert.match(readiness.why, /does not make that request/);
+  for (const phrase of ['first of five', 'the rest', 'later milestone'])
+    assert.doesNotMatch(visibleCopy, new RegExp(phrase, 'i'));
 });
 
 test('lesson 02 claim rendering and example routes preserve lesson 01 behavior', () => {
@@ -1030,9 +1169,9 @@ test('lesson 03 claims keep the provider seam understandable without evidence', 
     [
       {
         headline: 'Common code calls Azure through a provider interface.',
-        focus: ['core', 'contract', 'azureimpl', 'azureclients'],
+        focus: ['core', 'contract', 'azureimpl', 'redis', 'azureclients'],
         evidence: 'azureimpl',
-        scopes: ['spi-shared', 'spi-provider'],
+        scopes: ['spi-shared', 'spi-provider', 'spi-cache', 'spi-tables'],
       },
       {
         headline: 'The interface and implementation ship in one image.',
@@ -1057,8 +1196,8 @@ test('lesson 03 claims keep the provider seam understandable without evidence', 
   const claims = claimStrip('spi-boundary');
   for (const fact of [
     'partition-core calls IPartitionService.getPartition',
-    'Workload Identity for Azure access',
-    'The Table Storage read still happens when the cache throws.',
+    'Redis inside AKS with middleware credentials',
+    'Workload Identity for the common Table Storage read',
     'same service process',
     'not a network hop',
     'provider/&lt;svc&gt;-azure stays fork-owned',
@@ -1090,7 +1229,7 @@ test('lesson 03 states its own prerequisite and place without changing orientati
   );
 });
 
-test('example variants present two states of one canonical five-hop trace', () => {
+test('example variants present two states of one canonical six-hop trace', () => {
   const example = chapters['spi-boundary'].example;
   const canonical = structuredClone(example.hops);
   const normal = resolveExamplePresentation(example);
@@ -1099,16 +1238,23 @@ test('example variants present two states of one canonical five-hop trace', () =
   assert.equal(normal.selectedVariant, 'normal');
   assert.deepEqual(
     normal.hops.map(({ detail }) => detail),
-    ['client', 'core', 'contract', 'azureimpl', 'azureclients'],
+    ['client', 'core', 'contract', 'azureimpl', 'redis', 'azureclients'],
   );
   assert.deepEqual(
     cacheDown.hops.map(({ detail }) => detail),
     normal.hops.map(({ detail }) => detail),
   );
-  assert.equal(normal.hops[3].copy, 'Healthy cache miss');
-  assert.equal(normal.hops[4].copy, 'Stored configuration for opendes');
-  assert.equal(cacheDown.hops[3].copy, 'Cache read throws; treated as a miss');
-  assert.equal(cacheDown.hops[4].copy, 'Table Storage answers anyway');
+  for (const presentation of [normal, cacheDown]) {
+    const hops = Object.fromEntries(
+      presentation.hops.map((hop) => [hop.detail, hop]),
+    );
+    assert.match(hops.redis.copy, /inside AKS/i);
+    assert.match(hops.azureclients.copy, /outside AKS|Workload Identity/i);
+  }
+  assert.equal(normal.hops[4].state, 'normal');
+  assert.equal(normal.hops[5].state, 'normal');
+  assert.equal(cacheDown.hops[4].state, 'handled-failure');
+  assert.equal(cacheDown.hops[5].state, 'fallback');
   assert.deepEqual(example.hops, canonical);
 
   const route = parseRoute('#spi-boundary');
@@ -1116,7 +1262,7 @@ test('example variants present two states of one canonical five-hop trace', () =
   const cacheDownMarkup = exampleStrip('spi-boundary', route, 'cache-down');
   for (const markup of [normalMarkup, cacheDownMarkup]) {
     assert.equal((markup.match(/<ol class="journey"/g) || []).length, 1);
-    assert.equal((markup.match(/data-hop="/g) || []).length, 5);
+    assert.equal((markup.match(/data-hop="/g) || []).length, 6);
     assert.equal((markup.match(/data-example-variant=/g) || []).length, 2);
   }
   const links = (markup) =>
@@ -1125,8 +1271,8 @@ test('example variants present two states of one canonical five-hop trace', () =
     );
   assert.deepEqual(links(cacheDownMarkup), links(normalMarkup));
   assert.match(normalMarkup, /healthy cache miss/i);
-  assert.match(cacheDownMarkup, /Cache read throws; treated as a miss/);
-  assert.match(cacheDownMarkup, /Table Storage answers anyway/);
+  assert.match(cacheDownMarkup, /read throws.*treated as a miss/i);
+  assert.match(cacheDownMarkup, /Table Storage answers anyway/i);
 });
 
 test('example compatibility keeps provider paths in content and controls optional', () => {
@@ -1149,6 +1295,12 @@ test('example compatibility keeps provider paths in content and controls optiona
 });
 
 test('lesson trace state keeps variants local and preserves an active hop', () => {
+  const example = chapters['spi-boundary'].example;
+  const hopCount = example.hops.length;
+  const redisHop = example.hops.findIndex(({ detail }) => detail === 'redis');
+  const tableHop = example.hops.findIndex(
+    ({ detail }) => detail === 'azureclients',
+  );
   const initial = {
     claim: 0,
     hop: -1,
@@ -1156,16 +1308,16 @@ test('lesson trace state keeps variants local and preserves an active hop', () =
     exampleOpen: false,
     variant: 'normal',
   };
-  const cacheDown = selectExampleVariant(initial, 'cache-down', 5);
+  const cacheDown = selectExampleVariant(initial, 'cache-down', hopCount);
   assert.deepEqual(cacheDown, {
     ...initial,
-    hop: 4,
+    hop: tableHop,
     exampleOpen: true,
     variant: 'cache-down',
   });
-  const atProvider = { ...cacheDown, hop: 3 };
-  assert.deepEqual(selectExampleVariant(atProvider, 'normal', 5), {
-    ...atProvider,
+  const atRedis = { ...cacheDown, hop: redisHop };
+  assert.deepEqual(selectExampleVariant(atRedis, 'normal', hopCount), {
+    ...atRedis,
     variant: 'normal',
   });
   assert.deepEqual(initial, {
@@ -1179,6 +1331,8 @@ test('lesson trace state keeps variants local and preserves an active hop', () =
 
 test('lesson 03 evidence deep links stay step-less and map to claims', () => {
   const chapter = chapters['spi-boundary'];
+  for (const detail of ['redis', 'azureclients'])
+    verifyRoute(`#spi-boundary?detail=${detail}`, `lesson 03 ${detail}`);
   for (const [detail, claim] of [
     ['azureimpl', 0],
     ['image', 1],
@@ -1194,6 +1348,21 @@ test('lesson 03 evidence deep links stay step-less and map to claims', () => {
   assert.equal(
     parseRoute('#running-stack/request?detail=provider').step,
     'request',
+  );
+
+  const stack = episodes.find((episode) => episode.id === 'stack');
+  const outboundIdentity = stack.markers.find((marker) => marker.time === 2035);
+  assert.match(
+    outboundIdentity.note,
+    /Workload Identity replaces stored keys for Azure data services, not every credential/,
+  );
+  assert.match(
+    outboundIdentity.note,
+    /Redis remains in the platform namespace.*middleware password.*Kubernetes Secrets.*Key Vault/,
+  );
+  assert.match(
+    outboundIdentity.note,
+    /common Table Storage read uses Azure identity/,
   );
 });
 

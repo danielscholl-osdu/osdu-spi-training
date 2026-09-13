@@ -9,3 +9,6 @@ docs/reference/
 
 # Managed by bd; not formatted here.
 .beads/
+
+# Managed by Keelson and review sessions; formatted in their own checkouts.
+.worktrees/
