@@ -436,6 +436,80 @@ test('selection intent is additive and invalid qualifiers preserve legacy routes
   ];
   for (const [markup, href] of inspectionLinks)
     assert.ok(markup.includes(`href="${href}"`), href);
+
+  const structuredLessons = ['running-stack', 'bring-up', 'spi-boundary'];
+  for (const key of structuredLessons) {
+    const chapter = chapters[key];
+    const claimsMarkup = claimStrip(key);
+    for (const [claim, outcome] of chapter.outcomes.entries()) {
+      const step = outcome.evidenceStep || outcome.step || '';
+      const href = routeHref(key, step, outcome.evidence, { claim });
+      assert.ok(claimsMarkup.includes(`href="${href}"`), href);
+      assert.deepEqual(
+        resolveLessonSelection(chapter, parseRoute(href)),
+        { claim, hop: -1, exampleOpen: false },
+        href,
+      );
+    }
+
+    const exampleMarkup = exampleStrip(
+      key,
+      parseRoute(routeHref(key, chapter.example.step || '')),
+    );
+    for (const [hop, entry] of chapter.example.hops.entries()) {
+      const step = entry.step || chapter.example.step || '';
+      const href = routeHref(key, step, entry.detail, { hop });
+      assert.ok(exampleMarkup.includes(`href="${href}"`), href);
+      assert.deepEqual(
+        resolveLessonSelection(chapter, parseRoute(href)),
+        {
+          claim: claimIndexForRoute(chapter, parseRoute(href)),
+          hop,
+          exampleOpen: true,
+        },
+        href,
+      );
+    }
+  }
+
+  const fallbackCases = [
+    [
+      '#spi-boundary?detail=azureimpl&claim=99',
+      { claim: 0, hop: -1, exampleOpen: false },
+    ],
+    [
+      '#spi-boundary?detail=azureimpl&hop=99',
+      { claim: 0, hop: -1, exampleOpen: false },
+    ],
+    [
+      '#spi-boundary?detail=azureimpl&claim=nope',
+      { claim: 0, hop: -1, exampleOpen: false },
+    ],
+    [
+      '#spi-boundary?detail=azureimpl&claim=0&hop=3',
+      { claim: 0, hop: -1, exampleOpen: false },
+    ],
+    [
+      '#bring-up/provision?detail=aks&claim=2',
+      { claim: 0, hop: 0, exampleOpen: true },
+    ],
+    [
+      '#bring-up/bootstrap?detail=bootstrap&hop=0',
+      { claim: 0, hop: 2, exampleOpen: true },
+    ],
+    [
+      '#running-stack/request?detail=gateway',
+      { claim: 0, hop: 1, exampleOpen: true },
+    ],
+  ];
+  for (const [href, expected] of fallbackCases) {
+    const route = parseRoute(href);
+    assert.deepEqual(
+      resolveLessonSelection(chapters[route.chapter], route),
+      expected,
+      href,
+    );
+  }
 });
 
 test('field checks name a source, a command, and a place on the site', () => {
