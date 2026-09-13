@@ -354,7 +354,7 @@ test('lesson 01 claim evidence resolves all three claims in stack context', () =
     ['architecture', 'architecture', 'partitionPom'],
   );
   assert.match(details[0].summary, /resource group contains AKS/);
-  assert.match(details[0].summary, /--env dev1.*whole environment/);
+  assert.match(details[0].summary, /--env <name>.*whole environment/);
   assert.match(
     details[1].summary,
     /opendes.*Cosmos DB SQL account.*Storage account.*Service Bus namespace/,
@@ -484,7 +484,7 @@ test('readiness drawer distinguishes observed state from API proof', () => {
   assert.equal(readiness.source, 'lifecycle');
   assert.match(readiness.artifact.code, /spi status --watch/);
   assert.match(readiness.artifact.code, /spi info --show-apis/);
-  assert.match(readiness.body, /opendes lookup in dev1/);
+  assert.match(readiness.body, /opendes lookup in your environment/);
   assert.match(
     readiness.body,
     /CLI verifies the requested Git artifact revision/,
@@ -1168,7 +1168,7 @@ test('tryIt renderer returns an inert, escaped native disclosure', () => {
     /Without Azure: workstation setup · About 5 minutes · With Azure: Azure resources billed separately · About 10 minutes/,
   );
   assert.match(multiple, /An Azure subscription and permissions/);
-  assert.match(multiple, /<code>spi up --env dev1<\/code>/);
+  assert.match(multiple, /<code>spi up --env &lt;name&gt;<\/code>/);
 
   for (const markup of [single, multiple]) {
     assert.match(markup, /<details>/);
@@ -1504,7 +1504,7 @@ test('lesson 01 editorial copy introduces its example and complete command', () 
   );
   assert.match(
     chapter.intro,
-    /opendes, the example data partition, in the dev1 environment/,
+    /opendes, the example data partition, in the environment you named/,
   );
   assert.match(
     chapter.outcomes[1].why,
@@ -1516,9 +1516,9 @@ test('lesson 01 editorial copy introduces its example and complete command', () 
   );
   assert.equal(
     chapter.outcomes[0].why,
-    'spi up --env dev1 creates AKS and its Azure resources together.',
+    'spi up --env <name> creates AKS and its Azure resources together.',
   );
-  assert.match(claimStrip('running-stack'), /spi up --env dev1/);
+  assert.match(claimStrip('running-stack'), /spi up --env &lt;name&gt;/);
   assert.equal(chapter.mistakes.developer, misconception.id);
   assert.equal(misconception.source, 'architecture');
   assert.equal(misconception.reality.match(/[.!?](?:\s|$)/g)?.length, 3);
@@ -1766,7 +1766,7 @@ test('lesson 03 states its own prerequisite and place without changing orientati
   const chapter = chapters['spi-boundary'];
   assert.match(chapter.intro, /^Builds on the partition lookup from 01/);
   assert.match(chapter.intro, /one service inside the osdu namespace/);
-  assert.match(chapter.intro, /partition in dev1/);
+  assert.match(chapter.intro, /partition in your environment/);
   assert.match(chapter.intro, /Service Provider Interface \(SPI\)/);
   assert.match(
     chapter.intro,

@@ -2232,7 +2232,7 @@ body:has(.audio-dock:not([hidden])) main {
   text-decoration: none;
 }
 .loop-seam::before {
-  content: 'pinned into dev1, proved, restored ↑';
+  content: 'pinned into the stack, proved, restored ↑';
   grid-column: 1 / -1;
   font-size: 12.5px;
   font-weight: 600;

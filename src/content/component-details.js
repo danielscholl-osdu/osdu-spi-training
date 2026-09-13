@@ -2,17 +2,17 @@ export const componentDetails = {
   environment: {
     label: 'The stack boundary',
     title: 'AKS is one part of the environment.',
-    body: 'The dev1 environment includes AKS and its Azure data services. A data partition such as opendes gets its own Cosmos DB SQL account, Storage account, and Service Bus namespace. Gremlin, common Storage, Key Vault, and middleware are shared by the environment.',
+    body: 'Your environment includes AKS and its Azure data services. A data partition such as opendes gets its own Cosmos DB SQL account, Storage account, and Service Bus namespace. Gremlin, common Storage, Key Vault, and middleware are shared by the environment.',
     artifact: {
       label: 'Environment identity',
-      code: '--env dev1 → resource group spi-stack-dev1',
+      code: '--env <name> → resource group spi-stack-<name>',
     },
     source: 'architecture',
     here: {
       'running-stack': {
-        context: 'The dev1 environment boundary',
+        context: 'The environment boundary',
         summary:
-          'The spi-stack-dev1 resource group contains AKS and the Azure data resources beside it. --env dev1 selects that whole environment; AKS is one part of the stack, not the stack itself.',
+          'The spi-stack-<name> resource group contains AKS and the Azure data resources beside it. --env <name> selects that whole environment; AKS is one part of the stack, not the stack itself.',
       },
     },
   },
@@ -22,7 +22,7 @@ export const componentDetails = {
     body: 'spi up drives Bicep and seeds the cluster. Before returning, it verifies the requested Git revision and suspends further Git fetching. Flux and Kubernetes continue running when you close the terminal.',
     artifact: {
       label: 'Start an environment',
-      code: 'spi up --env dev1',
+      code: 'spi up --env <name>',
     },
     source: 'lifecycle',
   },
@@ -77,9 +77,9 @@ export const componentDetails = {
     source: 'flux',
     here: {
       'bring-up': {
-        context: 'How dev1 converges',
+        context: 'How the environment converges',
         summary:
-          'spi up --env dev1 creates Azure infrastructure with Bicep and supplies bootstrap inputs such as spi-cluster-config. Flux applies Kustomizations and HelmReleases, while Kubernetes controllers keep maintaining the workloads after the CLI exits.',
+          'spi up --env <name> creates Azure infrastructure with Bicep and supplies bootstrap inputs such as spi-cluster-config. Flux applies Kustomizations and HelmReleases, while Kubernetes controllers keep maintaining the workloads after the CLI exits.',
         more: 'The Git source is suspended after deployment by default. Controllers still reconcile the cached configuration and live inputs, including osdu-image-lock; follow a blocked Kustomization’s dependsOn chain to the first unhealthy dependency.',
         source: 'architecture',
         goDeeper: ['lifecycle', 'flux'],
@@ -206,7 +206,7 @@ export const componentDetails = {
     here: {
       'running-stack': {
         summary:
-          'opendes has its own Cosmos DB SQL account, Storage account, and Service Bus namespace. dev1 shares common Storage, Gremlin, the service identity, and Key Vault; partition-specific resources do not create a separate service identity.',
+          'opendes has its own Cosmos DB SQL account, Storage account, and Service Bus namespace. The environment shares common Storage, Gremlin, the service identity, and Key Vault; partition-specific resources do not create a separate service identity.',
       },
     },
   },
@@ -253,7 +253,7 @@ export const componentDetails = {
   readiness: {
     label: 'Readiness signals',
     title: 'CLI success does not establish API readiness.',
-    body: 'For the opendes lookup in dev1, a successful spi up does not prove that the request path is ready. Before exiting, the CLI verifies the requested Git artifact revision while Flux overlaps the final CLI work; these signals are not a first-to-last checklist. spi status --watch observes configured workload health and initialization, and spi info --show-apis discovers the endpoint. Only a successful authenticated lookup proves that exercised API path, not every API. A pod in Running phase is not necessarily Ready, and a completed initialization Job should be Complete rather than Running.',
+    body: 'For the opendes lookup in your environment, a successful spi up does not prove that the request path is ready. Before exiting, the CLI verifies the requested Git artifact revision while Flux overlaps the final CLI work; these signals are not a first-to-last checklist. spi status --watch observes configured workload health and initialization, and spi info --show-apis discovers the endpoint. Only a successful authenticated lookup proves that exercised API path, not every API. A pod in Running phase is not necessarily Ready, and a completed initialization Job should be Complete rather than Running.',
     artifact: {
       label: 'Observe the environment',
       code: 'spi status --watch\nspi info --show-apis',
@@ -263,7 +263,7 @@ export const componentDetails = {
       'bring-up': {
         context: 'Proof after spi up',
         summary:
-          'For the opendes lookup in dev1, a successful spi up does not prove that the request path is ready. The CLI verifies the requested Git artifact revision while Flux overlaps its final work. spi status --watch observes configured workload health and initialization, and spi info --show-apis discovers the endpoint; only a successful authenticated lookup proves the exercised API path, not every API. A Running pod is not necessarily Ready, and an initialization Job should be Complete.',
+          'For the opendes lookup in your environment, a successful spi up does not prove that the request path is ready. The CLI verifies the requested Git artifact revision while Flux overlaps its final work. spi status --watch observes configured workload health and initialization, and spi info --show-apis discovers the endpoint; only a successful authenticated lookup proves the exercised API path, not every API. A Running pod is not necessarily Ready, and an initialization Job should be Complete.',
       },
     },
   },
@@ -293,7 +293,7 @@ export const componentDetails = {
     body: 'Ordinary spi down deletes the cluster and data resources but retains managed identities, the resource group, and its tags, including spi-name-suffix. A rebuild reuses resource names and identity client IDs; cluster seed Secrets are lost and middleware passwords are regenerated.',
     artifact: {
       label: 'Inspect the remaining footprint',
-      code: 'az resource list --resource-group spi-stack-dev1 --output table',
+      code: 'az resource list --resource-group spi-stack-<name> --output table',
     },
     source: 'lifecycle',
     here: {
@@ -425,7 +425,7 @@ export const componentDetails = {
   running: {
     label: 'The partition pod',
     title: 'Flux reconciles the lock; the pod follows it.',
-    body: 'dev1 is a stack like any other: spi up made it, Flux assembles it, and its deploy identity survives spi down. While partition is pinned to a candidate, the other services keep running their canonical images, so a broken-but-ready candidate can fail a sibling’s suite. Several onboarded forks can share the environment, one service slot each, and a concurrency group serialises runs per service.',
+    body: 'The environment is a stack like any other: spi up made it, Flux assembles it, and its deploy identity survives spi down. While partition is pinned to a candidate, the other services keep running their canonical images, so a broken-but-ready candidate can fail a sibling’s suite. Several onboarded forks can share the environment, one service slot each, and a concurrency group serialises runs per service.',
     artifact: {
       label: 'What the run may read',
       code: 'Role spi-fork-verifier (namespace osdu):\n  deployments, pods, pods/log, events, configmaps, jobs · get/list',
@@ -631,7 +631,7 @@ export const componentDetails = {
     label: 'The version PR',
     title:
       'Release Please proposes a version; nothing ships until a person merges it.',
-    body: 'Every push to main makes Release Please read the conventional commits since the last release, choose the bump from them, and open or update one PR with the new version and changelog. A fix: commit means a patch, a feat: commit a minor bump; the meta commit on a sync says how big the upstream part is. The cache fallback itself was titled “[Azure] Fixes for High API Error Count”, so the bump below is illustrative. This PR is separate from the integration PR and can wait as long as the team likes; the candidate digests already exist and dev1 has already been borrowed for them.',
+    body: 'Every push to main makes Release Please read the conventional commits since the last release, choose the bump from them, and open or update one PR with the new version and changelog. A fix: commit means a patch, a feat: commit a minor bump; the meta commit on a sync says how big the upstream part is. The cache fallback itself was titled “[Azure] Fixes for High API Error Count”, so the bump below is illustrative. This PR is separate from the integration PR and can wait as long as the team likes; the candidate digests already exist and the stack has already been borrowed for them.',
     artifact: {
       label: 'What decides the bump',
       code: 'fix:   → patch   (illustrative)\nfeat:  → minor\nfeat!: → major\nchore:, docs: → no bump',
@@ -659,10 +659,10 @@ export const componentDetails = {
     },
     source: 'validation',
   },
-  'dev1-slot': {
-    label: 'A slot in dev1',
+  'stack-slot': {
+    label: 'A slot in the stack',
     title: 'The stack is borrowed for the candidate, not for the release.',
-    body: 'After the push, Deploy Gate decides without credentials whether this run may borrow the environment: only push and pull_request events, only same-repository PRs, not Dependabot, not fork_upstream, and only when the five onboarding values, the descriptor, and a pushed image exist. If it may, the run pins the candidate digest into dev1’s image lock, checks the pod runs it, runs the declared suites, and restores the canonical image. View 06 follows that run step by step. The lane is the newer template’s; the reference partition fork has not adopted it or written its descriptor yet, so from here the example is illustrative.',
+    body: 'After the push, Deploy Gate decides without credentials whether this run may borrow the environment: only push and pull_request events, only same-repository PRs, not Dependabot, not fork_upstream, and only when the five onboarding values, the descriptor, and a pushed image exist. If it may, the run pins the candidate digest into the environment’s image lock, checks the pod runs it, runs the declared suites, and restores the canonical image. View 06 follows that run step by step. The lane is the newer template’s; the reference partition fork has not adopted it or written its descriptor yet, so from here the example is illustrative.',
     artifact: {
       label: 'Who may borrow',
       code: 'push | pull_request (same repository)\nnot dependabot[bot], not fork_upstream\nonboarded + .spi/service.yaml + image pushed',
@@ -682,7 +682,7 @@ export const componentDetails = {
   'release-tag': {
     label: 'The release tag',
     title: 'The version lands on an image that already exists.',
-    body: 'Merging the version PR makes Release Please tag main and publish the release. The workflow adds <release-tag>-upstream-<upstream-version> which records the upstream version the release carries (on partition it reads upstream-v0.0.0, because the lookup expects an upstream main and partition’s is master), then polls GHCR for the sha-* image validation pushed for that commit and adds the semantic-version tag to it. No new build runs. The digest with the version tag is the merge commit’s build, which may differ from the digest a PR run borrowed dev1 for.',
+    body: 'Merging the version PR makes Release Please tag main and publish the release. The workflow adds <release-tag>-upstream-<upstream-version> which records the upstream version the release carries (on partition it reads upstream-v0.0.0, because the lookup expects an upstream main and partition’s is master), then polls GHCR for the sha-* image validation pushed for that commit and adds the semantic-version tag to it. No new build runs. The digest with the version tag is the merge commit’s build, which may differ from the digest a PR run borrowed the stack for.',
     artifact: {
       label: 'Tags on one digest',
       code: 'ghcr.io/azure/osdu-spi-partition:sha-<commit>\nghcr.io/azure/osdu-spi-partition:v1.4.0\ngit tag v1.4.0-upstream-0.29.0',

@@ -19,7 +19,7 @@ export function architectureMap(stage = null, path = 'developer') {
   const workloads = !building || (stage >= 3 && !removed);
   const commands = moment
     ? moment.commands
-    : ['spi up --env dev1', 'spi status --watch'];
+    : ['spi up --env <name>', 'spi status --watch'];
   const state = moment ? moment.state : 'One development and test environment';
   const request = !building && path === 'request';
   const empty = stage === 0;
@@ -41,7 +41,7 @@ export function architectureMap(stage = null, path = 'developer') {
     <section class="azure-boundary" aria-label="Azure cloud boundary">
       <header class="azure-heading"><b>Azure</b><span>Cloud boundary</span></header>
       <section class="stack-boundary ${empty ? 'planned-boundary' : ''}" data-scope="environment" aria-label="Stack environment boundary">
-        <header class="stack-heading">${scope('environment', empty ? 'The planned stack' : removed ? 'The remaining footprint' : 'The deployed stack', `dev1 · ${state}`)}<span class="boundary-label">${empty ? 'Planned' : removed ? 'Retained' : 'Stack boundary'}</span></header>
+        <header class="stack-heading">${scope('environment', empty ? 'The planned stack' : removed ? 'The remaining footprint' : 'The deployed stack', `Your environment · ${state}`)}<span class="boundary-label">${empty ? 'Planned' : removed ? 'Retained' : 'Stack boundary'}</span></header>
         <div class="map-resource-grid">
           <section class="aks-boundary ${empty ? 'planned-boundary' : ''}" data-scope="aks" aria-label="AKS cluster boundary">
             ${scope('aks', 'AKS Automatic', 'Kubernetes boundary')}

@@ -15,7 +15,7 @@ const owners = [
       'Resource group, AKS, networking, identities, Cosmos DB, Service Bus, Storage, Key Vault, and the inputs seeded into the cluster.',
     runs: 'Only when a human or a CI job runs it.',
     boundary: 'Flux does not reconcile Azure infrastructure.',
-    tool: 'spi up --env dev1',
+    tool: 'spi up --env <name>',
   },
   {
     key: 'flux',
@@ -420,7 +420,7 @@ export function roundTripFigure() {
   return `<div class="round-trip">
     <div class="loop-side loop-stack">
       <div class="loop-head"><b>The stack</b><small>a place · views 01 to 03</small></div>
-      ${stop('#running-stack/request', '01', 'A partition lookup', 'arrives at dev1’s gateway')}
+      ${stop('#running-stack/request', '01', 'A partition lookup', 'arrives at your environment’s gateway')}
       <span class="loop-arrow" aria-hidden="true">↓</span>
       ${stop('#bring-up', '02', 'The stack that answers it', 'built by one spi up')}
       <span class="loop-arrow" aria-hidden="true">↓</span>
@@ -435,7 +435,7 @@ export function roundTripFigure() {
       <span class="loop-arrow" aria-hidden="true">↓</span>
       <div class="loop-stop loop-digest"><b>A candidate digest</b><small>ghcr.io/…:sha-*</small></div>
     </div>
-    <div class="loop-cross loop-back"><span aria-hidden="true">←</span><span>pinned into dev1, proved, restored</span></div>
+    <div class="loop-cross loop-back"><span aria-hidden="true">←</span><span>pinned into the stack, proved, restored</span></div>
     <a class="loop-seam" href="#handshake"><span class="loop-number">06</span><b>The handshake</b><small>the image lock, the only object both sides write</small></a>
   </div>`;
 }

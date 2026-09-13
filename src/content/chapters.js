@@ -61,7 +61,7 @@ export const chapters = {
     subtitle: 'Place familiar OSDU concepts',
     headline: 'AKS is one part<span>of the stack.</span>',
     intro:
-      'Your OSDU APIs run inside Kubernetes. CIMPL runs its supporting middleware in Kubernetes too; the Azure implementation reaches Azure data services outside AKS, while Elasticsearch, Redis, and Airflow’s database remain inside the cluster. The stack is both sides together in one resource group, built for development and test. Use opendes, the example data partition, in the dev1 environment.',
+      'Your OSDU APIs run inside Kubernetes. CIMPL runs its supporting middleware in Kubernetes too; the Azure implementation reaches Azure data services outside AKS, while Elasticsearch, Redis, and Airflow’s database remain inside the cluster. The stack is both sides together in one resource group, built for development and test. Use opendes, the example data partition, in the environment you named.',
     premise: 'You know OSDU. Start with the environment around it.',
     figure: 'Follow the boundaries',
     selected: 'environment',
@@ -190,12 +190,12 @@ export const chapters = {
         'The provider checks its cache, then Azure Table Storage in common Storage, returning stored configuration. This lookup does not visit the partition’s Cosmos, blob Storage, or Service Bus.',
       note: 'The answer describes where opendes lives. Other services use it to find their Cosmos, Storage, and Service Bus.',
     },
-    goal: 'You can distinguish the AKS cluster from the Azure resources around it and explain which resources opendes owns or shares in dev1.',
+    goal: 'You can distinguish the AKS cluster from the Azure resources around it and explain which resources opendes owns or shares in the environment.',
     outcomes: [
       {
         headline: 'The stack is AKS plus Azure data services.',
         text: 'A stack is a resource group: AKS plus the Azure data services around it, not the cluster alone.',
-        why: 'spi up --env dev1 creates AKS and its Azure resources together.',
+        why: 'spi up --env <name> creates AKS and its Azure resources together.',
         focus: ['flux', 'gateway', 'cosmos', 'shared-data'],
         scopes: ['environment', 'aks', 'resources'],
         evidence: 'environment',
@@ -238,7 +238,7 @@ export const chapters = {
     headline:
       'spi up creates the environment.<span>Flux continues the rollout.</span>',
     intro:
-      'Build on lesson 01’s wide map: follow dev1 from your workstation into the resource group, AKS cluster, and namespaces, then remove it. Each moment shows who acts and what changes.',
+      'Build on lesson 01’s wide map: follow your environment from your workstation into the resource group, AKS cluster, and namespaces, then remove it. Each moment shows who acts and what changes.',
     figure: 'Follow the environment',
     selected: 'workstation',
     diagram: 'creation',
@@ -302,7 +302,7 @@ export const chapters = {
             {
               click: 'Read “Steady state and teardown”.',
               expect:
-                'Ordinary spi down deletes data and compute; managed identities, the resource group spi-stack-dev1, and its tags survive, so the next spi up reuses the same names. spi down --env dev1 --purge is a separate destructive choice that deletes the group and its identities after external-grant cleanup.',
+                'Ordinary spi down deletes data and compute; managed identities, the resource group spi-stack-<name>, and its tags survive, so the next spi up reuses the same names. spi down --env <name> --purge is a separate destructive choice that deletes the group and its identities after external-grant cleanup.',
               sources: ['lifecycle'],
             },
             {
@@ -468,7 +468,7 @@ export const chapters = {
       remove: 'teardown-green-means-deleted',
     },
     scope:
-      'Illustrated core profile · dev1 / opendes. Running spi up creates billable resources; spi down deletes compute and data. The ≈45–50 min provisioning observations were from centralus; the CLI defaults to westus3. Times vary, and overlapping phases must not be added.',
+      'Illustrated core profile · your environment / opendes. Running spi up creates billable resources; spi down deletes compute and data. The ≈45–50 min provisioning observations were from centralus; the CLI defaults to westus3. Times vary, and overlapping phases must not be added.',
     sources: ['install', 'lifecycle', 'flux', 'identity'],
     question: 'How does one command become all of that, and when is it usable?',
     builds:
@@ -477,15 +477,15 @@ export const chapters = {
       'The same wide picture through time: Azure resources, then the cluster, then the namespaces Flux assembles inside it.',
     example: {
       title: 'Before the lookup can answer',
-      code: 'spi up --env dev1',
+      code: 'spi up --env <name>',
       scopes: ['environment', 'aks', 'resources'],
-      crossing: 'Provision dev1, then look up opendes',
+      crossing: 'Provision the environment, then look up opendes',
       hops: [
         {
           detail: 'aks',
           label: 'AKS',
           step: 'provision',
-          copy: 'Created first, in spi-stack-dev1',
+          copy: 'Created first, in spi-stack-<name>',
         },
         {
           detail: 'shared-data',
@@ -563,7 +563,7 @@ export const chapters = {
     subtitle: 'Find where the Azure code sits',
     headline: 'The provider lives<span>inside the service.</span>',
     intro:
-      'Builds on the partition lookup from 01 and works at one service inside the osdu namespace: partition in dev1. Inside it, a Service Provider Interface (SPI) connects shared behavior to an implementation. The community partition-core-plus implementation and the fork-owned Azure implementation connect that interface to different dependencies. Follow the opendes lookup across the Azure seam.',
+      'Builds on the partition lookup from 01 and works at one service inside the osdu namespace: partition in your environment. Inside it, a Service Provider Interface (SPI) connects shared behavior to an implementation. The community partition-core-plus implementation and the fork-owned Azure implementation connect that interface to different dependencies. Follow the opendes lookup across the Azure seam.',
     figure: 'One service, two source owners',
     selected: 'azureimpl',
     diagram: 'spi',
@@ -835,13 +835,13 @@ export const chapters = {
         label: 'Azure implementation',
         image: 'Azure Partition service image',
         revision: 'osdu-spi-partition 3a5690d · SPI Stack dc2c956',
-        hosting: 'Partition service pod in AKS for dev1',
+        hosting: 'Partition service pod in AKS for your environment',
         process: {
           label: 'Inside the Azure service process',
           steps: [
             {
               label: 'Shared Partition API',
-              detail: 'Receives the opendes lookup in dev1',
+              detail: 'Receives the opendes lookup in your environment',
             },
             {
               label: 'IPartitionService.getPartition',
@@ -878,7 +878,7 @@ export const chapters = {
         'The arrows show lookup and control flow; a cache server does not forward the request to storage, and a cache hit returns early.',
         'The Azure fallback succeeds only when common Table Storage is reachable and opendes exists. This comparison does not assign the same cache-exception behavior to the community implementation.',
         'This lookup returns stored configuration. It does not visit the partition’s Cosmos DB, Blob Storage, or Service Bus.',
-        'The community lane uses opendes only to compare the operation; it does not claim a default CIMPL deployment contains that partition, and dev1 names only the Azure environment.',
+        'The community lane uses opendes only to compare the operation; it does not claim a default CIMPL deployment contains that partition, and only the Azure lane runs in your environment.',
         'Returned properties can differ. Hosting and registry origin do not identify the implementation, and source snapshots do not prove a deployed image digest or acceptance-test result.',
       ],
     },
@@ -1002,7 +1002,7 @@ export const chapters = {
     subtitle: 'Generate, integrate, propose, prove, release',
     headline: 'From an upstream update<span>to a candidate image.</span>',
     intro:
-      'The three branches from 04, followed through one change. Upstream is regenerated at midnight, the cascade carries it into the workspace, a person approves, every eligible commit gets a digest and a turn in dev1, and a release is an optional tag on an image that already exists.',
+      'The three branches from 04, followed through one change. Upstream is regenerated at midnight, the cascade carries it into the workspace, a person approves, every eligible commit gets a digest and a turn in the stack, and a release is an optional tag on an image that already exists.',
     premise: 'Nothing here is a merge you run by hand.',
     figure: 'The branches, in time',
     selected: 'sync-pr',
@@ -1032,7 +1032,7 @@ export const chapters = {
       'What happens to the fix, and to upstream’s change, between midnight and a digest?',
     builds: 'Uses the three branches and the ownership rows from 04.',
     where:
-      'The same repository as 04, followed through five moments. dev1 appears at the fourth, when a candidate digest borrows it.',
+      'The same repository as 04, followed through five moments. The stack appears at the fourth, when a candidate digest borrows it.',
     example: {
       title: 'The fix meets the upstream change',
       code: 'provider/partition-azure + partition-core',
@@ -1063,8 +1063,8 @@ export const chapters = {
         },
         {
           step: 'prove',
-          detail: 'dev1-slot',
-          label: 'A turn in dev1',
+          detail: 'stack-slot',
+          label: 'A turn in the stack',
           copy: 'What 06 follows',
         },
       ],
@@ -1073,7 +1073,7 @@ export const chapters = {
     outcomes: [
       'A sync is a generated tree plus one PR and one tracking issue; upstream is never merged in as text, and the generated commit lands through a reviewed sync PR. The cascade merges main first, then fork_upstream, into the workspace.',
       'The labels on the tracking issue are the state: cascade-active, cascade-blocked, cascade-failed, validated. A blocked cascade is run again after the fix on fork_integration; removing human-required is how a failed one retries.',
-      'The integration PR and the version PR are different PRs. Validation runs on PRs and on pushes to main and fork_integration, pushes a digest for every eligible commit, and dev1 is borrowed for it before any release exists.',
+      'The integration PR and the version PR are different PRs. Validation runs on PRs and on pushes to main and fork_integration, pushes a digest for every eligible commit, and the stack is borrowed for it before any release exists.',
     ],
   },
   handshake: {
@@ -1112,9 +1112,9 @@ export const chapters = {
       'How does that digest reach a running stack, what proves it, and what gives the slot back?',
     builds: 'Uses the candidate digest from 05 and the environment from 01.',
     where:
-      'Both maps at once: a GitHub Actions run on the fork side, and dev1’s image lock, pod, and deploy identity on the stack side.',
+      'Both maps at once: a GitHub Actions run on the fork side, and your environment’s image lock, pod, and deploy identity on the stack side.',
     example: {
-      title: 'Candidate B borrows the partition slot in dev1',
+      title: 'Candidate B borrows the partition slot in the stack',
       code: 'ghcr.io/azure/osdu-spi-partition@sha256:…',
       hops: [
         { detail: 'image', label: 'Candidate B', copy: 'Pushed by Validation' },

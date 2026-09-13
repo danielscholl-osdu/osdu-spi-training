@@ -223,7 +223,7 @@ const lanes = [
   ['fork-integration', 'fork-integration', 'fork_integration', 'workspace'],
   ['main-branch', 'main-branch', 'main', 'protected result'],
   ['image', 'image', 'GHCR', 'sha-* and version tags'],
-  ['stack', 'dev1-slot', 'dev1', 'a slot, borrowed'],
+  ['stack', 'stack-slot', 'The stack', 'a slot, borrowed'],
 ];
 // What happens in each lane at each moment, drawn as one line in the lane.
 // `hold` lines describe an idle lane that still matters to the example.
@@ -319,7 +319,7 @@ function forkDayDiagram(route) {
     <section class="meanwhile" aria-label="Scheduled work beside the day"><span class="group-label">Meanwhile, on their own clocks</span><div class="meanwhile-nodes">${meanwhile.map((item) => node(item.id, item.name, `${item.when} · ${item.copy}`)).join('')}</div></section>`;
 }
 
-// View 06: the seam. The fork's run on the left, dev1 on the right, the lock
+// View 06: the seam. The fork's run on the left, the stack on the right, the lock
 // between. The state panel follows the selected step; main.js mirrors the
 // selected component onto the diagram as data-selected.
 const seamStates = [
@@ -388,7 +388,7 @@ function seamDiagram() {
       ${node('restore', 'Restore', 'spi service reset --if-run · A comes back')}
       ${node('lock-taken', 'What if another run owns the pin?', 'Optional · reset exits 2, writes nothing', 'artifact')}
     </section>
-    <section class="seam-stack"><span class="group-label"><span class="lane-number">3</span>In dev1 · stack objects</span>
+    <section class="seam-stack"><span class="group-label"><span class="lane-number">3</span>In your environment · stack objects</span>
       ${node('trust', 'The deploy identity', 'Federated to this repository · two Roles')}
       ${node('delivery', 'osdu-image-lock', 'The one object the run writes: a pin it owns', 'spi-seam', 'The seam')}
       ${node('running', 'The partition pod', 'Flux reconciles the lock; the pod follows', 'shared-code')}

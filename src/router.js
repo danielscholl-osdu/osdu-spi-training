@@ -21,6 +21,7 @@ export const retiredDetails = {
     'release-pr': ['fork-day', 'review', 'integration-pr'],
     'template-pr': ['fork-day', null, 'template-pr'],
     'settings-apply': ['fork-day', null, 'settings-apply'],
+    'dev1-slot': ['fork-day', 'prove', 'stack-slot'],
   },
 };
 

@@ -50,7 +50,7 @@ export const myths = [
     claim: 'The stack is just AKS.',
     reality:
       'AKS runs the Kubernetes workloads, while the same resource group also contains Azure data services outside the cluster. For opendes, those resources include Cosmos DB, Storage, and Service Bus. The partition lookup shown here does not call those per-partition resources; it reads stored configuration from common Table Storage.',
-    check: 'az resource list -g spi-stack-dev1 --output table',
+    check: 'az resource list -g spi-stack-<name> --output table',
     source: 'architecture',
     route: '#running-stack/developer?detail=environment',
     routeLabel: 'The stack boundary',
@@ -62,7 +62,7 @@ export const myths = [
     reality:
       'bare, minimal, and core select Kubernetes workloads. All three provision the full Azure estate, including the cluster and every PaaS service. A bare deployment simply has nothing running on top.',
     check:
-      'az resource list -g spi-stack-dev1 --query "length(@)"   # same count under any profile',
+      'az resource list -g spi-stack-<name> --query "length(@)"   # same count under any profile',
     source: 'architecture',
     route: '#field-guides?guide=profiles',
     routeLabel: 'Three profiles, one estate',
@@ -86,7 +86,7 @@ export const myths = [
     reality:
       'Cosmos DB data-plane grants are Cosmos-native assignments that do not appear in standard Azure role-assignment queries, and propagation can lag five to fifteen minutes. Services cache clients at startup, so a fresh grant may need a pod restart.',
     check:
-      'az cosmosdb sql role assignment list --account-name <account> -g spi-stack-dev1',
+      'az cosmosdb sql role assignment list --account-name <account> -g spi-stack-<name>',
     source: 'entra',
     route: '#running-stack/developer?detail=cosmos',
     routeLabel: 'Cosmos DB on the map',
@@ -187,7 +187,7 @@ export const myths = [
     theme: 'fork',
     claim: 'A release builds a fresh image for the version tag.',
     reality:
-      'Validation already pushed an immutable sha-* image for the release commit. Release Please tags the commit; the release workflow waits for that image and adds the semantic-version tag to it. The bytes on the merge commit are the bytes that get the version; a PR run borrowed dev1 for its own, earlier digest.',
+      'Validation already pushed an immutable sha-* image for the release commit. Release Please tags the commit; the release workflow waits for that image and adds the semantic-version tag to it. The bytes on the merge commit are the bytes that get the version; a PR run borrowed the stack for its own, earlier digest.',
     check:
       'gh api /orgs/Azure/packages/container/osdu-spi-partition/versions --jq ".[0].metadata.container.tags"',
     source: 'release',
@@ -223,11 +223,11 @@ export const myths = [
     theme: 'fork',
     claim: 'The stack only ever runs released versions of a fork.',
     reality:
-      'Every eligible same-repository PR and every push to main or fork_integration pushes a sha-* digest, and Deploy Gate lets that run borrow dev1 for it. A release is a later, optional tag on one of those digests. The version PR can sit unmerged for weeks while candidates are proved daily.',
+      'Every eligible same-repository PR and every push to main or fork_integration pushes a sha-* digest, and Deploy Gate lets that run borrow the stack for it. A release is a later, optional tag on one of those digests. The version PR can sit unmerged for weeks while candidates are proved daily.',
     check:
       'gh run list --workflow Validation --json headBranch,event,conclusion | head',
     source: 'deployTest',
-    route: '#fork-day/prove?detail=dev1-slot',
+    route: '#fork-day/prove?detail=stack-slot',
     routeLabel: 'The prove moment',
   },
   {

@@ -59,7 +59,8 @@ export const multipleVariantTryIt = {
   variants: [
     {
       label: 'Without Azure',
-      result: 'Confirm the available CLI entry points without creating dev1.',
+      result:
+        'Confirm the available CLI entry points without creating an environment.',
       access: 'workstation setup',
       prerequisites: [
         {
@@ -106,7 +107,8 @@ export const multipleVariantTryIt = {
     },
     {
       label: 'With Azure',
-      result: 'Observe the command that would create dev1 in Azure.',
+      result:
+        'Observe the command that would create your environment in Azure.',
       access: 'Azure resources billed separately',
       accessNote:
         'An Azure subscription and permissions to create resources are required.',
@@ -122,10 +124,10 @@ export const multipleVariantTryIt = {
         cleanup: 'Active cleanup takes about 5 minutes.',
       },
       effects:
-        'This route creates billable Azure resources for dev1 before the steps finish.',
+        'This route creates billable Azure resources for your environment before the steps finish.',
       steps: [
         {
-          command: 'spi up --env dev1',
+          command: 'spi up --env <name>',
           expect: 'The CLI begins the documented environment lifecycle.',
           sources: ['lifecycle'],
         },
@@ -137,8 +139,8 @@ export const multipleVariantTryIt = {
       cleanup: {
         steps: [
           {
-            command: 'spi down --env dev1',
-            expect: 'The CLI begins removal of the dev1 environment.',
+            command: 'spi down --env <name>',
+            expect: 'The CLI begins removal of the environment.',
             sources: ['lifecycle'],
           },
         ],
