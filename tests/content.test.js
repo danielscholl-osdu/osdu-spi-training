@@ -1227,7 +1227,17 @@ test('audio markers are ordered, inside the recording, and point at real views',
     !home.includes('Optional'),
     'the introduction is not labeled optional',
   );
-  assert.match(chapters.start.intro, /Service Provider Interface/);
+  assert.match(chapters.start.intro, /Service Provider Interface \(SPI\)/);
+  assert.equal(
+    chapters.start.intro.split('<p>').length,
+    4,
+    'the opening is three short paragraphs',
+  );
+  assert.ok(
+    !chapters.start.intro.includes('three things') &&
+      !chapters.start.intro.includes('all three'),
+    'the naming convention belongs to the cards',
+  );
   assert.ok(
     chapters.start.intro.includes(
       'target="_blank" rel="noopener noreferrer">Community Implementation (CIMPL)</a>',

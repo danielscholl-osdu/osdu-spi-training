@@ -454,7 +454,11 @@ function renderChapterFrame(route, scene) {
   document.getElementById('premise').textContent = scene.premise || '';
   document.getElementById('premise').hidden = structured || !scene.premise;
   document.getElementById('headline').innerHTML = scene.headline;
-  document.getElementById('introduction').innerHTML = scene.intro;
+  document.getElementById('introduction').innerHTML = scene.intro.startsWith(
+    '<p',
+  )
+    ? scene.intro
+    : `<p>${scene.intro}</p>`;
   const subhead = document.getElementById('subhead');
   subhead.textContent = scene.subhead || '';
   subhead.hidden = !scene.subhead;

@@ -37,7 +37,7 @@ export const chapters = {
     subhead:
       'The stack, the provider inside each service, and the engineering that keeps them current.',
     intro:
-      'A stack in your subscription runs the services. Inside each service, a provider is where shared code hands off to Azure. Forks with scheduled workflows keep that provider synced with upstream, built into images, and tested in a running stack. That hand-off seam is the Service Provider Interface, and SPI is the name this site uses for all three. Where a choice differs from the OSDU <a href="https://community.opengroup.org/osdu/platform/deployment-and-operations/cimpl-stack" target="_blank" rel="noopener noreferrer">Community Implementation (CIMPL)</a>, the lessons say so.',
+      '<p>The Azure stack runs OSDU services alongside the resources they depend on. Inside each service, shared OSDU code calls an Azure provider through the Service Provider Interface (SPI).</p><p>Service forks maintain that Azure provider code while keeping the shared code current with upstream OSDU. The engineering workflows bring in those updates, build service images, and test changes against a running Azure stack.</p><p>The lessons use the open-source OSDU <a href="https://community.opengroup.org/osdu/platform/deployment-and-operations/cimpl-stack" target="_blank" rel="noopener noreferrer">Community Implementation (CIMPL)</a> as the reference when explaining what the Azure implementation does differently.</p>',
     hero: {
       image: 'start/machinery.webp',
       width: 656,
