@@ -1064,8 +1064,6 @@ test('audio markers are ordered, inside the recording, and point at real views',
   for (const audio of episodes) {
     assert.ok(audio.duration > 0);
     assert.match(audio.file, /^audio\/.+\.m4a$/);
-    if (audio.notebook)
-      assert.equal(new URL(audio.notebook).protocol, 'https:');
     const publicFile = new URL(`../public/${audio.file}`, import.meta.url);
     assert.ok(existsSync(publicFile), `missing ${fileURLToPath(publicFile)}`);
     let previous = -1;

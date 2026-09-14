@@ -619,7 +619,7 @@ function listenPage(route) {
         <label class="listen-speed">Speed <select data-player="rate"><option value="0.8">0.8×</option><option value="1" selected>1×</option><option value="1.25">1.25×</option><option value="1.5">1.5×</option><option value="2">2×</option></select></label>
       </div>
       <input type="range" class="listen-seek" data-player="seek" min="0" max="${Math.floor(episode.duration)}" value="${startAt || 0}" step="1" aria-label="Seek" />
-      <p class="listen-origin">${episode.origin}. Where it differs from the documentation, the marker’s source check says so.${episode.notebook ? ` · <a href="${episode.notebook}" target="_blank" rel="noopener noreferrer">Open the notebook ↗</a>` : ''} · <a href="${episode.file}" download>Download audio ↗</a></p>
+      <p class="listen-origin">${episode.origin}. Where it differs from the documentation, the marker’s source check says so.</p>
     </section>
     <section class="listen-markers" aria-label="Chapter markers">
       <div class="section-heading"><h2>Markers</h2></div>

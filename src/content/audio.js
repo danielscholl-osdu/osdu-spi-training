@@ -569,7 +569,6 @@ export const episodes = [
     book: 'The frame · twenty-two minutes',
     file: 'audio/microsofts-architectural-divorce-from-osdu.m4a',
     duration: 1323,
-    notebook: null,
     origin:
       'Generated with NotebookLM from the introduction source, Azure SPI: An Introduction, under the title “Microsoft’s architectural divorce from OSDU”. The narration opens with a ninety-second analogy and uses a divorce metaphor the site does not; the marker notes carry the corrections',
     summary:
@@ -584,7 +583,6 @@ export const episodes = [
     book: 'The frame · two minutes',
     file: 'audio/rebuilding-osdu-for-real-azure-infrastructure.m4a',
     duration: 112,
-    notebook: null,
     origin:
       'Generated with NotebookLM as an audio brief from the introduction source, Azure SPI: An Introduction',
     summary:
@@ -602,8 +600,6 @@ export const episodes = [
     art: 'listen/stack.webp',
     file: 'audio/engineering-the-osdu-spi-stack-on-azure.m4a',
     duration: 3516,
-    notebook:
-      'https://notebook.google.com/notebook/b54aaf01-b8c2-4d39-98e9-112ed9dc92b7/artifact/5c1f61ff-cf85-4a1b-813d-d80ae3d96a21',
     origin: 'Generated with NotebookLM from the SPI Stack guide',
     summary:
       'Provisioning, Flux, identity, and the shared environment that tests service changes, through to a full bring-up. The one to start with if the stack is your job.',
@@ -620,7 +616,6 @@ export const episodes = [
     art: 'listen/fork.webp',
     file: 'audio/why-azure-3d-prints-git-branches.m4a',
     duration: 4140,
-    notebook: null,
     origin:
       'Generated with NotebookLM from the osdu-spi guide, under the title “Why Azure 3D-prints Git branches”',
     summary:

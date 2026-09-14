@@ -8,7 +8,7 @@ Install the pinned tools with `npm ci`, then start `npm run dev`. Work in `src/`
 | ----------------------------------------------------------------------------------- | ---------------------------------- |
 | Chapter titles, introductions, comparison records, source keys, or navigation order | `src/content/chapters.js`          |
 | Optional Try it activity data                                                       | `src/content/chapters.js`          |
-| Episodes, their markers, source-check notes, and notebook links                     | `src/content/audio.js`             |
+| Episodes, their markers, and source-check notes                                     | `src/content/audio.js`             |
 | Things that are not true                                                            | `src/content/myths.js`             |
 | Poster captions, takeaways, and field-guide summaries                               | `src/content/posters.js`           |
 | A native field guide or specialized comparison drawing                              | `src/components/infographics.js`   |
