@@ -2124,45 +2124,60 @@ body:has(.audio-dock:not([hidden])) main {
 }
 
 /* Listen: episodes and cues */
-.episode-tabs {
+.episode-cards {
   display: grid;
-  grid-template-columns: repeat(4, minmax(0, 1fr));
-  gap: 8px;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 12px;
   margin-bottom: 16px;
 }
-.episode-tab {
-  display: grid;
-  gap: 2px;
-  padding: 10px 12px;
+.episode-card {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding: 14px 16px;
   border: 1px solid var(--line);
-  border-radius: 8px;
+  border-top: 5px solid var(--owner);
+  border-radius: 10px;
   background: #fff;
+  color: var(--ink);
   text-decoration: none;
-  color: var(--ink);
 }
-.episode-tab b {
-  font-size: 15px;
+.episode-card img {
+  flex: none;
+  width: 88px;
+  height: 88px;
 }
-.episode-tab small {
-  font-size: 12px;
-  color: var(--muted);
+.episode-card-body {
+  display: grid;
+  gap: 4px;
 }
-.episode-tab[aria-current] {
+.episode-kicker {
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--owner);
+}
+.episode-card b {
+  font-family: Manrope, var(--font);
+  font-size: 18px;
+  font-weight: 800;
+  letter-spacing: -0.02em;
+  line-height: 1.25;
+}
+.episode-card small {
+  font-size: 13.5px;
+  line-height: 1.5;
+  color: #3e596e;
+}
+.episode-card:hover {
+  border-color: var(--blue);
+  border-top-color: var(--owner);
+}
+.episode-card[aria-current] {
   border-color: var(--navy);
-  background: var(--navy);
-  color: #fff;
-}
-.episode-tab[aria-current] small {
-  color: #b3deef;
-}
-.listen-episode-summary {
-  margin: 0 0 12px;
-  font-size: 15px;
-  line-height: 1.6;
-  color: var(--muted);
-}
-.listen-episode-summary b {
-  color: var(--ink);
+  border-top-color: var(--owner);
+  background: #eef4f8;
 }
 .listen-chips {
   display: grid;
@@ -2238,8 +2253,8 @@ body:has(.audio-dock:not([hidden])) main {
   background: #e9f2f8;
 }
 @media (max-width: 760px) {
-  .episode-tabs {
-    grid-template-columns: 1fr 1fr;
+  .episode-cards {
+    grid-template-columns: 1fr;
   }
 }
 

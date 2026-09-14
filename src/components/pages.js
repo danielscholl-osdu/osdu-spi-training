@@ -3,7 +3,12 @@ import { chapters, chapterGroups } from '../content/chapters.js';
 import { myths, mythThemes } from '../content/myths.js';
 import { suppliedPosters, nativeGuides } from '../content/posters.js';
 import { sources } from '../content/sources.js';
-import { episodes, episodeById, frameVideo } from '../content/audio.js';
+import {
+  episodes,
+  deepDives,
+  episodeById,
+  frameVideo,
+} from '../content/audio.js';
 import {
   infographics,
   ownerLegend,
@@ -499,14 +504,13 @@ export function mythCallout(id, chapterKey) {
 function listenPage(route) {
   const episode = episodeById(route?.episode);
   const startAt = route?.time ?? null;
-  const tabs = episodes
+  const cards = deepDives
     .map(
       (entry) =>
-        `<a class="episode-tab" href="#listen?episode=${entry.id}" ${entry === episode ? 'aria-current="page"' : ''}><b>${entry.short}</b><small>${entry.book} · ${Math.round(entry.duration / 60)} min</small></a>`,
+        `<a class="episode-card owner-${entry.owner}" href="#listen?episode=${entry.id}" ${entry === episode ? 'aria-current="page"' : ''}><img src="${entry.art}" alt="" width="88" height="88" loading="lazy" /><span class="episode-card-body"><span class="episode-kicker">${escapeHtml(entry.book)} · ${Math.round(entry.duration / 60)} min</span><b>${escapeHtml(entry.title)}</b><small>${escapeHtml(entry.summary)}</small></span></a>`,
     )
     .join('');
-  return `<nav class="episode-tabs" aria-label="Episodes">${tabs}</nav>
-    <p class="listen-episode-summary"><b>${episode.title}.</b> ${episode.summary}</p>
+  return `<nav class="episode-cards" aria-label="Episodes">${cards}</nav>
     <section class="listen-hero">
       <div class="listen-controls" id="listen-controls">
         <button type="button" class="listen-play" data-player="toggle" data-episode="${episode.id}" aria-label="Play ${episode.title}"><span class="play-glyph" aria-hidden="true">▶</span><span data-player="label">Play</span></button>
@@ -514,10 +518,10 @@ function listenPage(route) {
         <label class="listen-speed">Speed <select data-player="rate"><option value="0.8">0.8×</option><option value="1" selected>1×</option><option value="1.25">1.25×</option><option value="1.5">1.5×</option><option value="2">2×</option></select></label>
       </div>
       <input type="range" class="listen-seek" data-player="seek" min="0" max="${Math.floor(episode.duration)}" value="${startAt || 0}" step="1" aria-label="Seek" />
-      <p class="listen-origin">${episode.origin}${episode.notebook ? ` · <a href="${episode.notebook}" target="_blank" rel="noopener noreferrer">Open the notebook ↗</a>` : ''} · <a href="${episode.file}" download>Download audio ↗</a></p>
+      <p class="listen-origin">${episode.origin}. Where it differs from the documentation, the marker’s source check says so.${episode.notebook ? ` · <a href="${episode.notebook}" target="_blank" rel="noopener noreferrer">Open the notebook ↗</a>` : ''} · <a href="${episode.file}" download>Download audio ↗</a></p>
     </section>
     <section class="listen-markers" aria-label="Chapter markers">
-      <div class="section-heading"><span class="guide-kicker">Markers</span><h2>Where the conversation goes, and where to look</h2><p>Each marker seeks the audio. The link beside it opens the matching view without stopping playback. A source check says where the narration and the documentation part ways.</p></div>
+      <div class="section-heading"><h2>Markers</h2></div>
       <ol class="marker-list">${episode.markers
         .map(
           (
@@ -532,7 +536,7 @@ function listenPage(route) {
         .join('')}</ol>
     </section>
     <section class="listen-transcript" aria-label="Transcript">
-      <div class="section-heading"><span class="guide-kicker">Transcript</span><h2>Read along</h2><p>Machine transcription; timestamps seek the audio. Read it with the marker notes in mind.</p></div>
+      <div class="section-heading"><h2>Transcript</h2></div>
       <details class="transcript-details"><summary>Show the transcript <span aria-hidden="true">+</span></summary>
       <div class="transcript" id="transcript">${episode.transcript
         .map(

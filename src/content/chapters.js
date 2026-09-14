@@ -1249,14 +1249,17 @@ export const chapters = {
     page: 'listen',
     group: 'supplement',
     title: 'Audio deep dives',
-    subtitle: 'Four recordings',
-    headline:
-      'Listen to the introduction<span>or a technical discussion.</span>',
-    intro:
-      'Generated recordings. The orientation spends twenty-two minutes on why Azure SPI exists; the brief covers the same ground in two. The stack episode and the fork episode go deep on their halves. Play one while you explore: each marker opens the matching view, and the maps carry short cues back into the recordings.',
-    premise: 'Keeps playing while you move around the site.',
-    scope:
-      'The narration is generated from the guides, not from the repositories. Where it rounds a number, mishears a command, or overstates a guarantee, the marker notes say what the source documentation actually claims.',
+    subtitle: 'Two recordings',
+    headline: 'Two deep dives into the machinery',
+    subhead:
+      'An hour on the stack, then an hour inside the fork. Keep exploring while it plays: every marker opens the matching lesson.',
+    intro: '',
+    hero: {
+      image: 'listen/headphones.webp',
+      width: 940,
+      height: 320,
+      alt: 'Headphones whose ear cups are the stack gear and the fork gear, with a sound wave between them.',
+    },
     sources: ['architecture', 'lifecycle', 'identity', 'flux'],
   },
   'field-guides': {

@@ -8,7 +8,12 @@ import { creationMoments } from '../src/content/creation-moments.js';
 import { sources } from '../src/content/sources.js';
 import { myths } from '../src/content/myths.js';
 import { suppliedPosters, nativeGuides } from '../src/content/posters.js';
-import { episodes, frameVideo } from '../src/content/audio.js';
+import {
+  episodes,
+  deepDives,
+  defaultEpisode,
+  frameVideo,
+} from '../src/content/audio.js';
 import { diagramRenderers } from '../src/components/diagrams.js';
 import {
   architectureMap,
@@ -249,8 +254,12 @@ function verifyRoute(href, context) {
 
 test('chapters connect to renderers, explanations, and named sources', () => {
   for (const [id, chapter] of Object.entries(chapters)) {
-    for (const field of ['title', 'subtitle', 'headline', 'intro'])
+    for (const field of ['title', 'subtitle', 'headline'])
       assert.ok(chapter[field]?.trim(), `${id} is missing ${field}`);
+    assert.ok(
+      chapter.intro?.trim() || chapter.subhead?.trim(),
+      `${id} opens with neither an intro nor a subhead`,
+    );
     assert.ok(chapter.sources.length);
     for (const key of chapter.sources)
       assert.ok(sources[key], `${id}: missing source ${key}`);
@@ -1050,11 +1059,42 @@ test('audio markers are ordered, inside the recording, and point at real views',
       );
     }
   }
-  assert.equal(
-    episodes[0].id,
-    'orientation',
-    'the orientation frames the rest',
+  assert.deepEqual(
+    deepDives.map((episode) => episode.id),
+    ['stack', 'branches'],
+    'the page offers the two deep dives, stack first',
   );
+  assert.equal(defaultEpisode.id, 'stack', 'the stack plays by default');
+  for (const episode of deepDives) {
+    const art = new URL(`../public/${episode.art}`, import.meta.url);
+    assert.ok(existsSync(art), `${episode.id}: missing ${fileURLToPath(art)}`);
+  }
+  const listenPage = pageRenderers.listen(parseRoute('#listen'));
+  assert.equal(
+    listenPage.split('class="episode-card owner-').length - 1,
+    2,
+    'two episode cards',
+  );
+  assert.ok(
+    !listenPage.includes('episode=orientation') &&
+      !listenPage.includes('episode=brief'),
+    'the orientation and the brief are not offered on the page',
+  );
+  assert.ok(
+    pageRenderers
+      .listen(parseRoute('#listen?episode=orientation'))
+      .includes('Why Azure OSDU needs service forks'),
+    'the published orientation route still plays',
+  );
+  assert.ok(
+    !listenPage.includes('guide-kicker') && !listenPage.includes('Read along'),
+    'plain Markers and Transcript headings',
+  );
+  const listenHero = new URL(
+    `../public/${chapters.listen.hero.image}`,
+    import.meta.url,
+  );
+  assert.ok(existsSync(listenHero), 'the headphones strip exists');
   const home = pageRenderers.home(parseRoute('#start'));
   assert.ok(
     home.includes('data-listen-episode="brief"') &&

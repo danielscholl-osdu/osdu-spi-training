@@ -596,7 +596,10 @@ export const episodes = [
     id: 'stack',
     title: 'Engineering the OSDU SPI Stack on Azure',
     short: 'The stack',
-    book: 'Views 01 to 03, then the seam',
+    book: 'Lessons 01 to 03',
+    deepDive: true,
+    owner: 'cli',
+    art: 'listen/stack.webp',
     file: 'audio/engineering-the-osdu-spi-stack-on-azure.m4a',
     duration: 3516,
     notebook:
@@ -611,12 +614,15 @@ export const episodes = [
     id: 'branches',
     title: 'How the fork receives upstream changes',
     short: 'The fork, in depth',
-    book: 'Views 04 and 05, then the seam',
+    book: 'Lessons 04 to 06',
+    deepDive: true,
+    owner: 'fork',
+    art: 'listen/fork.webp',
     file: 'audio/why-azure-3d-prints-git-branches.m4a',
     duration: 4140,
     notebook: null,
     origin:
-      'Generated with NotebookLM from the complete osdu-spi guide, under the title “Why Azure 3D-prints Git branches”',
+      'Generated with NotebookLM from the osdu-spi guide, under the title “Why Azure 3D-prints Git branches”',
     summary:
       'The engineering system on its own: generated branches, labels as state, the meta commit, the Maven trap, the pull_request_target lesson, and the AI fallback that hid its own failure.',
     markers: withEnds(branchesMarkers, 4140),
@@ -646,7 +652,10 @@ export const frameVideo = {
   ],
 };
 
-export const defaultEpisode = episodes[0];
+// The two long recordings are the ones the Audio deep dives page offers. The
+// orientation and the brief stay here for cues and their published routes.
+export const deepDives = episodes.filter((episode) => episode.deepDive);
+export const defaultEpisode = deepDives[0];
 export const audio = defaultEpisode;
 export const episodeById = (id) =>
   episodes.find((episode) => episode.id === id) || defaultEpisode;

@@ -217,7 +217,8 @@ body[data-page='listen'] .rail,
 body[data-page='guides'] .rail {
   display: none;
 }
-body[data-page='home'] main {
+body[data-page='home'] main,
+body[data-page='listen'] main {
   max-width: 1000px;
   margin-inline: auto;
 }
@@ -231,6 +232,28 @@ body[data-page='home'] .intro {
 body[data-page='home'] .intro h1,
 body[data-page='home'] .subhead {
   grid-column: 1 / -1;
+}
+body[data-page='listen'] .intro {
+  grid-template-columns: minmax(0, 1.15fr) minmax(0, 1fr);
+  align-items: center;
+  column-gap: 40px;
+}
+body[data-page='listen'] .intro h1 {
+  grid-column: 1;
+  grid-row: 1;
+}
+body[data-page='listen'] .intro .subhead {
+  grid-column: 1;
+  grid-row: 2;
+  max-width: 560px;
+}
+body[data-page='listen'] #hero-image {
+  grid-column: 2;
+  grid-row: 1 / span 2;
+  justify-self: end;
+  max-width: 440px;
+  margin: 0;
+  padding: 6px 14px;
 }
 body[data-page='home'] .intro .subhead {
   max-width: 860px;
@@ -856,9 +879,14 @@ details[open] summary span {
     padding: 11px 2px;
   }
   .intro,
-  body[data-page='home'] .intro {
+  body[data-page='home'] .intro,
+  body[data-page='listen'] .intro {
     display: block;
     margin-bottom: 22px;
+  }
+  body[data-page='listen'] #hero-image {
+    max-width: 520px;
+    margin-top: 18px;
   }
   body[data-page='home'] #introduction > p:first-child {
     margin-top: 14px;

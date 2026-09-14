@@ -436,7 +436,8 @@ function renderChapterFrame(route, scene) {
   document.getElementById('chapter-kicker').textContent = structured
     ? `Lesson ${positionLabel(key)}`
     : kicker;
-  document.getElementById('chapter-kicker').hidden = scene.page === 'home';
+  document.getElementById('chapter-kicker').hidden =
+    scene.page === 'home' || scene.group === 'supplement';
   const hero = document.getElementById('hero-image');
   if (scene.hero) {
     hero.src = scene.hero.image;
@@ -459,6 +460,7 @@ function renderChapterFrame(route, scene) {
   )
     ? scene.intro
     : `<p>${scene.intro}</p>`;
+  document.getElementById('introduction').hidden = !scene.intro;
   const subhead = document.getElementById('subhead');
   subhead.textContent = scene.subhead || '';
   subhead.hidden = !scene.subhead;
@@ -471,7 +473,8 @@ function renderChapterFrame(route, scene) {
     )
     .join('');
   document.getElementById('source-details').open = structured;
-  document.getElementById('source-details').hidden = scene.page === 'home';
+  document.getElementById('source-details').hidden =
+    scene.page === 'home' || scene.page === 'listen';
   document.getElementById('chapter-position').textContent = positionLabel(key);
   const next = nextChapter(key);
   const link = document.getElementById('next-link');
