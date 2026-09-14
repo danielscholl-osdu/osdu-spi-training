@@ -6,7 +6,7 @@ The current recording opens with a story about a green check that hid a failure,
 
 The spoken text is kept separately in `docs/narration/deep-dive-fork.md`. That file is what a narrator or generator receives; this document carries the editorial record around it.
 
-**Length:** 4,407 words of narration, about 29.4 minutes at 150 words a minute and 33.9 at 130. Target: 25 to 35 minutes; the length follows the content and is not forced to a figure.
+**Length:** 4,432 words of narration, about 29.5 minutes at 150 words a minute and 34.1 at 130. Target: 25 to 35 minutes; the length follows the content and is not forced to a figure.
 
 **Structure.** The narration is spoken in five parts, and each part heading is a spoken transition. The 25 chapter headings inside them are the marker titles the site will use for seeking; they are not announced. Target timestamps are at 150 words a minute.
 
@@ -33,7 +33,7 @@ The spoken text is kept separately in `docs/narration/deep-dive-fork.md`. That f
 13. Versioning without rewriting history · 14:24 (186 words)
 14. Never a bare -P · 15:38 (147 words)
 15. Why the template supplies the Dockerfile · 16:37 (139 words)
-16. Credentials: app tokens and the guard clause · 17:32 (231 words)
+16. Credentials: app tokens and the guard clause · 17:32 (256 words)
 17. The pull_request_target lesson · 19:05 (144 words)
 18. No coverage gate · 20:02 (72 words)
 
@@ -176,7 +176,7 @@ The engineering system now owns the service Dockerfile. The template delivers on
 
 The workflows write commits, publish images, and log in to Azure, so their credentials are the attack surface. The workflows use different credentials for different jobs. GitHub App tokens support repository automation: the sync, the cascade, the release, and template sync write commits and open pull requests with short-lived App installation tokens minted at the moment the job runs, decoupled from any person, where a personal access token would tie the pipeline to one account and expire with it. The image-publishing job uses GITHUB_TOKEN with package-write permission, and it is the only job in Validation with registry write. The deployment job uses GitHub OIDC to obtain Azure access, and it runs only when the gate's output says it may.
 
-When a job may hold a credential is enforced in the workflow, not in review. The publishing job's condition is the trust clause: a push or a same-repository pull request, never Dependabot, never pull_request_target, never the generated fork_upstream branch. The gate that admits the deployment job carries the same clause in full, and the deployment job runs on the gate's output. The decision record defends writing the clause out rather than relying on a reviewer to notice a missing guard. The validate-only image build runs with read-only contents permission, no registry write, no Azure login, and never sets a checkout ref, so it cannot be turned into a privileged lane by mistake.
+When a job may hold a credential is enforced in the workflow, not in review. The publishing job's condition is the trust clause: a push or a same-repository pull request, never Dependabot, never pull_request_target, never the generated fork_upstream branch. The one exception is a manual run with the force flag set, which a maintainer starts on purpose; the deployment gate refuses manual dispatch altogether. The gate that admits the deployment job carries the same clause in full, and the deployment job runs on the gate's output. The decision record defends writing the clause out rather than relying on a reviewer to notice a missing guard. The validate-only image build runs with read-only contents permission, no registry write, no Azure login, and never sets a checkout ref, so it cannot be turned into a privileged lane by mistake.
 
 #### 17. The pull_request_target lesson · target 19:05
 
