@@ -1,0 +1,278 @@
+<!DOCTYPE html>
+<!--
+  Borrow, Prove, Restore, built for the OSDU Fieldnotes training site.
+  Render: SCALE=2 bash ~/.claude/skills/infographic/scripts/render.sh borrow-prove-restore-site.html borrow-prove-restore-site.png 1800x1200
+  Web copy: sips -Z 2000 -s format jpeg -s formatOptions 85 borrow-prove-restore-site.png --out public/posters/borrow-prove-restore.jpg
+  Sources: osdu-spi ADR-040, ADR-041, architecture/deploy_test.md; osdu-spi-stack docs/design/fork-deployment.md, ADR-031.
+  Status reviewed September 2026. Fork-owned source is orange (base.css --fork); the dashed gray band is not yet wired.
+  Edit this HTML and re-render; never edit the PNG.
+-->
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Borrow, Prove, Restore</title>
+<style>
+  :root{
+    --bg:#f7f9fc; --ink:#172b3f; --muted:#60758a;
+    --hair:#cbd6e2; --card:#fff; --cardline:#d8e1eb;
+    --k:#173f68; --kt:#edf4fb;                 /* default accent = navy */
+  }
+  .k-blue {--k:#1479c9; --kt:#ebf5fd;}
+  .k-green{--k:#4d8d36; --kt:#eff7eb;}
+  .k-amber{--k:#b57400; --kt:#fff6e5;}
+  .k-red  {--k:#c0392b; --kt:#fdeeec;}
+  .k-navy {--k:#173f68; --kt:#edf4fb;}
+  .k-gray {--k:#718398; --kt:#f1f4f7;}
+
+  *{box-sizing:border-box;}
+  html,body{margin:0; padding:0; background:var(--bg);}
+  body{font-family:'Inter',system-ui,-apple-system,'Segoe UI',Helvetica,Arial,sans-serif;
+       color:var(--ink); -webkit-font-smoothing:antialiased;}
+  .sheet{width:1800px; min-height:1200px; background:var(--bg); padding:42px 72px 44px;
+         display:flex; flex-direction:column; gap:24px;}
+
+  /* ---------- header plate ---------- */
+  .plate{display:flex; justify-content:space-between; align-items:flex-start; gap:48px;}
+  .kicker{font-size:17px; font-weight:800; letter-spacing:3.5px; text-transform:uppercase; color:#1479c9;}
+  .title{font-size:48px; font-weight:800; letter-spacing:-1px; margin:10px 0 0; line-height:1.04;}
+  .subtitle{font-size:25px; font-weight:450; color:var(--muted); margin:8px 0 0;}
+  .purpose{background:#173f68; color:#fff; border-radius:14px; padding:13px 28px;
+           text-align:center; min-width:400px; flex:0 0 auto;}
+  .purpose .p-label{font-size:16px; font-weight:800; letter-spacing:3.2px; text-transform:uppercase; opacity:.72;}
+  .purpose .p-line{font-size:23px; font-weight:800; margin-top:8px;}
+  .purpose .p-fine{font-size:16px; font-weight:450; opacity:.75; margin-top:5px;}
+  .rule{height:3px; background:#173f68; margin-top:-10px;}
+
+  /* ---------- bands ---------- */
+  .band{display:flex; flex-direction:column; gap:14px;}
+  .band-label{font-size:20px; font-weight:800; letter-spacing:2.5px; text-transform:uppercase; color:var(--muted);}
+  .band-label.ruled{border-bottom:2px solid var(--hair); padding-bottom:8px;}
+  .band-note{font-size:19px; color:var(--ink); margin-top:-6px;}
+  .row{display:flex; gap:20px; align-items:stretch;}
+  .row.center{align-items:center;}
+  .cols{display:grid; gap:24px; align-items:start;}   /* set grid-template-columns inline */
+
+  /* ---------- boxes ---------- */
+  .box{background:var(--card); border:2px solid var(--cardline); border-radius:16px;
+       padding:15px 22px; display:flex; flex-direction:column; gap:4px; justify-content:center;}
+  .box.tint{background:var(--kt); border:3px solid var(--k);}
+  .box.rail{box-shadow:inset 10px 0 0 0 var(--k); padding-left:36px;}
+  .box.dashed{border-style:dashed;}
+  .box.solid{background:var(--k); border-color:var(--k); color:#fff;}
+  .box.solid .sub,.box.solid .fine{color:rgba(255,255,255,.78);}
+  .box.solid .eyebrow{color:rgba(255,255,255,.75);}
+  .box.mid{align-items:center; text-align:center;}
+  .grow{flex:1;}
+
+  .eyebrow{font-size:16px; font-weight:800; letter-spacing:2.6px; text-transform:uppercase; color:var(--k);}
+  .name{font-size:27px; font-weight:800; line-height:1.15;}
+  .name-sm{font-size:21px; font-weight:800; line-height:1.2;}
+  .sub{font-size:19px; color:var(--muted); line-height:1.32;}
+  .fine{font-size:16px; color:var(--muted); line-height:1.32;}
+  .ink{color:var(--ink);} .acc{color:var(--k);} .b{font-weight:800;}
+  .code{font-family:ui-monospace,'SFMono-Regular',Consolas,'Liberation Mono',monospace; letter-spacing:-.02em;}
+  .tag{font-size:15px; font-weight:800; letter-spacing:1.6px; text-transform:uppercase; color:var(--k);}
+  .head-row{display:flex; justify-content:space-between; align-items:baseline; gap:16px;}
+
+  /* ---------- connectors ---------- */
+  .arw{width:46px; height:24px; color:var(--k); flex:0 0 auto; align-self:center;}
+  .arw line{stroke:currentColor; stroke-width:4;}
+  .arw polygon{fill:currentColor;}
+  .arw.down{transform:rotate(90deg);}
+  .hair{height:2px; background:var(--hair); flex:0 0 26px; align-self:center;}
+
+  /* ---------- numbered node track ---------- */
+  .nodes{display:flex;}
+  .node{flex:1; display:flex; flex-direction:column; align-items:center; text-align:center; gap:10px;}
+  .n-title{font-size:21px; font-weight:800;}
+  .n-mid{position:relative; width:100%; height:44px; display:flex; align-items:center; justify-content:center;}
+  .n-mid::before{content:""; position:absolute; top:50%; left:0; right:0; height:4px;
+                 transform:translateY(-50%); background:var(--k);}
+  .node:first-child .n-mid::before{left:50%;}
+  .node:last-child  .n-mid::before{right:50%;}
+  .n-dot{position:relative; width:54px; height:54px; border-radius:50%; background:var(--k); color:#fff;
+         display:grid; place-items:center; font-size:24px; font-weight:800;}
+  .n-sub{font-size:16px; color:var(--muted); line-height:1.3; padding:0 8px;}
+
+  /* ---------- grouped container ---------- */
+  .group{background:#fff; border:2px solid var(--cardline); border-radius:20px; padding:20px;
+         display:flex; flex-direction:column; gap:14px;}
+  .group.tint{background:var(--kt); border:3px dashed var(--k);}
+  .group-label{font-size:18px; font-weight:800; letter-spacing:2.4px; text-transform:uppercase; color:var(--muted);}
+  .group.tint .group-label{color:var(--k);}
+
+  /* ---------- callout ---------- */
+  .callout{background:var(--kt); border:2px solid var(--k); border-radius:14px;
+           padding:14px 22px; font-size:19px; line-height:1.4;}
+  .callout .fine{margin-top:4px;}
+
+  /* ---------- ledger (label / meaning rows) ---------- */
+  .ledger{display:grid; grid-template-columns:max-content 1fr;}
+  .ledger > div{padding:11px 0; border-bottom:2px solid var(--hair);}
+  .ledger > .lg-k{padding-right:38px;}
+  .ledger > div:nth-last-child(-n+2){border-bottom:0;}
+  .lg-k{font-size:17px; font-weight:800; letter-spacing:1.6px; text-transform:uppercase; color:var(--k);}
+  .lg-v{font-size:18px; color:var(--ink);}
+
+  /* ---------- bottom card row ---------- */
+  .cards{display:grid; grid-auto-flow:column; grid-auto-columns:1fr; gap:22px;}
+  .card{background:#fff; border:2px solid var(--cardline); border-radius:16px; padding:15px 20px 17px 30px;
+        box-shadow:inset 10px 0 0 0 var(--k); display:flex; flex-direction:column; gap:6px;}
+  .card.solid{background:#173f68; border-color:#173f68; box-shadow:none; color:#fff; padding-left:22px;}
+  .card.solid .eyebrow{color:rgba(255,255,255,.75);} .card.solid .fine{color:rgba(255,255,255,.78);}
+
+  /* ---------- staggered ladder ---------- */
+  .ladder{display:flex; align-items:flex-end; gap:18px;}
+  .rung{flex:1;} .rung.s1{margin-bottom:0;} .rung.s2{margin-bottom:66px;}
+  .rung.s3{margin-bottom:132px;} .rung.s4{margin-bottom:198px;}
+  .floor{border-top:3px dashed var(--hair); margin-top:16px; padding-top:12px; text-align:center;
+         font-size:16px; font-weight:800; letter-spacing:2.4px; text-transform:uppercase; color:var(--muted);}
+  .card{padding:12px 16px 14px 26px; gap:4px;} .card .fine{font-size:15px;}
+  .box{padding:12px 20px;}
+  .cols .box .fine{font-size:15px;}
+  .box.rail{padding-left:32px;}
+</style>
+<style>
+  .k-orange{--k:#a34d21; --kt:#fff1e6;}
+  .n-sub{font-size:15px;}
+  .n-title{font-size:19px;}
+  .strip{display:flex; align-items:center; gap:0;}
+  .strip .box{flex:1; padding:8px 14px;}
+  .strip .box .eyebrow{font-size:13px; letter-spacing:2px;}
+  .strip .box .name-sm{font-size:16px;}
+  .kv{display:grid; grid-template-columns:max-content 1fr; gap:3px 12px; margin-top:4px;}
+  .kv .k{font-size:13px; font-weight:800; letter-spacing:1.6px; text-transform:uppercase; color:var(--k); padding-top:2px;}
+  .kv .v{font-size:15px; color:var(--ink); line-height:1.3;}
+  .group.tint.planned{background:#f1f4f7; border-color:#718398; padding:14px 16px;}
+  .group.tint.planned .group-label{color:#4d5f72;}
+  .planned .box.dashed{background:#fff;}
+</style>
+</head>
+<body>
+<div class="sheet" style="height:1200px; gap:14px; padding:30px 72px 30px;">
+
+  <div class="plate">
+    <div>
+      <div class="kicker">OSDU SPI · The deploy lane as built</div>
+      <h1 class="title">Borrow, Prove, Restore</h1>
+      <p class="subtitle">One credentialed job borrows a service slot in the shared stack, proves the pushed image, and puts the canonical image back</p>
+    </div>
+    <div class="purpose" style="max-width:760px;">
+      <div class="p-label">The rule</div>
+      <div class="p-line">Environment answers are discovered per run, never pushed into a repository.</div>
+      <div class="p-fine">five values live in the fork; everything else is read from <span class="code">spi info</span> and <span class="code">spi status --json</span></div>
+    </div>
+  </div>
+  <div class="rule"></div>
+
+  <!-- band 1: chassis, the lane -->
+  <div class="band" style="gap:10px;">
+    <div class="band-label">The lane · <span class="code" style="text-transform:none; letter-spacing:0;">deploy-gate</span> then <span class="code" style="text-transform:none; letter-spacing:0;">deploy-test</span> · same-repository pull requests and pushes to <span class="code" style="text-transform:none; letter-spacing:0;">main</span> and <span class="code" style="text-transform:none; letter-spacing:0;">fork_integration</span></div>
+    <div class="nodes">
+      <div class="node k-navy"><div class="n-title">Gate</div>
+        <div class="n-mid"><div class="n-dot">1</div></div>
+        <div class="n-sub">one summary line: the cluster to borrow, or why not · polls <span class="code">spi status --json</span> every 20 s, up to 10 min, until <span class="code">deployable</span> · reads facts from <span class="code">spi info --json</span></div></div>
+      <div class="node k-amber"><div class="n-title">Borrow</div>
+        <div class="n-mid"><div class="n-dot">2</div></div>
+        <div class="n-sub"><span class="code">spi service pin --ephemeral</span> by digest with the run id · compare-and-set on <span class="code">osdu-image-lock</span>, retried on conflict · the canonical image recorded in the same write</div></div>
+      <div class="node k-blue"><div class="n-title">Verify</div>
+        <div class="n-mid"><div class="n-dot">3</div></div>
+        <div class="n-sub"><span class="code">spi service verify</span> until a running pod's <span class="code">imageID</span> and the rollout carry the digest · 15 min limit · <span class="code">lock_mismatch</span> fails at once</div></div>
+      <div class="node k-blue"><div class="n-title">Prove</div>
+        <div class="n-mid"><div class="n-dot">4</div></div>
+        <div class="n-sub">one <span class="code">docker run</span> per declared suite from the acceptance image, each under its own timeout · verdict read from the Surefire and Failsafe reports</div></div>
+      <div class="node k-green"><div class="n-title">Restore</div>
+        <div class="n-mid"><div class="n-dot">5</div></div>
+        <div class="n-sub"><span class="code">spi service reset --if-run</span> writes the canonical image back only while this run still owns the pin · runs after a failure too</div></div>
+    </div>
+    <div class="strip">
+      <div class="box mid k-amber"><div class="eyebrow">docker-push publishes</div><div class="name-sm code">ghcr.io/&lt;owner&gt;/partition@sha256:…</div></div>
+      <div class="hair"></div>
+      <div class="box mid k-amber"><div class="eyebrow">pin annotation</div><div class="name-sm code">digest · run_id · ephemeral: true · canonical_*</div></div>
+      <div class="hair"></div>
+      <div class="box mid k-blue"><div class="eyebrow">running pod</div><div class="name-sm code">status.containerStatuses[].imageID</div></div>
+      <div class="hair"></div>
+      <div class="box mid k-green"><div class="eyebrow">after restore</div><div class="name-sm code">canonical_* back in the lock</div></div>
+    </div>
+    <div class="band-note" style="font-size:16px; color:var(--muted); margin-top:-2px;">One digest is the identity on every surface. A tag is refused: the lane never pins <span class="code">:latest</span> or a <span class="code">sha-*</span> tag.</div>
+  </div>
+
+  <!-- band 2: the seam, three owners -->
+  <div class="band" style="gap:10px;">
+    <div class="band-label ruled">Three owners meet at run time · the resolver joins them; nothing is copied across</div>
+    <div class="row">
+      <div class="box rail k-blue grow">
+        <div class="head-row"><div class="eyebrow">The stack · osdu-spi-stack</div><div class="tag">facts</div></div>
+        <div class="name-sm">The environment describes itself</div>
+        <div class="kv">
+          <div class="k">status</div><div class="v"><span class="code">ready</span>, <span class="code">deployable</span>, a typed reason, <span class="code">environment.stackVersion</span></div>
+          <div class="k">info</div><div class="v">endpoints, partitions, the token audience, the three test-caller client ids, <span class="code">entitlements_seeded</span></div>
+          <div class="k">version</div><div class="v">the lane reinstalls the exact <span class="code">spi</span> release the environment names</div>
+        </div>
+      </div>
+      <svg class="arw" viewBox="0 0 46 24"><line x1="0" y1="12" x2="30" y2="12"/><polygon points="28,4 46,12 28,20"/></svg>
+      <div class="box tint mid k-navy" style="flex:1.05;">
+        <div class="eyebrow">The template · osdu-spi</div>
+        <div class="name">The resolver</div>
+        <div class="sub">descriptor × facts × minted tokens → each suite's environment</div>
+        <div class="fine"><span class="code">RESOLVER_TOKEN</span> for the deploy identity · <span class="code">RESOLVER_MEMBER_TOKEN</span> · <span class="code">RESOLVER_NO_ACCESS_TOKEN</span> · an identity the environment does not publish leaves its variable unset</div>
+      </div>
+      <svg class="arw" viewBox="0 0 46 24" style="transform:rotate(180deg);"><line x1="0" y1="12" x2="30" y2="12"/><polygon points="28,4 46,12 28,20"/></svg>
+      <div class="box rail k-orange grow">
+        <div class="head-row"><div class="eyebrow">The service fork</div><div class="tag">fork-owned</div></div>
+        <div class="name-sm code" style="font-size:20px;">.spi/service.yaml</div>
+        <div class="kv">
+          <div class="k">declares</div><div class="v">named suites, <span class="code">acceptance</span> required · Maven module, bindings by name, timeout</div>
+          <div class="k">reviewed</div><div class="v">with the tests that need it, in the same pull request</div>
+          <div class="k">holds</div><div class="v">the five onboarding values only: client, tenant, subscription, resource group, cluster</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- band 3: verdicts + not yet wired -->
+  <div class="cols" style="grid-template-columns:1.25fr 1fr; gap:22px; align-items:stretch;">
+    <div class="band" style="gap:10px;">
+      <div class="band-label ruled">The verdict · pass needs borrow, prove, and restore all green</div>
+      <div class="cols" style="grid-template-columns:1fr 1fr; gap:14px; align-items:stretch;">
+        <div class="box rail k-green">
+          <div class="eyebrow">A suite passes</div>
+          <div class="fine">Zero exit, at least one test that was not skipped, and no failures or errors in the copied reports. A clean container exit alone proves nothing; <span class="ink b">zero tests collected is never a pass</span>.</div>
+        </div>
+        <div class="box rail k-red">
+          <div class="eyebrow">The lane fails</div>
+          <div class="fine">Any suite fails, verify times out or reports <span class="code">lock_mismatch</span>, or restore exits 1. A pin refused while <span class="code">deployable</span> fails at once; while not deployable it is retried for up to 10 min.</div>
+        </div>
+        <div class="box rail k-gray">
+          <div class="eyebrow">The lane skips, and says why</div>
+          <div class="fine">Outside-repository PR (no OIDC token), not onboarded, no descriptor, no image pushed, no suite declared. <span class="code">validation-summary</span> stays green on a skip, so read the gate's reason.</div>
+        </div>
+        <div class="box rail k-amber">
+          <div class="eyebrow">Restore's two exits</div>
+          <div class="fine">Exit 2 means another run owns the pin, or none exists: treated as success. Exit 1 is a restore failure. A lost runner can still strand a pin; <span class="code">reset --ephemeral --stale-only</span> exists to sweep it, by hand today.</div>
+        </div>
+      </div>
+    </div>
+    <div class="band" style="gap:10px;">
+      <div class="band-label ruled">Not yet wired · status reviewed September 2026</div>
+      <div class="group tint planned k-gray" style="flex:1; gap:10px;">
+        <div class="group-label">Accepted by the resolver, not proven by the lane · no shipped descriptor uses the first two yet</div>
+        <div class="box dashed k-gray">
+          <div class="eyebrow">keyvault: bindings</div>
+          <div class="fine">Not materialized: the lane passes no <span class="code">--secrets</span> file, so a suite that declares one fails as env-not-ready. osdu-spi #175.</div>
+        </div>
+        <div class="box dashed k-gray">
+          <div class="eyebrow">requires.loads · requires.groups · dependencies</div>
+          <div class="fine">Not compared with the status facts before the borrow; the stack does not yet publish seeded loads. osdu-spi #176, osdu-spi-stack #133.</div>
+        </div>
+        <div class="box dashed k-gray">
+          <div class="eyebrow">A second verify before each suite</div>
+          <div class="fine">Only the post-pin verify runs. A replacement of the image after it is not caught by the lane.</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+</div>
+</body>
+</html>

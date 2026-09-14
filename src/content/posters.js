@@ -34,21 +34,20 @@ export const suppliedPosters = [
     id: 'borrow-prove-restore',
     title: 'Borrow, Prove, Restore',
     origin:
-      'Target design for deploy and test, from the osdu-spi documentation · status reviewed September 2026',
+      'Built for this site from the osdu-spi deploy lane record (ADR-041) and the osdu-spi-stack fork deployment guide · status reviewed September 2026',
     image: 'posters/borrow-prove-restore.jpg',
     width: 2000,
     height: 1333,
     summary:
-      'CI borrows one service slot in a live stack, proves the pushed image, and puts the canonical image back. The image lock, the run-owned pin, and the restore are built; the gate the poster draws is only partly wired.',
+      'One credentialed job borrows a service slot in the shared stack, proves the pushed image with every declared suite, and writes the canonical image back. The descriptor, the environment facts, and the resolver meet only at run time.',
     takeaways: [
-      'Answers are discovered per run from spi info and spi status --json; five values live in the fork, everything else is read from the environment.',
-      'Gate, borrow, verify, prove, restore: pass needs all of borrow, prove, and restore green, and zero tests collected is never a pass.',
-      'The ephemeral pin is owned by the workflow run; reset --if-run restores only while that run still owns it.',
-      'The descriptor .spi/service.yaml belongs to the service fork and is reviewed with the code.',
+      'Environment answers are read per run from spi info and spi status --json; the fork holds only the five onboarding values and its descriptor .spi/service.yaml.',
+      'The pin is a compare-and-set write on the image lock by digest, and verify waits until a running pod carries the pinned digest.',
+      'Pass needs borrow, prove, and restore all green; a suite passes only with at least one non-skipped test and no failures, so zero tests collected is never a pass.',
+      'Restore runs even after a failure and changes the pin only while this run still owns it; another run’s pin is left in place.',
     ],
     notes: [
-      'Key Vault binding materialization and pre-borrow checks of descriptor loads, groups, and dependencies are not yet wired into the lane; the resolver accepts those fields without proving the environment meets them.',
-      'The three seeding tiers describe the intended declaration layer; a lost runner can still strand a pin, so restoration is an operation to inspect, not a guarantee.',
+      'The poster follows the running example’s partition service. It does not cover onboarding a fork with spi onboard, the acceptance image build, or the personal-stack path a developer runs by hand with spi token.',
     ],
     explore: [
       {
@@ -67,21 +66,20 @@ export const suppliedPosters = [
     id: 'backing-environment',
     title: 'The Backing Environment',
     origin:
-      'Target lifecycle of the shared environment, from the osdu-spi-stack design guides · status reviewed September 2026',
+      'Built for this site from the osdu-spi-stack environment lifecycle and fork deployment guides · status reviewed September 2026',
     image: 'posters/backing-environment.jpg',
     width: 2000,
-    height: 1666,
+    height: 1333,
     summary:
-      'One shared environment, pinned to a release tag, backs every fork’s deploy and test gates. Upgrade and refresh run today; the reset cadence and source promotion the poster draws are still design.',
+      'One standing stack, pinned to a reviewed release tag, backs every fork’s deploy and test lane. Upgrade and refresh are the built lifecycle; reset, teardown, the pin backstop, and source promotion are drawn in a separate band as unbuilt.',
     takeaways: [
-      'The stack definition moves only by a reviewed bump PR; never a rolling branch, because one bad merge would stop every fork’s merge gate at once.',
-      'Three version axes: the stack release tag, the canonical images, and the ephemeral pins a PR puts under test.',
-      'deployable means converged, no maintenance in progress, and a deploy record present; a failed upgrade keeps deploys blocked until probes pass.',
-      'The reset boundary: spi down clears cluster and PaaS state and keeps identities and resource-group tags; only --purge deletes the group.',
+      'The stack definition moves only by a merged stackVersion bump PR, never a rolling branch; merging the bump is what triggers env-upgrade.',
+      'Three version axes: the stack release tag, the canonical images recorded in the image lock, and the ephemeral pins a fork run puts under test.',
+      'deployable means ready with maintenance unset, a deploy record present, and the members seed complete; a failed upgrade or refresh leaves maintenance set, so forks wait with a reason.',
+      'spi down keeps the resource group, its tags, and the managed identities, so every fork’s five values survive a rebuild; only spi down --purge deletes the group.',
     ],
     notes: [
-      'env-upgrade, env-refresh, and the test-identity ensure step are built. env-reset, env-teardown, the pin backstop, and onboarding-intent reconciliation remain unbuilt, so the Saturday reset cadence describes the target, not a running job.',
-      'Explicit canonical source promotion (ADR-033) is unbuilt; today the lock projects only the trusted-repository roster, and every canonical image comes from the community registry.',
+      'The poster does not cover onboarding a fork with spi onboard, the nightly smoke pipeline that proves the provision path, or what a fork’s deploy-test job does once the environment is deployable.',
     ],
     explore: [
       {

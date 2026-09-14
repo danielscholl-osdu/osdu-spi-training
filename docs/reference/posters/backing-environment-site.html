@@ -1,0 +1,270 @@
+<!DOCTYPE html>
+<!--
+  The Backing Environment, built for the OSDU Fieldnotes training site.
+  Render: SCALE=2 bash ~/.claude/skills/infographic/scripts/render.sh backing-environment-site.html backing-environment-site.png 1800x1200
+  Web copy: sips -Z 2000 -s format jpeg -s formatOptions 85 backing-environment-site.png --out public/posters/backing-environment.jpg
+  Sources: osdu-spi-stack docs/design/environment-lifecycle.md, docs/design/fork-deployment.md, ADR-028 to ADR-034.
+  Status reviewed September 2026. The dashed gray band is unbuilt; only <name> stands for the environment.
+  Edit this HTML and re-render; never edit the PNG.
+-->
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>The Backing Environment</title>
+<style>
+  :root{
+    --bg:#f7f9fc; --ink:#172b3f; --muted:#60758a;
+    --hair:#cbd6e2; --card:#fff; --cardline:#d8e1eb;
+    --k:#173f68; --kt:#edf4fb;                 /* default accent = navy */
+  }
+  .k-blue {--k:#1479c9; --kt:#ebf5fd;}
+  .k-green{--k:#4d8d36; --kt:#eff7eb;}
+  .k-amber{--k:#b57400; --kt:#fff6e5;}
+  .k-red  {--k:#c0392b; --kt:#fdeeec;}
+  .k-navy {--k:#173f68; --kt:#edf4fb;}
+  .k-gray {--k:#718398; --kt:#f1f4f7;}
+
+  *{box-sizing:border-box;}
+  html,body{margin:0; padding:0; background:var(--bg);}
+  body{font-family:'Inter',system-ui,-apple-system,'Segoe UI',Helvetica,Arial,sans-serif;
+       color:var(--ink); -webkit-font-smoothing:antialiased;}
+  .sheet{width:1800px; min-height:1200px; background:var(--bg); padding:42px 72px 44px;
+         display:flex; flex-direction:column; gap:24px;}
+
+  /* ---------- header plate ---------- */
+  .plate{display:flex; justify-content:space-between; align-items:flex-start; gap:48px;}
+  .kicker{font-size:17px; font-weight:800; letter-spacing:3.5px; text-transform:uppercase; color:#1479c9;}
+  .title{font-size:48px; font-weight:800; letter-spacing:-1px; margin:10px 0 0; line-height:1.04;}
+  .subtitle{font-size:25px; font-weight:450; color:var(--muted); margin:8px 0 0;}
+  .purpose{background:#173f68; color:#fff; border-radius:14px; padding:13px 28px;
+           text-align:center; min-width:400px; flex:0 0 auto;}
+  .purpose .p-label{font-size:16px; font-weight:800; letter-spacing:3.2px; text-transform:uppercase; opacity:.72;}
+  .purpose .p-line{font-size:23px; font-weight:800; margin-top:8px;}
+  .purpose .p-fine{font-size:16px; font-weight:450; opacity:.75; margin-top:5px;}
+  .rule{height:3px; background:#173f68; margin-top:-10px;}
+
+  /* ---------- bands ---------- */
+  .band{display:flex; flex-direction:column; gap:14px;}
+  .band-label{font-size:20px; font-weight:800; letter-spacing:2.5px; text-transform:uppercase; color:var(--muted);}
+  .band-label.ruled{border-bottom:2px solid var(--hair); padding-bottom:8px;}
+  .band-note{font-size:19px; color:var(--ink); margin-top:-6px;}
+  .row{display:flex; gap:20px; align-items:stretch;}
+  .row.center{align-items:center;}
+  .cols{display:grid; gap:24px; align-items:start;}   /* set grid-template-columns inline */
+
+  /* ---------- boxes ---------- */
+  .box{background:var(--card); border:2px solid var(--cardline); border-radius:16px;
+       padding:15px 22px; display:flex; flex-direction:column; gap:4px; justify-content:center;}
+  .box.tint{background:var(--kt); border:3px solid var(--k);}
+  .box.rail{box-shadow:inset 10px 0 0 0 var(--k); padding-left:36px;}
+  .box.dashed{border-style:dashed;}
+  .box.solid{background:var(--k); border-color:var(--k); color:#fff;}
+  .box.solid .sub,.box.solid .fine{color:rgba(255,255,255,.78);}
+  .box.solid .eyebrow{color:rgba(255,255,255,.75);}
+  .box.mid{align-items:center; text-align:center;}
+  .grow{flex:1;}
+
+  .eyebrow{font-size:16px; font-weight:800; letter-spacing:2.6px; text-transform:uppercase; color:var(--k);}
+  .name{font-size:27px; font-weight:800; line-height:1.15;}
+  .name-sm{font-size:21px; font-weight:800; line-height:1.2;}
+  .sub{font-size:19px; color:var(--muted); line-height:1.32;}
+  .fine{font-size:16px; color:var(--muted); line-height:1.32;}
+  .ink{color:var(--ink);} .acc{color:var(--k);} .b{font-weight:800;}
+  .code{font-family:ui-monospace,'SFMono-Regular',Consolas,'Liberation Mono',monospace; letter-spacing:-.02em;}
+  .tag{font-size:15px; font-weight:800; letter-spacing:1.6px; text-transform:uppercase; color:var(--k);}
+  .head-row{display:flex; justify-content:space-between; align-items:baseline; gap:16px;}
+
+  /* ---------- connectors ---------- */
+  .arw{width:46px; height:24px; color:var(--k); flex:0 0 auto; align-self:center;}
+  .arw line{stroke:currentColor; stroke-width:4;}
+  .arw polygon{fill:currentColor;}
+  .arw.down{transform:rotate(90deg);}
+  .hair{height:2px; background:var(--hair); flex:0 0 26px; align-self:center;}
+
+  /* ---------- numbered node track ---------- */
+  .nodes{display:flex;}
+  .node{flex:1; display:flex; flex-direction:column; align-items:center; text-align:center; gap:10px;}
+  .n-title{font-size:21px; font-weight:800;}
+  .n-mid{position:relative; width:100%; height:44px; display:flex; align-items:center; justify-content:center;}
+  .n-mid::before{content:""; position:absolute; top:50%; left:0; right:0; height:4px;
+                 transform:translateY(-50%); background:var(--k);}
+  .node:first-child .n-mid::before{left:50%;}
+  .node:last-child  .n-mid::before{right:50%;}
+  .n-dot{position:relative; width:54px; height:54px; border-radius:50%; background:var(--k); color:#fff;
+         display:grid; place-items:center; font-size:24px; font-weight:800;}
+  .n-sub{font-size:16px; color:var(--muted); line-height:1.3; padding:0 8px;}
+
+  /* ---------- grouped container ---------- */
+  .group{background:#fff; border:2px solid var(--cardline); border-radius:20px; padding:20px;
+         display:flex; flex-direction:column; gap:14px;}
+  .group.tint{background:var(--kt); border:3px dashed var(--k);}
+  .group-label{font-size:18px; font-weight:800; letter-spacing:2.4px; text-transform:uppercase; color:var(--muted);}
+  .group.tint .group-label{color:var(--k);}
+
+  /* ---------- callout ---------- */
+  .callout{background:var(--kt); border:2px solid var(--k); border-radius:14px;
+           padding:14px 22px; font-size:19px; line-height:1.4;}
+  .callout .fine{margin-top:4px;}
+
+  /* ---------- ledger (label / meaning rows) ---------- */
+  .ledger{display:grid; grid-template-columns:max-content 1fr;}
+  .ledger > div{padding:11px 0; border-bottom:2px solid var(--hair);}
+  .ledger > .lg-k{padding-right:38px;}
+  .ledger > div:nth-last-child(-n+2){border-bottom:0;}
+  .lg-k{font-size:17px; font-weight:800; letter-spacing:1.6px; text-transform:uppercase; color:var(--k);}
+  .lg-v{font-size:18px; color:var(--ink);}
+
+  /* ---------- bottom card row ---------- */
+  .cards{display:grid; grid-auto-flow:column; grid-auto-columns:1fr; gap:22px;}
+  .card{background:#fff; border:2px solid var(--cardline); border-radius:16px; padding:15px 20px 17px 30px;
+        box-shadow:inset 10px 0 0 0 var(--k); display:flex; flex-direction:column; gap:6px;}
+  .card.solid{background:#173f68; border-color:#173f68; box-shadow:none; color:#fff; padding-left:22px;}
+  .card.solid .eyebrow{color:rgba(255,255,255,.75);} .card.solid .fine{color:rgba(255,255,255,.78);}
+
+  /* ---------- staggered ladder ---------- */
+  .ladder{display:flex; align-items:flex-end; gap:18px;}
+  .rung{flex:1;} .rung.s1{margin-bottom:0;} .rung.s2{margin-bottom:66px;}
+  .rung.s3{margin-bottom:132px;} .rung.s4{margin-bottom:198px;}
+  .floor{border-top:3px dashed var(--hair); margin-top:16px; padding-top:12px; text-align:center;
+         font-size:16px; font-weight:800; letter-spacing:2.4px; text-transform:uppercase; color:var(--muted);}
+  .card{padding:12px 16px 14px 26px; gap:4px;} .card .fine{font-size:15px;}
+  .box{padding:12px 20px;}
+  .cols .box .fine{font-size:15px;}
+  .box.rail{padding-left:32px;}
+</style>
+<style>
+  .n-sub{font-size:15px;}
+  .n-title{font-size:19px;}
+  .kv{display:grid; grid-template-columns:max-content 1fr; gap:3px 12px; margin-top:4px;}
+  .kv .k{font-size:13px; font-weight:800; letter-spacing:1.6px; text-transform:uppercase; color:var(--k); padding-top:2px;}
+  .kv .v{font-size:15px; color:var(--ink); line-height:1.3;}
+  .axes{display:grid; grid-template-columns:1fr 1fr 1fr; gap:16px; align-items:stretch;}
+  .axis .name-sm{font-size:20px;}
+  .axis .moves{font-size:13px; font-weight:800; letter-spacing:1.6px; text-transform:uppercase; color:var(--k); margin-top:4px;}
+  .group.tint.planned{background:#f1f4f7; border-color:#718398;}
+  .group.tint.planned .group-label{color:#4d5f72;}
+  .planned .box.dashed{background:#fff;}
+</style>
+</head>
+<body>
+<div class="sheet" style="height:1200px; gap:14px; padding:30px 72px 30px;">
+
+  <div class="plate">
+    <div>
+      <div class="kicker">OSDU SPI Stack · The shared environment as built</div>
+      <h1 class="title">The Backing Environment</h1>
+      <p class="subtitle">One standing stack, pinned to a reviewed release tag, backs every fork's deploy and test lane</p>
+    </div>
+    <div class="purpose" style="max-width:760px;">
+      <div class="p-label">The rule</div>
+      <div class="p-line">The stack definition moves only by a reviewed bump PR, never a rolling branch.</div>
+      <div class="p-fine">one bad merge on a branch would stop every fork's merge gate at once</div>
+    </div>
+  </div>
+  <div class="rule"></div>
+
+  <!-- band 1: chassis, three version axes -->
+  <div class="band" style="gap:10px;">
+    <div class="band-label">Chassis · one ordinary stack, <span class="code" style="text-transform:none; letter-spacing:0;">spi up --env &lt;name&gt; --profile core --tag vX.Y.Z</span> · its version is three axes, not one</div>
+    <div class="axes">
+      <div class="box tint k-navy axis">
+        <div class="head-row"><div class="eyebrow">Axis 1 · stack definition</div><div class="tag">pinned</div></div>
+        <div class="name-sm">Manifests, charts, and the CLI at one release tag</div>
+        <div class="fine">Declared by <span class="code">stackVersion</span> in <span class="code">ops/environments/&lt;name&gt;.yaml</span>. Flux fetches the tag; the workflows install that release's wheel, so the executing CLI and the Flux ref name the same commit. A ruleset forbids moving a <span class="code">v*</span> tag.</div>
+        <div class="moves">moves by: bump PR merged → env-upgrade</div>
+      </div>
+      <div class="box tint k-green axis">
+        <div class="head-row"><div class="eyebrow">Axis 2 · canonical images</div><div class="tag">recorded</div></div>
+        <div class="name-sm">The service digests in <span class="code">osdu-image-lock</span></div>
+        <div class="fine">Every canonical image comes from the community registry today. The weekday refresh preserves them; only an upgrade's <span class="code">--refresh-images</span> pass moves them, after a lock snapshot is saved as a run artifact.</div>
+        <div class="moves">moves by: env-upgrade only</div>
+      </div>
+      <div class="box tint k-amber axis">
+        <div class="head-row"><div class="eyebrow">Axis 3 · ephemeral pins</div><div class="tag">transient</div></div>
+        <div class="name-sm">A fork run's image under test, one service at a time</div>
+        <div class="fine"><span class="code">spi service pin --ephemeral</span> writes the digest and the owning run id; <span class="code">reset --if-run</span> puts the canonical back. Siblings keep serving; <span class="code">spi status --json</span> lists the pinned services.</div>
+        <div class="moves">moves by: the fork's deploy-test job</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- band 2: the bump flow + deployable -->
+  <div class="cols" style="grid-template-columns:1.5fr 1fr; gap:22px; align-items:stretch;">
+    <div class="band" style="gap:10px;">
+      <div class="band-label ruled">How the pin moves · release to running upgrade</div>
+      <div class="nodes">
+        <div class="node k-navy"><div class="n-title">Release</div>
+          <div class="n-mid"><div class="n-dot">1</div></div>
+          <div class="n-sub">release-please publishes <span class="code">vX.Y.Z</span> · a job opens the <span class="code">stackVersion</span> bump PR under the release App token</div></div>
+        <div class="node k-navy"><div class="n-title">Review</div>
+          <div class="n-mid"><div class="n-dot">2</div></div>
+          <div class="n-sub">a human merges the bump · the push to the pin file is the trigger · nothing else moves this axis</div></div>
+        <div class="node k-blue"><div class="n-title">Upgrade</div>
+          <div class="n-mid"><div class="n-dot">3</div></div>
+          <div class="n-sub"><span class="code">env-upgrade</span>: set <span class="code">maintenance</span>, snapshot the lock, <span class="code">spi up --tag --refresh-images</span> with the tag's own wheel · 6 h budget</div></div>
+        <div class="node k-green"><div class="n-title">Open</div>
+          <div class="n-mid"><div class="n-dot">4</div></div>
+          <div class="n-sub">source resumed, revision checked against the tag's commit, suspended again · probes pass · the flag clears and forks may deploy</div></div>
+      </div>
+      <div class="callout k-blue" style="padding:10px 18px; font-size:16px;">
+        <span class="b">Refresh, built:</span> <span class="code">env-refresh</span> on weekdays at 05:00 UTC sets <span class="code">maintenance</span>, runs plain <span class="code">spi reconcile</span>, waits for Flux and the gateway probes, asserts the deployed ref and source suspension are unchanged, then clears the flag. It moves no axis. A red run leaves the flag set.
+      </div>
+    </div>
+    <div class="band" style="gap:10px;">
+      <div class="band-label ruled">What <span class="code" style="text-transform:none; letter-spacing:0;">deployable</span> means</div>
+      <div class="box rail k-blue" style="flex:1;">
+        <div class="kv" style="margin-top:0;">
+          <div class="k">ready</div><div class="v">every gating Kustomization reports <span class="code">Ready=True</span> · seeding work never flips it · the lifecycle jobs read this while <span class="code">maintenance</span> is set</div>
+          <div class="k">deployable</div><div class="v"><span class="code">ready</span>, and <span class="code">maintenance</span> unset, and a deploy record present, and the <span class="code">entitlements-members</span> Job Complete for every partition</div>
+          <div class="k">reason</div><div class="v">one typed blocker when false: a non-ready Kustomization, the flag, a missing record, <span class="code">bootstrap_failed</span> or <span class="code">bootstrap_pending</span></div>
+          <div class="k">exit</div><div class="v"><span class="code">0</span> deployable · <span class="code">2</span> not, with the reason · <span class="code">1</span> unreachable or guard failure</div>
+        </div>
+        <div class="fine" style="margin-top:8px;"><span class="ink b">Fails closed.</span> A failed upgrade or refresh keeps the flag set, so forks wait with a reason instead of racing a half-changed platform. A fork polls this for up to 10 min before borrowing.</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- band 3: the reset boundary (built) + not yet built -->
+  <div class="cols" style="grid-template-columns:1fr 1.5fr; gap:22px; align-items:stretch;">
+    <div class="band" style="gap:10px;">
+      <div class="band-label ruled">The reset boundary · <span class="code" style="text-transform:none; letter-spacing:0;">spi down</span> is built</div>
+      <div class="cols" style="grid-template-columns:1fr; gap:12px;">
+        <div class="box rail k-green">
+          <div class="eyebrow">spi down keeps</div>
+          <div class="fine">The resource group, its tags (name suffix, source policy, declaration locator), and the managed identities: the deploy identity and its federated credentials survive, so every fork's five values stay valid. 45 min deadline; success only once the group holds identities alone.</div>
+        </div>
+        <div class="box rail k-red">
+          <div class="eyebrow">spi down --purge deletes</div>
+          <div class="fine">The group and its identities, after removing the ExternalDNS zone grant it discovers from the retained principal ids. An unrecognized grant leaves everything standing.</div>
+        </div>
+      </div>
+    </div>
+    <div class="band" style="gap:10px;">
+      <div class="band-label ruled">Not yet built · status reviewed September 2026</div>
+      <div class="group tint planned k-gray" style="flex:1; gap:10px;">
+        <div class="group-label">Designed in the lifecycle guide, ahead of the code · not the operating rhythm today</div>
+        <div class="cols" style="grid-template-columns:1fr 1fr; gap:12px; align-items:stretch;">
+          <div class="box dashed k-gray">
+            <div class="eyebrow">env-reset · Saturday rebuild</div>
+            <div class="fine">The workflow that would run <span class="code">spi down</span> then <span class="code">spi up --tag</span> cold, 7 h budget. The verb exists; the scheduled job does not.</div>
+          </div>
+          <div class="box dashed k-gray">
+            <div class="eyebrow">env-teardown</div>
+            <div class="fine">Protected dispatch of <span class="code">spi down --purge</span>.</div>
+          </div>
+          <div class="box dashed k-gray">
+            <div class="eyebrow">Pin backstop and drain in refresh</div>
+            <div class="fine">The stale sweep verb exists; its workflow step, the drain of in-flight fork jobs, and <span class="code">spi service refresh</span> do not.</div>
+          </div>
+          <div class="box dashed k-gray">
+            <div class="eyebrow">Source promotion · ADR-033</div>
+            <div class="fine"><span class="code">--canonical-source fork</span>, the <span class="code">forks:</span> roster in the declaration, and intent loading before image resolution. The lock projects the trust roster today; every canonical source stays community.</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+</div>
+</body>
+</html>
