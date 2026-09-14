@@ -10,6 +10,13 @@ export const chapterAliases = { 'engineering-system': 'handshake' };
 export const movedGuides = {
   start: { 'round-trip': 'field-guides', ladder: 'field-guides' },
 };
+// Posters retired from the Field guides page keep their links: each lands on
+// the guide that carries the same subject.
+export const retiredGuides = {
+  blueprint: 'owners',
+  'permanent-fork': 'round-trip',
+  'continuous-forking': 'contribution-chain',
+};
 export const retiredDetails = {
   'engineering-system': {
     repo: ['fork-shape', null, 'main-branch'],
@@ -49,7 +56,11 @@ export function parseRoute(hash) {
   let resolved = chapterAliases[requestedChapter] || requestedChapter;
   let requestedStep = requestedStepRaw;
   let detail = params.get('detail');
-  const guide = params.get('guide');
+  const requestedGuide = params.get('guide');
+  const guide =
+    requestedGuide && Object.hasOwn(retiredGuides, requestedGuide)
+      ? retiredGuides[requestedGuide]
+      : requestedGuide;
   const from = movedGuides[requestedChapter || 'start'];
   if (
     Object.hasOwn(movedGuides, requestedChapter || 'start') &&

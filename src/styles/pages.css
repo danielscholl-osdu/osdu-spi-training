@@ -1216,6 +1216,27 @@ body:has(.audio-dock:not([hidden])) main {
 .zoom-source {
   border-style: dashed;
 }
+.zoom-source .zoom-bar {
+  grid-template-columns: auto 1fr;
+}
+.zoom-source .zoom-tags {
+  grid-column: 1 / -1;
+}
+.guides-section-title {
+  font-family: Manrope, var(--font);
+  font-size: 24px;
+  font-weight: 800;
+  letter-spacing: -0.025em;
+  line-height: 1.25;
+  margin: 0 0 14px;
+}
+.course-maps {
+  display: grid;
+  gap: 24px;
+}
+.course-maps > h2 {
+  margin-bottom: -6px;
+}
 .zoom-bar {
   display: grid;
   grid-template-columns: auto 1fr auto;

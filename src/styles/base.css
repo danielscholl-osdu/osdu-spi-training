@@ -218,7 +218,8 @@ body[data-page='guides'] .rail {
   display: none;
 }
 body[data-page='home'] main,
-body[data-page='listen'] main {
+body[data-page='listen'] main,
+body[data-page='guides'] main {
   max-width: 1000px;
   margin-inline: auto;
 }
@@ -233,21 +234,28 @@ body[data-page='home'] .intro h1,
 body[data-page='home'] .subhead {
   grid-column: 1 / -1;
 }
-body[data-page='listen'] .intro {
+body[data-page='listen'] .intro,
+body[data-page='guides'] .intro {
   grid-template-columns: minmax(0, 1.15fr) minmax(0, 1fr);
   align-items: center;
   column-gap: 40px;
 }
-body[data-page='listen'] .intro h1 {
+body[data-page='guides'] .intro {
+  grid-template-columns: minmax(0, 1.5fr) minmax(0, 1fr);
+}
+body[data-page='listen'] .intro h1,
+body[data-page='guides'] .intro h1 {
   grid-column: 1;
   grid-row: 1;
 }
-body[data-page='listen'] .intro .subhead {
+body[data-page='listen'] .intro .subhead,
+body[data-page='guides'] .intro .subhead {
   grid-column: 1;
   grid-row: 2;
   max-width: 560px;
 }
-body[data-page='listen'] #hero-image {
+body[data-page='listen'] #hero-image,
+body[data-page='guides'] #hero-image {
   grid-column: 2;
   grid-row: 1 / span 2;
   justify-self: end;
@@ -880,11 +888,13 @@ details[open] summary span {
   }
   .intro,
   body[data-page='home'] .intro,
-  body[data-page='listen'] .intro {
+  body[data-page='listen'] .intro,
+  body[data-page='guides'] .intro {
     display: block;
     margin-bottom: 22px;
   }
-  body[data-page='listen'] #hero-image {
+  body[data-page='listen'] #hero-image,
+  body[data-page='guides'] #hero-image {
     max-width: 520px;
     margin-top: 18px;
   }

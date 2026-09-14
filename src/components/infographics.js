@@ -206,34 +206,34 @@ function timelineGuide() {
       owner: 'cli',
       label: 'PaaS template, identities',
       from: 32,
-      to: 40,
+      to: 34,
       kind: 'ordered',
     },
     {
       owner: 'cli',
       label: 'Bootstrap cluster inputs',
-      from: 40,
-      to: 43,
+      from: 34,
+      to: 35,
       kind: 'ordered',
     },
     {
       owner: 'flux',
       label: 'Flux extension ≈10–15 min',
-      from: 43,
-      to: 56,
+      from: 35,
+      to: 46,
       kind: 'observed',
     },
     {
       owner: 'cli',
       label: 'Verify revision, suspend source, exit',
-      from: 52,
-      to: 58,
+      from: 46,
+      to: 47,
       kind: 'ordered',
     },
     {
       owner: 'flux',
       label: 'Operators → middleware → OSDU → Jobs',
-      from: 46,
+      from: 44,
       to: 60,
       kind: 'continues',
     },
@@ -384,7 +384,7 @@ const chapterNumber = (key) =>
   ).padStart(2, '0');
 
 function levelTags(level) {
-  return `<span class="zoom-tags"><small>${level.chapters.length > 1 ? 'Views' : 'View'}</small>${level.chapters
+  return `<span class="zoom-tags"><small>${level.chapters.length > 1 ? 'Lessons' : 'Lesson'}</small>${level.chapters
     .map(
       (key) =>
         `<a href="#${key}" title="Open ${chapterNumber(key)} · ${chapters[key].title}">${chapterNumber(key)}</a>`,
@@ -419,7 +419,7 @@ export function roundTripFigure() {
     `<a class="loop-stop" href="${href}"><span class="loop-number">${number}</span><b>${title}</b><small>${sub}</small></a>`;
   return `<div class="round-trip">
     <div class="loop-side loop-stack">
-      <div class="loop-head"><b>The stack</b><small>a place · views 01 to 03</small></div>
+      <div class="loop-head"><b>The stack</b><small>a place · lessons 01 to 03</small></div>
       ${stop('#running-stack/request', '01', 'A partition lookup', 'arrives at your environment’s gateway')}
       <span class="loop-arrow" aria-hidden="true">↓</span>
       ${stop('#bring-up', '02', 'The stack that answers it', 'built by one spi up')}
@@ -428,7 +428,7 @@ export function roundTripFigure() {
     </div>
     <div class="loop-cross loop-out"><span>a fix to that provider</span><span aria-hidden="true">→</span></div>
     <div class="loop-side loop-fork">
-      <div class="loop-head"><b>The fork</b><small>a repository on a schedule · views 04 and 05</small></div>
+      <div class="loop-head"><b>The fork</b><small>a repository on a schedule · lessons 04 and 05</small></div>
       ${stop('#fork-shape', '04', 'Where the provider lives', 'paths the fork owns, branches it regenerates')}
       <span class="loop-arrow" aria-hidden="true">↓</span>
       ${stop('#fork-day', '05', 'One day in the fork', 'generate, integrate, propose, prove')}

@@ -576,7 +576,7 @@ export const courseMaps = [
     id: 'round-trip',
     title: 'Down the stack, out to the fork, back in through the lock',
     summary:
-      'The stack is a resource group with a cluster and data services in it. The fork is a repository whose branches are regenerated, integrated, and released by scheduled workflows. They meet at one object, the image lock, and that is where the running example crosses from one to the other.',
+      'The stack and the fork meet at one object, the image lock, and that is where the running example crosses from one to the other.',
     render: () => roundTripFigure(),
   },
   {
@@ -590,82 +590,26 @@ export const courseMaps = [
 
 // A short index by what the reader is trying to do. The course maps and native
 // guides come first on the page; the supplied posters follow as references.
-const guideIndex = [
-  {
-    need: 'See the whole course',
-    ids: ['round-trip', 'ladder'],
-  },
-  {
-    need: 'Bring up a stack',
-    ids: [
-      'owners',
-      'timeline',
-      'milestones',
-      'inside-the-cluster',
-      'profiles',
-      'credentials',
-    ],
-  },
-  {
-    need: 'Identity and one request',
-    ids: ['identity', 'familiar', 'one-request', 'backing-environment'],
-  },
-  {
-    need: 'Provider code and the fork',
-    ids: [
-      'contribution-chain',
-      'clocks',
-      'labels',
-      'permanent-fork',
-      'continuous-forking',
-    ],
-  },
-  {
-    need: 'Prove a change in a stack',
-    ids: ['borrow-prove-restore', 'blueprint'],
-  },
-];
-
-function guideIndexNav() {
-  const byId = (id) =>
-    courseMaps.find((map) => map.id === id) ||
-    nativeGuides.find((guide) => guide.id === id) ||
-    suppliedPosters.find((poster) => poster.id === id);
-  return `<nav class="guide-index" aria-label="Field guides by need">${guideIndex
-    .map(
-      (group) =>
-        `<div><b>${group.need}</b><ul>${group.ids
-          .map((id) => {
-            const entry = byId(id);
-            const poster = suppliedPosters.some((item) => item.id === id);
-            return `<li><a href="${routeHref('field-guides')}?guide=${id}">${escapeHtml(entry.title)}</a>${poster ? '<small>poster</small>' : ''}</li>`;
-          })
-          .join('')}</ul></div>`,
-    )
-    .join('')}</nav>`;
-}
-
 function guidesPage() {
-  return `${guideIndexNav()}
-    <section class="course-maps" aria-label="Maps of the course">
+  return `<section class="course-maps" aria-labelledby="course-maps-title">
+      <h2 id="course-maps-title" class="guides-section-title">Maps of the course</h2>
       ${courseMaps
         .map(
           (
             map,
           ) => `<figure class="field-guide course-map" id="guide-${map.id}" data-guide="${map.id}">
-        <figcaption><h2>${map.title}</h2><p>${map.summary}</p></figcaption>
+        <figcaption><h3>${map.title}</h3><p>${map.summary}</p></figcaption>
         <div class="guide-body">${map.render()}</div>
       </figure>`,
         )
         .join('')}
     </section>
-    <section class="guide-set" aria-label="Field guides built for this site">
-      <div class="section-heading"><span class="guide-kicker">Built for this site</span><h2>${nativeGuides.length} field guides</h2><p>One idea each, built in HTML from the source documentation. Each also appears beside the view it explains. Print this page for the full set.</p></div>
-      ${ownerLegend()}
+    <section class="guide-set" aria-labelledby="guide-set-title">
+      <div class="section-heading"><h2 id="guide-set-title">Field guides</h2><p>One idea each. Each also appears beside the lesson it explains.</p></div>
       ${nativeGuides.map((guide) => guideFigure(guide.id)).join('')}
     </section>
-    <section class="poster-set" aria-label="Supplied posters">
-      <div class="section-heading"><span class="guide-kicker">Supplied references</span><h2>${suppliedPosters.length} posters</h2><p>Four supplied with the training material, two adopted from the source repositories, three built for this site. They are kept as given, including generated labels and misspellings. Each caption records where the poster and the documentation differ; the field guides above are the corrected version.</p></div>
+    <section class="poster-set" aria-labelledby="poster-set-title">
+      <div class="section-heading"><h2 id="poster-set-title">Posters</h2><p>Each caption records where the poster and the documentation differ.</p></div>
       ${suppliedPosters
         .map(
           (poster) => `<article class="poster" id="guide-${poster.id}">

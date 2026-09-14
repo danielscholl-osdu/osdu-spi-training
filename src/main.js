@@ -474,7 +474,7 @@ function renderChapterFrame(route, scene) {
     .join('');
   document.getElementById('source-details').open = structured;
   document.getElementById('source-details').hidden =
-    scene.page === 'home' || scene.page === 'listen';
+    scene.page === 'home' || scene.group === 'supplement';
   document.getElementById('chapter-position').textContent = positionLabel(key);
   const next = nextChapter(key);
   const link = document.getElementById('next-link');

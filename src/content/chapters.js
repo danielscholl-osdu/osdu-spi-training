@@ -1182,7 +1182,7 @@ export const chapters = {
       },
       { episode: 'stack', time: 3040, label: 'Ephemeral pins' },
     ],
-    guides: ['borrow-prove-restore'],
+    guides: ['borrow-prove-restore', 'backing-environment'],
     mistakes: ['validation-summary-means-deployed', 'restore-always-restores'],
     scope:
       'A shared environment can be borrowed by several onboarded forks, one service slot each, serialised per service. The workflow does not yet load test inputs from Key Vault, check every descriptor requirement before borrowing, or verify the pod again before each suite. The lane shown is the one the template ships since 10 September; osdu-spi-partition has neither adopted it nor written its descriptor yet, so this run is illustrative until it does.',
@@ -1267,13 +1267,17 @@ export const chapters = {
     page: 'guides',
     group: 'supplement',
     title: 'Visual field guides',
-    subtitle: 'Posters and infographics',
-    headline: 'Architecture and<span>troubleshooting reference.</span>',
-    intro:
-      'Infographics built for this site from the source documentation, then the reference posters supplied with the training material. Each names its sources and links to the interactive view that lets you look closer. The index below groups them by what you are trying to do.',
-    premise: 'Print one, pin it up, or open it beside the map.',
-    scope:
-      'Supplied posters are preserved as given, misspellings included. Their captions record where the wording differs from the source documentation, so a poster never becomes the authority; the built guides are the corrected teaching surface.',
+    subtitle: 'Maps, guides, and posters',
+    headline: 'Architecture and troubleshooting reference',
+    subhead:
+      'Two maps of the course, one-idea field guides, and reference posters, each shown beside the lesson it explains.',
+    intro: '',
+    hero: {
+      image: 'guides/drafting.webp',
+      width: 900,
+      height: 340,
+      alt: 'A pinned drafting sheet showing the three gears as an engineering drawing, with a magnifier over the middle one.',
+    },
     sources: ['architecture', 'lifecycle', 'forkTiers', 'decisions'],
   },
 };

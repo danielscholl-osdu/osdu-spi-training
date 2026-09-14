@@ -54,6 +54,7 @@ import {
   parseRoute,
   retiredDetails,
   routeHref,
+  retiredGuides,
 } from '../src/router.js';
 import { forkMoments } from '../src/content/fork-moments.js';
 import { zoomLevels, spiMeanings } from '../src/content/concepts.js';
@@ -1323,9 +1324,32 @@ test('audio markers are ordered, inside the recording, and point at real views',
   );
   for (const entry of [...courseMaps, ...nativeGuides, ...suppliedPosters])
     assert.ok(
-      guides.includes(`?guide=${entry.id}"`),
-      `guide index links ${entry.id}`,
+      guides.includes(`id="guide-${entry.id}"`),
+      `the page renders ${entry.id}`,
     );
+  assert.ok(!guides.includes('guide-index'), 'no second index on the page');
+  assert.ok(
+    !guides.includes('Print this page') && !guides.includes('built in HTML'),
+    'no method copy on the page',
+  );
+  assert.equal(suppliedPosters.length, 6, 'the generated posters are retired');
+  for (const [old, replacement] of Object.entries(retiredGuides)) {
+    const route = parseRoute(`#field-guides?guide=${old}`);
+    assert.deepEqual(
+      [route.chapter, route.guide],
+      ['field-guides', replacement],
+      `${old} still lands on a guide`,
+    );
+  }
+  assert.ok(
+    existsSync(
+      new URL(
+        `../public/${chapters['field-guides'].hero.image}`,
+        import.meta.url,
+      ),
+    ),
+    'the drafting strip exists',
+  );
   for (const key of Object.keys(chapters))
     for (const [, href] of chapterScope(key).matchAll(/href="([^"]+)"/g))
       verifyRoute(href, `${key} scope`);
