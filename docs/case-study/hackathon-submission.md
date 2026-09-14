@@ -1,40 +1,59 @@
 # Hackathon submission draft
 
-Field contents for the Microsoft Hackathon 2026 idea form. Character limits are the form's.
+Field contents for the Microsoft Hackathon 2026 idea form, written as a proposal: what the project sets out to do, why, and how it will be judged. Character limits are the form's. The measured results live in the [case study](README.md) and are for the final showcase, not the idea form.
 
 ## Title (140 characters)
 
-OSDU Azure SPI Fieldnotes: a training site built by a software factory
+Azure SPI Fieldnotes: an onboarding site built by a multi-vendor software factory
 
 ## Tagline (300 characters)
 
-An interactive course on the Azure SPI Stack and its fork engineering system, built in four days by one engineer managing a factory of Claude, OpenAI, and Copilot agents, with the case study of what that took.
+Build an interactive course that teaches engineers the Azure SPI machinery, and build it with a factory of Claude, OpenAI, and Copilot agents under one engineer's direction, so we learn how far human-in-the-loop AI engineering can be pushed on real, complex work.
 
 ## Keywords
 
-software factory, agentic engineering, Claude Code, Keelson, beads, Codex, GitHub Copilot, NotebookLM, OSDU, Azure SPI, onboarding, training, human in the loop
+software factory, agentic engineering, human in the loop, Claude Code, Keelson, beads, Codex, GitHub Copilot, NotebookLM, OSDU, Azure SPI, onboarding, training
 
 ## Visibility
 
-Internal and external participants. The site and the repository are public.
+Internal and external participants. The source repositories the course explains are public.
 
-## Images to attach after saving the idea
+## Images
 
-- `software-factory.png`, the one-page poster.
-- `factory-diagram.png`, the drawn diagram of the factory and the flow of one piece of work.
+Leave the form without images at the idea stage. The poster and diagram in this folder show measured results and belong with the final showcase.
 
 ## Description
 
-Two deliverables, one repository.
+### The problem
 
-**The training site.** [OSDU Azure SPI Fieldnotes](https://danielscholl-osdu.github.io/osdu-spi-training/) teaches senior engineers who know OSDU how the Azure SPI machinery works: the stack that runs it, the provider code inside each service, and the engineering system that keeps the service forks current with upstream. Seven lessons walk down the stack, into one service, out to its fork, and back in through the image lock. Each lesson is a set of claims over an inspectable architecture map, with an evidence drawer, one easy mistake, an optional hands-on activity on the learner's own account, and a shelf of deeper material. Around the lessons sit two generated audio deep dives with chapter markers and source-check notes, a one-minute video, eight field guides, and six posters. Every explanation is held to a written standard and cross-checked by a content test against the source repositories before it can deploy. Reading documentation alone is hard; the site exists so an engineer can build a mental model first and then read with it.
+Engineers who know OSDU well still take weeks to become productive on the Azure SPI Stack and the engineering system behind the service forks. The documentation is complete but it is also large: architecture guides, deployment guides, identity guides, decision records, and a fork workflow that touches three repositories at once. Reading alone does not build the mental model. People need to see the stack, trace one request through it, watch a change travel from a fork to a running image, and then read the documentation with that picture in their heads.
 
-**The case study.** The site was built between Thursday evening and Sunday morning by one engineer who wrote almost no code. A Claude Code session acted as the orchestrator. It spawned subagents for parallel and adversarial work, handed multi-file changes to Keelson, a local workbench whose beads-work workflow plans, pauses for approval, implements in an isolated worktree with OpenAI models under the Copilot provider, runs its own review lanes, and opens a draft pull request that GitHub Copilot reviews. OpenAI Codex reviewed the deployed site fifteen times for usability, accuracy, and editorial voice. GPT-6 Astra shaped the design in eight conversations. Gemini NotebookLM produced the recordings and video. A beads issue tracker and a Claude artifact page held the plan of record and the design intent across every session, agent, and workflow run. The engineer set direction, judged taste, approved plans with corrections, cut scope, carried reviews between vendors, and fixed the environment when it broke.
+### Two deliverables
 
-The record is complete enough to measure. About 150 human messages produced 2,652 orchestrator turns and 3,087 tool calls. Nineteen Keelson runs yielded thirteen merged pull requests, each 16 to 53 minutes. Eighty-one tracked issues closed with a median of 43 minutes from creation to close, 41 of 49 written before the commit that closed them. One hundred and ninety-six commits and 24 pull requests deployed 83 times with no failed check.
+**A training site.** An interactive, static site that walks an engineer down the Azure stack, into one service's provider code, out to the service fork that owns that code, and back in through the image lock that deploys it. Each lesson is a small set of claims over an inspectable architecture map: select a claim and the map focuses on the components that prove it; open the evidence drawer to see what it is, why it matters here, how to verify it, and where it is substantiated in the source repositories. Around the lessons: generated audio deep dives with chapter markers and source-check notes where the narration and the documentation differ, a short video, hand-drawn field guides, and posters. No quizzes, no scores, no required exercises. An optional hands-on band per lesson tells the learner what to run on their own account to see the idea for real.
 
-What worked: a written standard every agent read, enforced by a test; reviewers from a different vendor than the builders; an approval gate where every plan was corrected before code; isolated parallel runs against a shared tracker; the orchestrator verifying every change in a real browser; adversarial arguments before every scope cut; process rules written into memory the day they were learned.
+**A case study of how it gets built.** The site is a real product with a real quality bar, which makes it a fair test of a question we want answered: can one engineer, acting as a manager rather than a coder, get something this size built and reviewed by a factory of AI agents drawn from more than one vendor, with a durable shared record that survives every session boundary? The case study will document how the work moved, what each agent and tool was worth, what it cost, what worked, and what did not.
 
-What did not: media regenerated four times and then cut; interaction features built for the owner and removed the same day; a workflow review loop that returned clean twelve times out of thirteen and was wrong the thirteenth; pull requests merged before their reviewer bot posted; a tracker whose closures silently reverted under parallel worktrees; an environment that needed hands several times a day; reviewer attribution lost in the record; a rulebook that grew to 4,500 words; spend visible only per vendor.
+### The factory we intend to run
 
-The case study in the repository, `docs/case-study/`, has the diagrams, the timeline, the numbers with their sources, what each tool was worth, and what we would do differently. The reviews and iteration records are kept verbatim under `docs/process/`.
+- **One orchestrator.** A Claude Code session that plans, writes briefs, delegates, verifies every change in a real browser, merges, and keeps the record. It should write as little code as possible itself.
+- **Workers.** Claude subagents for parallel and bounded work such as posters, fact-checks, and adversarial reviews. Keelson, a local agent workbench, running its beads-work workflow for multi-file changes: it plans, pauses for the owner's approval, implements in an isolated worktree with OpenAI models under the GitHub Copilot provider, runs its own review lanes, and opens a draft pull request.
+- **Reviewers from other vendors.** OpenAI Codex for usability, accuracy, and editorial reviews of the deployed site. GPT Astra in ChatGPT for design direction. GitHub Copilot's pull request reviewer on every workflow-built PR. The builders and the reviewers should not share a model family.
+- **Generated media.** Gemini NotebookLM for the audio deep dives and video from written sources; the Gemini image model for artwork in a consistent style.
+- **Shared state.** A beads issue tracker as the plan of record that every agent and every workflow run reads and writes, and a single design-intent document, kept as a Claude artifact, that reviewers can target by revision.
+- **A written standard, enforced by a test.** Every explanation must name an artifact, command, resource, number, or failure mode that can be checked against the source repositories, and a content test must cross-check every route, marker, and component before a build can deploy.
+
+The engineer's job is direction, taste, approval of plans with corrections, scope cuts, carrying reviews between vendors, and fixing the environment when it breaks. The plan is to measure that job, not assume it.
+
+### What we will measure
+
+- Human messages against agent turns and tool calls, per day, so the ratio of direction to execution is visible.
+- Workflow runs: how many, how long, how many merged, what the internal review loop caught, and what the approval gate changed.
+- The tracker: issues written before code, time from creation to close, and whether close reasons carry evidence.
+- Pull requests and deployments: time to merge, reviewer findings, failed checks.
+- Rework: anything built and then removed, and why.
+- Cost, as far as each vendor makes it visible.
+
+### What success looks like
+
+A published site that a senior OSDU engineer can use to build a correct mental model of the Azure SPI machinery in an afternoon, held to a standard a test enforces. And a case study that a team considering the same approach can read to decide what to copy, what to avoid, and what the person in the loop actually has to do.
