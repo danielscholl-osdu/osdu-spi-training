@@ -1238,11 +1238,11 @@
   transition: opacity 0.18s ease;
 }
 /* A lesson that has not been given claims yet advertises Inspect only on hover or focus. */
-.diagram:not([data-policy]) .node-open {
+.diagram:not([data-focus]) .node-open {
   opacity: 0;
 }
-.diagram:not([data-policy]) [data-detail]:hover .node-open,
-.diagram:not([data-policy]) [data-detail]:focus-visible .node-open {
+.diagram:not([data-focus]) [data-detail]:hover .node-open,
+.diagram:not([data-focus]) [data-detail]:focus-visible .node-open {
   opacity: 1;
 }
 .scope-button {
@@ -1252,44 +1252,48 @@
 .scope-button > .node-open {
   bottom: 2px;
 }
-.diagram[data-policy='learn'] .node {
+.diagram[data-focus] .node {
   transition: opacity 0.18s ease;
 }
-.diagram[data-policy='learn'] .node.is-receded {
+.diagram[data-focus] .node.is-receded {
   opacity: 0.45;
 }
-.diagram[data-policy='learn'] .node.is-receded:hover,
-.diagram[data-policy='learn'] .node.is-receded:focus-visible {
+.diagram[data-focus] .node.is-receded:hover,
+.diagram[data-focus] .node.is-receded:focus-visible {
   opacity: 1;
 }
-.diagram[data-policy='learn'] .node-open {
+.diagram[data-focus] .node-open {
   opacity: 0;
 }
-.diagram[data-policy='learn'] .is-evidence .node-open,
-.diagram[data-policy='learn'] [data-detail]:hover .node-open,
-.diagram[data-policy='learn'] [data-detail]:focus-visible .node-open,
-.diagram[data-policy='explore'] .node-open {
+.diagram[data-focus] .is-evidence .node-open,
+.diagram[data-focus] [data-detail]:hover .node-open,
+.diagram[data-focus] [data-detail]:focus-visible .node-open {
   opacity: 1;
 }
-.diagram[data-policy='learn'] .node.is-focus {
+.diagram[data-focus] .node.is-focus {
   border-color: var(--blue);
 }
-.diagram[data-policy='learn'] .is-focus-scope {
+.diagram[data-focus] .is-focus-scope {
   border-color: var(--blue);
 }
-.diagram[data-policy='learn'] .is-focus-scope > .scope-button b,
-.diagram[data-policy='learn'] .is-focus-scope > header b {
+.diagram[data-focus] .is-focus-scope > .scope-button b,
+.diagram[data-focus] .is-focus-scope > header b {
   color: var(--blue);
 }
-.diagram[data-policy='learn'] .node.is-path {
+.diagram[data-focus] .node.is-path {
   box-shadow: 0 0 0 2px #0b6a9c30;
 }
-.diagram[data-policy] .path-emphasis {
+.diagram[data-focus] .path-emphasis {
   outline: none;
   box-shadow: none;
 }
+@media (hover: none) {
+  .diagram[data-focus] .node.is-receded {
+    opacity: 0.7;
+  }
+}
 @media (prefers-reduced-motion: reduce) {
-  .diagram[data-policy='learn'] .node {
+  .diagram[data-focus] .node {
     transition: none;
   }
 }

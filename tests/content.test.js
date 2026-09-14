@@ -2943,7 +2943,6 @@ test('lesson trace state keeps variants local and preserves an active hop', () =
   const initial = {
     claim: 0,
     hop: -1,
-    policy: 'learn',
     exampleOpen: false,
     variant: 'normal',
   };
@@ -2962,7 +2961,6 @@ test('lesson trace state keeps variants local and preserves an active hop', () =
   assert.deepEqual(initial, {
     claim: 0,
     hop: -1,
-    policy: 'learn',
     exampleOpen: false,
     variant: 'normal',
   });

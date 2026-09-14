@@ -71,7 +71,6 @@ const movable = [
 let lessonState = {
   claim: 0,
   hop: -1,
-  policy: 'learn',
   exampleOpen: false,
   variant: 'normal',
 };
@@ -120,7 +119,7 @@ function applyExamplePresentation(chapter, tracing) {
   return presentation;
 }
 
-function applyPolicy() {
+function applyFocus() {
   const route = parseRoute(location.hash);
   const chapter = chapters[route.chapter];
   if (!hasClaims(chapter)) return;
@@ -142,7 +141,7 @@ function applyPolicy() {
     tracing ? presentation.scopes || [] : staged ? [] : claim.scopes || [],
   );
   const diagram = document.getElementById('diagram');
-  diagram.dataset.policy = lessonState.policy;
+  diagram.dataset.focus = '';
   diagram
     .querySelectorAll('.path-emphasis')
     .forEach((node) => node.classList.remove('path-emphasis'));
@@ -173,14 +172,6 @@ function applyPolicy() {
       button.setAttribute(
         'aria-pressed',
         String(!tracing && Number(button.dataset.claim) === lessonState.claim),
-      ),
-    );
-  document
-    .querySelectorAll('#map-policy [data-policy]')
-    .forEach((button) =>
-      button.setAttribute(
-        'aria-pressed',
-        String(button.dataset.policy === lessonState.policy),
       ),
     );
   document.querySelectorAll('[data-hop]').forEach((link) => {
@@ -277,6 +268,10 @@ function closeInspector(restoreFocus = true) {
     history.replaceState(null, '', routeHref(route.chapter, route.step));
     previousRoute = { ...route, detail: null, claim: null, hop: null };
   }
+}
+
+// A closed drawer keeps its selection; a new claim, stage, or lesson clears it.
+function clearMapSelection() {
   document
     .querySelectorAll('[data-detail]')
     .forEach((button) => button.setAttribute('aria-pressed', 'false'));
@@ -372,13 +367,12 @@ function renderChapterFrame(route, scene) {
   lessonState = {
     claim: 0,
     hop: -1,
-    policy: 'learn',
     exampleOpen: false,
     variant: scene.example?.defaultVariant || 'normal',
   };
   document.body.classList.toggle('has-claims', structured);
   document.body.classList.toggle('is-lifecycle', isLifecycleLesson(scene));
-  delete document.getElementById('diagram').dataset.policy;
+  delete document.getElementById('diagram').dataset.focus;
   const claims = document.getElementById('chapter-claims');
   claims.innerHTML = claimStrip(key);
   if (isLifecycleLesson(scene))
@@ -388,8 +382,6 @@ function renderChapterFrame(route, scene) {
   comparisonSlot.innerHTML = comparison;
   comparisonSlot.hidden = !comparison;
   document.getElementById('lesson-optional').hidden = !structured;
-  document.getElementById('map-policy').hidden =
-    !structured || isLifecycleLesson(scene);
   document.getElementById('map-hint').hidden = structured;
   const context = document.getElementById('claim-context');
   context.innerHTML = '';
@@ -641,11 +633,7 @@ function render() {
     selectDetail(element.dataset.detail, route.chapter, element);
   } else {
     expandInspector(false);
-    buttons.forEach((button) => button.setAttribute('aria-pressed', 'false'));
-    document
-      .querySelectorAll('.selected-scope')
-      .forEach((scope) => scope.classList.remove('selected-scope'));
-    delete document.getElementById('diagram').dataset.selected;
+    clearMapSelection();
   }
   const strip = document.getElementById('example-strip');
   const structured = hasClaims(scene);
@@ -670,7 +658,7 @@ function render() {
     lessonState.hop = selection.hop;
     lessonState.exampleOpen = selection.exampleOpen;
     strip.querySelector('details').open = selection.exampleOpen;
-    applyPolicy();
+    applyFocus();
   } else if (scene.example) {
     lessonState.hop = legacyHop;
     lessonState.exampleOpen = legacyHop >= 0;
@@ -803,13 +791,12 @@ document.addEventListener('click', (event) => {
       variant.dataset.exampleVariant,
       example.hops.length,
     );
-    applyPolicy();
+    applyFocus();
     return;
   }
   const hop = event.target.closest('[data-hop]');
   if (hop) {
     lessonState.hop = Number(hop.dataset.hop);
-    lessonState.policy = 'learn';
     lessonState.exampleOpen = true;
   }
   const lookCloser = event.target.closest('a[data-look-closer]');
@@ -855,7 +842,6 @@ document.getElementById('chapter-claims').addEventListener('click', (event) => {
   const claim = chapters[route.chapter].outcomes[index];
   lessonState.claim = index;
   lessonState.hop = -1;
-  lessonState.policy = 'learn';
   if (evidence) {
     const id = claim.evidence;
     const step = claim.evidenceStep || claim.step || '';
@@ -866,6 +852,7 @@ document.getElementById('chapter-claims').addEventListener('click', (event) => {
     return;
   }
   closeInspector(false);
+  clearMapSelection();
   const currentStepIsCompatible =
     !claim.steps || claim.steps.includes(route.step);
   if (claim.step && (index !== previousClaim || !currentStepIsCompatible)) {
@@ -874,14 +861,7 @@ document.getElementById('chapter-claims').addEventListener('click', (event) => {
     else location.hash = href;
     return;
   }
-  applyPolicy();
-});
-document.getElementById('map-policy').addEventListener('click', (event) => {
-  const button = event.target.closest('[data-policy]');
-  if (!button) return;
-  lessonState.policy = button.dataset.policy;
-  if (lessonState.policy === 'explore') lessonState.hop = -1;
-  applyPolicy();
+  applyFocus();
 });
 
 document.getElementById('diagram').addEventListener('click', (event) => {

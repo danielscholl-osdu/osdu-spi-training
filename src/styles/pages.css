@@ -2820,24 +2820,6 @@ body:has(.audio-dock:not([hidden])) main {
 .is-lifecycle .creation-controls {
   justify-content: flex-end;
 }
-.map-policy {
-  display: flex;
-  border: 1px solid var(--line);
-  border-radius: 6px;
-  overflow: hidden;
-}
-.map-policy button {
-  border: 0;
-  background: white;
-  color: var(--muted);
-  padding: 6px 12px;
-  font-size: 13px;
-  cursor: pointer;
-}
-.map-policy button[aria-pressed='true'] {
-  background: var(--navy);
-  color: white;
-}
 .has-claims .visual-header {
   flex-wrap: wrap;
 }

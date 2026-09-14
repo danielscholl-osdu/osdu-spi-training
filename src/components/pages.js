@@ -458,7 +458,6 @@ export function selectExampleVariant(state, variant, hopCount) {
     ...state,
     variant,
     hop: state.hop < 0 ? hopCount - 1 : state.hop,
-    policy: 'learn',
     exampleOpen: true,
   };
 }
