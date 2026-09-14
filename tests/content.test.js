@@ -35,6 +35,7 @@ import {
   exampleStrip,
   frameVideoPlayer,
   guideFigure,
+  guidePreviewTitles,
   hasClaims,
   isLifecycleLesson,
   hopIndexForRoute,
@@ -48,6 +49,7 @@ import {
   guidePreview,
   listenChips,
   posterInline,
+  sourcePreviewTitles,
 } from '../src/components/pages.js';
 import {
   chapterAliases,
@@ -3130,6 +3132,67 @@ test('listen chips carry the cue and its length; the recording is named while it
     'utf8',
   );
   assert.match(player, /class="listen-from">\$\{episode\.short\}/);
+});
+
+test('shelf presentation keeps audio actions outside summaries', () => {
+  const route = parseRoute('#running-stack');
+  const example = exampleStrip('running-stack', route, undefined, {
+    shelf: true,
+  });
+  assert.match(
+    example,
+    /data-shelf-row="example"[\s\S]*<summary><span class="shelf-row-label">Follow the example<\/span><span class="shelf-row-preview"[^>]*>a partition lookup<\/span>/,
+  );
+  assert.equal((example.match(/<details/g) || []).length, 1);
+
+  const listen = listenChips('running-stack', { shelf: true });
+  const summary = listen.match(/<summary>([\s\S]*?)<\/summary>/)?.[1] || '';
+  assert.match(summary, /Hear it explained/);
+  assert.doesNotMatch(summary, /<(?:button|a)\b/);
+  assert.doesNotMatch(summary, /shelf-row-preview/);
+  assert.match(
+    listen,
+    /<\/details>\s*<div class="shelf-row-actions"><div class="listen-chip-row"/,
+  );
+  assert.ok(listen.includes('data-listen-now'));
+  assert.ok(
+    listen.indexOf('data-listen-now') < listen.lastIndexOf('</section>'),
+    'playback feedback stays in the shelf row wrapper',
+  );
+});
+
+test('shelf previews and compact posters use existing content titles', () => {
+  assert.deepEqual(guidePreviewTitles(['profiles', 'inside-the-cluster']), [
+    'Three profiles, one Azure estate',
+    'Namespaces and rollout order',
+  ]);
+  assert.deepEqual(
+    sourcePreviewTitles(chapters['running-stack'].sources),
+    chapters['running-stack'].sources.map((key) => sources[key].label),
+  );
+  assert.throws(
+    () => sourcePreviewTitles(['missing-source']),
+    /Unknown source key: missing-source/,
+  );
+
+  const guide = guidePreview('profiles', { shelf: true });
+  assert.match(
+    guide,
+    /<details><summary>Expand guide<\/summary><figure class="field-guide is-compact" id="guide-profiles"/,
+  );
+
+  const poster = posterInline('one-request', { shelf: true });
+  assert.match(poster, /class="poster-text-action"[^>]*>View poster<\/button>/);
+  assert.doesNotMatch(poster, /<img\b/);
+  assert.match(
+    poster,
+    /A different example: this poster follows a storage record read/,
+  );
+  assert.match(poster, /id="poster-notes-one-request"/);
+  assert.match(poster, /All field guides →/);
+  for (const key of suppliedPosters.find(({ id }) => id === 'one-request')
+    .sources)
+    assert.ok(poster.includes(sources[key].label), key);
 });
 
 test('a supplied poster beside a lesson opens in the lightbox with its notes', () => {

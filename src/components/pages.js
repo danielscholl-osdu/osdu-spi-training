@@ -41,6 +41,45 @@ function sourceLinks(keys) {
     .join(' · ')}</p>`;
 }
 
+export function sourcePreviewTitles(keys = []) {
+  return keys.map((key) => {
+    const source = sources[key];
+    if (!source) throw new Error(`Unknown source key: ${key}`);
+    return source.label;
+  });
+}
+
+export function guidePreviewTitles(ids = []) {
+  return ids.map((id) => {
+    const entry =
+      nativeGuides.find((guide) => guide.id === id) ||
+      suppliedPosters.find((poster) => poster.id === id);
+    if (!entry) throw new Error(`Unknown field guide: ${id}`);
+    return entry.title;
+  });
+}
+
+function shelfRow({
+  id,
+  label,
+  preview = [],
+  body,
+  actions = '',
+  feedback = '',
+  detailsClass = '',
+}) {
+  if (!body && !actions) return '';
+  const previewItems = [preview].flat().filter(Boolean);
+  return `<section class="shelf-row" id="shelf-row-${id}" data-shelf-row="${id}">
+    <details${detailsClass ? ` class="${detailsClass}"` : ''}>
+      <summary><span class="shelf-row-label">${escapeHtml(label)}</span>${previewItems.length ? `<span class="shelf-row-preview" title="${escapeHtml(previewItems.join(' · '))}">${previewItems.map(escapeHtml).join(' · ')}</span>` : ''}<span class="summary-marker" aria-hidden="true">+</span></summary>
+      <div class="shelf-row-body">${body || ''}</div>
+    </details>
+    ${actions ? `<div class="shelf-row-actions">${actions}</div>` : ''}
+    ${feedback}
+  </section>`;
+}
+
 function tryItAction(step) {
   const action = step.command
     ? `<pre class="try-it-command"><code>${escapeHtml(step.command)}</code></pre>`
@@ -141,9 +180,24 @@ export function detailSourceLinks(detail) {
 // A supplied poster beside a lesson opens in the lightbox with its notes; the
 // notes travel hidden in the figure so the dialog can show them without a
 // chapter change.
-export function posterInline(id) {
+export function posterInline(id, { shelf = false } = {}) {
   const poster = suppliedPosters.find((entry) => entry.id === id);
   if (!poster) return '';
+  if (shelf)
+    return `<figure class="field-guide is-compact is-poster is-shelf-poster" id="guide-${id}" data-guide="${id}">
+      <figcaption><span class="guide-kicker">Poster</span><h3>${poster.title}</h3><p>${poster.summary}</p></figcaption>
+      ${poster.inline ? `<p class="poster-inline-note">${escapeHtml(poster.inline)}</p>` : ''}
+      <button type="button" class="poster-text-action" data-lightbox="${poster.image}" data-lightbox-title="${escapeHtml(poster.title)}" data-lightbox-notes="poster-notes-${id}" aria-haspopup="dialog" aria-controls="lightbox">View poster</button>
+      <div id="poster-notes-${id}" class="poster-lightbox-notes" hidden>
+        <p class="poster-origin">${poster.origin}</p>
+        ${poster.inline ? `<p class="poster-inline-note">${escapeHtml(poster.inline)}</p>` : ''}
+        <h4>Take from it</h4>
+        <ul>${poster.takeaways.map((item) => `<li>${item}</li>`).join('')}</ul>
+        <h4>Read it with these checks</h4>
+        <ul class="poster-notes">${poster.notes.map((item) => `<li>${item}</li>`).join('')}</ul>
+        <div class="guide-foot">${sourceLinks(poster.sources)}<a class="small-link" href="${routeHref('field-guides')}?guide=${id}">All field guides →</a></div>
+      </div>
+    </figure>`;
   return `<figure class="field-guide is-compact is-poster" id="guide-${id}" data-guide="${id}">
     <figcaption><span class="guide-kicker">Poster</span><h3>${poster.title}</h3><p>${poster.summary}</p></figcaption>
     ${poster.inline ? `<p class="poster-inline-note">${escapeHtml(poster.inline)}</p>` : ''}
@@ -394,12 +448,12 @@ export function claimContext(key, index) {
   return `<p>${escapeHtml(claim.text)}</p><small>${escapeHtml(claim.why)}</small>`;
 }
 
-export function guidePreview(id) {
+export function guidePreview(id, { shelf = false } = {}) {
   if (suppliedPosters.some((poster) => poster.id === id))
-    return posterInline(id);
+    return posterInline(id, { shelf });
   const guide = nativeGuides.find((entry) => entry.id === id);
   if (!guide) return '';
-  return `<div class="guide-preview"><h3>${guide.title}</h3><p>${guide.summary.split(/(?<=[.!?])\s/)[0]}</p><details><summary>Open here</summary>${guideFigure(id, { compact: true })}</details></div>`;
+  return `<div class="guide-preview"><h3>${guide.title}</h3><p>${guide.summary.split(/(?<=[.!?])\s/)[0]}</p><details><summary>${shelf ? 'Expand guide' : 'Open here'}</summary>${guideFigure(id, { compact: true })}</details></div>`;
 }
 
 export function chapterOutcomes(key) {
@@ -462,7 +516,7 @@ export function selectExampleVariant(state, variant, hopCount) {
   };
 }
 
-export function exampleStrip(key, route, variant) {
+export function exampleStrip(key, route, variant, { shelf = false } = {}) {
   const example = chapters[key].example;
   if (!example) return '';
   const presentation = resolveExamplePresentation(example, variant);
@@ -478,12 +532,21 @@ export function exampleStrip(key, route, variant) {
         )
         .join('')}</div></div>`
     : '';
-  return `<details class="example-disclosure"><summary>Example: ${escapeHtml(example.title)}</summary>
-    <div class="example-head"><code>${escapeHtml(example.code)}</code></div>
+  const body = `<div class="example-head"><code>${escapeHtml(example.code)}</code></div>
     ${variantControls}
     <p class="example-crossing" data-example-crossing>${escapeHtml(presentation.crossing)}</p>
     <ol class="journey" aria-label="${escapeHtml(example.title)}">${presentation.hops.map((hop, index) => `<li class="${index === current ? 'is-current' : index < current ? 'is-done' : ''}"><a href="${routeHref(key, hop.step || example.step || route.step, hop.detail, structured ? { hop: index } : {})}" data-map-jump data-hop="${index}" ${index === current ? 'aria-current="true"' : ''} title="${escapeHtml(hop.copy)}" aria-label="${escapeHtml(`${index + 1}. ${hop.label}: ${hop.copy}`)}"><span>${index + 1}</span><b>${escapeHtml(hop.label)}</b><small data-hop-copy="${hop.detail}">${escapeHtml(hop.copy)}</small></a></li>`).join('')}</ol>
-    <p class="example-note"><span class="example-provider-path">${escapeHtml(example.providerPath || '')}</span> <span data-example-note>${escapeHtml(presentation.note)}</span></p></details>`;
+    <p class="example-note"><span class="example-provider-path">${escapeHtml(example.providerPath || '')}</span> <span data-example-note>${escapeHtml(presentation.note)}</span></p>`;
+  if (shelf)
+    return shelfRow({
+      id: 'example',
+      label: 'Follow the example',
+      preview: example.title,
+      body,
+      detailsClass: 'example-disclosure',
+    });
+  return `<details class="example-disclosure"><summary>Example: ${escapeHtml(example.title)}</summary>
+    ${body}</details>`;
 }
 
 // One entry from the myths, directly under the map. A link back into the same
@@ -569,7 +632,7 @@ function listenPage(route) {
 // where the claim is heard.
 export function listenChips(
   key,
-  { kicker = 'Hear it explained', lead = '' } = {},
+  { kicker = 'Hear it explained', lead = '', shelf = false } = {},
 ) {
   const cues = chapters[key].listen;
   if (!cues?.length) return '';
@@ -581,6 +644,15 @@ export function listenChips(
       return `<button type="button" class="listen-chip" data-seek="${cue.time}" data-listen-episode="${episode.id}" data-listen-end="${end}" data-listen-stop="${end}"><span class="play-glyph" aria-hidden="true">▶</span><b>${escapeHtml(cue.label)}</b><small>${Math.max(1, Math.round((end - cue.time) / 60))} min</small></button>`;
     })
     .join('');
+  if (shelf)
+    return shelfRow({
+      id: 'listen',
+      label: kicker,
+      body: `${lead ? `<p class="listen-lead">${lead}</p>` : ''}<a class="small-link" href="#listen">All episodes →</a>`,
+      actions: `<div class="listen-chip-row" aria-label="${escapeHtml(kicker)}">${chips}</div>`,
+      feedback:
+        '<p class="listen-now" data-listen-now aria-live="polite" hidden></p>',
+    });
   return `<div class="listen-chips" aria-label="${escapeHtml(kicker)}"><span class="guide-kicker">${escapeHtml(kicker)}</span>${lead ? `<p class="listen-lead">${lead}</p>` : ''}<div class="listen-chip-row">${chips}<a class="small-link" href="#listen">All episodes →</a></div><p class="listen-now" data-listen-now aria-live="polite" hidden></p></div>`;
 }
 
