@@ -117,15 +117,18 @@ function tryItAction(step) {
   return `${action}<p class="try-it-expect"><b>Look for:</b> ${escapeHtml(step.expect)}</p>${step.sources?.length ? sourceLinks(step.sources) : ''}`;
 }
 
+function walkedDate(iso) {
+  const [year, month, day] = iso.split('-').map(Number);
+  if (!year || !month || !day) return iso;
+  return new Date(Date.UTC(year, month - 1, day)).toLocaleDateString('en-GB', {
+    day: 'numeric',
+    month: 'long',
+    year: 'numeric',
+    timeZone: 'UTC',
+  });
+}
+
 function tryItVariant(variant, index, count) {
-  const testedLabels = {
-    cli: 'CLI release',
-    stack: 'Stack ref',
-    template: 'Template commit',
-    shell: 'Shell',
-    os: 'Operating system',
-    date: 'Walked on',
-  };
   return `<section class="try-it-variant" aria-labelledby="try-it-variant-${index}">
     <header>
       ${count > 1 ? `<span class="guide-kicker">Route ${index + 1}</span>` : ''}
@@ -168,15 +171,7 @@ function tryItVariant(variant, index, count) {
       <ol>${variant.cleanup.steps.map((step) => `<li>${tryItAction(step)}</li>`).join('')}</ol>
       <p><b>What remains:</b> ${escapeHtml(variant.cleanup.remains)}</p>
     </section>
-    <section class="try-it-tested">
-      <h4>Tested with</h4>
-      <dl>${Object.entries(testedLabels)
-        .map(
-          ([key, label]) =>
-            `<div><dt>${label}</dt><dd>${escapeHtml(variant.tested[key])}</dd></div>`,
-        )
-        .join('')}</dl>
-    </section>
+    <p class="try-it-walked">Walked on ${escapeHtml(walkedDate(variant.tested.date))} against ${escapeHtml(variant.tested.stack)}.</p>
     ${sourceLinks(variant.sources)}
   </section>`;
 }

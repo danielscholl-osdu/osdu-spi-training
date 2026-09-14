@@ -32,6 +32,7 @@ import {
 } from './components/pages.js';
 import { frameVideo } from './content/audio.js';
 import { badge } from './components/badges.js';
+import { escapeHtml } from './components/node.js';
 import { createPlayer } from './components/player.js';
 import { creationMoments } from './content/creation-moments.js';
 import { parseRoute, routeHref } from './router.js';
@@ -367,7 +368,6 @@ function renderChapterFrame(route, scene) {
   const key = route.chapter;
   const structured = scene.kind === 'map' && hasClaims(scene);
   movable.forEach(({ element, marker }) => marker.after(element));
-  document.getElementById('lesson-next')?.remove();
   const tryIt = document.getElementById('chapter-try-it');
   tryIt.innerHTML = scene.group === 'learn' ? tryItBand(scene) : '';
   tryIt.hidden = !tryIt.innerHTML;
@@ -416,25 +416,11 @@ function renderChapterFrame(route, scene) {
       .after(document.getElementById('chapter-outcomes'));
   }
   if (scene.kind === 'map' && scene.group === 'learn') {
-    const nextBlock = document.createElement('div');
-    nextBlock.id = 'lesson-next';
-    nextBlock.className = 'lesson-next';
-    nextBlock.innerHTML = structured
-      ? `<span>${chapters[nextChapter(key)].question}</span>`
-      : '';
-    nextBlock.append(document.getElementById('next-link'));
-    document.getElementById('chapter-outcomes').after(nextBlock);
-    nextBlock.after(tryIt);
+    document.getElementById('chapter-outcomes').after(tryIt);
     if (structured) tryIt.after(lessonOptional);
     else tryIt.after(document.getElementById('example-strip'));
   } else if (scene.tryIt && nextChapter(key) === 'start') {
-    const nextBlock = document.createElement('div');
-    nextBlock.id = 'lesson-next';
-    nextBlock.className = 'lesson-next';
-    nextBlock.innerHTML = '<span>The learning path ends here.</span>';
-    nextBlock.append(document.getElementById('next-link'));
-    document.getElementById('chapter-outcomes').after(nextBlock);
-    nextBlock.after(tryIt);
+    document.getElementById('chapter-outcomes').after(tryIt);
   }
   document.getElementById('chapter-navigation').innerHTML =
     chapterNavigation(key);
@@ -504,10 +490,26 @@ function renderChapterFrame(route, scene) {
   const next = nextChapter(key);
   const link = document.getElementById('next-link');
   link.href = routeHref(next);
-  link.textContent =
+  const nextIndex = learnOrder.indexOf(next);
+  link.innerHTML =
     next === 'start'
-      ? 'Back to the start ↺'
-      : `Next: ${chapters[next].title} →`;
+      ? '<b>Back to the start ↺</b>'
+      : nextIndex >= 0
+        ? `<small class="pager-kicker">Next lesson · ${nextIndex + 1} of ${learnOrder.length}</small><b>${escapeHtml(chapters[next].title)} →</b><span class="pager-question">${escapeHtml(chapters[next].question)}</span>`
+        : `<b>Next: ${escapeHtml(chapters[next].title)} →</b>`;
+  const prev = document.getElementById('prev-link');
+  const learnIndex = learnOrder.indexOf(key);
+  const previous =
+    learnIndex > 0
+      ? learnOrder[learnIndex - 1]
+      : learnIndex === 0
+        ? 'start'
+        : null;
+  prev.hidden = !previous;
+  if (previous) {
+    prev.href = routeHref(previous);
+    prev.textContent = `← ${previous === 'start' ? 'Start' : chapters[previous].title}`;
+  }
   document.getElementById('view-scope').innerHTML = chapterScope(key);
   const chapterListen = document.getElementById('chapter-listen');
   chapterListen.innerHTML = listenChips(key, { shelf: structured });

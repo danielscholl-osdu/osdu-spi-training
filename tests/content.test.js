@@ -1600,7 +1600,7 @@ test('tryIt renderer returns an inert, escaped native disclosure', () => {
     'Common alternate result',
     'Clean up',
     'What remains',
-    'Tested with',
+    'Walked on 13 September 2026 against',
     'Sources:',
     'executes nothing and reports no live environment state',
   ])

@@ -585,20 +585,64 @@ details[open] > summary .summary-marker {
 }
 .chapter-footer {
   border-top: 1px solid var(--line);
-  padding: 18px 0;
-  display: flex;
-  align-items: start;
-  justify-content: space-between;
-  gap: 15px;
+  padding: 18px 0 8px;
+  display: grid;
+  gap: 14px;
 }
 .chapter-footer > span {
   font-size: 13px;
   color: var(--muted);
 }
-.chapter-footer a {
-  font-size: 14px;
+.pager {
+  display: flex;
+  align-items: stretch;
+  justify-content: space-between;
+  gap: 16px;
+}
+.pager a {
   text-decoration: none;
   font-weight: 600;
+}
+.pager-prev {
+  align-self: center;
+  font-size: 14px;
+  color: var(--muted);
+}
+.pager-prev:hover,
+.pager-prev:focus-visible {
+  color: var(--blue);
+}
+.pager-next {
+  display: grid;
+  gap: 3px;
+  margin-left: auto;
+  max-width: 34rem;
+  padding: 14px 18px;
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  background: var(--white);
+  text-align: right;
+  color: var(--ink);
+}
+.pager-next:hover,
+.pager-next:focus-visible {
+  border-color: var(--blue);
+}
+.pager-next b {
+  font-size: 16px;
+  color: var(--blue);
+}
+.pager-kicker {
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--muted);
+}
+.pager-question {
+  font-size: 13px;
+  font-weight: 400;
+  color: var(--muted);
 }
 .ownership-legend {
   display: flex;
@@ -980,14 +1024,16 @@ details[open] > summary .summary-marker {
     grid-template-columns: 1fr;
     gap: 20px;
   }
-  .chapter-footer {
-    gap: 15px;
+  .pager {
+    flex-direction: column;
   }
-  .chapter-footer a {
-    text-align: right;
+  .pager-prev {
+    align-self: start;
   }
-  .chapter-footer > span {
-    max-width: 130px;
+  .pager-next {
+    margin-left: 0;
+    max-width: none;
+    text-align: left;
   }
   .ownership-reference table {
     table-layout: auto;

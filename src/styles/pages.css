@@ -2988,26 +2988,6 @@ body:has(.audio-dock:not([hidden])) main {
 .has-claims .outcomes ol {
   margin-top: 12px;
 }
-.lesson-next {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 20px;
-  flex-wrap: wrap;
-  background: var(--navy);
-  color: white;
-  border-radius: 8px;
-  padding: 18px;
-  margin-top: 22px;
-}
-.lesson-next span {
-  font-size: 13px;
-  color: #cfe3f0;
-}
-.lesson-next a {
-  color: white;
-  font-weight: 700;
-}
 .try-it {
   min-width: 0;
   margin-top: 18px;
@@ -3152,6 +3132,11 @@ body:has(.audio-dock:not([hidden])) main {
   overflow-wrap: anywhere;
 }
 .try-it-time,
+.try-it-walked {
+  margin: 14px 0 0;
+  font-size: 12px;
+  color: var(--muted);
+}
 .try-it-tested dl {
   display: grid;
   grid-template-columns: repeat(3, minmax(0, 1fr));
@@ -3523,9 +3508,6 @@ body:has(.audio-dock:not([hidden])) main {
   .claim-context small {
     font-size: 12px;
     line-height: 1.35;
-  }
-  .lesson-next a {
-    white-space: normal;
   }
   .try-it-body,
   .try-it-variant {
