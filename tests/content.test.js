@@ -2771,6 +2771,7 @@ test('a supplied poster beside a lesson opens in the lightbox with its notes', (
   );
   assert.match(frame, /<dialog id="lightbox"/);
   assert.match(frame, /id="lightbox-notes"/);
+  assert.match(frame, /id="lightbox-status"/);
   for (const poster of suppliedPosters) {
     const markup = posterInline(poster.id);
     assert.ok(

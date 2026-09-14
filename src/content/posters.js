@@ -227,7 +227,7 @@ export const nativeGuides = [
     id: 'timeline',
     title: 'One spi up, on the clock',
     summary:
-      'Observed component times overlap, so they do not add up to a total. The CLI exits while Flux is still working.',
+      'Observed component times overlap, so they do not add up to a total. The CLI exits while Flux is still working. Observed durations are from earlier centralus runs; the placement of unmeasured steps is illustrative.',
     appearsIn: { label: 'How it comes to life', href: '#bring-up/reconcile' },
     sources: ['lifecycle', 'schemaLoad'],
   },

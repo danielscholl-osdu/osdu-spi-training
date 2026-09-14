@@ -855,6 +855,14 @@ body[data-page='home'] .page > section > h2 {
 }
 .lightbox-notes li {
   margin: 0 0 4px;
+  break-inside: avoid;
+}
+.lightbox-status {
+  margin: 0;
+  padding: 8px 20px;
+  font-size: 13px;
+  color: var(--muted);
+  border-bottom: 1px solid var(--line);
 }
 
 /* Listen page */

@@ -975,6 +975,12 @@ document.addEventListener('click', (event) => {
     : null;
   notes.innerHTML = source ? source.innerHTML : '';
   notes.hidden = !source;
+  // The poster's origin and status read before the image, not after it.
+  const status = document.getElementById('lightbox-status');
+  const origin = notes.querySelector('.poster-origin');
+  status.textContent = origin?.textContent ?? '';
+  status.hidden = !origin;
+  origin?.remove();
   document.querySelector('.lightbox-scroll').scrollTop = 0;
   lightbox.showModal();
 });

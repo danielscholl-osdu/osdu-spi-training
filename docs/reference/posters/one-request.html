@@ -157,9 +157,9 @@
 
   <div class="plate">
     <div>
-      <div class="kicker">OSDU SPI Stack · One request</div>
-      <h1 class="title">One request, end to end</h1>
-      <p class="subtitle">A bearer token to a Cosmos DB row · seven hops · two seams</p>
+      <div class="kicker">OSDU SPI Stack · A storage read</div>
+      <h1 class="title">A storage read: identity and authorization checks</h1>
+      <p class="subtitle">A bearer token to a stored record in Cosmos DB · seven hops · two seams</p>
     </div>
     <div class="purpose" style="max-width:820px;">
       <div class="p-label">Three checks</div>
@@ -191,7 +191,7 @@
       <div class="node k-amber"><div class="n-title">Workload Identity</div>
         <div class="n-mid"><div class="n-dot">6</div></div>
         <div class="n-sub">projected ServiceAccount token · Entra exchange · resource token · no stored secret</div></div>
-      <div class="node k-green"><div class="n-title">Cosmos DB row</div>
+      <div class="node k-green"><div class="n-title">Stored record</div>
         <div class="n-mid"><div class="n-dot">7</div></div>
         <div class="n-sub">Cosmos-native Data Contributor on the partition account · local auth disabled</div></div>
     </div>
@@ -273,7 +273,7 @@
 
   <!-- band 4: no keys + verdict -->
   <div class="band" style="gap:10px;">
-    <div class="band-label ruled">No keys · Entra is the only data plane</div>
+    <div class="band-label ruled">No keys · Azure data services use Entra authentication</div>
     <div class="cards">
       <div class="card k-green">
         <div class="eyebrow">Local auth off</div><div class="name-sm">Cosmos, Service Bus, Storage</div>
@@ -289,7 +289,7 @@
       </div>
       <div class="card solid">
         <div class="eyebrow">The verdict</div><div class="name-sm">Three questions, three answers</div>
-        <div class="fine">A valid Entra token is not an entitlement, and a federated exchange is not a Cosmos grant. The row lands only when all three checks pass.</div>
+        <div class="fine">A valid Entra token is not an entitlement, and a federated exchange is not a Cosmos grant. The record is read only when all three checks pass.</div>
       </div>
     </div>
   </div>
