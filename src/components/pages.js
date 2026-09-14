@@ -191,11 +191,26 @@ export function partitionComparison(key) {
 
 function mythCard(myth, compact = false) {
   const source = sources[myth.source];
-  return `<article class="myth" id="myth-${myth.id}">
+  if (compact)
+    return `<article class="myth" id="myth-${myth.id}">
     <p class="myth-claim">“${myth.claim}”</p>
     <p class="myth-reality">${myth.reality}</p>
-    ${compact ? '' : `<code class="myth-check">${escapeHtml(myth.check)}</code>`}
+    
     <p class="myth-links"><a href="${myth.route}">${myth.routeLabel} →</a><a href="${source.href}" target="_blank" rel="noopener noreferrer">${source.label} ↗</a></p>
+  </article>`;
+
+  const assumptionId = `myth-${myth.id}-assumption`;
+  return `<article class="field-check-row" id="myth-${myth.id}">
+    <p class="field-check-assumption" id="${assumptionId}">“${escapeHtml(myth.claim)}”</p>
+    <p class="field-check-correction">${escapeHtml(myth.correction)}</p>
+    <details class="field-check-evidence">
+      <summary aria-describedby="${assumptionId}">Check and sources</summary>
+      <div class="field-check-evidence-body">
+        <p class="myth-reality">${myth.reality}</p>
+        <code class="myth-check">${escapeHtml(myth.check)}</code>
+        <p class="myth-links"><a href="${myth.route}">${myth.routeLabel} →</a>${sourceAnchor(myth.source)}</p>
+      </div>
+    </details>
   </article>`;
 }
 
@@ -269,7 +284,7 @@ function mythsPage() {
       const entries = myths.filter((myth) => myth.theme === theme.id);
       return `<section class="myth-theme" aria-label="${theme.title}">
         <div class="myth-theme-head"><h2>${theme.title}</h2><a href="${theme.built.href}">Built in ${theme.built.label} →</a></div>
-        <div class="myth-grid is-full">${entries.map((myth) => mythCard(myth)).join('')}</div>
+        <div class="field-check-list">${entries.map((myth) => mythCard(myth)).join('')}</div>
       </section>`;
     })
     .join('');

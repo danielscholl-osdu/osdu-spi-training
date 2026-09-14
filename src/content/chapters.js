@@ -1225,8 +1225,8 @@ export const chapters = {
     group: 'learn',
     book: 'Across the path',
     title: 'Things that are not true',
-    subtitle: 'Assumptions the docs contradict',
-    headline: 'Common assumptions<span>that cause trouble.</span>',
+    subtitle: 'Field check',
+    headline: 'Field check:<span>the assumptions that cause trouble.</span>',
     intro:
       'Each of these is a reasonable thing to believe about a Kubernetes-and-Azure system. The project’s own documentation says otherwise, and names how to check.',
     premise:

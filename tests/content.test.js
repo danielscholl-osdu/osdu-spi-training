@@ -1774,6 +1774,66 @@ test('field checks are grouped by a theme that points back to a learn view', () 
   }
 });
 
+test('field checks expose corrections before optional evidence', () => {
+  const markup = pageRenderers.myths(parseRoute('#not-true'));
+
+  for (const myth of myths) {
+    const rowStart = markup.indexOf(
+      `<article class="field-check-row" id="myth-${myth.id}">`,
+    );
+    const row = markup.slice(rowStart, markup.indexOf('</article>', rowStart));
+    const detailsStart = row.indexOf('<details class="field-check-evidence">');
+
+    assert.ok(rowStart >= 0, `${myth.id}: row`);
+    assert.ok(
+      row.indexOf(`“${escapeHtml(myth.claim)}”`) < detailsStart,
+      `${myth.id}: visible assumption`,
+    );
+    assert.ok(
+      row.indexOf(escapeHtml(myth.correction)) < detailsStart,
+      `${myth.id}: visible correction`,
+    );
+    assert.ok(
+      row.includes(
+        `<summary aria-describedby="myth-${myth.id}-assumption">Check and sources</summary>`,
+      ),
+      `${myth.id}: contextual summary`,
+    );
+    assert.ok(
+      !row.slice(0, detailsStart).includes(escapeHtml(myth.check)),
+      `${myth.id}: evidence stays optional`,
+    );
+    assert.ok(
+      row.slice(detailsStart).includes(escapeHtml(myth.check)),
+      `${myth.id}: escaped check`,
+    );
+    assert.ok(!row.includes('<details class="field-check-evidence" open'));
+  }
+});
+
+test('field checks preserve theme and anchor membership', () => {
+  const markup = pageRenderers.myths(parseRoute('#not-true'));
+
+  assert.equal(markup.split('class="myth-theme"').length - 1, mythThemes.length);
+  assert.equal(markup.split('class="field-check-row"').length - 1, myths.length);
+  for (const theme of mythThemes) {
+    const themeStart = markup.indexOf(
+      `<section class="myth-theme" aria-label="${theme.title}">`,
+    );
+    const themeMarkup = markup.slice(
+      themeStart,
+      markup.indexOf('</section>', themeStart),
+    );
+    assert.ok(themeMarkup.includes(`href="${theme.built.href}"`), theme.id);
+    for (const myth of myths.filter((entry) => entry.theme === theme.id))
+      assert.equal(
+        themeMarkup.split(`id="myth-${myth.id}"`).length - 1,
+        1,
+        `${theme.id}: ${myth.id}`,
+      );
+  }
+});
+
 test('the familiar-things guide links every row to a component on the map', () => {
   const markup = infographics.familiar();
   const hrefs = [...markup.matchAll(/href="(#[^"]+)" data-map-jump/g)].map(
