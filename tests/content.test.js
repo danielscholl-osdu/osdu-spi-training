@@ -1855,7 +1855,24 @@ test('structured claims resolve their focus, evidence, and scopes on every scene
         /Select an idea to highlight it on the map\./,
         `${key}: learner-facing claim instruction`,
       );
-    assert.doesNotMatch(claimsMarkup, /claims, one map/);
+    assert.doesNotMatch(claimsMarkup, /claim-count|\d+\s*\/\s*\d+|claims, one map/);
+    if (!lifecycle) {
+      assert.equal(
+        [...claimsMarkup.matchAll(/data-claim="\d+"/g)].length,
+        claims.length,
+        `${key}: one control per claim`,
+      );
+      assert.equal(
+        [...claimsMarkup.matchAll(/aria-pressed="true"/g)].length,
+        1,
+        `${key}: one initial claim is selected`,
+      );
+      assert.equal(
+        [...claimsMarkup.matchAll(/data-evidence="\d+"/g)].length,
+        claims.length,
+        `${key}: every claim retains its evidence link`,
+      );
+    }
     claims.forEach((claim, index) => {
       const contextMarkup = claimContext(key, index);
       assert.ok(
