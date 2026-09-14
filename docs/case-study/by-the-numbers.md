@@ -35,7 +35,7 @@ Sources:
 | AGENTS.md at the end                                                | 4,518 words                                                                                                     | `wc`           |
 | Pull requests                                                       | 24, all merged                                                                                                  | GitHub         |
 | Median time from PR open to merge                                   | 6 minutes                                                                                                       | GitHub         |
-| PRs opened and merged in the same minute                            | 11, all orchestrator branches                                                                                   | GitHub         |
+| PRs opened and merged within a minute                               | 9, all orchestrator branches (11 orchestrator branches in all)                                                  | GitHub         |
 | PRs open longer than 45 minutes                                     | 2 (#3 at 55 min, #18 at 48 min)                                                                                 | GitHub         |
 | GitHub Actions runs                                                 | 96: 83 Pages attempts (82 deployed, 1 cancelled by a newer push), 13 Copilot reviews                            | GitHub         |
 | Failed GitHub Actions runs                                          | 0 (Keelson separately had one failed run and one failed smoke test)                                             | GitHub         |
@@ -90,7 +90,8 @@ The transcript cost lines are the CLI's own running total per session and are in
 | --------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------- | ----------------------- |
 | Workflow runs on the project                                    | 17 beads-work runs recorded, 1 beads-next, 2 smoke tests; the orchestrator issued 18 beads-work calls, one of which did not register                          | Keelson and transcripts |
 | beads-work outcomes                                             | 13 succeeded, 3 cancelled by the orchestrator, 1 failed at start (a missing Copilot platform package)                                                         | Keelson                 |
-| Run duration, successful                                        | 16 to 53 minutes, median 26                                                                                                                                   | Keelson                 |
+| Run duration, successful                                        | 16 to 53 minutes, median 26 (the Sunday memory's "35 to 60" was an estimate)                                                                                  | Keelson                 |
+| Subagent duration, worktree tasks                               | 11 to 16 minutes (n = 5); the Monday contact-sheet task 6 minutes                                                                                             | Transcripts             |
 | Model calls per successful run                                  | 16 or 17                                                                                                                                                      | Keelson                 |
 | Nodes per run                                                   | 46 (41 in the first two runs, before the rib gained a dependency audit and trailer scrub)                                                                     | Keelson                 |
 | Implementation node                                             | gpt-5.6-sol at xhigh effort, 14.6 minutes average                                                                                                             | Keelson                 |
@@ -128,7 +129,7 @@ Run ledger, successful beads-work runs, CDT:
 | Measure                                            | Value                                                                                        | Source               |
 | -------------------------------------------------- | -------------------------------------------------------------------------------------------- | -------------------- |
 | Tracker initialised                                | Sun 11:07                                                                                    | Git and tracker      |
-| Issues                                             | 81: 77 closed, 4 open, none blocked                                                          | Tracker              |
+| Issues at the build tip                            | 81: 77 closed, 4 open, none blocked (the case-study beads added afterwards are excluded)     | Tracker              |
 | Types                                              | task 49, bug 13, feature 12, epic 5, decision 1, chore 1                                     | Tracker              |
 | Priorities                                         | P1 13, P2 58, P3 9, P4 1                                                                     | Tracker              |
 | Created per day (CDT)                              | Sun 71, Mon 10                                                                               | Tracker              |

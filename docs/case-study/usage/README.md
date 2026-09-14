@@ -28,7 +28,7 @@ Three things stand out.
 
 **Keelson consumed the most new input.** The implement node alone took 6.3 M new input tokens across 13 runs, because each run starts from a fresh context, reads the repository, and carries the captured diff through the review lanes. The three review lanes and re-review took another 3.5 M. Planning took 1.3 M.
 
-**Almost all input was cached.** Across the three channels, 96.7% of input tokens were cache reads. Long sessions and long workflow runs re-read the same context on every turn; caching is what made a 2,373-turn orchestrator session affordable. Cache reads dwarf everything else on a linear chart, which is why the figure shows them in their own panel.
+**Almost all input was cached.** Across the three channels, 96.7% of input tokens were cache reads. Long sessions and long workflow runs re-read the same context on every turn; caching is what made a corpus of 2,373 main-session turns affordable. Cache reads dwarf everything else on a linear chart, which is why the figure shows them in their own panel.
 
 ## Claude Code
 

@@ -8,7 +8,7 @@ Azure SPI Fieldnotes: an onboarding site built by a multi-vendor software factor
 
 ## Tagline (300 characters)
 
-Build an interactive course that teaches engineers the Azure SPI machinery, and build it with a factory of Claude, OpenAI, and Copilot agents under one engineer's direction, so we learn how far human-in-the-loop AI engineering can be pushed on real, complex work.
+Build an interactive course that teaches engineers the Azure SPI machinery, and build it with a factory of agents from Anthropic, OpenAI, and Google, some reached through GitHub Copilot under one engineer's direction, so we learn how far human-in-the-loop AI engineering can be pushed on real, complex work.
 
 ## Keywords
 
@@ -38,7 +38,7 @@ Engineers who know OSDU well still take weeks to become productive on the Azure 
 
 - **One orchestrator.** A Claude Code session that plans, writes briefs, delegates, verifies every change in a real browser, merges, and keeps the record. It should write as little code as possible itself.
 - **Workers.** Claude subagents for parallel and bounded work such as posters, fact-checks, and adversarial reviews. Keelson, a local agent workbench, running its beads-work workflow for multi-file changes: it plans, pauses for the owner's approval, implements in an isolated worktree with OpenAI models under the GitHub Copilot provider, runs its own review lanes, and opens a draft pull request.
-- **Reviewers from other vendors.** OpenAI Codex for usability, accuracy, and editorial reviews of the deployed site. GPT Astra in ChatGPT for design direction. GitHub Copilot's pull request reviewer on every workflow-built PR. The builders and the reviewers should not share a model family.
+- **Reviewers that did not build the change.** OpenAI Codex for usability, accuracy, and editorial reviews of the deployed site. GPT Astra in ChatGPT for design direction. GitHub Copilot's pull request reviewer on every workflow-built PR. Where possible the reviewer comes from a different vendor than the builder, so that we can see whether the vendor or the fresh context is what matters.
 - **Generated media.** Gemini NotebookLM for the audio deep dives and video from written sources; the Gemini image model for artwork in a consistent style.
 - **Shared state.** A beads issue tracker as the plan of record that every agent and every workflow run reads and writes, and a single design-intent document, kept as a Claude artifact, that reviewers can target by revision.
 - **A written standard, enforced by a test.** Every explanation must name an artifact, command, resource, number, or failure mode that can be checked against the source repositories, and a content test must cross-check every route, marker, and component before a build can deploy.
@@ -48,7 +48,7 @@ The engineer's job is direction, taste, approval of plans with corrections, scop
 ### What we will measure
 
 - Human messages against agent turns and tool calls, per day, so the ratio of direction to execution is visible.
-- Workflow runs: how many, how long, how many merged, what the internal review loop caught, and what the approval gate changed.
+- Workflow runs: how many, how long, how many merged, what the internal review loop caught, and what the approval gate changed; defects by delegation tier, so the choice between a workflow run and a subagent rests on more than time.
 - The tracker: issues written before code, time from creation to close, and whether close reasons carry evidence.
 - Pull requests and deployments: time to merge, reviewer findings, failed checks.
 - Rework: anything built and then removed, and why.
