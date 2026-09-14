@@ -3300,6 +3300,195 @@ test('shelf previews and compact posters use existing content titles', () => {
     assert.ok(poster.includes(sources[key].label), key);
 });
 
+test('structured shelves preserve row order and content at every lifecycle stage', () => {
+  const cases = [
+    ['running-stack', ''],
+    ...chapterSteps('bring-up').map((step) => ['bring-up', step]),
+    ['spi-boundary', ''],
+  ];
+  for (const [key, step] of cases) {
+    const chapter = chapters[key];
+    const route = parseRoute(routeHref(key, step));
+    const guideIds = Array.isArray(chapter.guides)
+      ? chapter.guides
+      : chapter.guides[step];
+    const example = exampleStrip(key, route, undefined, { shelf: true });
+    const listen = listenChips(key, { shelf: true });
+    const guideBody = guideIds
+      .map((id) => guidePreview(id, { shelf: true }))
+      .join('');
+    const guides = shelfRow({
+      id: 'guides',
+      label: 'Field guides',
+      preview: guidePreviewTitles(guideIds),
+      body: guideBody,
+    });
+    const sourceBody = chapter.sources
+      .map(
+        (sourceKey) =>
+          `<a href="${sources[sourceKey].href}">${sources[sourceKey].label}</a>`,
+      )
+      .join('');
+    const sourceRow = shelfRow({
+      id: 'sources',
+      label: 'Sources',
+      preview: sourcePreviewTitles(chapter.sources),
+      body: sourceBody,
+    });
+    const markup = [example, listen, guides, sourceRow].join('');
+    const rowIds = [...markup.matchAll(/data-shelf-row="([^"]+)"/g)].map(
+      (match) => match[1],
+    );
+
+    assert.deepEqual(
+      rowIds,
+      ['example', 'listen', 'guides', 'sources'],
+      routeHref(key, step),
+    );
+    assert.doesNotMatch(
+      markup,
+      /<details[^>]*\sopen(?:\s|>)/,
+      routeHref(key, step),
+    );
+    assert.equal(
+      (example.match(/class="example-disclosure"/g) || []).length,
+      1,
+      `${routeHref(key, step)}: one example disclosure`,
+    );
+    assert.match(
+      example,
+      new RegExp(
+        `<span class="shelf-row-preview"[^>]*>${escapeHtml(chapter.example.title)}</span>`,
+      ),
+    );
+    const listenSummary =
+      listen.match(/<summary>([\s\S]*?)<\/summary>/)?.[1] || '';
+    assert.doesNotMatch(listenSummary, /shelf-row-preview|<(?:button|a)\b/);
+    assert.match(
+      sourceRow,
+      /<summary><span class="shelf-row-label">Sources<\/span>/,
+    );
+    assert.doesNotMatch(sourceRow, /Go deeper in the documentation/);
+    for (const cue of chapter.listen)
+      assert.ok(listen.includes(`<b>${escapeHtml(cue.label)}</b>`), cue.label);
+    for (const title of guidePreviewTitles(guideIds))
+      assert.ok(
+        guides.includes(escapeHtml(title)),
+        `${routeHref(key, step)}: ${title}`,
+      );
+    for (const title of sourcePreviewTitles(chapter.sources))
+      assert.ok(
+        sourceRow.includes(escapeHtml(title)),
+        `${routeHref(key, step)}: ${title}`,
+      );
+
+    let sourcePosition = -1;
+    for (const sourceKey of chapter.sources) {
+      const next = sourceRow.indexOf(
+        `href="${sources[sourceKey].href}"`,
+        sourcePosition + 1,
+      );
+      assert.ok(next > sourcePosition, `${routeHref(key, step)}: ${sourceKey}`);
+      sourcePosition = next;
+    }
+    const allIds = [...markup.matchAll(/\sid="([^"]+)"/g)].map(
+      (match) => match[1],
+    );
+    assert.equal(
+      new Set(allIds).size,
+      allIds.length,
+      `${routeHref(key, step)}: unique ids`,
+    );
+    if (key === 'spi-boundary') {
+      assert.match(guideBody, />View poster<\/button>/);
+      assert.doesNotMatch(guideBody, /<img\b/);
+    }
+  }
+});
+
+test('shelf helpers omit empty categories without inventing preview copy', () => {
+  assert.equal(
+    shelfRow({
+      id: 'empty',
+      label: 'Empty',
+      body: '',
+    }),
+    '',
+  );
+  assert.deepEqual(guidePreviewTitles([]), []);
+  assert.deepEqual(sourcePreviewTitles([]), []);
+  assert.throws(
+    () => guidePreviewTitles(['missing-guide']),
+    /Unknown field guide: missing-guide/,
+  );
+});
+
+test('shelf audio cues retain exact segment boundaries', () => {
+  for (const key of ['running-stack', 'bring-up', 'spi-boundary']) {
+    const markup = listenChips(key, { shelf: true });
+    for (const cue of chapters[key].listen) {
+      const episode = episodes.find((entry) => entry.id === cue.episode);
+      const marker = episode.markers.find((entry) => entry.time === cue.time);
+      const end = cue.end ?? marker.end;
+      const minutes = Math.max(1, Math.round((end - cue.time) / 60));
+      assert.ok(
+        markup.includes(
+          `data-seek="${cue.time}" data-listen-episode="${episode.id}" data-listen-end="${end}" data-listen-stop="${end}"`,
+        ),
+        `${key}: ${cue.label}`,
+      );
+      assert.ok(
+        markup.includes(
+          `<b>${escapeHtml(cue.label)}</b><small>${minutes} min</small>`,
+        ),
+        `${key}: ${cue.label} duration`,
+      );
+    }
+  }
+});
+
+test('every published guide and poster remains beside a map lesson', () => {
+  const besideLessons = new Set(
+    mapChapters.flatMap(([, chapter]) =>
+      Array.isArray(chapter.guides)
+        ? chapter.guides
+        : Object.values(chapter.guides || {}).flat(),
+    ),
+  );
+  for (const item of [...nativeGuides, ...suppliedPosters])
+    assert.ok(besideLessons.has(item.id), item.id);
+});
+
+test('legacy lessons retain standalone examples and poster thumbnails', () => {
+  const frame = readFileSync(
+    new URL('../src/index.html', import.meta.url),
+    'utf8',
+  );
+  const belowFigure = frame.slice(
+    frame.indexOf('<div class="below-figure">'),
+    frame.indexOf('<section id="lesson-optional"'),
+  );
+  assert.match(belowFigure, /id="scope-note"[\s\S]*id="source-details"/);
+
+  for (const key of ['fork-shape', 'fork-day', 'handshake']) {
+    const chapter = chapters[key];
+    const example = exampleStrip(key, parseRoute(routeHref(key)));
+    assert.match(example, /^<details class="example-disclosure">/);
+    assert.doesNotMatch(example, /data-shelf-row/);
+    for (const id of new Set(Object.values(chapter.guides || {}).flat())) {
+      const poster = suppliedPosters.find((entry) => entry.id === id);
+      if (!poster) continue;
+      const markup = posterInline(id);
+      assert.match(
+        markup,
+        /class="poster-inline"[\s\S]*<img /,
+        `${key}: ${id}`,
+      );
+      assert.doesNotMatch(markup, /poster-text-action/);
+    }
+  }
+});
+
 test('a supplied poster beside a lesson opens in the lightbox with its notes', () => {
   const frame = readFileSync(
     fileURLToPath(new URL('../src/index.html', import.meta.url)),
@@ -3516,17 +3705,14 @@ test('guide and myth arrivals reveal every containing disclosure', () => {
     /scroll|focus|history|location|player|selectDetail/,
   );
   assert.equal(
-    (
-      main.match(
-        /^\s+openContainingDetails\((?:target|guideTarget|figure)\);/gm,
-      ) || []
-    ).length,
+    (main.match(/openContainingDetails\(/g) || []).length - 1,
     3,
     'page guide routes, map guide routes, and local myths share the helper',
   );
-  assert.match(
-    main,
-    /openContainingDetails\(guideTarget\);\s*guideTarget\.scrollIntoView/,
+  assert.ok(
+    main.indexOf('openContainingDetails(guideTarget)') <
+      main.lastIndexOf("guideTarget.scrollIntoView({ block: 'start' })"),
+    'map guide ancestors open before its deliberate scroll',
   );
   assert.match(
     main,
