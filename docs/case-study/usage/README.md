@@ -4,9 +4,11 @@ Where the AI work went during the build, from the three channels that keep a usa
 
 ![Where the AI work went](usage-figure.png)
 
+Three print-oriented charts drawn from the same data sit beside it, each with its HTML source: `usage-by-channel.png`, `usage-by-day.png`, and `usage-by-role.png`. They are the figures the full record and its PDF use.
+
 ## Scope and definitions
 
-- **Window.** The project's first Codex task on 11 September 2026 through the Pages run for the final build commit `62be86e`, which started at 11:41 CDT on Monday 14 September. Days are America/Chicago.
+- **Window.** The project's first Codex task on Day 1 through the Pages run for the final build commit `62be86e`, which started at 11:41 on Day 4. Days are consecutive calendar days in America/Chicago, numbered Day 1 to Day 4; times are CDT.
 - **Excluded.** The case-study research session and its subagents, the poster and figure work, ChatGPT design conversations, NotebookLM, and the Gemini image model. Those channels either keep no ledger the owner can read or were not part of the build.
 - **New input** is uncached input plus reported cache writes. **Cached input** is cache reads. **Output** is output tokens; for Codex it already includes the reported reasoning subset, which is not added again.
 - **Units differ.** A Claude Code turn is one model response. A Keelson record is one workflow node turn and can contain several responses. A Codex record is one response. Record counts are not comparable across channels; tokens are.
@@ -38,12 +40,12 @@ Three things stand out.
 | Subagents                                                       |   494 |    3.41 M |       58.9 M | 0.07 M |
 | Peer sessions                                                   |   230 |    0.90 M |       57.9 M | 0.19 M |
 
-| Model                              | Turns | New input | Cached input | Output |
-| ---------------------------------- | ----: | --------: | -----------: | -----: |
-| claude-fable-5-1                   | 2,308 |    8.70 M |      477.3 M | 1.95 M |
-| claude-opus-5 (the first two days) |   788 |    1.89 M |      172.9 M | 0.35 M |
+| Model                        | Turns | New input | Cached input | Output |
+| ---------------------------- | ----: | --------: | -----------: | -----: |
+| claude-fable-5-1             | 2,308 |    8.70 M |      477.3 M | 1.95 M |
+| claude-opus-5 (Days 1 and 2) |   788 |    1.89 M |      172.9 M | 0.35 M |
 
-By day, new input plus output: Friday 1.9 M, Saturday 3.5 M, Sunday 6.2 M, Monday 1.3 M.
+By day, new input plus output: Day 1, 1.9 M; Day 2, 3.5 M; Day 3, 6.2 M; Day 4, 1.3 M.
 
 ## Keelson
 
@@ -56,13 +58,13 @@ By day, new input plus output: Friday 1.9 M, Saturday 3.5 M, Sunday 6.2 M, Monda
 | review loop closure                                        | gpt-5.6-luna                   |         10 |    0.82 M |        5.7 M | 0.06 M |
 | coordinate (classify, brief, report, create PR)            | luna, sonnet, haiku, sol, opus |         56 |    1.54 M |        6.5 M | 0.09 M |
 
-By day: Sunday 13 September 13.8 M new input and 1.18 M output across 207 node turns; Monday 14 September 1.05 M and 0.14 M across 17. Forty-five Keelson records carry no cache-write field; the totals treat those as zero and the JSON preserves the count.
+By day: Day 3, 13.8 M new input and 1.18 M output across 207 node turns; Day 4, 1.05 M and 0.14 M across 17. Forty-five Keelson records carry no cache-write field; the totals treat those as zero and the JSON preserves the count.
 
 ## Codex
 
 | Task                                             | Responses | New input | Cached input | Output |
 | ------------------------------------------------ | --------: | --------: | -----------: | -----: |
-| Prototype and initial source work (11 Sep)       |       189 |    1.17 M |       23.5 M | 0.14 M |
+| Prototype and initial source work (Day 1)        |       189 |    1.17 M |       23.5 M | 0.14 M |
 | Initial site review                              |        33 |    0.11 M |              | 0.01 M |
 | Training experience review                       |        55 |    0.23 M |              | 0.03 M |
 | Fork feature review                              |        64 |    0.41 M |              | 0.04 M |
@@ -70,7 +72,7 @@ By day: Sunday 13 September 13.8 M new input and 1.18 M output across 207 node t
 | Iterative design, content, and usability reviews |       324 |    3.18 M |              | 0.19 M |
 | Final site review                                |        17 |    0.14 M |              | 0.00 M |
 
-All Codex work ran on gpt-6-astra: 138 responses at medium effort and 572 at xhigh. The prototype task on 11 September is the largest single Codex contribution by output and predates the first Claude session.
+All Codex work ran on gpt-6-astra: 138 responses at medium effort and 572 at xhigh. The prototype task on Day 1 is the largest single Codex contribution by output and predates the first Claude session.
 
 ## How the numbers were produced
 

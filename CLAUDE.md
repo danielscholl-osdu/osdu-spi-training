@@ -57,7 +57,7 @@ A vanilla ES module single-page app. Vite's `root` is `src/`, `publicDir` is `pu
 - `listen` cues start on a marker of their episode;
 - audio, video, and poster files exist in `public/`.
 
-Source links must point at the published docs (`azure.github.io/osdu-spi/`) or `github.com/Azure/osdu-spi-stack` and `osdu-spi-partition`; comparison evidence may also point at the community Partition repository and `cimpl-stack` when the URL uses a pinned full-hash blob revision. When sibling checkouts exist at `../osdu-spi`, `../osdu-spi-stack`, or `../osdu-spi-partition`, each source `path` must also exist there. A missing file means the upstream moved; re-check the claim, and update README's "Reviewed against" revisions and dated statements.
+Source links must point at the published docs (`azure.github.io/osdu-spi/`) or `github.com/Azure/osdu-spi-stack` and `osdu-spi-partition`; comparison evidence may also point at the community Partition repository and `cimpl-stack` when the URL uses a pinned full-hash blob revision. When sibling checkouts exist at `../osdu-spi`, `../osdu-spi-stack`, or `../osdu-spi-partition`, each source `path` must also exist there. A missing file means the upstream moved; re-check the claim, and update the "Reviewed against" revisions and dated statements in `docs/README.md`.
 
 ## Things not to edit directly
 

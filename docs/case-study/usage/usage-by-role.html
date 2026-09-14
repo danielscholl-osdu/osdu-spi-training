@@ -1,0 +1,83 @@
+<!DOCTYPE html><html lang="en"><head><meta charset="utf-8">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;700&family=Manrope:wght@600;700;800&display=swap" rel="stylesheet">
+<style>
+*{box-sizing:border-box} html,body{margin:0;background:#fff}
+body{font-family:'DM Sans',system-ui,-apple-system,'Segoe UI',Helvetica,Arial,sans-serif;color:#102b43;-webkit-font-smoothing:antialiased}
+.sheet{width:1400px;height:600px;background:#fff;padding:36px 44px;display:flex;flex-direction:column;gap:6px}
+.t{font-family:Manrope,'DM Sans',system-ui,-apple-system,'Segoe UI',Helvetica,Arial,sans-serif;font-size:34px;font-weight:800;letter-spacing:-.4px;color:#102c47;margin:0}
+.s{font-size:24px;color:#52697b;margin:0 0 8px}
+svg text{font-family:'DM Sans',system-ui,-apple-system,'Segoe UI',Helvetica,Arial,sans-serif}
+.lab{font-size:27px;font-weight:500;fill:#102b43} .sub{font-size:22px;fill:#52697b}
+.val{font-size:26px;font-weight:700;fill:#102b43} .valw{font-size:26px;font-weight:700;fill:#fff}
+.tick{font-size:21px;fill:#52697b} .ptitle{font-family:Manrope,'DM Sans',system-ui,-apple-system,'Segoe UI',Helvetica,Arial,sans-serif;font-size:26px;font-weight:800;fill:#102c47}
+.note{font-size:22px;fill:#52697b} .leg{font-size:24px;fill:#102b43}
+</style></head><body>
+<div class="sheet">
+<p class="t">Who inside each channel used the tokens</p>
+<p class="s">New input (solid) and output (outlined), millions of tokens. Both panels share one scale.</p>
+<svg width="1312" height="470" viewBox="0 0 1312 470">
+<text x="0" y="26" class="ptitle">Keelson beads-work, by node role</text>
+<text x="0" y="82" class="lab">implement</text>
+<text x="0" y="108" class="sub">gpt-5.6-sol, 48 node turns</text>
+<rect x="300" y="62" width="262.5" height="24" fill="#1f7a5c"/>
+<text x="572.5" y="82" class="val">6.32</text>
+<rect x="300" y="90" width="27.0" height="20" fill="#e6f4ee" stroke="#1f7a5c" stroke-width="2"/>
+<text x="337.0" y="107" class="val">0.65</text>
+<text x="0" y="150" class="lab">review lanes, re-review</text>
+<text x="0" y="176" class="sub">gpt-5.6-terra, 52</text>
+<rect x="300" y="130" width="147.0" height="24" fill="#1f7a5c"/>
+<text x="457.0" y="150" class="val">3.54</text>
+<rect x="300" y="158" width="11.2" height="20" fill="#e6f4ee" stroke="#1f7a5c" stroke-width="2"/>
+<text x="321.2" y="175" class="val">0.27</text>
+<text x="0" y="218" class="lab">coordinate</text>
+<text x="0" y="244" class="sub">luna, sonnet, haiku, 56</text>
+<rect x="300" y="198" width="64.0" height="24" fill="#1f7a5c"/>
+<text x="374.0" y="218" class="val">1.54</text>
+<rect x="300" y="226" width="3.7" height="20" fill="#e6f4ee" stroke="#1f7a5c" stroke-width="2"/>
+<text x="313.7" y="243" class="val">0.09</text>
+<text x="0" y="286" class="lab">plan, investigate</text>
+<text x="0" y="312" class="sub">gpt-6-astra, 13</text>
+<rect x="300" y="266" width="52.8" height="24" fill="#1f7a5c"/>
+<text x="362.8" y="286" class="val">1.27</text>
+<rect x="300" y="294" width="7.9" height="20" fill="#e6f4ee" stroke="#1f7a5c" stroke-width="2"/>
+<text x="317.9" y="311" class="val">0.19</text>
+<text x="0" y="354" class="lab">triage, coverage</text>
+<text x="0" y="380" class="sub">gpt-6-astra, 39</text>
+<rect x="300" y="334" width="50.3" height="24" fill="#1f7a5c"/>
+<text x="360.3" y="354" class="val">1.21</text>
+<rect x="300" y="362" width="2.0" height="20" fill="#e6f4ee" stroke="#1f7a5c" stroke-width="2"/>
+<text x="312.0" y="379" class="val">0.04</text>
+<text x="0" y="422" class="lab">loop closure</text>
+<text x="0" y="448" class="sub">gpt-5.6-luna, 10</text>
+<rect x="300" y="402" width="34.1" height="24" fill="#1f7a5c"/>
+<text x="344.1" y="422" class="val">0.82</text>
+<rect x="300" y="430" width="2.5" height="20" fill="#e6f4ee" stroke="#1f7a5c" stroke-width="2"/>
+<text x="312.5" y="447" class="val">0.06</text>
+<line x1="700" x2="700" y1="10" y2="460" stroke="#cedbe5" stroke-width="2"/>
+<text x="740" y="26" class="ptitle">Claude Code, by session kind</text>
+<text x="740" y="82" class="lab">main sessions</text>
+<text x="740" y="108" class="sub">2,373 turns</text>
+<rect x="990" y="62" width="241.5" height="24" fill="#0b6a9c"/>
+<text x="1241.5" y="82" class="val">6.28</text>
+<rect x="990" y="90" width="78.1" height="20" fill="#e8f2f9" stroke="#0b6a9c" stroke-width="2"/>
+<text x="1078.1" y="107" class="val">2.03</text>
+<text x="740" y="150" class="lab">subagents</text>
+<text x="740" y="176" class="sub">27 subagents, 494 turns</text>
+<rect x="990" y="130" width="131.2" height="24" fill="#0b6a9c"/>
+<text x="1131.2" y="150" class="val">3.41</text>
+<rect x="990" y="158" width="2.7" height="20" fill="#e8f2f9" stroke="#0b6a9c" stroke-width="2"/>
+<text x="1002.7" y="175" class="val">0.07</text>
+<text x="740" y="218" class="lab">peer sessions</text>
+<text x="740" y="244" class="sub">230 turns</text>
+<rect x="990" y="198" width="34.6" height="24" fill="#0b6a9c"/>
+<text x="1034.6" y="218" class="val">0.90</text>
+<rect x="990" y="226" width="7.3" height="20" fill="#e8f2f9" stroke="#0b6a9c" stroke-width="2"/>
+<text x="1007.3" y="243" class="val">0.19</text>
+<text x="740" y="300" class="note">The orchestrator wrote 2.03 M output tokens, more than</text>
+<text x="740" y="328" class="note">the Keelson implementers and Codex together (1.08 M).</text>
+<text x="740" y="372" class="note">Codex, for comparison: 5.35 M new input, 0.43 M output,</text>
+<text x="740" y="400" class="note">710 responses, all gpt-6-astra.</text>
+</svg>
+</div>
+</body></html>

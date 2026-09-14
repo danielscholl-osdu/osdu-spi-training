@@ -1,11 +1,8 @@
 # OSDU Azure SPI Fieldnotes
 
+> **Microsoft Hackathon 2026 project.** Two deliverables: this training site, and a [case study](docs/case-study/README.md) of how one engineer had it built in four days by a software factory of AI agents. The case study folder holds the short read, the [full record](docs/case-study/full-record.md) with its PDF, the [usage analysis](docs/case-study/usage/README.md), and the [numbers](docs/case-study/by-the-numbers.md) with their sources.
+
 An interactive learning site for senior engineers who know OSDU and are new to the Azure SPI Stack and the engineering system behind the service forks. Published at https://danielscholl-osdu.github.io/osdu-spi-training/.
-
-This repository is a Microsoft Hackathon 2026 project with two deliverables:
-
-- **The site.** Seven lessons over an inspectable architecture map, two generated audio deep dives, a video, eight field guides, and six posters, all held to a written content standard and cross-checked by a test before deploy.
-- **The case study.** The site was built in four days by one engineer managing a software factory of AI agents spanning Claude, OpenAI, and GitHub Copilot, with a beads tracker and a design-intent document as shared state. [`docs/case-study/`](docs/case-study/README.md) records how the work moved, what each agent and tool was worth, what it cost, what worked, and what did not. The [numbers](docs/case-study/by-the-numbers.md) carry their sources.
 
 ## The site
 
@@ -76,15 +73,3 @@ This is an illustrative development and test environment, not live Azure status.
 Technical content comes from the `osdu-spi-stack` architecture, deployment, identity, and fork-deployment guides and the `osdu-spi` concepts and engineering-system documentation. Each lesson links to its sources. The diagrams group examples; every service does not use every backend shown.
 
 The site executes no Azure commands, requires no Azure credentials, and remains separate from the source repositories it explains. Google Fonts is optional; system-font fallbacks are provided. Nothing is published by the development or build commands.
-
-## Reviewed against
-
-The technical claims were last checked on 12 September 2026 against these sibling checkouts: `osdu-spi-stack` at `dc2c956`, `osdu-spi` at `080f0b8`, and `osdu-spi-partition` at `3a5690d`. The content test resolves every source path against those checkouts when they are present. When the sources move, re-check the dated statements first: the upstream Azure directory is still present, the reference fork has not adopted the newer validation lane or written its descriptor, per-service image promotion (osdu-spi-stack ADR-033) is designed but not built, and the scheduled stale-pin sweep is not wired.
-
-The partition-lookup comparison was reviewed separately on 13 September 2026 against community Partition at `5aa406b978dec178fe05f1c9a0ee0ca02eb239b4`, community `cimpl-stack` at `fe56aa1b13e9a15aee8af97f103484f8240a9cb3`, `Azure/osdu-spi-stack` at `dc2c95638ded6459538085cfdb2ada46b692c27b`, and `Azure/osdu-spi-partition` at `3a5690da3147d022ca9a2402858cd7b96e4688cf`. The community service source establishes its lookup behavior, while `cimpl-stack` establishes the environment binding. This source review did not establish a paired deployment, match either checkout to a deployed image digest, or produce an acceptance-test result.
-
-## How it was built
-
-The build ran from Friday 11 September to Monday morning 14 September 2026. OpenAI Codex built the first prototype on the Friday afternoon. From that evening a Claude Code session orchestrated: it spawned subagents, handed multi-file changes to Keelson's beads-work workflow, verified every change in a browser, and kept the record in a beads tracker and a design-intent artifact. OpenAI Codex and GPT-6 Astra reviewed usability, accuracy, and design. GitHub Copilot reviewed the workflow's pull requests. Gemini NotebookLM produced the recordings and video. The engineer set direction, approved plans, cut scope, and carried reviews between vendors.
-
-The [case study](docs/case-study/README.md) tells that story in short form; the [full record](docs/case-study/full-record.md) has the day-by-day account, and the [usage analysis](docs/case-study/usage/README.md) shows where the tokens went. [The process record](docs/process/README.md) maps each of the nine external reviews to the iteration that answered it. The recordings, the video, and the supplied posters were generated from [an introduction written for NotebookLM](docs/azure-spi-introduction-source.md), the supplied [OSDU SPI Stack guide](osdu-spi-stack-guide.pdf), and the [complete osdu-spi guide](osdu-spi-complete-guide.pdf); [audio source notes](docs/audio-source-notes.md) list every marker, its destination, and the wording the narration should correct. Replacement scripts written for engineers who already know OSDU are drafts for approval in [the Start video script](docs/start-video-script.md), [the stack deep-dive script](docs/deep-dive-stack-script.md), and [the fork deep-dive script](docs/deep-dive-fork-script.md), each with its spoken text alone in [docs/narration/](docs/narration/). The current recordings and their transcripts stay until a recording is replaced.
