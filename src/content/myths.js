@@ -19,7 +19,7 @@ export const myths = [
     reality:
       'Suspension stops fetching new commits. The cached revision keeps being applied, so live edits to Flux-managed objects are reverted, external chart repositories keep their own schedules, and controllers keep running.',
     correction:
-      'Suspension stops new commits, but Flux keeps applying its cached revision.',
+      'Suspension stops fetching new commits, but Flux keeps applying its cached revision.',
     check: 'kubectl get gitrepository osdu-spi-stack-system -n osdu-flux',
     source: 'flux',
     route: '#running-stack/developer?detail=flux',
@@ -170,7 +170,7 @@ export const myths = [
     reality:
       'The service fork keeps a relationship with upstream, not a copy of it. Every day the filter regenerates fork_upstream from the upstream tip, and the cascade carries that into the fork-owned tree. What the fork owns is a short list of paths, not the repository.',
     correction:
-      'The fork regenerates from upstream daily while owning only a short list of paths.',
+      'fork_upstream is regenerated from upstream daily; the fork owns only a short list of paths.',
     check:
       'git log -1 --format=%B fork_upstream | grep -E "Upstream-Sha|Filter-Rev"',
     source: 'ownership',
