@@ -1,80 +1,116 @@
 # Hackathon project submission draft
 
-Field contents for the Microsoft Hackathon 2026 project form. The idea form ([hackathon-submission.md](hackathon-submission.md)) was the proposal; this is the result. Character limits are the form's. Every figure comes from the [case study](README.md) and [by the numbers](by-the-numbers.md).
+Field contents for the Microsoft Hackathon 2026 project form. The idea form ([hackathon-submission.md](hackathon-submission.md)) was the proposal; this is the result and the hack-week plan. Character limits are the form's. Every figure comes from the [case study](README.md) and [by the numbers](by-the-numbers.md).
 
-## Title (140 characters)
+## Step 1: Basics
+
+### Title (140 characters)
 
 Azure SPI Fieldnotes: an onboarding site built by a multi-vendor software factory
 
-## Tagline (300 characters)
+### Tagline (300 characters)
 
 One engineer, four days, agents from Anthropic, OpenAI, and Google. Result: a seven-lesson interactive course on the Azure SPI machinery, live on GitHub Pages, and a measured case study of what the human in the loop actually had to do.
 
-## Executive challenge
+### Executive challenge
 
 Hack for Agentic Coding
 
-## Topic challenges
+### Topic challenges
 
 Agentic Loop Engineering Ready; Hack2Enable; Human-Agent Builder Teams: The Future of Work; Agentic Engineering
 
-## Keywords
+### Keywords
 
 software factory, agentic engineering, human in the loop, Claude Code, Keelson, beads, Codex, GitHub Copilot, NotebookLM, OSDU, Azure SPI, onboarding, training, case study
 
-## Project video
-
-Eligibility for the executive challenge depends on a project video submitted by the deadline. The one-minute NotebookLM overview covers the case study and can serve as the submission as it stands. A stronger cut, if there is time, is one to two minutes in three parts: thirty seconds of the site in use (a lesson, a claim focusing the map, the evidence drawer), thirty seconds of the factory (the beads board, a workflow run pausing for approval, a merged pull request), and the closing findings from the case study. The hackathon runs the week of September 14 and the deadline is September 21 at 23:59 Pacific.
-
-## Media (after the first save)
+### Media gallery (after the first save)
 
 1. `hackathon-splash.png`, the gallery image.
 2. `hero.png`, the operating model.
 3. `one-change-before-after.png`, one change through the factory.
 4. `software-factory.png`, the one-page poster.
 
-## Description
+### Description
+
+Images cannot be added until the project is saved once. Paste the text, save, then drop each file at the italic placeholder line and delete the placeholder.
+
+---
+
+**Status: the site and the case study are live. Hack week adds a learner pilot, the hands-on walkthrough, re-recordings from approved scripts, and the demo video.**
 
 **Live site:** https://danielscholl-osdu.github.io/osdu-spi-training/
+
 **Repository:** https://github.com/danielscholl-osdu/osdu-spi-training
+
 **Case study:** https://github.com/danielscholl-osdu/osdu-spi-training/blob/main/docs/case-study/README.md
-**One-minute video overview:** https://danielscholl-osdu.github.io/osdu-spi-training/case-study/media/the-one-man-ai-software-factory.mp4
-**45-minute audio deep dive:** https://danielscholl-osdu.github.io/osdu-spi-training/case-study/media/the-four-day-ai-software-factory.m4a
+
+**Video overview (1 min):** https://danielscholl-osdu.github.io/osdu-spi-training/case-study/media/the-one-man-ai-software-factory.mp4
+
+**Audio deep dive (45 min):** https://danielscholl-osdu.github.io/osdu-spi-training/case-study/media/the-four-day-ai-software-factory.m4a
+
+_[Image: hero.png, the operating model]_
 
 ### What was built
 
-**A training site.** OSDU Azure SPI Fieldnotes teaches engineers who already know OSDU how its Azure implementation works: seven lessons over an inspectable architecture map, each a small set of claims that focus the map on the components that prove them, with an evidence drawer that says what a component is, why it matters, how to verify it, and where the source repositories substantiate it. Around the lessons: generated audio deep dives with chapter markers and source-check notes, hand-drawn field guides, posters, and an optional hands-on band per lesson. Every explanation must name something checkable against the source repositories, and a content test enforces the structure before any build can deploy.
+**A training site.** OSDU Azure SPI Fieldnotes teaches engineers who already know OSDU how its Azure implementation works: seven lessons over an inspectable architecture map. Each lesson is a small set of claims; selecting a claim focuses the map on the components that prove it, and an evidence drawer says what each component is, why it matters, how to verify it, and where the source repositories substantiate it. Around the lessons: generated audio deep dives with chapter markers and source-check notes, hand-drawn field guides, posters, and an optional hands-on band per lesson. Every explanation must name something checkable against the source repositories, and a content test enforces the structure before any build can deploy.
 
 **A case study of how it was built.** The engineer acted as a manager rather than a coder and ran a factory of AI agents from more than one vendor, with an issue tracker and a design-intent document as shared state every agent could read. The case study documents how the work moved, what each agent and tool was worth, what it cost, what worked, and what did not. It comes with a full record, a numbers appendix with sources, a token-usage analysis, and the video and audio above, both generated by NotebookLM from the record.
 
 ### How the factory ran
 
-- **Orchestrator.** One Claude Code session from the third morning to the end. It wrote briefs, spawned subagents, handed multi-file changes to a workflow, checked every change in a real browser at two widths, merged, and kept the record.
-- **Workers.** 27 Claude subagents for bounded work in their own checkouts (posters, fact-checks, a rebuilt page). Keelson, a local agent workbench, running its beads-work workflow: plan, approval gate, implementation in an isolated checkout with OpenAI models under GitHub Copilot, three review lanes, a draft pull request, and a write-back to the issue. 17 runs, 13 merged pull requests.
-- **Reviewers that did not build the change.** OpenAI Codex reviewed the deployed site 15 times. GPT Astra in ChatGPT shaped the design over eight conversations. GitHub Copilot reviewed every workflow-built pull request. A second Claude session fact-checked the whole site and found 21 issues.
-- **Shared state.** A beads tracker, 81 issues by the end, with measurable acceptance criteria and close reasons that name the commit and the measurement. A design-intent document through 23 revisions that reviewers cited by revision. And a content standard every agent read and the test enforced.
+| Role         | Who                                                                                    | What it did                                                                                                                                                                                                   |
+| ------------ | -------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Engineer     | One person                                                                             | Direction with a reason, design review, plan approval, scope cuts, carrying reviews between vendors, environment repair. Never edited code.                                                                   |
+| Orchestrator | One Claude Code session                                                                | Wrote briefs, spawned subagents, handed multi-file changes to the workflow, checked every change in a real browser at two widths, merged, kept the record.                                                    |
+| Workers      | 27 Claude subagents; Keelson beads-work workflow with OpenAI models via GitHub Copilot | Subagents: bounded work in their own checkouts (posters, fact-checks, a rebuilt page). Workflow: plan, approval gate, isolated implementation, three review lanes, draft PR. 17 runs, 13 merged PRs.          |
+| Reviewers    | OpenAI Codex, GPT Astra in ChatGPT, GitHub Copilot, a second Claude session            | Codex reviewed the deployed site 15 times; Astra shaped the design over 8 conversations; Copilot reviewed every workflow PR; the second session fact-checked the site and found 21 issues.                    |
+| Shared state | beads tracker, design-intent document, content standard                                | 81 issues with measurable acceptance criteria and evidence-bearing close reasons; a design document through 23 revisions that reviewers cited by revision; a standard every agent read and the test enforced. |
+
+_[Image: factory-diagram.png, the detailed factory diagram with model assignments]_
 
 ### What the engineer did
 
-About 150 messages over four days and roughly 15 to 21 hours of active attention: direction with a reason, design review, plan approval, scope cuts, carrying reviews between vendors, and repairing the environment when it fell over. The engineer never edited code. Routine plan approvals took under an hour in total after they were delegated to the orchestrator; reading reviews took 4 to 5 hours, and assessing the site as a learner took 5 to 6.
+About 150 messages over four days and roughly 15 to 21 hours of active attention. Routine plan approvals took under an hour in total after they were delegated to the orchestrator. Reading and carrying reviews took 4 to 5 hours, assessing the site as a learner 5 to 6, and repairing the environment about 2.
 
 ### What the evidence shows
 
 - **Review and visual judgement still needed a person.** The defects that changed the product were visual and behavioural, found in the browser and by outside reviewers, not by review lanes reading a diff. The lanes raised 27 candidates across 13 runs and blocked once.
 - **The full workflow was not worth it for every change.** A run took 16 to 53 minutes, median 26; a subagent on a bounded task took 11 to 16. Runs went to changes that crossed files and changed behaviour, where the plan gate and the isolation paid for themselves. Subagents and direct edits took the rest.
-- **One change end to end.** A reviewer's note that a lesson ending asked the reader to decode four treatments became an issue with measurable criteria, a workflow run of 33 minutes of implementation, a Copilot review with two confirmed findings, and a merge measured in the browser: the optional band shrank from 891 to 261 pixels and the page from 3,551 to 2,658.
+- **One change end to end.** A reviewer's note that a lesson ending asked the reader to decode four treatments became an issue with measurable criteria, a workflow run with 33 minutes of implementation, a Copilot review with two confirmed findings, and a merge measured in the browser: the optional band shrank from 891 to 261 pixels and the page from 3,551 to 2,658.
+
+_[Image: one-change-before-after.png, lesson 01 before and after]_
+
 - **Some review feedback arrived too late to gate a merge.** Six of Copilot's nine inline comments landed after the pull request had merged; the median merge was six minutes after opening.
 - **Ask for the argument, then cut.** Three interaction features were removed the same day they were built after the engineer asked for the case against each. None of the removals was reversed.
 - **Media was the expensive rework.** Four orientation recordings in three hours, two demoted the next day. Script first, then record.
 - **What it cost.** The three channels with a usage ledger recorded 30.8 million new input tokens, 904 million cached reads, and 4.05 million output tokens. Cache reads were 97 percent of input. The records were not reconciled into a single cost figure.
 
-### What remains open
+_[Image: usage/usage-by-channel.png, where the tokens went]_
 
-Whether the site shortens onboarding is not yet measured; a pilot with real learners is the next step. Whether the factory saved labour against building by hand, and whether this mix of tools beats another, are open questions the record cannot answer.
+### Hack week plan
+
+- **Learner pilot.** Two or three engineers who know OSDU but not the Azure implementation work through lessons 01 to 03. Success measure: each can trace one request through the stack and name where a fork's change enters the image lock, without help.
+- **Hands-on walkthrough.** Run the personal-account walkthrough that gates two of the hands-on bands and publish the bands or cut them.
+- **Recordings.** Re-record the two introductory pieces from approved scripts.
+- **Demo video.** One to two minutes: the site in use, the factory at work, the findings.
+
+### Technology deployed
+
+| Layer         | Technology                                                  | Use                                                             |
+| ------------- | ----------------------------------------------------------- | --------------------------------------------------------------- |
+| Site          | Vanilla ES modules, Vite, GitHub Pages                      | Static single-page course; all state in the URL hash            |
+| Content check | node --test                                                 | Cross-checks every route, marker, and component before deploy   |
+| Orchestrator  | Claude Code                                                 | Planning, briefs, delegation, browser verification, record      |
+| Workbench     | Keelson with the beads integration                          | Durable runs, approval gates, beads-work workflow               |
+| Worker models | OpenAI models through GitHub Copilot                        | Planning, implementation, and review lanes inside workflow runs |
+| Reviewers     | OpenAI Codex, GPT Astra (ChatGPT), GitHub Copilot PR review | Site, design, and pull request reviews from outside the builder |
+| Tracker       | beads on Dolt                                               | Plan of record shared by every agent and run                    |
+| Media         | Google NotebookLM, Gemini image model                       | Audio deep dives, video overview, artwork                       |
 
 ### AI tools used
 
-The project is itself the test of AI-assisted work, so every major tool is disclosed. Building: Claude Code as orchestrator and its subagents; Keelson workflows running OpenAI models through GitHub Copilot; OpenAI Codex for the first-day prototype and one lesson rebuild. Reviewing: OpenAI Codex, GPT Astra in ChatGPT, GitHub Copilot's pull request reviewer, and a second Claude Code session. Media: Google NotebookLM for the audio deep dives and the video overview, and the Gemini image model for artwork. The case study prose was drafted by a Claude Code session from the records and edited by the engineer.
+The project is itself the test of AI-assisted work, so every major tool is disclosed above. The case study prose was drafted by a Claude Code session from the records and edited by the engineer.
 
 ### Supporting material in the repository
 
@@ -82,3 +118,29 @@ The project is itself the test of AI-assisted work, so every major tool is discl
 - By the numbers, with sources: `docs/case-study/by-the-numbers.md`
 - Token usage analysis: `docs/case-study/usage/README.md`
 - One-page poster and detailed factory diagram: `docs/case-study/software-factory.png`, `docs/case-study/factory-diagram.png`
+
+---
+
+## Step 2: Additional information
+
+Fields as seen on a published project page.
+
+### Writing code
+
+Yes
+
+### Hacking on
+
+agentic engineering, software factory, developer onboarding, OSDU, Azure
+
+### Who is this for?
+
+Engineers onboarding to the Azure SPI implementation of OSDU, and teams deciding whether to run a multi-vendor agent factory on real work.
+
+### Problem or opportunity statement
+
+Engineers who already know OSDU take weeks to become productive on its Azure implementation, because the knowledge is spread across three repositories and a stack of guides. The opportunity is a site that builds the mental model in an afternoon, and a measured answer to what a human still has to do when agents build it.
+
+## Project video
+
+Eligibility for the executive challenge depends on a project video submitted by the deadline, September 21 at 23:59 Pacific. The one-minute NotebookLM overview serves until the demo cut in the hack week plan replaces it.
