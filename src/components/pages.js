@@ -231,14 +231,6 @@ function lessonIndex() {
 
 function homePage() {
   const start = chapters.start;
-  const moreSources = [
-    'architecture',
-    'engineering',
-    'designs',
-    'decisions',
-    'cimplArchitecture',
-    'communityPartitionProvider',
-  ];
   return `<section class="home-introduction" aria-labelledby="home-introduction-title">
       <h2 id="home-introduction-title">Introduction</h2>
       <div class="home-media">
@@ -256,7 +248,13 @@ function homePage() {
     </section>
     <section class="home-sources" aria-labelledby="home-sources-title">
       <h2 id="home-sources-title">Go deeper</h2>
-      <p class="home-more-sources">${moreSources.map(sourceAnchor).join('')}</p>
+      <div class="deeper-grid">${start.deeper
+        .map((entry) => {
+          const source = sources[entry.source];
+          if (!source) throw new Error(`Unknown source key: ${entry.source}`);
+          return `<a class="deeper-card owner-${entry.owner}" href="${source.href}" target="_blank" rel="noopener noreferrer"><span class="deeper-kicker">${escapeHtml(entry.kicker)}</span><b>${escapeHtml(entry.title)} ↗</b><small>${escapeHtml(entry.note)}</small></a>`;
+        })
+        .join('')}</div>
     </section>`;
 }
 

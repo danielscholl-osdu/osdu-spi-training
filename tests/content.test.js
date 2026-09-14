@@ -1150,6 +1150,16 @@ test('audio markers are ordered, inside the recording, and point at real views',
     'one source area',
   );
   assert.ok(!home.includes('source-cards'), 'the source cards are gone');
+  assert.equal(
+    home.split('class="deeper-card').length - 1,
+    chapters.start.deeper.length,
+    'Go deeper renders one card per entry',
+  );
+  for (const entry of chapters.start.deeper)
+    assert.ok(
+      sources[entry.source] && entry.title && entry.note && entry.kicker,
+      `Go deeper entry ${entry.source} is complete`,
+    );
   assert.ok(
     home.indexOf('home-introduction') < home.indexOf('class="home-names"') &&
       home.indexOf('class="home-names"') <
