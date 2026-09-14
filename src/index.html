@@ -120,17 +120,14 @@
                 aria-live="polite"
                 aria-atomic="true"
               >
-                <span class="detail-kicker">Inspecting</span>
                 <h3 id="detail-title" tabindex="-1"></h3>
-                <span class="detail-kicker">Context</span>
-                <p id="detail-label" class="detail-label"></p>
-                <div id="detail-owner" class="detail-owner" hidden>
-                  <span class="detail-kicker">Owned by</span>
-                  <p id="detail-owner-name" class="detail-label"></p>
-                </div>
-                <span class="detail-kicker">What it is</span>
+                <p class="detail-meta">
+                  <span id="detail-label" class="detail-label"></span
+                  ><span id="detail-owner" class="detail-owner" hidden>
+                    · <span id="detail-owner-name"></span
+                  ></span>
+                </p>
                 <p id="detail-what"></p>
-                <span class="detail-kicker">Why it matters here</span>
                 <p id="detail-copy"></p>
                 <details id="detail-more">
                   <summary>More</summary>
@@ -141,7 +138,7 @@
                   <span id="artifact-label"></span>
                   <pre><code id="artifact-code"></code></pre>
                 </div>
-                <span class="detail-kicker">Go deeper</span>
+                <span class="detail-kicker">Sources</span>
                 <div id="detail-source" class="detail-sources"></div>
               </div>
             </aside>

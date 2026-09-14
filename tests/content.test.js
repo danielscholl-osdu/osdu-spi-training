@@ -1805,6 +1805,68 @@ test('lesson workspace keeps claims and context between its header and map', () 
   );
 });
 
+test('inspector frame uses compact metadata and unlabeled explanations', () => {
+  const html = readFileSync(
+    new URL('../src/index.html', import.meta.url),
+    'utf8',
+  );
+  const start = html.indexOf('id="inspector"');
+  const end = html.indexOf('</aside>', start);
+  const inspector = html.slice(start, end);
+  const ids = [
+    'detail-toggle',
+    'detail-state',
+    'detail-body',
+    'detail-title',
+    'detail-label',
+    'detail-owner',
+    'detail-owner-name',
+    'detail-what',
+    'detail-copy',
+    'detail-more',
+    'detail-more-copy',
+    'detail-artifact',
+    'artifact-label',
+    'artifact-code',
+    'detail-source',
+  ];
+
+  assert.match(
+    inspector,
+    /<p class="detail-meta">[\s\S]*id="detail-label"[\s\S]*id="detail-owner" class="detail-owner" hidden>[\s\S]*·[\s\S]*id="detail-owner-name"[\s\S]*<\/span>[\s\S]*<\/p>/,
+  );
+  assert.ok(
+    inspector.indexOf('id="detail-title"') <
+      inspector.indexOf('class="detail-meta"') &&
+      inspector.indexOf('class="detail-meta"') <
+        inspector.indexOf('id="detail-what"') &&
+      inspector.indexOf('id="detail-what"') <
+        inspector.indexOf('id="detail-copy"'),
+    'title, metadata, and plain explanation paragraphs stay ordered',
+  );
+  assert.doesNotMatch(
+    inspector,
+    />\s*(Inspecting|Context|Owned by|What it is|Why it matters here|Go deeper)\s*</,
+  );
+  assert.match(inspector, />Verify it<\/span>/);
+  assert.match(inspector, />Sources<\/span>/);
+  assert.match(
+    inspector,
+    /id="detail-body"[\s\S]*aria-live="polite"[\s\S]*aria-atomic="true"/,
+  );
+  assert.match(inspector, /id="detail-title" tabindex="-1"/);
+  assert.match(
+    inspector,
+    /id="detail-toggle"[\s\S]*aria-expanded="false"[\s\S]*aria-controls="detail-body"/,
+  );
+  for (const id of ids)
+    assert.equal(
+      [...html.matchAll(new RegExp(`id="${id}"`, 'g'))].length,
+      1,
+      `${id} occurs once`,
+    );
+});
+
 test('structured claims resolve their focus, evidence, and scopes on every scene', () => {
   for (const [key, chapter] of mapChapters) {
     const claims = (chapter.outcomes || []).filter(
