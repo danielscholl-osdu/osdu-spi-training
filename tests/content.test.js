@@ -1731,8 +1731,20 @@ test('learn views retain authored lesson metadata and omit repeated scaffolding'
       const myth = myths.find(({ id: mythId }) => mythId === mistakeId);
       const callout = mythCallout(mistakeId, id);
       assert.doesNotMatch(callout, /All \d+, by theme/, `${id}: collection`);
+      assert.ok(callout.includes(`“${myth.claim}”`), `${id}: assumption`);
       assert.ok(callout.includes(myth.reality), `${id}: correction`);
+      assert.ok(
+        callout.includes(
+          `<code class="myth-check">${escapeHtml(myth.check)}</code>`,
+        ),
+        `${id}: visible check`,
+      );
       assert.ok(callout.includes(sources[myth.source].href), `${id}: source`);
+      assert.doesNotMatch(
+        callout,
+        /field-check-row|field-check-evidence|<details/,
+        `${id}: compact callout`,
+      );
     }
   }
   for (const level of zoomLevels) {
@@ -1783,8 +1795,14 @@ test('field checks expose corrections before optional evidence', () => {
     );
     const row = markup.slice(rowStart, markup.indexOf('</article>', rowStart));
     const detailsStart = row.indexOf('<details class="field-check-evidence">');
+    const details = row.slice(detailsStart, row.indexOf('</details>'));
 
     assert.ok(rowStart >= 0, `${myth.id}: row`);
+    assert.equal(
+      markup.split(`id="myth-${myth.id}"`).length - 1,
+      1,
+      `${myth.id}: unique anchor`,
+    );
     assert.ok(
       row.indexOf(`“${escapeHtml(myth.claim)}”`) < detailsStart,
       `${myth.id}: visible assumption`,
@@ -1807,8 +1825,26 @@ test('field checks expose corrections before optional evidence', () => {
       row.slice(detailsStart).includes(escapeHtml(myth.check)),
       `${myth.id}: escaped check`,
     );
-    assert.ok(!row.includes('<details class="field-check-evidence" open'));
+    assert.ok(details.includes(myth.reality), `${myth.id}: full explanation`);
+    assert.equal(
+      details.split('<a ').length - 1,
+      2,
+      `${myth.id}: two evidence links`,
+    );
+    assert.ok(details.includes(`href="${myth.route}"`), `${myth.id}: route`);
+    assert.ok(
+      details.includes(`href="${sources[myth.source].href}"`),
+      `${myth.id}: source`,
+    );
+    assert.doesNotMatch(details, /<details[^>]*\sopen(?:\s|>)/);
   }
+
+  const multiline = myths.find(
+    (myth) => myth.id === 'validation-summary-means-deployed',
+  );
+  assert.ok(multiline.check.includes('\n'), 'fixture has a multiline command');
+  assert.ok(markup.includes(escapeHtml(multiline.check)));
+  assert.ok(markup.includes('&lt;run-id&gt;'));
 });
 
 test('field checks preserve theme and anchor membership', () => {
@@ -1816,6 +1852,7 @@ test('field checks preserve theme and anchor membership', () => {
 
   assert.equal(markup.split('class="myth-theme"').length - 1, mythThemes.length);
   assert.equal(markup.split('class="field-check-row"').length - 1, myths.length);
+  let previousTheme = -1;
   for (const theme of mythThemes) {
     const themeStart = markup.indexOf(
       `<section class="myth-theme" aria-label="${theme.title}">`,
@@ -1824,14 +1861,59 @@ test('field checks preserve theme and anchor membership', () => {
       themeStart,
       markup.indexOf('</section>', themeStart),
     );
-    assert.ok(themeMarkup.includes(`href="${theme.built.href}"`), theme.id);
+    assert.ok(themeStart > previousTheme, `${theme.id}: authored order`);
+    assert.ok(
+      themeMarkup.includes(
+        `<a href="${theme.built.href}">Built in ${theme.built.label} →</a>`,
+      ),
+      `${theme.id}: destination`,
+    );
     for (const myth of myths.filter((entry) => entry.theme === theme.id))
       assert.equal(
         themeMarkup.split(`id="myth-${myth.id}"`).length - 1,
         1,
         `${theme.id}: ${myth.id}`,
       );
+    previousTheme = themeStart;
   }
+});
+
+test('field check remains lesson 07 after the round trip', () => {
+  const route = parseRoute('#not-true');
+  const learnKeys = Object.keys(chapters).filter(
+    (key) => chapters[key].group === 'learn',
+  );
+  const indexedKeys = chapters.start.index.flatMap((group) =>
+    Object.keys(group.lessons),
+  );
+
+  assert.equal(route.chapter, 'not-true');
+  assert.deepEqual(learnKeys.slice(-2), ['handshake', 'not-true']);
+  assert.equal(indexedKeys.filter((key) => key === 'not-true').length, 1);
+  assert.equal(learnKeys.indexOf('not-true') + 1, 7);
+  assert.equal(chapters['not-true'].title, 'Things that are not true');
+  assert.equal(chapters['not-true'].subtitle, 'Field check');
+  assert.equal(
+    chapters['not-true'].headline,
+    'Field check:<span>the assumptions that cause trouble.</span>',
+  );
+  assert.ok(!chapters['not-true'].subhead);
+
+  const home = pageRenderers.home(parseRoute('#start'));
+  assert.match(
+    home,
+    /href="#not-true"><span class="lesson-number">07<\/span><b>Which common assumptions cause problems\?<\/b>/,
+  );
+  const rail = chapterNavigation('not-true');
+  assert.match(
+    rail,
+    /href="#not-true" class="chapter-link" aria-current="page"><span class="number">07<\/span><span>Things that are not true<small>Field check<\/small>/,
+  );
+  assert.ok(
+    chapterOutcomes('handshake').includes(
+      'href="#not-true">07 · Things that are not true →</a>',
+    ),
+  );
 });
 
 test('the familiar-things guide links every row to a component on the map', () => {
