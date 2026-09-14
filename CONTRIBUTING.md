@@ -93,4 +93,4 @@ Keep the overview and lifecycle on the same map renderer. When changing interact
 
 Timing labels must say whether they are observations or deadlines. A 150-minute Job deadline is not evidence that a two-hour wait is healthy. External documentation links should use the published site when the source requires a documentation renderer.
 
-Review reference material is preserved separately in `docs/concept-review.html` and `osdu-spi-stack-guide.pdf`. The review HTML is excluded from formatting. See `docs/feedback-response.md` for this iteration and `docs/audio-source-notes.md` before producing narration.
+Review reference material is preserved separately in `docs/process/reviews/concept-review.html` and `osdu-spi-stack-guide.pdf`. The review HTML is excluded from formatting. See `docs/process/iterations/` for the iteration records and `docs/audio-source-notes.md` before producing narration.

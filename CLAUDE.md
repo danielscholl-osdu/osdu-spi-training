@@ -63,7 +63,7 @@ Source links must point at the published docs (`azure.github.io/osdu-spi/`) or `
 
 - `dist/` is generated.
 - `src/content/transcripts/*.js` and `docs/reference/*.vtt` represent the recordings. Put corrections in marker notes in `audio.js`. A recording is replaced from an approved script such as `docs/azure-spi-brief-script.md`.
-- The reference PDFs, `docs/concept-review.html`, and the dated review documents in `docs/` are preserved verbatim; record responses in separate files.
+- The reference PDFs and the dated review documents in `docs/process/reviews/` are preserved verbatim; record responses in separate files.
 
 ## Project Locations for relating code
 

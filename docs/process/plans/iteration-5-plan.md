@@ -1,6 +1,6 @@
 # Iteration 5 plan: two repositories, one answer
 
-Status: agreed; phases 1–6 delivered, see iteration-5.md. Phase 2 (the spine) is being built first so the shape can be judged before guides and audio land on top of it.
+Status: agreed; phases 1–6 delivered, see ../iterations/iteration-5.md. Phase 2 (the spine) is being built first so the shape can be judged before guides and audio land on top of it.
 
 Principles agreed before building: not so heavy that a reader cannot reach an understanding; not so shallow that an engineer finds it simplistic; no confusion between the three things called SPI; concepts grow in order and every one links to the documentation that holds the depth; graphics, audio, diagrams, and interaction before paragraphs; and the writing, drawing, and naming stay plain, specific, and human. Two adjustments to the views below follow from that: the ownership-through-the-tree drawing is the map for 04, with the branches beside it, and 06 draws only the running example's hops and keeps everything else inside components.
 
