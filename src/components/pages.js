@@ -669,15 +669,12 @@ function guideEntry(id) {
 }
 
 // Each lesson group is a disclosure so a reader reaches the fork sheets
-// without scrolling past the stack's; the course maps open by default and a
+// without scrolling past the stack's; every group starts closed and a
 // ?guide= route opens whichever group holds its guide.
 function guidesPage() {
   return guideSections
     .map(
-      (
-        section,
-        i,
-      ) => `<details class="guide-set" id="guide-set-${i}"${i === 0 ? ' open' : ''}>
+      (section, i) => `<details class="guide-set" id="guide-set-${i}">
       <summary><div class="section-heading"><h2 id="guide-section-${i}">${section.title}</h2><p>${section.lessons ? `${section.lessons} · ` : ''}${section.ids.length} ${section.ids.length === 1 ? 'sheet' : 'sheets'}</p></div></summary>
       <div class="guide-set-body">${section.ids.map(guideEntry).join('')}</div>
     </details>`,

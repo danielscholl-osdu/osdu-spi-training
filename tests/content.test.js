@@ -2943,12 +2943,11 @@ test('field guide groups open in place and keep every sheet', () => {
   const guides = pageRenderers.guides(parseRoute('#field-guides'));
   const groups = guides.split('<details class="guide-set"').slice(1);
   assert.equal(groups.length, guideSections.length);
-  assert.ok(
-    groups[0].startsWith(' id="guide-set-0" open'),
-    'the maps open first',
-  );
   for (const [i, section] of guideSections.entries()) {
-    assert.ok(!groups[i].startsWith(' id="guide-set-0" open') || i === 0);
+    assert.ok(
+      groups[i].startsWith(` id="guide-set-${i}">`),
+      `${section.title} starts closed`,
+    );
     for (const id of section.ids)
       assert.ok(
         groups[i].includes(`id="guide-${id}"`),
