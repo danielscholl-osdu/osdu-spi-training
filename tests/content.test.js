@@ -29,6 +29,7 @@ import {
   chapterNavigation,
   claimIndexForRoute,
   claimContext,
+  claimStatements,
   courseMaps,
   guideSections,
   claimStrip,
@@ -39,6 +40,7 @@ import {
   guidePreviewTitles,
   hasClaims,
   isLifecycleLesson,
+  isStepLesson,
   hopIndexForRoute,
   mythCallout,
   pageRenderers,
@@ -2208,14 +2210,16 @@ test('structured claims resolve their focus, evidence, and scopes on every scene
           scene(step).scopes.has(id),
           `${key}/${step}: example scope ${id}`,
         );
-    const claimsMarkup = claimStrip(key);
+    const claimsMarkup = isStepLesson(chapter)
+      ? claimStatements(key)
+      : claimStrip(key);
     const outcomesMarkup = chapterOutcomes(key);
-    const lifecycle = isLifecycleLesson(chapter);
+    const lifecycle = isLifecycleLesson(chapter) || isStepLesson(chapter);
     if (lifecycle)
       assert.doesNotMatch(
         claimsMarkup,
         /<button|data-claim|data-evidence|aria-pressed|Select an idea/,
-        `${key}: lifecycle claims are statements, not controls`,
+        `${key}: lifecycle and step claims are statements, not controls`,
       );
     else
       assert.match(
@@ -2253,6 +2257,25 @@ test('structured claims resolve their focus, evidence, and scopes on every scene
     }
     claims.forEach((claim, index) => {
       const contextMarkup = claimContext(key, index);
+      if (isStepLesson(chapter)) {
+        for (const field of ['headline', 'text', 'why'])
+          assert.ok(claim[field]?.trim(), `${key}: claim ${index} ${field}`);
+        assert.ok(
+          claimsMarkup.includes(escapeHtml(claim.headline)) &&
+            claimsMarkup.includes(escapeHtml(claim.why)),
+          `${key}: claim ${index} statement shows its headline and reason`,
+        );
+        assert.ok(
+          outcomesMarkup.includes(escapeHtml(claim.text)),
+          `${key}: claim ${index} is carried forward`,
+        );
+        assert.equal(
+          claim.focus ?? claim.evidence ?? claim.scopes,
+          undefined,
+          `${key}: claim ${index} drives nothing; the steps drive the map`,
+        );
+        return;
+      }
       assert.ok(
         Array.isArray(claim.focus) && Array.isArray(claim.scopes),
         `${key}: claim ${index} focus and scopes are arrays`,
@@ -3106,18 +3129,13 @@ test('lesson 03 evidence deep links stay step-less and map to claims', () => {
   );
 });
 
-test('all map lesson examples use one closed disclosure and preserve routes', () => {
-  const exampleLessons = mapChapters.filter(([, chapter]) => chapter.example);
+test('map lesson examples other than the step lesson use one closed disclosure and preserve routes', () => {
+  const exampleLessons = mapChapters.filter(
+    ([, chapter]) => chapter.example && !isStepLesson(chapter),
+  );
   assert.deepEqual(
     exampleLessons.map(([key]) => key),
-    [
-      'running-stack',
-      'bring-up',
-      'spi-boundary',
-      'fork-shape',
-      'fork-day',
-      'handshake',
-    ],
+    ['running-stack', 'bring-up', 'spi-boundary', 'fork-shape', 'fork-day'],
   );
   for (const [key, chapter] of exampleLessons) {
     const steps = chapterSteps(key).length ? chapterSteps(key) : [''];
@@ -3206,6 +3224,212 @@ test('lesson 02 claim statements keep their reasons to two short sentences', () 
   assert.match(stages, /45–50 min/);
   assert.match(stages, /overlaps/);
   assert.match(stages, /45 min deletion deadline/);
+});
+
+test('lesson 06 is operated by its run steps', () => {
+  const chapter = chapters.handshake;
+  assert.ok(isStepLesson(chapter), 'lesson 06 is the step lesson');
+  assert.deepEqual(
+    Object.entries(chapters)
+      .filter(([, entry]) => isStepLesson(entry))
+      .map(([key]) => key),
+    ['handshake'],
+  );
+  assert.notEqual(
+    chapter.question,
+    chapters['fork-day'].question,
+    'the litmus question is distinct from lesson 05',
+  );
+  const markup = diagramRenderers.seam(parseRoute('#handshake'));
+  const states = [
+    ...markup.matchAll(/class="seam-state" data-for="([^"]+)"/g),
+  ].map((match) => match[1].split(' '));
+  assert.ok(states.length >= 5, 'the seam renders its states');
+  const details = new Set(
+    [...markup.matchAll(/data-detail="([^"]+)"/g)].map((match) => match[1]),
+  );
+  const strip = claimStrip('handshake');
+  assert.match(strip, /Select a step to move the lock and the pod\./);
+  assert.doesNotMatch(
+    strip,
+    /data-claim|data-hop|data-map-jump|Select an idea/,
+  );
+  assert.equal(
+    [...strip.matchAll(/aria-pressed="true"/g)].length,
+    0,
+    'no step is selected until one is chosen',
+  );
+  assert.equal(
+    (strip.match(/data-step="/g) || []).length,
+    chapter.example.hops.length,
+  );
+  for (const [index, hop] of chapter.example.hops.entries()) {
+    assert.ok(details.has(hop.detail), `${hop.label}: on the map`);
+    assert.ok(
+      states.some((list) => list.includes(hop.detail)),
+      `${hop.label}: has a lock-and-pod state`,
+    );
+    assert.ok(componentDetails[hop.detail], `${hop.label}: explanation`);
+    const button = strip.match(
+      new RegExp(
+        `<button type="button" class="claim" data-step="${index}"[^>]*>(.*?)</button>`,
+        's',
+      ),
+    );
+    assert.ok(button, `${hop.label}: button`);
+    assert.doesNotMatch(button[0], /href=|detail=/, `${hop.label}: not a link`);
+    assert.ok(button[1].includes(`<b>${escapeHtml(hop.label)}</b>`), hop.label);
+    const href = `#handshake?detail=${hop.detail}&hop=${index}`;
+    assert.ok(
+      strip.includes(
+        `<a class="claim-evidence" data-step-evidence="${index}" href="${href}">How we know →</a>`,
+      ),
+      `${hop.label}: How we know`,
+    );
+    verifyRoute(href, `${hop.label} evidence`);
+    const selected = { claim: 0, hop: index, exampleOpen: false };
+    assert.deepEqual(
+      resolveLessonSelection(chapter, parseRoute(href)),
+      selected,
+    );
+    const stepHref = routeHref('handshake', '', null, { hop: index });
+    assert.equal(stepHref, `#handshake?hop=${index}`);
+    assert.deepEqual(
+      resolveLessonSelection(chapter, parseRoute(stepHref)),
+      selected,
+      `${stepHref}: a step selection survives reload`,
+    );
+    assert.deepEqual(
+      resolveLessonSelection(
+        chapter,
+        parseRoute(`#handshake?detail=${hop.detail}`),
+      ),
+      selected,
+      `${hop.label}: a published detail link still selects its step`,
+    );
+  }
+  const none = { claim: 0, hop: -1, exampleOpen: false };
+  for (const href of [
+    '#handshake',
+    '#handshake?hop=99',
+    '#handshake?detail=lock-taken',
+  ])
+    assert.deepEqual(resolveLessonSelection(chapter, parseRoute(href)), none);
+  const retired = parseRoute('#engineering-system?detail=delivery');
+  assert.deepEqual(
+    [retired.chapter, retired.detail],
+    ['handshake', 'delivery'],
+  );
+  assert.equal(resolveLessonSelection(chapter, retired).hop, 2);
+  for (const href of ['#handshake', '#handshake?hop=3']) {
+    const route = parseRoute(href);
+    assert.equal(exampleStrip('handshake', route), '', href);
+    assert.equal(
+      exampleStrip('handshake', route, undefined, { shelf: true }),
+      '',
+      `${href}: no Follow the example row; the steps are the control`,
+    );
+  }
+  assert.match(
+    listenChips('handshake', { shelf: true }),
+    /data-shelf-row="listen"/,
+  );
+});
+
+test('lesson 06 claim statements are short and noninteractive', () => {
+  const chapter = chapters.handshake;
+  const statements = claimStatements('handshake');
+  const outcomes = chapterOutcomes('handshake');
+  assert.ok(chapter.outcomes.length >= 2 && chapter.outcomes.length <= 4);
+  assert.match(statements, /^<section class="lesson-claims is-statements"/);
+  assert.doesNotMatch(
+    statements,
+    /<button|<a |data-claim|data-evidence|data-step|aria-pressed/,
+  );
+  assert.doesNotMatch(
+    claimStrip('handshake'),
+    /claim-statements/,
+    'statements are not in the control position',
+  );
+  for (const claim of chapter.outcomes) {
+    assert.ok(claim.headline.split(/\s+/).length < 12, claim.headline);
+    assert.doesNotMatch(claim.headline, /<[^>]+>/);
+    const sentences = claim.why.split(/(?<=[.!?])\s+/);
+    assert.ok(sentences.length <= 2, `${claim.headline}: ${sentences.length}`);
+    assert.ok(
+      claim.why.length <= 160,
+      `${claim.headline}: ${claim.why.length}`,
+    );
+    assert.ok(statements.includes(`<b>${escapeHtml(claim.headline)}</b>`));
+    assert.ok(statements.includes(escapeHtml(claim.why)));
+    assert.ok(outcomes.includes(escapeHtml(claim.text)));
+  }
+});
+
+test('lesson 06 step selection never opens the drawer; only How we know does', () => {
+  const main = readFileSync(new URL('../src/main.js', import.meta.url), 'utf8');
+  const handler = main.slice(
+    main.indexOf("document.getElementById('chapter-claims').addEventListener"),
+    main.indexOf("document.getElementById('diagram').addEventListener"),
+  );
+  const steps = handler.slice(
+    handler.indexOf("closest('[data-step]')"),
+    handler.indexOf('const evidence ='),
+  );
+  assert.doesNotMatch(
+    steps,
+    /selectDetail|expandInspector\(true|scrollIntoView/,
+    'a step click opens nothing and moves nothing',
+  );
+  assert.match(steps, /closeInspector\(false\)/);
+  assert.match(steps, /clearMapSelection\(\)/);
+  assert.match(
+    steps,
+    /routeHref\(route\.chapter, route\.step, null, \{ hop: index \}\)/,
+  );
+  assert.match(steps, /pendingOpener = stepEvidence/);
+  const focus = main.slice(
+    main.indexOf('function applyFocus'),
+    main.indexOf('let detailOpener'),
+  );
+  assert.match(focus, /\[data-step\]/);
+  assert.match(focus, /\.seam-state/);
+  assert.doesNotMatch(focus, /selectDetail|expandInspector/);
+  const close = main.slice(
+    main.indexOf('function closeInspector'),
+    main.indexOf('// A closed drawer keeps'),
+  );
+  assert.match(
+    close,
+    /isStepLesson\(chapters\[route\.chapter\]\) \? route\.hop : null[\s\S]*routeHref\(route\.chapter, route\.step, null, \{ hop \}\)/,
+    'closing keeps the step in the route',
+  );
+  const diagramClick = main.slice(
+    main.indexOf("document.getElementById('diagram').addEventListener"),
+    main.indexOf("document.getElementById('detail-toggle')"),
+  );
+  assert.match(
+    diagramClick,
+    /if \(!isStepLesson\(scene\)\) lessonState\.hop = -1/,
+    'a component click keeps the step',
+  );
+  const html = readFileSync(
+    new URL('../src/index.html', import.meta.url),
+    'utf8',
+  );
+  const workspace = html.indexOf('class="visual-workspace"');
+  const statements = html.indexOf('id="chapter-statements"');
+  assert.ok(
+    workspace < statements &&
+      statements < html.indexOf('id="structured-caption"'),
+    'statements follow the workspace and precede the easy mistake',
+  );
+  const css = readFileSync(
+    new URL('../src/styles/architecture.css', import.meta.url),
+    'utf8',
+  );
+  assert.match(css, /\.seam-state\.is-current\s*\{\s*display: grid/);
+  assert.doesNotMatch(css, /data-selected='image'\] \.seam-state/);
 });
 
 test('listen chips carry the cue and its length; the recording is named while it plays', () => {
@@ -3489,7 +3713,7 @@ test('the shelf and caption are gated on learn lessons, not on claims', () => {
   );
 });
 
-test('renderers keep a non-shelf default for pages outside the lesson frame', () => {
+test('renderers keep a non-shelf default for pages outside the lesson frame; the step lesson has no example strip', () => {
   const frame = readFileSync(
     new URL('../src/index.html', import.meta.url),
     'utf8',
@@ -3503,7 +3727,8 @@ test('renderers keep a non-shelf default for pages outside the lesson frame', ()
   for (const key of ['fork-shape', 'fork-day', 'handshake']) {
     const chapter = chapters[key];
     const example = exampleStrip(key, parseRoute(routeHref(key)));
-    assert.match(example, /^<details class="example-disclosure">/);
+    if (isStepLesson(chapter)) assert.equal(example, '', key);
+    else assert.match(example, /^<details class="example-disclosure">/);
     assert.doesNotMatch(example, /data-shelf-row/);
     for (const id of new Set(Object.values(chapter.guides || {}).flat())) {
       const poster = suppliedPosters.find((entry) => entry.id === id);

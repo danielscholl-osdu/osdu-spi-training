@@ -105,8 +105,8 @@ export function routeHref(chapter, step = '', detail = null, selection = {}) {
   if (detail) params.set('detail', detail);
   const claim = selectionIndex(selection.claim?.toString());
   const hop = selectionIndex(selection.hop?.toString());
-  if (detail && (claim === null || hop === null)) {
-    if (claim !== null) params.set('claim', claim);
+  if (claim === null || hop === null) {
+    if (detail && claim !== null) params.set('claim', claim);
     if (hop !== null) params.set('hop', hop);
   }
   const query = params.toString();

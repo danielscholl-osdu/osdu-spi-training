@@ -374,6 +374,11 @@ export function isLifecycleLesson(chapter) {
   return chapter?.lesson === 'lifecycle';
 }
 
+// A step lesson's running-example hops are its workspace control, not depth.
+export function isStepLesson(chapter) {
+  return chapter?.lesson === 'steps';
+}
+
 export function hasClaims(chapter) {
   return chapter.outcomes?.some((claim) => typeof claim !== 'string') || false;
 }
@@ -416,6 +421,12 @@ export function hopIndexForRoute(chapter, route) {
 }
 
 export function resolveLessonSelection(chapter, route) {
+  if (isStepLesson(chapter)) {
+    const hop = chapter.example.hops[route.hop]
+      ? route.hop
+      : hopIndexForRoute(chapter, route);
+    return { claim: 0, hop, exampleOpen: false };
+  }
   const claims = chapter.outcomes || [];
   const fallbackClaim = claimIndexForRoute(chapter, route);
   if (
@@ -445,15 +456,36 @@ export function resolveLessonSelection(chapter, route) {
   };
 }
 
+export function claimStatements(key) {
+  const chapter = chapters[key];
+  if (!hasClaims(chapter)) return '';
+  return `<section class="lesson-claims is-statements" aria-label="Key ideas"><ul class="claim-statements">${chapter.outcomes
+    .map(
+      (claim) =>
+        `<li><b>${escapeHtml(claim.headline)}</b><span>${escapeHtml(claim.why)}</span></li>`,
+    )
+    .join('')}</ul></section>`;
+}
+
+export function stepStrip(key) {
+  const chapter = chapters[key];
+  if (!isStepLesson(chapter)) return '';
+  const { hops } = resolveExamplePresentation(chapter.example);
+  return `<section class="claims is-steps" aria-label="Steps of the run">
+    <p class="guide-kicker">Select a step to move the lock and the pod.</p>
+    <ol class="claim-list">${hops
+      .map(
+        (hop, index) =>
+          `<li class="claim-item"><button type="button" class="claim" data-step="${index}" aria-pressed="false" aria-label="${escapeHtml(`${index + 1}. ${hop.label}`)}"><span class="step-number" aria-hidden="true">${index + 1}</span><b>${escapeHtml(hop.label)}</b></button><a class="claim-evidence" data-step-evidence="${index}" href="${routeHref(key, hop.step || chapter.example.step || '', hop.detail, { hop: index })}">How we know →</a></li>`,
+      )
+      .join('')}</ol>
+  </section>`;
+}
+
 export function claimStrip(key) {
   const chapter = chapters[key];
-  if (isLifecycleLesson(chapter) && hasClaims(chapter))
-    return `<section class="lesson-claims is-statements" aria-label="Key ideas"><ul class="claim-statements">${chapter.outcomes
-      .map(
-        (claim) =>
-          `<li><b>${escapeHtml(claim.headline)}</b><span>${escapeHtml(claim.why)}</span></li>`,
-      )
-      .join('')}</ul></section>`;
+  if (isStepLesson(chapter)) return stepStrip(key);
+  if (isLifecycleLesson(chapter)) return claimStatements(key);
   if (!hasClaims(chapter)) return '';
   return `<section class="claims" aria-label="Lesson claims">
     <p class="guide-kicker">Select an idea to highlight it on the map.</p>
@@ -542,7 +574,7 @@ export function selectExampleVariant(state, variant, hopCount) {
 
 export function exampleStrip(key, route, variant, { shelf = false } = {}) {
   const example = chapters[key].example;
-  if (!example) return '';
+  if (!example || isStepLesson(chapters[key])) return '';
   const presentation = resolveExamplePresentation(example, variant);
   const structured = hasClaims(chapters[key]);
   const current = hopIndexForRoute(chapters[key], route);

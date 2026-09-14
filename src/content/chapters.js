@@ -1167,6 +1167,7 @@ export const chapters = {
   handshake: {
     kind: 'map',
     group: 'learn',
+    lesson: 'steps',
     book: 'The seam',
     title: 'The handshake',
     subtitle: 'Borrow, prove, restore',
@@ -1222,10 +1223,23 @@ export const chapters = {
       ],
       note: 'Every hop leaves something you can inspect: a gate notice, a lock annotation, a pod imageID, a Surefire report, a reset exit code. The fallback itself was proved by unit tests in the build; the suites here prove the API on the pinned pod.',
     },
+    goal: 'You can say what one validation run writes in the environment, what proves the candidate is running, and when its restore can be trusted.',
     outcomes: [
-      'Writing the lock starts the deploy: Flux reconciles osdu-image-lock and the pod restarts on the pinned digest, and the run checks the pod before trusting any test result. Between runs the lock holds the canonical image.',
-      'The run only restores what it still owns, so a green restore is a claim about this run, not about the environment.',
-      'The stack publishes facts and the fork declares needs in its descriptor. Five repository settings, plus trust onboarding on the stack side, are all that connect them.',
+      {
+        headline: 'Writing the lock starts the deploy.',
+        text: 'Writing the lock starts the deploy: Flux reconciles osdu-image-lock and the pod restarts on the pinned digest, and the run checks the pod before trusting any test result. Between runs the lock holds the canonical image.',
+        why: 'The run writes the candidate digest and its run ID into osdu-image-lock; Verify then waits for a pod whose imageID matches before any suite runs.',
+      },
+      {
+        headline: 'A green restore is a claim about this run.',
+        text: 'The run only restores what it still owns, so a green restore is a claim about this run, not about the environment.',
+        why: 'spi service reset --if-run writes the canonical image back only while the lock annotation still names this run; otherwise it writes nothing and exits 2.',
+      },
+      {
+        headline: 'The stack publishes facts; the fork declares needs.',
+        text: 'The stack publishes facts and the fork declares needs in its descriptor. Five repository settings, plus trust onboarding on the stack side, are all that connect them.',
+        why: 'spi status --json and spi info --json are the facts; .spi/service.yaml is the descriptor. The deploy identity is federated to the repository.',
+      },
     ],
   },
   'not-true': {

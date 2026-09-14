@@ -15,7 +15,9 @@ import {
   listenChips,
   hasClaims,
   isLifecycleLesson,
+  isStepLesson,
   claimStrip,
+  claimStatements,
   claimContext,
   guidePreview,
   guidesPreview,
@@ -131,22 +133,43 @@ function applyFocus() {
   const chapter = chapters[route.chapter];
   if (!hasClaims(chapter)) return;
   const claim = chapter.outcomes[lessonState.claim];
-  const tracing = lessonState.hop >= 0;
+  const stepped = isStepLesson(chapter);
+  const tracing = lessonState.hop >= 0 && !stepped;
   const presentation = applyExamplePresentation(chapter, tracing);
+  const step = stepped ? presentation.hops[lessonState.hop] || null : null;
   // A lifecycle lesson is driven by its stage: nothing recedes, and the
-  // stage's own evidence component carries the Inspect affordance.
+  // stage's own evidence component carries the Inspect affordance. A step
+  // lesson recedes only once a step is selected.
   const stage = isLifecycleLesson(chapter)
     ? creationMoments.find((moment) => moment.id === route.step)
     : null;
   const staged = Boolean(stage) && !tracing;
+  const settled = staged || (stepped && !step);
   const focus = new Set(
-    tracing
-      ? presentation.hops.slice(0, lessonState.hop + 1).map((hop) => hop.detail)
-      : claim.focus || [],
+    step
+      ? [step.detail]
+      : tracing
+        ? presentation.hops
+            .slice(0, lessonState.hop + 1)
+            .map((hop) => hop.detail)
+        : stepped
+          ? []
+          : claim.focus || [],
   );
   const scopes = new Set(
-    tracing ? presentation.scopes || [] : staged ? [] : claim.scopes || [],
+    tracing
+      ? presentation.scopes || []
+      : settled || stepped
+        ? []
+        : claim.scopes || [],
   );
+  const evidenceId = step
+    ? step.detail
+    : staged
+      ? stage.detail
+      : stepped
+        ? null
+        : claim.evidence;
   const diagram = document.getElementById('diagram');
   diagram.dataset.focus = '';
   diagram
@@ -154,8 +177,8 @@ function applyFocus() {
     .forEach((node) => node.classList.remove('path-emphasis'));
   diagram.querySelectorAll('.node').forEach((node) => {
     const active = focus.has(node.dataset.detail);
-    node.classList.toggle('is-focus', !staged && active);
-    node.classList.toggle('is-receded', !staged && !active);
+    node.classList.toggle('is-focus', !settled && active);
+    node.classList.toggle('is-receded', !settled && !active);
     node.classList.toggle('is-path', tracing && active);
     node.classList.toggle('is-traced', tracing && active);
   });
@@ -164,8 +187,7 @@ function applyFocus() {
     .forEach((node) =>
       node.classList.toggle(
         'is-evidence',
-        !tracing &&
-          node.dataset.detail === (staged ? stage.detail : claim.evidence),
+        !tracing && node.dataset.detail === evidenceId,
       ),
     );
   diagram
@@ -173,12 +195,35 @@ function applyFocus() {
     .forEach((scope) =>
       scope.classList.toggle('is-focus-scope', scopes.has(scope.dataset.scope)),
     );
+  // The seam's state panel follows the selected component when there is one,
+  // otherwise the selected step; with neither it shows the canonical image.
+  if (stepped) {
+    const stateId = diagram.dataset.selected || step?.detail || null;
+    const states = [...diagram.querySelectorAll('.seam-state')];
+    const current = states.filter((state) =>
+      state.dataset.for.split(' ').includes(stateId),
+    );
+    states.forEach((state) =>
+      state.classList.toggle(
+        'is-current',
+        current.length ? current.includes(state) : state === states[0],
+      ),
+    );
+  }
   document
     .querySelectorAll('[data-claim]')
     .forEach((button) =>
       button.setAttribute(
         'aria-pressed',
         String(!tracing && Number(button.dataset.claim) === lessonState.claim),
+      ),
+    );
+  document
+    .querySelectorAll('[data-step]')
+    .forEach((button) =>
+      button.setAttribute(
+        'aria-pressed',
+        String(Number(button.dataset.step) === lessonState.hop),
       ),
     );
   document.querySelectorAll('[data-hop]').forEach((link) => {
@@ -202,11 +247,17 @@ function applyFocus() {
     ? presentation.crossing
     : staged
       ? stage.action
-      : claim.crossing;
+      : stepped
+        ? null
+        : claim.crossing;
   if (crossing && typeof crossingLabel === 'string')
     crossing.textContent = crossingLabel;
   const context = document.getElementById('claim-context');
-  if (tracing) {
+  if (step) {
+    const line = document.createElement('p');
+    line.textContent = step.copy;
+    context.replaceChildren(line);
+  } else if (tracing) {
     const hop = presentation.hops[lessonState.hop];
     const sentence = document.createElement('p');
     const reason = document.createElement('small');
@@ -214,9 +265,8 @@ function applyFocus() {
     reason.textContent = hop?.copy || '';
     context.replaceChildren(sentence, reason);
   } else {
-    context.innerHTML = staged
-      ? ''
-      : claimContext(route.chapter, lessonState.claim);
+    context.innerHTML =
+      staged || stepped ? '' : claimContext(route.chapter, lessonState.claim);
   }
   context.hidden = !context.textContent.trim();
 }
@@ -272,8 +322,14 @@ function closeInspector(restoreFocus = true) {
   if (wasOpen && restoreFocus) opener?.focus({ preventScroll: true });
   const route = parseRoute(location.hash);
   if (route.detail) {
-    history.replaceState(null, '', routeHref(route.chapter, route.step));
-    previousRoute = { ...route, detail: null, claim: null, hop: null };
+    // A step lesson keeps its selected step in the route once its evidence closes.
+    const hop = isStepLesson(chapters[route.chapter]) ? route.hop : null;
+    history.replaceState(
+      null,
+      '',
+      routeHref(route.chapter, route.step, null, { hop }),
+    );
+    previousRoute = { ...route, detail: null, claim: null, hop };
     previousHash = location.hash;
   }
 }
@@ -385,6 +441,9 @@ function renderChapterFrame(route, scene) {
   claims.innerHTML = claimStrip(key);
   if (isLifecycleLesson(scene))
     document.querySelector('#exploration .visual-workspace').after(claims);
+  const statements = document.getElementById('chapter-statements');
+  statements.innerHTML = isStepLesson(scene) ? claimStatements(key) : '';
+  statements.hidden = !statements.innerHTML;
   const comparison = partitionComparison(key);
   const comparisonSlot = document.getElementById('chapter-comparison');
   comparisonSlot.innerHTML = comparison;
@@ -789,7 +848,8 @@ function render() {
     lessonState.claim = selection.claim;
     lessonState.hop = selection.hop;
     lessonState.exampleOpen = selection.exampleOpen;
-    strip.querySelector('details').open = selection.exampleOpen;
+    const disclosure = strip.querySelector('details');
+    if (disclosure) disclosure.open = selection.exampleOpen;
     applyFocus();
   } else if (scene.example) {
     lessonState.hop = legacyHop;
@@ -972,6 +1032,32 @@ document.addEventListener('click', (event) => {
 });
 
 document.getElementById('chapter-claims').addEventListener('click', (event) => {
+  // A step is a local control: it moves the state panel, the focus, and its
+  // line in place. Only its How we know link opens the drawer.
+  const stepEvidence = event.target.closest('[data-step-evidence]');
+  const step = event.target.closest('[data-step]');
+  if (step || stepEvidence) {
+    if (stepEvidence && isModifiedClick(event)) return;
+    event.preventDefault();
+    const route = parseRoute(location.hash);
+    const index = Number(
+      stepEvidence?.dataset.stepEvidence ?? step.dataset.step,
+    );
+    lessonState.hop = index;
+    if (stepEvidence) {
+      pendingOpener = stepEvidence;
+      const href = stepEvidence.getAttribute('href');
+      if (location.hash === href) render();
+      else navigateToHash(href);
+      return;
+    }
+    closeInspector(false);
+    clearMapSelection();
+    const href = routeHref(route.chapter, route.step, null, { hop: index });
+    if (location.hash === href) render();
+    else navigateToHash(href);
+    return;
+  }
   const evidence = event.target.closest('[data-evidence]');
   const button = event.target.closest('[data-claim]');
   if (!evidence && !button) return;
@@ -1008,12 +1094,17 @@ document.getElementById('chapter-claims').addEventListener('click', (event) => {
 document.getElementById('diagram').addEventListener('click', (event) => {
   const button = event.target.closest('button[data-detail]');
   if (!button) return;
-  lessonState.hop = -1;
-  pendingOpener = button;
   const route = parseRoute(location.hash);
-  const selection = hasClaims(chapters[route.chapter])
-    ? { claim: lessonState.claim }
-    : {};
+  const scene = chapters[route.chapter];
+  // A step lesson keeps its step while a component is inspected; elsewhere a
+  // component click drops the trace.
+  if (!isStepLesson(scene)) lessonState.hop = -1;
+  pendingOpener = button;
+  const selection = isStepLesson(scene)
+    ? { hop: lessonState.hop }
+    : hasClaims(scene)
+      ? { claim: lessonState.claim }
+      : {};
   const href = routeHref(
     route.chapter,
     route.step,

@@ -1118,18 +1118,7 @@
   font-size: 12px;
   color: var(--muted);
 }
-.diagram:not([data-selected]) .seam-state:first-of-type,
-.diagram[data-selected='image'] .seam-state[data-for~='image'],
-.diagram[data-selected='descriptor'] .seam-state[data-for~='descriptor'],
-.diagram[data-selected='gate'] .seam-state[data-for~='gate'],
-.diagram[data-selected='facts'] .seam-state[data-for~='facts'],
-.diagram[data-selected='trust'] .seam-state[data-for~='trust'],
-.diagram[data-selected='delivery'] .seam-state[data-for~='delivery'],
-.diagram[data-selected='verify'] .seam-state[data-for~='verify'],
-.diagram[data-selected='proof'] .seam-state[data-for~='proof'],
-.diagram[data-selected='restore'] .seam-state[data-for~='restore'],
-.diagram[data-selected='running'] .seam-state[data-for~='running'],
-.diagram[data-selected='lock-taken'] .seam-state[data-for~='lock-taken'] {
+.seam-state.is-current {
   display: grid;
 }
 .seam-run .node.artifact {

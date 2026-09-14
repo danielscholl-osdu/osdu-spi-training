@@ -2852,6 +2852,23 @@ body:has(.audio-dock:not([hidden])) main {
   visibility: visible;
   pointer-events: auto;
 }
+/* A step lesson's run steps share the claim controls' look, in one row. */
+.claims.is-steps .claim-list {
+  grid-template-columns: repeat(auto-fit, minmax(118px, 1fr));
+}
+.claims.is-steps .claim {
+  display: flex;
+  gap: 7px;
+  align-items: baseline;
+}
+.step-number {
+  font-size: 11.5px;
+  font-variant-numeric: tabular-nums;
+  color: var(--muted);
+}
+.claim-item:has([aria-pressed='true']) .step-number {
+  color: var(--blue);
+}
 /* Lifecycle statements follow the stage-driven workspace. */
 .claim-statements {
   list-style: none;
@@ -3512,6 +3529,9 @@ body:has(.audio-dock:not([hidden])) main {
     grid-template-columns: 1fr;
     gap: 3px;
     margin-top: 4px;
+  }
+  .claims.is-steps .claim-list {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
   }
   .claim-item {
     padding: 4px 7px 3px;
