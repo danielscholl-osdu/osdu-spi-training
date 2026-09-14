@@ -150,6 +150,9 @@ export const chapters = {
     tryIt: {
       activity: 'prepare your workstation',
       summary: 'Try it: prepare your workstation · no Azure sign-in',
+      outcome:
+        'Install the spi CLI and its prerequisite tools before lesson 02; nothing here signs you in.',
+      badge: 'workstation',
       variants: [
         {
           label: 'Install the CLI and check the tools',
@@ -338,6 +341,9 @@ export const chapters = {
     tryIt: {
       activity: 'bring up an environment',
       summary: 'Try it: bring up an environment · Azure charges apply',
+      outcome:
+        'Provision an environment yourself, watch it reach readiness, and prove one API path.',
+      badge: 'workstation-cloud',
       variants: [
         {
           label: 'Run it in your subscription',
@@ -661,6 +667,9 @@ export const chapters = {
     tryIt: {
       activity: 'trace the partition lookup',
       summary: 'Try it: trace the partition lookup · browser only',
+      outcome:
+        'Find the lines where the Azure provider reads its cache and falls back to Table Storage.',
+      badge: 'code-magnifier',
       variants: [
         {
           label: 'Follow the lookup in the source',

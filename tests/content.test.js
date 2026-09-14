@@ -46,6 +46,8 @@ import {
   resolveLessonSelection,
   selectExampleVariant,
   shelfRow,
+  guidesPreview,
+  sourcesPreview,
   tryItBand,
   guidePreview,
   listenChips,
@@ -1584,7 +1586,7 @@ test('tryIt renderer returns an inert, escaped native disclosure', () => {
   const multiple = tryItBand({ tryIt: multipleVariantTryIt });
   assert.match(
     single,
-    /<summary><span>Try it: trace the partition lookup · browser only<\/span><\/summary>/,
+    /<summary>[\s\S]*<span class="try-it-title">Try it: trace the partition lookup<\/span>[\s\S]*<span class="try-it-qualifier">Optional · browser only<\/span>[\s\S]*<\/summary>/,
   );
   assert.doesNotMatch(single, /<summary>.*About 5 minutes.*<\/summary>/s);
   for (const text of [
@@ -1605,7 +1607,7 @@ test('tryIt renderer returns an inert, escaped native disclosure', () => {
     assert.ok(single.includes(text), text);
   assert.match(
     multiple,
-    /<summary><span>Try it: compare environment routes · Azure charges apply<\/span><\/summary>/,
+    /<span class="try-it-title">Try it: compare environment routes<\/span>[\s\S]*<span class="try-it-qualifier">Optional · Azure charges apply<\/span>/,
   );
   for (const variant of multipleVariantTryIt.variants)
     assert.ok(
@@ -2380,18 +2382,13 @@ test('shelf styles use compact rows and retain complete phone previews', () => {
     'utf8',
   );
   assert.match(css, /\.lesson-shelf\s*\{[\s\S]*border-top:/);
+  assert.match(css, /\.shelf-row-badge\s*\{[\s\S]*width: 56px/);
+  assert.match(css, /\.try-it-badge\s*\{[\s\S]*width: 60px/);
   assert.match(
     css,
-    /\.shelf-row:has\(> \.shelf-row-actions\)[\s\S]*grid-template-columns:/,
+    /@media \(max-width: 760px\)[\s\S]*\.shelf-row-badge,\s*\.try-it-badge\s*\{[\s\S]*width: 44px/,
   );
-  assert.match(
-    css,
-    /\.shelf-row > details:not\(\[open\]\) > \.shelf-row-body\s*\{[\s\S]*display: none/,
-  );
-  assert.match(
-    css,
-    /@media \(max-width: 760px\)[\s\S]*\.shelf-row-preview\s*\{[\s\S]*white-space: normal/,
-  );
+  assert.doesNotMatch(css, /\.shelf-row-actions/);
   assert.doesNotMatch(css, /\.optional-grid/);
   assert.doesNotMatch(
     css,
@@ -2751,7 +2748,7 @@ test('lesson 02 is operated by its lifecycle stages', () => {
   );
   assert.match(
     band,
-    /<summary><span>Try it: bring up an environment · Azure charges apply<\/span><\/summary>/,
+    /<summary>[\s\S]*<span class="try-it-title">Try it: bring up an environment<\/span>[\s\S]*<span class="try-it-outcome">[^<]+<\/span><span class="try-it-qualifier">Optional · Azure charges apply<\/span>[\s\S]*<\/summary>/,
   );
 });
 
@@ -3239,14 +3236,14 @@ test('listen chips carry the cue and its length; the recording is named while it
   assert.match(player, /class="listen-from">\$\{episode\.short\}/);
 });
 
-test('shelf presentation keeps audio actions outside summaries', () => {
+test('shelf presentation keeps audio chips inside the row body', () => {
   const route = parseRoute('#running-stack');
   const example = exampleStrip('running-stack', route, undefined, {
     shelf: true,
   });
   assert.match(
     example,
-    /data-shelf-row="example"[\s\S]*<summary><span class="shelf-row-label">Follow the example<\/span><span class="shelf-row-preview"[^>]*>a partition lookup<\/span>/,
+    /data-shelf-row="example"[\s\S]*<summary><span class="shelf-row-badge"><svg[\s\S]*<\/svg><\/span><span class="shelf-row-head"><span class="shelf-row-label">Follow the example<\/span><span class="shelf-row-preview">Five hops · a partition lookup<\/span>/,
   );
   assert.equal((example.match(/<details/g) || []).length, 1);
 
@@ -3254,15 +3251,21 @@ test('shelf presentation keeps audio actions outside summaries', () => {
   const summary = listen.match(/<summary>([\s\S]*?)<\/summary>/)?.[1] || '';
   assert.match(summary, /Hear it explained/);
   assert.doesNotMatch(summary, /<(?:button|a)\b/);
-  assert.doesNotMatch(summary, /shelf-row-preview/);
   assert.match(
-    listen,
-    /<\/details>\s*<div class="shelf-row-actions"><div class="listen-chip-row"/,
+    summary,
+    /<span class="shelf-row-preview">Two excerpts · 3 and 2 min<\/span>/,
   );
-  assert.ok(listen.includes('data-listen-now'));
+  const body =
+    listen.match(
+      /<div class="shelf-row-body">([\s\S]*?)<\/div>\s*<\/details>/,
+    )?.[1] || '';
+  assert.match(
+    body,
+    /<div class="listen-chip-row"[^>]*>(?:<button[\s\S]*?<\/button>){2}<a class="small-link" href="#listen">/,
+  );
   assert.ok(
-    listen.indexOf('data-listen-now') < listen.lastIndexOf('</section>'),
-    'playback feedback stays in the shelf row wrapper',
+    body.includes('data-listen-now'),
+    'playback feedback sits with the chips',
   );
 });
 
@@ -3320,8 +3323,9 @@ test('structured shelves preserve row order and content at every lifecycle stage
     const guides = shelfRow({
       id: 'guides',
       label: 'Field guides',
-      preview: guidePreviewTitles(guideIds),
+      preview: guidesPreview(guideIds),
       body: guideBody,
+      badge: 'sheet',
     });
     const sourceBody = chapter.sources
       .map(
@@ -3332,8 +3336,9 @@ test('structured shelves preserve row order and content at every lifecycle stage
     const sourceRow = shelfRow({
       id: 'sources',
       label: 'Sources',
-      preview: sourcePreviewTitles(chapter.sources),
+      preview: sourcesPreview(chapter.sources),
       body: sourceBody,
+      badge: 'notebook',
     });
     const markup = [example, listen, guides, sourceRow].join('');
     const rowIds = [...markup.matchAll(/data-shelf-row="([^"]+)"/g)].map(
@@ -3351,23 +3356,31 @@ test('structured shelves preserve row order and content at every lifecycle stage
       routeHref(key, step),
     );
     assert.equal(
-      (example.match(/class="example-disclosure"/g) || []).length,
+      (example.match(/<details/g) || []).length,
       1,
       `${routeHref(key, step)}: one example disclosure`,
     );
     assert.match(
       example,
       new RegExp(
-        `<span class="shelf-row-preview"[^>]*>${escapeHtml(chapter.example.title)}</span>`,
+        `<span class="shelf-row-preview">[A-Z][a-z]+ hops · ${escapeHtml(chapter.example.title)}</span>`,
       ),
     );
     const listenSummary =
       listen.match(/<summary>([\s\S]*?)<\/summary>/)?.[1] || '';
-    assert.doesNotMatch(listenSummary, /shelf-row-preview|<(?:button|a)\b/);
+    assert.doesNotMatch(listenSummary, /<(?:button|a)\b/);
+    assert.match(listenSummary, /excerpts? · [\d, and]+ min/);
     assert.match(
       sourceRow,
-      /<summary><span class="shelf-row-label">Sources<\/span>/,
+      /<span class="shelf-row-label">Sources<\/span><span class="shelf-row-preview">(?:[A-Z][a-z]+|\d+) references? in the docs and repositories<\/span>/,
     );
+    for (const title of guidePreviewTitles(guideIds))
+      assert.ok(
+        !guides
+          .match(/<summary>[\s\S]*?<\/summary>/)[0]
+          .includes(escapeHtml(title)),
+        `${routeHref(key, step)}: ${title} hidden until opened`,
+      );
     assert.doesNotMatch(sourceRow, /Go deeper in the documentation/);
     for (const cue of chapter.listen)
       assert.ok(listen.includes(`<b>${escapeHtml(cue.label)}</b>`), cue.label);

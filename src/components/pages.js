@@ -18,6 +18,7 @@ import {
   partitionLookupFigure,
 } from './infographics.js';
 import { routeHref, parseRoute } from '../router.js';
+import { badge } from './badges.js';
 
 export function formatTime(seconds) {
   const whole = Math.max(0, Math.floor(seconds));
@@ -59,24 +60,53 @@ export function guidePreviewTitles(ids = []) {
   });
 }
 
-export function shelfRow({
-  id,
-  label,
-  preview = [],
-  body,
-  actions = '',
-  feedback = '',
-  detailsClass = '',
-}) {
-  if (!body && !actions) return '';
-  const previewItems = [preview].flat().filter(Boolean);
+const countWords = [
+  'no',
+  'one',
+  'two',
+  'three',
+  'four',
+  'five',
+  'six',
+  'seven',
+  'eight',
+  'nine',
+  'ten',
+];
+function countOf(n, singular, plural = `${singular}s`) {
+  return `${countWords[n] ?? String(n)} ${n === 1 ? singular : plural}`;
+}
+function capitalize(text) {
+  return text.charAt(0).toUpperCase() + text.slice(1);
+}
+
+export function guidesPreview(ids = []) {
+  const posters = ids.filter((id) =>
+    suppliedPosters.some((poster) => poster.id === id),
+  ).length;
+  const diagrams = ids.length - posters;
+  const parts = [];
+  if (diagrams) parts.push(countOf(diagrams, 'diagram'));
+  if (posters) parts.push(countOf(posters, 'poster'));
+  return parts.length
+    ? `${capitalize(parts.join(' and '))} for this lesson`
+    : '';
+}
+
+export function sourcesPreview(keys = []) {
+  sourcePreviewTitles(keys);
+  return keys.length
+    ? `${capitalize(countOf(keys.length, 'reference'))} in the docs and repositories`
+    : '';
+}
+
+export function shelfRow({ id, label, preview = '', body, badge: art = '' }) {
+  if (!body) return '';
   return `<section class="shelf-row" id="shelf-row-${id}" data-shelf-row="${id}">
-    <details${detailsClass ? ` class="${detailsClass}"` : ''}>
-      <summary><span class="shelf-row-label">${escapeHtml(label)}</span>${previewItems.length ? `<span class="shelf-row-preview" title="${escapeHtml(previewItems.join(' · '))}">${previewItems.map(escapeHtml).join(' · ')}</span>` : ''}<span class="summary-marker" aria-hidden="true">+</span></summary>
-      <div class="shelf-row-body">${body || ''}</div>
+    <details>
+      <summary>${art ? `<span class="shelf-row-badge">${badge(art, 'shelf-badge')}</span>` : ''}<span class="shelf-row-head"><span class="shelf-row-label">${escapeHtml(label)}</span>${preview ? `<span class="shelf-row-preview">${escapeHtml(preview)}</span>` : ''}</span><span class="summary-marker" aria-hidden="true">+</span></summary>
+      <div class="shelf-row-body">${body}</div>
     </details>
-    ${actions ? `<div class="shelf-row-actions">${actions}</div>` : ''}
-    ${feedback}
   </section>`;
 }
 
@@ -154,9 +184,10 @@ function tryItVariant(variant, index, count) {
 export function tryItBand(chapter) {
   if (!chapter.tryIt) return '';
   const { activity, summary, variants, connection } = chapter.tryIt;
+  const [title, qualifier] = summary.split(' · ');
   return `<section class="try-it" aria-label="Try it: ${escapeHtml(activity)}">
     <details>
-      <summary><span>${escapeHtml(summary)}</span></summary>
+      <summary>${chapter.tryIt.badge ? `<span class="try-it-badge">${badge(chapter.tryIt.badge, 'shelf-badge')}</span>` : ''}<span class="try-it-head"><span class="try-it-title">${escapeHtml(title)}</span>${chapter.tryIt.outcome ? `<span class="try-it-outcome">${escapeHtml(chapter.tryIt.outcome)}</span>` : ''}<span class="try-it-qualifier">Optional${qualifier ? ` · ${escapeHtml(qualifier)}` : ''}</span></span><span class="summary-marker" aria-hidden="true">+</span></summary>
       <div class="try-it-body">
         <p class="try-it-safety">You run this activity in your own account. This site executes nothing and reports no live environment state.</p>
         <div class="try-it-variants">${variants
@@ -541,9 +572,9 @@ export function exampleStrip(key, route, variant, { shelf = false } = {}) {
     return shelfRow({
       id: 'example',
       label: 'Follow the example',
-      preview: example.title,
+      preview: `${capitalize(countOf(presentation.hops.length, 'hop'))} · ${example.title}`,
       body,
-      detailsClass: 'example-disclosure',
+      badge: 'path',
     });
   return `<details class="example-disclosure"><summary>Example: ${escapeHtml(example.title)}</summary>
     ${body}</details>`;
@@ -636,23 +667,30 @@ export function listenChips(
 ) {
   const cues = chapters[key].listen;
   if (!cues?.length) return '';
+  const minutes = [];
   const chips = cues
     .map((cue) => {
       const episode = episodeById(cue.episode);
       const marker = episode.markers.find((entry) => entry.time === cue.time);
       const end = cue.end ?? marker?.end ?? cue.time + 60;
-      return `<button type="button" class="listen-chip" data-seek="${cue.time}" data-listen-episode="${episode.id}" data-listen-end="${end}" data-listen-stop="${end}"><span class="play-glyph" aria-hidden="true">▶</span><b>${escapeHtml(cue.label)}</b><small>${Math.max(1, Math.round((end - cue.time) / 60))} min</small></button>`;
+      const mins = Math.max(1, Math.round((end - cue.time) / 60));
+      minutes.push(mins);
+      return `<button type="button" class="listen-chip" data-seek="${cue.time}" data-listen-episode="${episode.id}" data-listen-end="${end}" data-listen-stop="${end}"><span class="play-glyph" aria-hidden="true">▶</span><b>${escapeHtml(cue.label)}</b><small>${mins} min</small></button>`;
     })
     .join('');
-  if (shelf)
+  if (shelf) {
+    const list =
+      minutes.length > 2
+        ? `${minutes.slice(0, -1).join(', ')}, and ${minutes.at(-1)} min`
+        : `${minutes.join(' and ')} min`;
     return shelfRow({
       id: 'listen',
       label: kicker,
-      body: `${lead ? `<p class="listen-lead">${lead}</p>` : ''}<a class="small-link" href="#listen">All episodes →</a>`,
-      actions: `<div class="listen-chip-row" aria-label="${escapeHtml(kicker)}">${chips}</div>`,
-      feedback:
-        '<p class="listen-now" data-listen-now aria-live="polite" hidden></p>',
+      preview: `${capitalize(countOf(minutes.length, 'excerpt'))} · ${list}`,
+      body: `${lead ? `<p class="listen-lead">${lead}</p>` : ''}<div class="listen-chip-row" aria-label="${escapeHtml(kicker)}">${chips}<a class="small-link" href="#listen">All episodes →</a></div><p class="listen-now" data-listen-now aria-live="polite" hidden></p>`,
+      badge: 'headphones',
     });
+  }
   return `<div class="listen-chips" aria-label="${escapeHtml(kicker)}"><span class="guide-kicker">${escapeHtml(kicker)}</span>${lead ? `<p class="listen-lead">${lead}</p>` : ''}<div class="listen-chip-row">${chips}<a class="small-link" href="#listen">All episodes →</a></div><p class="listen-now" data-listen-now aria-live="polite" hidden></p></div>`;
 }
 

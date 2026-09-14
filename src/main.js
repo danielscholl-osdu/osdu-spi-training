@@ -18,7 +18,7 @@ import {
   claimStrip,
   claimContext,
   guidePreview,
-  guidePreviewTitles,
+  guidesPreview,
   detailSourceLinks,
   hopIndexForRoute,
   partitionComparison,
@@ -28,9 +28,10 @@ import {
   tryItBand,
   frameVideoPlayer,
   shelfRow,
-  sourcePreviewTitles,
+  sourcesPreview,
 } from './components/pages.js';
 import { frameVideo } from './content/audio.js';
+import { badge } from './components/badges.js';
 import { createPlayer } from './components/player.js';
 import { creationMoments } from './content/creation-moments.js';
 import { parseRoute, routeHref } from './router.js';
@@ -492,11 +493,12 @@ function renderChapterFrame(route, scene) {
     ? 'Sources'
     : 'Go deeper in the documentation';
   const sourcePreview = document.getElementById('source-preview');
-  sourcePreview.textContent = structured
-    ? sourcePreviewTitles(scene.sources).join(' · ')
-    : '';
-  sourcePreview.title = sourcePreview.textContent;
+  sourcePreview.textContent = structured ? sourcesPreview(scene.sources) : '';
   sourcePreview.hidden = !structured;
+  const sourceBadge = document.getElementById('source-badge');
+  if (!sourceBadge.innerHTML)
+    sourceBadge.innerHTML = badge('notebook', 'shelf-badge');
+  sourceBadge.hidden = !structured;
   document.getElementById('shelf-row-sources').hidden = sourceDetails.hidden;
   document.getElementById('chapter-position').textContent = positionLabel(key);
   const next = nextChapter(key);
@@ -707,8 +709,9 @@ function render() {
       ? shelfRow({
           id: 'guides',
           label: 'Field guides',
-          preview: guidePreviewTitles(guideIds),
+          preview: guidesPreview(guideIds),
           body: guides,
+          badge: 'sheet',
         })
       : guides;
     chapterGuides.hidden = !chapterGuides.innerHTML;
