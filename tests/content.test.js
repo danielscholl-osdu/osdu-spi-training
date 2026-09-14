@@ -1773,6 +1773,38 @@ test('the fork moments and the retired engineering route keep resolving', () => 
   }
 });
 
+test('lesson workspace keeps claims and context between its header and map', () => {
+  const html = readFileSync(
+    new URL('../src/index.html', import.meta.url),
+    'utf8',
+  );
+  const exploration = html.indexOf('id="exploration"');
+  const header = html.indexOf('<header class="visual-header">', exploration);
+  const headerEnd = html.indexOf('</header>', header);
+  const claims = html.indexOf('id="chapter-claims"');
+  const context = html.indexOf('id="claim-context"');
+  const workspace = html.indexOf('class="visual-workspace"', exploration);
+
+  assert.ok(
+    exploration < header &&
+      header < headerEnd &&
+      headerEnd < claims &&
+      claims < context &&
+      context < workspace,
+    'title row, claim controls, selected explanation, then map workspace',
+  );
+  for (const id of ['chapter-claims', 'claim-context'])
+    assert.equal(
+      [...html.matchAll(new RegExp(`id="${id}"`, 'g'))].length,
+      1,
+      `${id} occurs once`,
+    );
+  assert.match(
+    html.slice(context, workspace),
+    /aria-live="polite"[\s\S]*hidden/,
+  );
+});
+
 test('structured claims resolve their focus, evidence, and scopes on every scene', () => {
   for (const [key, chapter] of mapChapters) {
     const claims = (chapter.outcomes || []).filter(
