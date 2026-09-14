@@ -251,6 +251,7 @@ Four beads remain, and all four need a person rather than an agent: a pilot with
 
 ## Sources
 
+- [The one-page poster](software-factory.png): the factory, the flow, and what worked and did not, on one sheet. Its HTML source is beside it.
 - [By the numbers](by-the-numbers.md): every count in this document with where it came from.
 - [Hackathon submission draft](hackathon-submission.md): the form fields.
 - [The tracker artifact at revision 23](tracker-revision-23.pdf): the design-intent record as it stood when the build reached its done state, including the decisions and the changelog.

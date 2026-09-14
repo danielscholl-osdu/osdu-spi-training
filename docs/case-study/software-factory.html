@@ -1,0 +1,291 @@
+<!DOCTYPE html>
+<!--
+  Poster source for docs/case-study/software-factory.png.
+  Self-contained: inline CSS and SVG only. Re-render with the infographic skill:
+    SCALE=2 bash ~/.claude/skills/infographic/scripts/render.sh software-factory.html software-factory.png 1100x1316
+  Every number here is taken from README.md and by-the-numbers.md in this folder.
+-->
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>A software factory builds a training site</title>
+<style>
+  :root{
+    --bg:#f4f7fa; --ink:#102b43; --muted:#52697b; --hair:#cedbe5; --card:#fff;
+    --navy:#102c47; --blue:#0b6a9c; --blue-bg:#e8f2f9; --green:#1f7a5c; --green-bg:#e6f4ee;
+    --orange:#a34d21; --orange-bg:#fff1e6; --gray:#52697b; --gray-bg:#eef2f6;
+    --k:var(--navy); --kt:#e6edf4;
+  }
+  .k-blue  {--k:var(--blue);   --kt:var(--blue-bg);}
+  .k-green {--k:var(--green);  --kt:var(--green-bg);}
+  .k-orange{--k:var(--orange); --kt:var(--orange-bg);}
+  .k-navy  {--k:var(--navy);   --kt:#e6edf4;}
+  .k-gray  {--k:var(--gray);   --kt:var(--gray-bg);}
+
+  *{box-sizing:border-box;}
+  html,body{margin:0; padding:0; background:var(--bg);}
+  body{font-family:system-ui,-apple-system,'Segoe UI',Helvetica,Arial,sans-serif; color:var(--ink); -webkit-font-smoothing:antialiased;}
+  .sheet{width:1100px; background:var(--bg); padding:30px 48px 30px; display:flex; flex-direction:column; gap:18px;}
+
+  .plate{display:flex; justify-content:space-between; align-items:flex-start; gap:32px;}
+  .kicker{font-size:11px; font-weight:800; letter-spacing:2.6px; text-transform:uppercase; color:var(--blue);}
+  .title{font-size:33px; font-weight:800; letter-spacing:-.6px; margin:6px 0 0; line-height:1.05; color:var(--navy);}
+  .subtitle{font-size:16px; font-weight:450; color:var(--muted); margin:6px 0 0;}
+  .purpose{background:var(--navy); color:#fff; border-radius:10px; padding:12px 22px; text-align:center; min-width:300px; flex:0 0 auto;}
+  .purpose .p-label{font-size:10px; font-weight:800; letter-spacing:2.4px; text-transform:uppercase; opacity:.72;}
+  .purpose .p-line{font-size:16px; font-weight:800; margin-top:5px;}
+  .purpose .p-fine{font-size:11.5px; font-weight:450; opacity:.78; margin-top:4px;}
+  .rule{height:3px; background:var(--navy); margin-top:-6px;}
+
+  .band{display:flex; flex-direction:column; gap:10px;}
+  .band-label{font-size:12px; font-weight:800; letter-spacing:2px; text-transform:uppercase; color:var(--muted);}
+  .band-label.ruled{border-bottom:2px solid var(--hair); padding-bottom:7px;}
+  .band-note{font-size:12.5px; color:var(--muted); margin-top:-4px;}
+
+  .strip{display:flex; gap:0; align-items:stretch;}
+  .strip .stat{flex:1; background:var(--card); border:2px solid var(--hair); padding:8px 14px; display:flex; align-items:baseline; gap:8px;}
+  .strip .stat + .stat{border-left:0;}
+  .strip .stat:first-child{border-radius:10px 0 0 10px;} .strip .stat:last-child{border-radius:0 10px 10px 0;}
+  .strip .num{font-size:22px; font-weight:800; color:var(--navy); letter-spacing:-.5px;}
+  .strip .lbl{font-size:12px; color:var(--muted);}
+
+  .chassis{width:1004px; height:auto; display:block;}
+  .chassis text{font-family:system-ui,-apple-system,'Segoe UI',Helvetica,Arial,sans-serif; fill:var(--ink);}
+  .chassis .lab{font-size:10.5px; font-weight:800; letter-spacing:1.8px; text-transform:uppercase; fill:var(--muted);}
+  .chassis .nm{font-size:14.5px; font-weight:800;}
+  .chassis .nm-s{font-size:12.5px; font-weight:800;}
+  .chassis .sb{font-size:11.5px; fill:var(--muted);}
+  .chassis .fn{font-size:10.5px; fill:var(--muted);}
+  .chassis .wt{fill:#fff;} .chassis .wt-s{fill:rgba(255,255,255,.8);}
+  .chassis .mono{font-family:ui-monospace,'SFMono-Regular',Menlo,Consolas,monospace; font-size:10.5px;}
+  .chassis .ln{stroke:var(--navy); stroke-width:2; fill:none;}
+  .chassis .ln.dsh{stroke-dasharray:5 4;}
+  .chassis .grp{fill:#fff; stroke:var(--hair); stroke-width:2;}
+  .chassis .bx{fill:#fff; stroke:var(--hair); stroke-width:1.5;}
+
+  .nodes{display:flex;}
+  .node{flex:1; display:flex; flex-direction:column; align-items:center; text-align:center; gap:6px;}
+  .n-title{font-size:13px; font-weight:800; line-height:1.15; min-height:30px; display:flex; align-items:flex-end; justify-content:center;}
+  .n-mid{position:relative; width:100%; height:32px; display:flex; align-items:center; justify-content:center;}
+  .n-mid::before{content:""; position:absolute; top:50%; left:0; right:0; height:3px; transform:translateY(-50%); background:var(--k);}
+  .node:first-child .n-mid::before{left:50%;} .node:last-child .n-mid::before{right:50%;}
+  .n-dot{position:relative; width:32px; height:32px; border-radius:50%; background:var(--k); color:#fff; display:grid; place-items:center; font-size:14px; font-weight:800;}
+  .n-sub{font-size:11.5px; color:var(--muted); line-height:1.3; padding:0 8px;}
+
+  .cols{display:grid; grid-template-columns:1fr 1fr; gap:22px;}
+  .group{background:#fff; border:2px solid var(--hair); border-radius:12px; padding:12px 14px; display:flex; flex-direction:column; gap:8px;}
+  .group-label{font-size:11px; font-weight:800; letter-spacing:1.8px; text-transform:uppercase; color:var(--k);}
+  .card{background:var(--kt); border:1.5px solid var(--k); border-radius:9px; padding:8px 12px 9px 18px; box-shadow:inset 6px 0 0 0 var(--k); display:flex; flex-direction:column; gap:2px;}
+  .group .card{flex:1;}
+  .card .name-sm{font-size:13px; font-weight:800; line-height:1.2;}
+  .card .fine{font-size:11.5px; color:var(--muted); line-height:1.3;}
+
+  .foot{font-size:10.5px; color:var(--muted); display:flex; justify-content:space-between; gap:20px;}
+</style>
+</head>
+<body>
+<div class="sheet" style="height:1316px;">
+
+  <div class="plate">
+    <div>
+      <div class="kicker">Microsoft Hackathon 2026 · Case study</div>
+      <h1 class="title">A software factory builds a training site</h1>
+      <p class="subtitle">One person, four days, seven AI systems, one interactive training site.</p>
+    </div>
+    <div class="purpose">
+      <div class="p-label">The ratio</div>
+      <div class="p-line">150 human messages, 2,652 agent turns</div>
+      <div class="p-fine">Thu 11 Sep evening to Sun 14 Sep morning, 2026</div>
+    </div>
+  </div>
+  <div class="rule"></div>
+
+  <div class="strip">
+    <div class="stat"><span class="num">4</span><span class="lbl">days</span></div>
+    <div class="stat"><span class="num">196</span><span class="lbl">commits</span></div>
+    <div class="stat"><span class="num">24</span><span class="lbl">pull requests</span></div>
+    <div class="stat"><span class="num">96</span><span class="lbl">workflow runs</span></div>
+    <div class="stat"><span class="num">0</span><span class="lbl">failures</span></div>
+    <div class="stat"><span class="num">3,087</span><span class="lbl">orchestrator tool calls</span></div>
+  </div>
+
+  <!-- band 1: the factory (chassis) -->
+  <div class="band">
+    <div class="band-label">The factory · one owner, one orchestrator, workers and reviewers, two shared stores</div>
+    <svg class="chassis" viewBox="0 0 1004 548" xmlns="http://www.w3.org/2000/svg">
+      <defs>
+        <marker id="ah" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+          <path d="M0,0 L10,5 L0,10 z" fill="#102c47"/>
+        </marker>
+      </defs>
+
+      <!-- Owner -->
+      <rect x="330" y="0" width="344" height="66" rx="10" fill="#102c47"/>
+      <text x="502" y="24" text-anchor="middle" class="nm wt">Owner · one person</text>
+      <text x="502" y="42" text-anchor="middle" class="sb wt-s">direction, taste, approval, environment fixes</text>
+      <text x="502" y="57" text-anchor="middle" class="fn wt-s">never edited code · wrote site copy once</text>
+
+      <!-- Owner <-> Orchestrator -->
+      <line x1="502" y1="66" x2="502" y2="112" class="ln" marker-start="url(#ah)" marker-end="url(#ah)"/>
+      <text x="512" y="94" class="fn">about 150 messages</text>
+
+      <!-- Owner -> outside group (elbow, both ways) -->
+      <path d="M330,33 H140 V112" class="ln" marker-start="url(#ah)" marker-end="url(#ah)"/>
+      <text x="132" y="80" text-anchor="end" class="fn">the owner runs these</text>
+      <text x="132" y="94" text-anchor="end" class="fn">and pastes results in</text>
+
+      <!-- Left group: brought in by the owner -->
+      <rect x="0" y="112" width="280" height="308" rx="12" class="grp"/>
+      <text x="14" y="134" class="lab">Outside the session</text>
+      <text x="14" y="149" class="fn">brought in by the owner</text>
+
+      <rect x="14" y="160" width="252" height="52" rx="8" class="bx"/>
+      <text x="26" y="180" class="nm-s">OpenAI Codex</text>
+      <text x="26" y="196" class="sb">15 review rounds · 1 implementation</text>
+
+      <rect x="14" y="222" width="252" height="52" rx="8" class="bx"/>
+      <text x="26" y="242" class="nm-s">GPT-6 Astra in ChatGPT</text>
+      <text x="26" y="258" class="sb">8 design conversations</text>
+
+      <rect x="14" y="284" width="252" height="52" rx="8" class="bx"/>
+      <text x="26" y="304" class="nm-s">NotebookLM (Gemini)</text>
+      <text x="26" y="320" class="sb">audio deep dives, brief, video</text>
+
+      <rect x="14" y="346" width="252" height="52" rx="8" class="bx"/>
+      <text x="26" y="366" class="nm-s">Gemini image model</text>
+      <text x="26" y="382" class="sb">hero and badge artwork</text>
+
+      <!-- Center group: Claude Code session -->
+      <rect x="330" y="112" width="344" height="308" rx="12" fill="#e6edf4" stroke="#102c47" stroke-width="2" stroke-dasharray="6 4"/>
+      <text x="502" y="134" text-anchor="middle" class="lab" style="fill:#102c47">Claude Code session · Fable 5.1</text>
+
+      <rect x="344" y="146" width="316" height="96" rx="8" fill="#fff" stroke="#102c47" stroke-width="2"/>
+      <text x="502" y="170" text-anchor="middle" class="nm">Orchestrator</text>
+      <text x="502" y="188" text-anchor="middle" class="sb">plans, briefs, verifies in the browser,</text>
+      <text x="502" y="203" text-anchor="middle" class="sb">merges, keeps the record</text>
+      <text x="502" y="226" text-anchor="middle" class="fn" style="font-weight:800; fill:#102c47">2,652 turns · 3,087 tool calls · 13 sessions</text>
+
+      <line x1="422" y1="242" x2="422" y2="262" class="ln" marker-end="url(#ah)"/>
+      <line x1="582" y1="242" x2="582" y2="262" class="ln" marker-end="url(#ah)"/>
+
+      <rect x="344" y="262" width="152" height="70" rx="8" class="bx"/>
+      <text x="356" y="282" class="nm-s">Subagents · 27</text>
+      <text x="356" y="298" class="fn">posters, fact-checks, critics,</text>
+      <text x="356" y="312" class="fn">bounded builds in worktrees</text>
+
+      <rect x="508" y="262" width="152" height="70" rx="8" class="bx"/>
+      <text x="520" y="282" class="nm-s">Peer sessions · 3</text>
+      <text x="520" y="298" class="fn">fact-check reviewer, Start</text>
+      <text x="520" y="312" class="fn">page rebuild, beads rib fixes</text>
+
+      <rect x="344" y="346" width="316" height="60" rx="8" class="bx"/>
+      <text x="356" y="366" class="nm-s">Verifies in Chrome before every merge</text>
+      <text x="356" y="382" class="fn">screenshots at 1440 and 390 px, DOM probes</text>
+      <text x="356" y="396" class="fn">for the invariants the bead named</text>
+
+      <!-- Right group: Keelson -->
+      <rect x="724" y="112" width="280" height="308" rx="12" fill="#e8f2f9" stroke="#0b6a9c" stroke-width="2"/>
+      <text x="738" y="134" class="lab" style="fill:#0b6a9c">Keelson beads-work · 19 runs</text>
+      <text x="738" y="149" class="fn">13 merged PRs · 16 to 53 min each · Copilot provider</text>
+
+      <g id="chain">
+        <rect x="738" y="162" width="252" height="28" rx="6" class="bx"/>
+        <text x="750" y="181" class="nm-s">Plan</text>
+        <text x="978" y="181" text-anchor="end" class="fn">GPT-6 Astra</text>
+        <line x1="864" y1="190" x2="864" y2="202" class="ln" marker-end="url(#ah)"/>
+
+        <rect x="738" y="202" width="252" height="28" rx="6" fill="#102c47" stroke="#102c47"/>
+        <text x="750" y="221" class="nm-s wt">Approval gate</text>
+        <text x="978" y="221" text-anchor="end" class="fn wt-s">corrections folded in</text>
+        <line x1="864" y1="230" x2="864" y2="242" class="ln" marker-end="url(#ah)"/>
+
+        <rect x="738" y="242" width="252" height="28" rx="6" class="bx"/>
+        <text x="750" y="261" class="nm-s">Implement in a worktree</text>
+        <text x="978" y="261" text-anchor="end" class="fn">GPT-5.6 Sol</text>
+        <line x1="864" y1="270" x2="864" y2="282" class="ln" marker-end="url(#ah)"/>
+
+        <rect x="738" y="282" width="252" height="28" rx="6" class="bx"/>
+        <text x="750" y="301" class="nm-s">Three review lanes</text>
+        <text x="978" y="301" text-anchor="end" class="fn">GPT-5.6 Terra</text>
+        <line x1="864" y1="310" x2="864" y2="322" class="ln" marker-end="url(#ah)"/>
+
+        <rect x="738" y="322" width="252" height="28" rx="6" class="bx"/>
+        <text x="750" y="341" class="nm-s">Triage and fix</text>
+        <text x="978" y="341" text-anchor="end" class="fn">GPT-6 Astra</text>
+        <line x1="864" y1="350" x2="864" y2="362" class="ln" marker-end="url(#ah)"/>
+
+        <rect x="738" y="362" width="252" height="28" rx="6" class="bx"/>
+        <text x="750" y="381" class="nm-s">Draft PR, Copilot review</text>
+        <text x="978" y="381" text-anchor="end" class="fn">13 reviews</text>
+      </g>
+
+      <!-- Orchestrator -> Keelson (start a run), gate -> orchestrator, PR -> orchestrator -->
+      <line x1="660" y1="176" x2="738" y2="176" class="ln" marker-end="url(#ah)"/>
+      <text x="699" y="170" text-anchor="middle" class="mono" style="fill:#102c47">run</text>
+      <line x1="738" y1="216" x2="662" y2="216" class="ln dsh" marker-end="url(#ah)"/>
+      <line x1="738" y1="376" x2="662" y2="376" class="ln" marker-end="url(#ah)"/>
+      <text x="699" y="390" text-anchor="middle" class="fn">merge</text>
+
+      <!-- Shared state -->
+      <text x="0" y="450" class="lab">Shared state · every agent reads and writes it</text>
+
+      <line x1="420" y1="420" x2="420" y2="466" class="ln" marker-start="url(#ah)" marker-end="url(#ah)"/>
+      <line x1="600" y1="420" x2="600" y2="466" class="ln" marker-start="url(#ah)" marker-end="url(#ah)"/>
+      <line x1="864" y1="420" x2="864" y2="466" class="ln" marker-start="url(#ah)" marker-end="url(#ah)"/>
+      <line x1="140" y1="420" x2="140" y2="466" class="ln" marker-end="url(#ah)"/>
+
+      <rect x="60" y="466" width="440" height="82" rx="10" fill="#e6f4ee" stroke="#1f7a5c" stroke-width="2"/>
+      <text x="76" y="490" class="nm" style="fill:#1f7a5c">Tracker artifact</text>
+      <text x="76" y="509" class="sb">design intent and decisions, cited by revision</text>
+      <text x="76" y="527" class="sb" style="font-weight:800; fill:#102b43">23 revisions · 38 publishes</text>
+
+      <rect x="530" y="466" width="474" height="82" rx="10" fill="#e6f4ee" stroke="#1f7a5c" stroke-width="2"/>
+      <text x="546" y="490" class="nm" style="fill:#1f7a5c">beads tracker</text>
+      <text x="546" y="509" class="sb">plan of record across sessions, agents, and runs</text>
+      <text x="546" y="527" class="sb" style="font-weight:800; fill:#102b43">81 issues · median 43 min from create to close</text>
+    </svg>
+  </div>
+
+  <!-- band 2: how a piece of work moved -->
+  <div class="band">
+    <div class="band-label ruled">How a piece of work moved · the fixed shape by Saturday afternoon</div>
+    <div class="nodes">
+      <div class="node k-gray"><div class="n-title">A review finds a problem</div>
+        <div class="n-mid"><div class="n-dot">1</div></div><div class="n-sub">Codex, Astra, or a subagent; pasted in by the owner</div></div>
+      <div class="node k-navy"><div class="n-title">Bead with acceptance criteria</div>
+        <div class="n-mid"><div class="n-dot">2</div></div><div class="n-sub">the orchestrator verifies the defect first</div></div>
+      <div class="node k-navy"><div class="n-title">Tier decision</div>
+        <div class="n-mid"><div class="n-dot">3</div></div><div class="n-sub">a Keelson run, a subagent, or the orchestrator directly</div></div>
+      <div class="node k-blue"><div class="n-title">Plan, gate, implement, review, draft PR</div>
+        <div class="n-mid"><div class="n-dot">4</div></div><div class="n-sub">approved with corrections, never paused twice</div></div>
+      <div class="node k-blue"><div class="n-title">Browser check, fix pass, merge</div>
+        <div class="n-mid"><div class="n-dot">5</div></div><div class="n-sub">the orchestrator, in Chrome, on the branch</div></div>
+      <div class="node k-green"><div class="n-title">Close the bead, republish the tracker</div>
+        <div class="n-mid"><div class="n-dot">6</div></div><div class="n-sub">commit and measurements as the reason</div></div>
+    </div>
+  </div>
+
+  <!-- band 3: worked / did not -->
+  <div class="cols">
+    <div class="group k-green">
+      <div class="group-label">What worked</div>
+      <div class="card k-green"><div class="name-sm">A written standard, enforced by a test</div><div class="fine">AGENTS.md and the content test changed together; 96 workflow runs, none failed.</div></div>
+      <div class="card k-green"><div class="name-sm">Reviewers from a different vendor than the builders</div><div class="fine">Codex found what Claude and the Keelson implementers missed, and the Claude peer found what Codex missed.</div></div>
+      <div class="card k-green"><div class="name-sm">An approval gate where every plan was corrected before code</div><div class="fine">13 of 13 plans approved with specific corrections; none needed a second pause.</div></div>
+    </div>
+    <div class="group k-orange">
+      <div class="group-label">What did not</div>
+      <div class="card k-orange"><div class="name-sm">Media regenerated four times, then cut</div><div class="fine">Four orientation recordings in three hours on Friday; both introductory recordings removed on Sunday.</div></div>
+      <div class="card k-orange"><div class="name-sm">The workflow's internal review loop found almost nothing</div><div class="fine">12 clean verdicts and 1 wrong must-fix. Its value was isolation, planning, and durability.</div></div>
+      <div class="card k-orange"><div class="name-sm">Pull requests merged before the reviewer bot posted</div><div class="fine">Median 6 minutes from open to merge, about how long Copilot takes to post.</div></div>
+    </div>
+  </div>
+
+  <div class="foot">
+    <span>Source: docs/case-study/README.md and by-the-numbers.md, mined 14 Sep 2026 at repository tip 62be86e.</span>
+    <span>Site: danielscholl-osdu.github.io/osdu-spi-training</span>
+  </div>
+
+</div>
+</body>
+</html>

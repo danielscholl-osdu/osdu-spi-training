@@ -18,6 +18,11 @@ software factory, agentic engineering, Claude Code, Keelson, beads, Codex, GitHu
 
 Internal and external participants. The site and the repository are public.
 
+## Images to attach after saving the idea
+
+- `software-factory.png`, the one-page poster.
+- `factory-diagram.png`, the drawn diagram of the factory and the flow of one piece of work.
+
 ## Description
 
 Two deliverables, one repository.
