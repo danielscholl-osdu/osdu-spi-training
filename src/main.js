@@ -760,7 +760,7 @@ function render() {
     strip.hidden = !strip.innerHTML;
   }
   updateLessonOptional(scene);
-  if (freshNavigation) closeShelfRows();
+  if (freshNavigation && chapterChanged) closeShelfRows();
   if (structured) {
     lessonState.claim = selection.claim;
     lessonState.hop = selection.hop;

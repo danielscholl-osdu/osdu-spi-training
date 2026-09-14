@@ -3744,6 +3744,6 @@ test('history memory restores open shelf rows before the full-hash offset', () =
   assert.doesNotMatch(settle, /guide-|stage|path|localStorage|sessionStorage/);
   assert.match(
     main,
-    /const freshNavigation = routeChanged && !historyPop[\s\S]*if \(freshNavigation\) closeShelfRows\(\)/,
+    /const freshNavigation = routeChanged && !historyPop[\s\S]*if \(freshNavigation && chapterChanged\) closeShelfRows\(\)/,
   );
 });
