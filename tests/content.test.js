@@ -1803,6 +1803,11 @@ test('lesson workspace keeps claims and context between its header and map', () 
     html.slice(context, workspace),
     /aria-live="polite"[\s\S]*hidden/,
   );
+  assert.equal(
+    html.split('Select a component to look closer ↗').length - 1,
+    1,
+    'the component-selection hint occurs once',
+  );
 });
 
 test('inspector frame uses compact metadata and unlabeled explanations', () => {
@@ -1916,6 +1921,13 @@ test('structured claims resolve their focus, evidence, and scopes on every scene
         claimsMarkup,
         /Select an idea to highlight it on the map\./,
         `${key}: learner-facing claim instruction`,
+      );
+    if (!lifecycle)
+      assert.equal(
+        claimsMarkup.split('Select an idea to highlight it on the map.').length -
+          1,
+        1,
+        `${key}: claim instruction occurs once`,
       );
     assert.doesNotMatch(claimsMarkup, /claim-count|\d+\s*\/\s*\d+|claims, one map/);
     if (!lifecycle) {
@@ -2043,6 +2055,20 @@ test('claim context escapes authored copy and excludes unstructured lessons', ()
   assert.equal(claimContext('fork-shape', 0), '');
   assert.match(claimContext('running-stack', 0), /spi up --env &lt;name&gt;/);
   assert.doesNotMatch(claimContext('running-stack', 0), /<name>/);
+});
+
+test('claim controls keep one compact column at phone width', () => {
+  const css = readFileSync(
+    new URL('../src/styles/pages.css', import.meta.url),
+    'utf8',
+  );
+  const mobileStart = css.lastIndexOf('@media (max-width: 760px)');
+  const claimRuleStart = css.indexOf('.claim-list {', mobileStart);
+  const claimRuleEnd = css.indexOf('}', claimRuleStart);
+  const claimRule = css.slice(claimRuleStart, claimRuleEnd);
+
+  assert.match(claimRule, /grid-template-columns:\s*1fr/);
+  assert.doesNotMatch(claimRule, /repeat\(2|1fr\s+1fr/);
 });
 
 test('lesson 01 editorial copy introduces its example and complete command', () => {
