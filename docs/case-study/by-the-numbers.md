@@ -25,7 +25,7 @@ Sources:
 | Measure                                                             | Value                                                                                                 | Source         |
 | ------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------- | -------------- |
 | Commits                                                             | 196 (176 non-merge, 20 merges)                                                                        | Git            |
-| Commits per day                                                     | Fri 9, Sat 19, Sun 152, Mon 16                                                                        | Git            |
+| Commits per day                                                     | Day 1 9, Day 2 19, Day 3 152, Day 4 16                                                                | Git            |
 | Commits in the two hours 14:00 to 16:00 on Day 3                    | 67                                                                                                    | Git            |
 | Commit types                                                        | feat 73, docs 38, refactor 23, fix 18, chore 8, test 7, style 7                                       | Git            |
 | Lines added and removed                                             | +49,229 / −11,283 (includes generated transcripts)                                                    | Git            |
@@ -46,8 +46,8 @@ Sources:
 | Measure                                                                   | Value                                                                                                                                                                                                                 | Source                            |
 | ------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | --------------------------------- |
 | Human messages to the orchestrator (all sessions)                         | about 150 (137 by the strict count; 150 including absolute file paths dropped in as prompts); activity telemetry, not effort                                                                                          | Transcripts                       |
-| Human messages per day                                                    | Fri 16, Sat 27, Sun 73, Mon 21                                                                                                                                                                                        | Transcripts                       |
-| Owner's active hours, estimated from message timestamps                   | about 15 hours with gaps under 30 minutes bridged, about 21 with gaps under an hour (Fri 2 to 3, Sat 4 to 7, Sun 8 to 10, Mon 2); not measured directly                                                               | Transcripts                       |
+| Human messages per day                                                    | Day 1 16, Day 2 27, Day 3 73, Day 4 21                                                                                                                                                                                | Transcripts                       |
+| Owner's active hours, estimated from message timestamps                   | about 15 hours with gaps under 30 minutes bridged, about 21 with gaps under an hour (Day 1 2 to 3, Day 2 4 to 7, Day 3 8 to 10, Day 4 2); not measured directly                                                       | Transcripts                       |
 | Slash commands typed                                                      | 41 (`/compact` 15, `/sdlc:prime` 7, `/model` 6, `/rename` 5, `/effort` 4)                                                                                                                                             | Transcripts                       |
 | Manual context compactions                                                | 15, eight in the orchestrator session                                                                                                                                                                                 | Transcripts                       |
 | Assistant turns (main sessions)                                           | 2,652                                                                                                                                                                                                                 | Transcripts                       |
@@ -108,31 +108,31 @@ The transcript cost lines are the CLI's own running total per session and are in
 
 Run ledger, successful beads-work runs, CDT:
 
-| Bead                                             | Started   | Minutes | PR  |
-| ------------------------------------------------ | --------- | ------: | --- |
-| fn-cca Lesson 02 in the frozen grammar           | Sun 12:43 |      35 | #5  |
-| fn-bye Lesson 03 with the cache-down trace       | Sun 12:43 |      32 | #6  |
-| fn-kbc Redis and Table Storage boundary          | Sun 14:06 |      16 | #7  |
-| fn-loo Readiness as distinct signals             | Sun 14:07 |      21 | #8  |
-| fn-0wv Three evidence drawer defects             | Sun 14:08 |      28 | #9  |
-| fn-p2j Claim-specific evidence                   | Sun 14:31 |      28 | #10 |
-| fn-e7u Learner-facing language                   | Sun 14:32 |      30 | #11 |
-| fn-jy3 CIMPL comparison prototype                | Sun 15:03 |      21 | #12 |
-| fn-u9u Try it band                               | Sun 15:04 |      26 | #13 |
-| fn-bhr Lesson 01 reading flow (second attempt)   | Sun 17:06 |      23 | #14 |
-| fn-tbt Selectors into the map workspace          | Sun 22:22 |      33 | #15 |
-| fn-j9v Quiet Go deeper, lesson 07 as field check | Sun 22:58 |      25 | #16 |
-| fn-m7u One Go deeper shelf                       | Mon 08:51 |      53 | #18 |
+| Bead                                             | Started     | Minutes | PR  |
+| ------------------------------------------------ | ----------- | ------: | --- |
+| fn-cca Lesson 02 in the frozen grammar           | Day 3 12:43 |      35 | #5  |
+| fn-bye Lesson 03 with the cache-down trace       | Day 3 12:43 |      32 | #6  |
+| fn-kbc Redis and Table Storage boundary          | Day 3 14:06 |      16 | #7  |
+| fn-loo Readiness as distinct signals             | Day 3 14:07 |      21 | #8  |
+| fn-0wv Three evidence drawer defects             | Day 3 14:08 |      28 | #9  |
+| fn-p2j Claim-specific evidence                   | Day 3 14:31 |      28 | #10 |
+| fn-e7u Learner-facing language                   | Day 3 14:32 |      30 | #11 |
+| fn-jy3 CIMPL comparison prototype                | Day 3 15:03 |      21 | #12 |
+| fn-u9u Try it band                               | Day 3 15:04 |      26 | #13 |
+| fn-bhr Lesson 01 reading flow (second attempt)   | Day 3 17:06 |      23 | #14 |
+| fn-tbt Selectors into the map workspace          | Day 3 22:22 |      33 | #15 |
+| fn-j9v Quiet Go deeper, lesson 07 as field check | Day 3 22:58 |      25 | #16 |
+| fn-m7u One Go deeper shelf                       | Day 4 08:51 |      53 | #18 |
 
 ## beads
 
 | Measure                                            | Value                                                                                        | Source               |
 | -------------------------------------------------- | -------------------------------------------------------------------------------------------- | -------------------- |
-| Tracker initialised                                | Sun 11:07                                                                                    | Git and tracker      |
+| Tracker initialised                                | Day 3 11:07                                                                                  | Git and tracker      |
 | Issues at the build tip                            | 81: 77 closed, 4 open, none blocked (the case-study beads added afterwards are excluded)     | Tracker              |
 | Types                                              | task 49, bug 13, feature 12, epic 5, decision 1, chore 1                                     | Tracker              |
 | Priorities                                         | P1 13, P2 58, P3 9, P4 1                                                                     | Tracker              |
-| Created per day (CDT)                              | Sun 71, Mon 10                                                                               | Tracker              |
+| Created per day (CDT)                              | Day 3 71, Day 4 10                                                                           | Tracker              |
 | Wall clock from first bead to last close           | 24 h 32 min                                                                                  | Tracker              |
 | Median create-to-close                             | 42.9 minutes (quartiles 10.3 / 42.9 / 75.7)                                                  | Tracker              |
 | Closed within an hour                              | 52 of 77                                                                                     | Tracker              |
@@ -158,7 +158,7 @@ Run ledger, successful beads-work runs, CDT:
 | Publishes                        | 38                                                                                  | Transcripts              |
 | Numbered revisions               | 23 (revisions 1 to 3 on Day 2 and early Day 3; 4 to 14 on Day 3; 15 to 23 on Day 4) | The artifact's changelog |
 | Length at revision 23            | about 13,500 words, 35 printed pages                                                | The PDF in this folder   |
-| Became the design record         | Sun 11:54                                                                           | Transcripts              |
+| Became the design record         | Day 3 11:54                                                                         | Transcripts              |
 | Reviews that cite it by revision | 2 (Try it plan review, revision 6; polish verification, revision 14)                | Reviews                  |
 
 ## Reviews
@@ -175,13 +175,13 @@ Run ledger, successful beads-work runs, CDT:
 
 ## Rework visible in the record
 
-| Item                                     | Built                             | Removed                                                                                                                          | Source                  |
-| ---------------------------------------- | --------------------------------- | -------------------------------------------------------------------------------------------------------------------------------- | ----------------------- |
-| You are Here bar                         | Fri night                         | Fri 22:59, within the hour                                                                                                       | Transcripts             |
-| On-the-map jump navigation               | Sat morning                       | Sat 09:14                                                                                                                        | Transcripts             |
-| Orientation recording                    | 4 generations, Sat 12:00 to 15:10 | Orientation and brief taken off the Audio deep dives listing Sun 19:09; both stay in the content and Start still plays the brief | Git and transcripts     |
-| Explore map mode                         | Sun, in the lesson 01 prototype   | Mon 08:36                                                                                                                        | Tracker and transcripts |
-| Three generated posters                  | supplied Sat                      | Retired Sun 19:33                                                                                                                | Tracker                 |
-| Playwright browser test                  | added by a Keelson run Sun 13:07  | removed in the orchestrator's fix pass                                                                                           | Git and Keelson         |
-| Beads closures                           |                                   | reverted twice Sun 13:05 to 18:01                                                                                                | Tracker                 |
-| beads-work run for the field guides page | started Mon 11:04                 | cancelled at 11:06 in favour of a subagent                                                                                       | Keelson and transcripts |
+| Item                                     | Built                               | Removed                                                                                                                            | Source                  |
+| ---------------------------------------- | ----------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------- | ----------------------- |
+| You are Here bar                         | Day 1 night                         | Day 1 22:59, within the hour                                                                                                       | Transcripts             |
+| On-the-map jump navigation               | Day 2 morning                       | Day 2 09:14                                                                                                                        | Transcripts             |
+| Orientation recording                    | 4 generations, Day 2 12:00 to 15:10 | Orientation and brief taken off the Audio deep dives listing Day 3 19:09; both stay in the content and Start still plays the brief | Git and transcripts     |
+| Explore map mode                         | Day 3, in the lesson 01 prototype   | Day 4 08:36                                                                                                                        | Tracker and transcripts |
+| Three generated posters                  | supplied Day 2                      | Retired Day 3 19:33                                                                                                                | Tracker                 |
+| Playwright browser test                  | added by a Keelson run Day 3 13:07  | removed in the orchestrator's fix pass                                                                                             | Git and Keelson         |
+| Beads closures                           |                                     | reverted twice Day 3 13:05 to 18:01                                                                                                | Tracker                 |
+| beads-work run for the field guides page | started Day 4 11:04                 | cancelled at 11:06 in favour of a subagent                                                                                         | Keelson and transcripts |

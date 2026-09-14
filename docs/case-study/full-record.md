@@ -82,7 +82,7 @@ The approval gate is where judgement entered a run. The owner had delegated the 
 ```mermaid
 xychart-beta
     title "Commits per day"
-    x-axis ["Fri 11", "Sat 12", "Sun 13", "Mon 14"]
+    x-axis ["Day 1", "Day 2", "Day 3", "Day 4"]
     y-axis "commits" 0 --> 160
     bar [9, 19, 152, 16]
 ```
