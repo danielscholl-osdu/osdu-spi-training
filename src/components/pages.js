@@ -590,45 +590,83 @@ export const courseMaps = [
 
 // A short index by what the reader is trying to do. The course maps and native
 // guides come first on the page; the supplied posters follow as references.
+// The Field guides page groups every map, guide, and poster by the lessons it
+// sits beside, so a learner finds the sheet for the lesson they are on.
+export const guideSections = [
+  { title: 'Maps of the course', ids: ['round-trip', 'ladder'] },
+  {
+    title: 'The stack',
+    lessons: 'Lessons 01 and 02',
+    ids: [
+      'familiar',
+      'owners',
+      'timeline',
+      'milestones',
+      'profiles',
+      'inside-the-cluster',
+      'credentials',
+    ],
+  },
+  {
+    title: 'One service',
+    lessons: 'Lesson 03',
+    ids: ['identity', 'one-request'],
+  },
+  {
+    title: 'The fork',
+    lessons: 'Lessons 04 and 05',
+    ids: ['contribution-chain', 'clocks', 'labels'],
+  },
+  {
+    title: 'The seam',
+    lessons: 'Lesson 06',
+    ids: ['borrow-prove-restore', 'backing-environment'],
+  },
+];
+
+function posterArticle(poster) {
+  return `<article class="poster" id="guide-${poster.id}">
+    <button type="button" class="poster-image" data-lightbox="${poster.image}" data-lightbox-title="${escapeHtml(poster.title)}" aria-label="Open ${escapeHtml(poster.title)} at full size"><img src="${poster.image}" width="${poster.width}" height="${poster.height}" alt="${escapeHtml(poster.title)}" loading="lazy" /><span aria-hidden="true">View large ⤢</span></button>
+    <div class="poster-text">
+      <span class="guide-kicker">${poster.origin}</span>
+      <h3>${poster.title}</h3>
+      <p>${poster.summary}</p>
+      <h4>Take from it</h4>
+      <ul>${poster.takeaways.map((item) => `<li>${item}</li>`).join('')}</ul>
+      <h4>Read it with these checks</h4>
+      <ul class="poster-notes">${poster.notes.map((item) => `<li>${item}</li>`).join('')}</ul>
+      <p class="poster-explore">${poster.explore.map((link) => `<a href="${link.href}">${link.label} →</a>`).join('')}</p>
+      ${sourceLinks(poster.sources)}
+    </div>
+  </article>`;
+}
+
+function guideEntry(id) {
+  const map = courseMaps.find((entry) => entry.id === id);
+  if (map)
+    return `<figure class="field-guide course-map" id="guide-${map.id}" data-guide="${map.id}">
+      <figcaption><h3>${map.title}</h3><p>${map.summary}</p></figcaption>
+      <div class="guide-body">${map.render()}</div>
+    </figure>`;
+  const poster = suppliedPosters.find((entry) => entry.id === id);
+  if (poster) return posterArticle(poster);
+  const guide = guideFigure(id);
+  if (!guide) throw new Error(`Unknown field guide: ${id}`);
+  return guide;
+}
+
 function guidesPage() {
-  return `<section class="course-maps" aria-labelledby="course-maps-title">
-      <h2 id="course-maps-title" class="guides-section-title">Maps of the course</h2>
-      ${courseMaps
-        .map(
-          (
-            map,
-          ) => `<figure class="field-guide course-map" id="guide-${map.id}" data-guide="${map.id}">
-        <figcaption><h3>${map.title}</h3><p>${map.summary}</p></figcaption>
-        <div class="guide-body">${map.render()}</div>
-      </figure>`,
-        )
-        .join('')}
-    </section>
-    <section class="guide-set" aria-labelledby="guide-set-title">
-      <div class="section-heading"><h2 id="guide-set-title">Field guides</h2><p>One idea each. Each also appears beside the lesson it explains.</p></div>
-      ${nativeGuides.map((guide) => guideFigure(guide.id)).join('')}
-    </section>
-    <section class="poster-set" aria-labelledby="poster-set-title">
-      <div class="section-heading"><h2 id="poster-set-title">Posters</h2><p>Each caption records where the poster and the documentation differ.</p></div>
-      ${suppliedPosters
-        .map(
-          (poster) => `<article class="poster" id="guide-${poster.id}">
-            <button type="button" class="poster-image" data-lightbox="${poster.image}" data-lightbox-title="${escapeHtml(poster.title)}" aria-label="Open ${escapeHtml(poster.title)} at full size"><img src="${poster.image}" width="${poster.width}" height="${poster.height}" alt="${escapeHtml(poster.title)}" loading="lazy" /><span aria-hidden="true">View large ⤢</span></button>
-            <div class="poster-text">
-              <span class="guide-kicker">${poster.origin}</span>
-              <h3>${poster.title}</h3>
-              <p>${poster.summary}</p>
-              <h4>Take from it</h4>
-              <ul>${poster.takeaways.map((item) => `<li>${item}</li>`).join('')}</ul>
-              <h4>Read it with these checks</h4>
-              <ul class="poster-notes">${poster.notes.map((item) => `<li>${item}</li>`).join('')}</ul>
-              <p class="poster-explore">${poster.explore.map((link) => `<a href="${link.href}">${link.label} →</a>`).join('')}</p>
-              ${sourceLinks(poster.sources)}
-            </div>
-          </article>`,
-        )
-        .join('')}
-    </section>`;
+  return guideSections
+    .map(
+      (
+        section,
+        i,
+      ) => `<section class="guide-set" aria-labelledby="guide-section-${i}">
+      <div class="section-heading"><h2 id="guide-section-${i}">${section.title}</h2>${section.lessons ? `<p>${section.lessons}</p>` : ''}</div>
+      ${section.ids.map(guideEntry).join('')}
+    </section>`,
+    )
+    .join('');
 }
 
 export const pageRenderers = {

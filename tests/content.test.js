@@ -29,6 +29,7 @@ import {
   claimIndexForRoute,
   claimContext,
   courseMaps,
+  guideSections,
   claimStrip,
   detailSourceLinks,
   exampleStrip,
@@ -1318,9 +1319,23 @@ test('audio markers are ordered, inside the recording, and point at real views',
     !pageRenderers.myths(parseRoute('#not-true')).includes('Not quite'),
   );
   const guides = pageRenderers.guides(parseRoute('#field-guides'));
+  const sectioned = guideSections.flatMap((section) => section.ids);
+  assert.deepEqual(
+    [...sectioned].sort(),
+    [...courseMaps, ...nativeGuides, ...suppliedPosters]
+      .map((entry) => entry.id)
+      .sort(),
+    'every map, guide, and poster sits in exactly one section',
+  );
+  assert.equal(guideSections[0].ids[0], 'round-trip', 'the maps come first');
   assert.ok(
-    guides.indexOf('class="guide-set"') < guides.indexOf('class="poster-set"'),
-    'built guides come before the supplied posters',
+    guides.indexOf('id="guide-familiar"') <
+      guides.indexOf('id="guide-identity"') &&
+      guides.indexOf('id="guide-identity"') <
+        guides.indexOf('id="guide-contribution-chain"') &&
+      guides.indexOf('id="guide-contribution-chain"') <
+        guides.indexOf('id="guide-borrow-prove-restore"'),
+    'sections follow the lesson order',
   );
   for (const entry of [...courseMaps, ...nativeGuides, ...suppliedPosters])
     assert.ok(

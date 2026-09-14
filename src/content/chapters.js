@@ -1270,7 +1270,7 @@ export const chapters = {
     subtitle: 'Maps, guides, and posters',
     headline: 'Architecture and troubleshooting reference',
     subhead:
-      'Two maps of the course, one-idea field guides, and reference posters, each shown beside the lesson it explains.',
+      'Two maps of the course, then the guides and posters grouped by the lessons they sit beside. A poster’s caption records where it and the documentation differ.',
     intro: '',
     hero: {
       image: 'guides/drafting.webp',
