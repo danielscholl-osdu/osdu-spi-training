@@ -142,7 +142,7 @@ function profilesGuide() {
           ${profileLayers
             .map(
               (layer) =>
-                `<div class="profile-layer ${layer.on[column] ? 'is-on' : 'is-off'} ${layer.azure ? 'is-azure' : ''}"><span>${layer.label}</span></div>`,
+                `<div class="profile-layer ${layer.on[column] ? 'is-on' : 'is-off'} ${layer.azure ? 'is-azure' : ''}"><span>${layer.label}</span><small class="profile-state">${layer.azure ? 'Provisioned' : layer.on[column] ? 'Included' : 'Not deployed'}</small></div>`,
             )
             .join('')}
         </section>`,
@@ -257,7 +257,7 @@ function timelineGuide() {
     .join('');
   const exitY = top + bars.length * rowHeight;
   return `<figure class="guide-timeline">
-    <svg viewBox="0 0 ${width} ${exitY + 96}" role="img" aria-label="Timeline of one spi up invocation showing CLI phases, the Flux extension starting before the CLI exits, and reconciliation continuing afterwards">
+    <svg viewBox="0 0 ${width} ${exitY + 96}" role="img" aria-label="Timeline of one spi up invocation. The CLI runs preflight, the AKS template (about 30 minutes observed), the PaaS template, bootstrap, and the Flux extension (10 to 15 minutes observed), and exits at about 45 to 50 minutes as observed in centralus. Flux reconciliation of operators, middleware, services, and initialization Jobs starts before the exit and continues after it. The schema-load Job has a separate 150-minute deadline. Positions of unmeasured steps are illustrative.">
       ${ticks}
       ${rows}
       <line x1="${x(47)}" y1="${top - 8}" x2="${x(47)}" y2="${exitY + 4}" class="exit-line"></line>

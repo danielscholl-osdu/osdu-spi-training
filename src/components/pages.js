@@ -624,24 +624,32 @@ export const guideSections = [
   },
 ];
 
+// A poster on the Field guides page: title, one sentence, the image, a scope
+// note if it has one, one lesson link; takeaways, checks, and sources fold
+// away under it. The checks also travel into the lightbox with the image.
 function posterArticle(poster) {
+  const [first, ...rest] = poster.explore;
   return `<article class="poster" id="guide-${poster.id}">
-    <button type="button" class="poster-image" data-lightbox="${poster.image}" data-lightbox-title="${escapeHtml(poster.title)}" data-lightbox-notes="poster-checks-${poster.id}" aria-haspopup="dialog" aria-controls="lightbox" aria-label="Enlarge ${escapeHtml(poster.title)}"><img src="${poster.image}" width="${poster.width}" height="${poster.height}" alt="${escapeHtml(poster.title)}" loading="lazy" /><span aria-hidden="true">View large ⤢</span></button>
+    <button type="button" class="poster-image" data-lightbox="${poster.image}" data-lightbox-title="${escapeHtml(poster.title)}" data-lightbox-notes="poster-checks-${poster.id}" aria-haspopup="dialog" aria-controls="lightbox" aria-label="Enlarge ${escapeHtml(poster.title)}"><img src="${poster.image}" width="${poster.width}" height="${poster.height}" alt="${escapeHtml(poster.title)}" loading="lazy" /><span aria-hidden="true">Enlarge ⤢</span></button>
     <div class="poster-text">
-      <span class="guide-kicker">${poster.origin}</span>
+      <span class="guide-kicker">Poster</span>
       <h3>${poster.title}</h3>
       <p>${poster.summary}</p>
-      <h4>Take from it</h4>
-      <ul>${poster.takeaways.map((item) => `<li>${item}</li>`).join('')}</ul>
-      <h4>Read it with these checks</h4>
-      <ul class="poster-notes">${poster.notes.map((item) => `<li>${item}</li>`).join('')}</ul>
+      ${poster.inline ? `<p class="poster-scope">${escapeHtml(poster.inline)}</p>` : ''}
+      <p class="poster-explore"><a href="${first.href}">${first.label} →</a></p>
+      <details class="poster-more">
+        <summary>Takeaways, checks, and sources</summary>
+        <p class="poster-origin">${poster.origin}</p>
+        <h4>Take from it</h4>
+        <ul>${poster.takeaways.map((item) => `<li>${item}</li>`).join('')}</ul>
+        ${poster.notes.length ? `<h4>Read it with these checks</h4><ul class="poster-notes">${poster.notes.map((item) => `<li>${item}</li>`).join('')}</ul>` : ''}
+        ${rest.length ? `<p class="poster-explore">${rest.map((link) => `<a href="${link.href}">${link.label} →</a>`).join('')}</p>` : ''}
+        ${sourceLinks(poster.sources)}
+      </details>
       <div id="poster-checks-${poster.id}" class="poster-lightbox-notes" hidden>
         <p class="poster-origin">${poster.origin}</p>
-        <h4>Read it with these checks</h4>
-        <ul class="poster-notes">${poster.notes.map((item) => `<li>${item}</li>`).join('')}</ul>
+        ${poster.notes.length ? `<h4>Read it with these checks</h4><ul class="poster-notes">${poster.notes.map((item) => `<li>${item}</li>`).join('')}</ul>` : ''}
       </div>
-      <p class="poster-explore">${poster.explore.map((link) => `<a href="${link.href}">${link.label} →</a>`).join('')}</p>
-      ${sourceLinks(poster.sources)}
     </div>
   </article>`;
 }
@@ -660,16 +668,19 @@ function guideEntry(id) {
   return guide;
 }
 
+// Each lesson group is a disclosure so a reader reaches the fork sheets
+// without scrolling past the stack's; the course maps open by default and a
+// ?guide= route opens whichever group holds its guide.
 function guidesPage() {
   return guideSections
     .map(
       (
         section,
         i,
-      ) => `<section class="guide-set" aria-labelledby="guide-section-${i}">
-      <div class="section-heading"><h2 id="guide-section-${i}">${section.title}</h2>${section.lessons ? `<p>${section.lessons}</p>` : ''}</div>
-      ${section.ids.map(guideEntry).join('')}
-    </section>`,
+      ) => `<details class="guide-set" id="guide-set-${i}"${i === 0 ? ' open' : ''}>
+      <summary><div class="section-heading"><h2 id="guide-section-${i}">${section.title}</h2><p>${section.lessons ? `${section.lessons} · ` : ''}${section.ids.length} ${section.ids.length === 1 ? 'sheet' : 'sheets'}</p></div></summary>
+      <div class="guide-set-body">${section.ids.map(guideEntry).join('')}</div>
+    </details>`,
     )
     .join('');
 }

@@ -579,9 +579,10 @@ function render() {
     )
       player.seekTo(route.time, false);
     if (route.guide) {
-      document
-        .getElementById(`guide-${route.guide}`)
-        ?.scrollIntoView({ block: 'start' });
+      const target = document.getElementById(`guide-${route.guide}`);
+      const holder = target?.closest('details');
+      if (holder) holder.open = true;
+      target?.scrollIntoView({ block: 'start' });
     } else if (chapterChanged && previousRoute) {
       settleChapterScroll(route);
     }
@@ -982,7 +983,20 @@ document.addEventListener('click', (event) => {
   status.hidden = !origin;
   origin?.remove();
   document.querySelector('.lightbox-scroll').scrollTop = 0;
+  setLightboxZoom(false);
   lightbox.showModal();
+});
+
+// The enlarged poster fits the dialog until Zoom in is pressed; zoomed, it
+// pans sideways, which is what a phone needs to read the small type.
+function setLightboxZoom(zoomed) {
+  const button = document.getElementById('lightbox-zoom');
+  lightbox.classList.toggle('is-zoomed', zoomed);
+  button.setAttribute('aria-pressed', String(zoomed));
+  button.textContent = zoomed ? 'Fit to screen' : 'Zoom in';
+}
+document.getElementById('lightbox-zoom').addEventListener('click', () => {
+  setLightboxZoom(!lightbox.classList.contains('is-zoomed'));
 });
 
 // An easy mistake can open a field guide rendered beside the lesson in place

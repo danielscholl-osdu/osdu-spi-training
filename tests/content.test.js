@@ -2772,6 +2772,7 @@ test('a supplied poster beside a lesson opens in the lightbox with its notes', (
   assert.match(frame, /<dialog id="lightbox"/);
   assert.match(frame, /id="lightbox-notes"/);
   assert.match(frame, /id="lightbox-status"/);
+  assert.match(frame, /id="lightbox-zoom"/);
   for (const poster of suppliedPosters) {
     const markup = posterInline(poster.id);
     assert.ok(
@@ -2936,4 +2937,28 @@ test('no decorative kicker or method sentence survives in content or renderers',
   ])
     assert.ok(!text.includes(phrase), phrase);
   assert.equal((text.match(/Go deeper in the documentation/g) || []).length, 1);
+});
+
+test('field guide groups open in place and keep every sheet', () => {
+  const guides = pageRenderers.guides(parseRoute('#field-guides'));
+  const groups = guides.split('<details class="guide-set"').slice(1);
+  assert.equal(groups.length, guideSections.length);
+  assert.ok(
+    groups[0].startsWith(' id="guide-set-0" open'),
+    'the maps open first',
+  );
+  for (const [i, section] of guideSections.entries()) {
+    assert.ok(!groups[i].startsWith(' id="guide-set-0" open') || i === 0);
+    for (const id of section.ids)
+      assert.ok(
+        groups[i].includes(`id="guide-${id}"`),
+        `${section.title}: ${id}`,
+      );
+  }
+  for (const poster of suppliedPosters) {
+    const article = guides.slice(guides.indexOf(`id="guide-${poster.id}"`));
+    assert.ok(article.includes('<details class="poster-more">'), poster.id);
+    for (const item of poster.takeaways)
+      assert.ok(article.includes(item), `${poster.id}: ${item.slice(0, 40)}`);
+  }
 });

@@ -385,9 +385,74 @@ body[data-page='home'] .page > section > h2 {
   border-left: 4px solid var(--navy);
   border-radius: 0 6px 6px 0;
 }
-.guide-set {
+.guide-set > summary {
+  list-style: none;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  padding: 14px 18px;
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  background: #fff;
+}
+.guide-set > summary::-webkit-details-marker {
+  display: none;
+}
+.guide-set > summary::after {
+  content: '+';
+  flex: none;
+  font-size: 22px;
+  font-weight: 600;
+  color: var(--muted);
+}
+.guide-set[open] > summary::after {
+  content: '−';
+}
+.guide-set > summary .section-heading {
+  margin: 0;
+}
+.guide-set > summary h2 {
+  margin: 0 0 2px;
+  font-size: 22px;
+}
+.guide-set > summary p {
+  font-size: 14px;
+}
+.guide-set-body {
   display: grid;
   gap: 24px;
+  padding-top: 18px;
+}
+.poster-scope {
+  padding: 8px 12px;
+  border-left: 3px solid var(--navy);
+  background: #f4f7fa;
+  border-radius: 0 6px 6px 0;
+}
+.poster-more {
+  margin-top: 12px;
+  border-top: 1px solid var(--line);
+  padding-top: 8px;
+}
+.poster-more > summary {
+  cursor: pointer;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--muted);
+}
+.poster-more .poster-origin {
+  margin: 10px 0 0;
+  font-size: 13px;
+  color: var(--muted);
+}
+.profile-state {
+  display: block;
+  font-size: 11px;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  opacity: 0.85;
 }
 
 /* Owners */
@@ -825,8 +890,14 @@ body[data-page='home'] .page > section > h2 {
 .lightbox-scroll img {
   display: block;
   width: 100%;
-  min-width: 900px;
   height: auto;
+}
+.lightbox.is-zoomed .lightbox-scroll img {
+  min-width: max(1600px, 180%);
+}
+.lightbox-actions {
+  display: flex;
+  gap: 8px;
 }
 .lightbox-notes {
   padding: 16px 20px 20px;
@@ -1944,8 +2015,8 @@ body:has(.audio-dock:not([hidden])) main {
   .listen-hero {
     padding: 16px;
   }
-  .lightbox-scroll img {
-    min-width: 700px;
+  .lightbox.is-zoomed .lightbox-scroll img {
+    min-width: 1100px;
   }
   .audio-dock {
     padding-inline: 12px;

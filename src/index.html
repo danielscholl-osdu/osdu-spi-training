@@ -240,7 +240,12 @@
     <dialog id="lightbox" class="lightbox" aria-label="Poster at full size">
       <div class="lightbox-bar">
         <span id="lightbox-title"></span>
-        <button type="button" id="lightbox-close">Close ×</button>
+        <span class="lightbox-actions">
+          <button type="button" id="lightbox-zoom" aria-pressed="false">
+            Zoom in
+          </button>
+          <button type="button" id="lightbox-close">Close ×</button>
+        </span>
       </div>
       <div class="lightbox-scroll">
         <p id="lightbox-status" class="lightbox-status" hidden></p>
