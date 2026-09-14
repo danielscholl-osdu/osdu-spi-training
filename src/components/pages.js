@@ -59,7 +59,7 @@ export function guidePreviewTitles(ids = []) {
   });
 }
 
-function shelfRow({
+export function shelfRow({
   id,
   label,
   preview = [],

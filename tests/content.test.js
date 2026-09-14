@@ -45,6 +45,7 @@ import {
   resolveExamplePresentation,
   resolveLessonSelection,
   selectExampleVariant,
+  shelfRow,
   tryItBand,
   guidePreview,
   listenChips,
@@ -2028,6 +2029,85 @@ test('lesson workspace keeps claims and context between its header and map', () 
     1,
     'the component-selection hint occurs once',
   );
+});
+
+test('structured lesson frame places scope and one ordered shelf after Try it', () => {
+  const html = readFileSync(
+    new URL('../src/index.html', import.meta.url),
+    'utf8',
+  );
+  const exploration = html.indexOf('id="exploration"');
+  const caption = html.indexOf('id="structured-caption"');
+  const comparison = html.indexOf('id="chapter-comparison"');
+  const optional = html.indexOf('id="lesson-optional"');
+  const slots = [
+    'optional-example',
+    'optional-listen',
+    'optional-guides',
+    'optional-sources',
+  ].map((id) => html.indexOf(`id="${id}"`, optional));
+
+  assert.ok(exploration < caption && caption < comparison);
+  assert.match(
+    html.slice(optional, html.indexOf('</section>', optional)),
+    /<p class="guide-kicker">Go deeper<\/p>/,
+  );
+  assert.deepEqual(
+    slots,
+    [...slots].sort((a, b) => a - b),
+  );
+  for (const id of [
+    'lesson-optional',
+    'example-strip',
+    'chapter-listen',
+    'chapter-guides',
+    'source-details',
+    'scope-note',
+  ])
+    assert.equal(
+      [...html.matchAll(new RegExp(`id="${id}"`, 'g'))].length,
+      1,
+      id,
+    );
+  assert.doesNotMatch(
+    html.match(/<summary>[\s\S]*?<\/summary>/g).join(''),
+    /<(?:button|a)\b/,
+  );
+
+  const main = readFileSync(new URL('../src/main.js', import.meta.url), 'utf8');
+  assert.match(
+    main,
+    /const structured = scene\.kind === 'map' && hasClaims\(scene\)/,
+  );
+  assert.match(
+    main,
+    /getElementById\('structured-caption'\)[\s\S]*append\(document\.getElementById\('scope-note'\)\)/,
+  );
+});
+
+test('structured guide shelf derives each stage preview and body together', () => {
+  for (const step of chapterSteps('bring-up')) {
+    const ids = chapters['bring-up'].guides[step];
+    const body = ids.map((id) => guidePreview(id, { shelf: true })).join('');
+    const row = shelfRow({
+      id: 'guides',
+      label: 'Field guides',
+      preview: guidePreviewTitles(ids),
+      body,
+    });
+    assert.match(row, /data-shelf-row="guides"/);
+    for (const [index, id] of ids.entries()) {
+      const title = guidePreviewTitles([id])[0];
+      assert.ok(row.includes(escapeHtml(title)), `${step}: ${title}`);
+      assert.ok(row.includes(`id="guide-${id}"`), `${step}: ${id}`);
+      if (index)
+        assert.ok(
+          row.indexOf(`id="guide-${ids[index - 1]}"`) <
+            row.indexOf(`id="guide-${id}"`),
+          `${step}: authored order`,
+        );
+    }
+  }
 });
 
 test('inspector frame uses compact metadata and unlabeled explanations', () => {

@@ -131,6 +131,7 @@
             </aside>
           </div>
         </section>
+        <div id="structured-caption" class="structured-caption" hidden></div>
         <div id="chapter-comparison" hidden></div>
         <div id="chapter-listen"></div>
         <div id="chapter-mistake"></div>
@@ -143,18 +144,26 @@
           <p id="scope-note"></p>
           <details id="source-details">
             <summary>
-              Go deeper in the documentation
+              <span id="source-label">Go deeper in the documentation</span>
+              <span id="source-preview" class="shelf-row-preview" hidden></span>
               <span class="summary-marker" aria-hidden="true">+</span>
             </summary>
-            <div id="sources"></div>
+            <div id="sources" class="shelf-row-body"></div>
           </details>
         </div>
         <section id="lesson-optional" class="lesson-optional" hidden>
-          <p class="guide-kicker">Optional · go deeper</p>
-          <div class="optional-grid">
+          <p class="guide-kicker">Go deeper</p>
+          <div class="lesson-shelf">
+            <div id="optional-example"></div>
             <div id="optional-listen"></div>
-            <div id="optional-guides"><h2>Field guides</h2></div>
-            <div id="optional-sources"><h2>Sources and scope</h2></div>
+            <div id="optional-guides"></div>
+            <div id="optional-sources">
+              <section
+                id="shelf-row-sources"
+                class="shelf-row"
+                data-shelf-row="sources"
+              ></section>
+            </div>
           </div>
         </section>
         <footer class="chapter-footer">

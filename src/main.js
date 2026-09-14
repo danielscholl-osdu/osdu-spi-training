@@ -18,6 +18,7 @@ import {
   claimStrip,
   claimContext,
   guidePreview,
+  guidePreviewTitles,
   detailSourceLinks,
   hopIndexForRoute,
   partitionComparison,
@@ -26,6 +27,8 @@ import {
   selectExampleVariant,
   tryItBand,
   frameVideoPlayer,
+  shelfRow,
+  sourcePreviewTitles,
 } from './components/pages.js';
 import { frameVideo } from './content/audio.js';
 import { createPlayer } from './components/player.js';
@@ -62,6 +65,7 @@ const movable = [
   'next-link',
   'scope-note',
   'source-details',
+  'lesson-optional',
 ].map((id) => {
   const element = document.getElementById(id);
   const marker = document.createComment(id);
@@ -358,7 +362,7 @@ function positionLabel(key) {
 
 function renderChapterFrame(route, scene) {
   const key = route.chapter;
-  const structured = hasClaims(scene);
+  const structured = scene.kind === 'map' && hasClaims(scene);
   movable.forEach(({ element, marker }) => marker.after(element));
   document.getElementById('lesson-next')?.remove();
   const tryIt = document.getElementById('chapter-try-it');
@@ -381,12 +385,16 @@ function renderChapterFrame(route, scene) {
   const comparisonSlot = document.getElementById('chapter-comparison');
   comparisonSlot.innerHTML = comparison;
   comparisonSlot.hidden = !comparison;
-  document.getElementById('lesson-optional').hidden = !structured;
+  const lessonOptional = document.getElementById('lesson-optional');
+  lessonOptional.hidden = true;
   document.getElementById('map-hint').hidden = structured;
   const context = document.getElementById('claim-context');
   context.innerHTML = '';
   context.hidden = !structured;
   if (structured) {
+    document
+      .getElementById('optional-example')
+      .append(document.getElementById('example-strip'));
     document
       .getElementById('optional-listen')
       .append(document.getElementById('chapter-listen'));
@@ -395,10 +403,11 @@ function renderChapterFrame(route, scene) {
       .append(document.getElementById('chapter-guides'));
     document
       .getElementById('optional-sources')
-      .append(
-        document.getElementById('source-details'),
-        document.getElementById('scope-note'),
-      );
+      .querySelector('.shelf-row')
+      .append(document.getElementById('source-details'));
+    document
+      .getElementById('structured-caption')
+      .append(document.getElementById('scope-note'));
     document
       .getElementById('chapter-mistake')
       .after(document.getElementById('chapter-outcomes'));
@@ -413,7 +422,8 @@ function renderChapterFrame(route, scene) {
     nextBlock.append(document.getElementById('next-link'));
     document.getElementById('chapter-outcomes').after(nextBlock);
     nextBlock.after(tryIt);
-    tryIt.after(document.getElementById('example-strip'));
+    if (structured) tryIt.after(lessonOptional);
+    else tryIt.after(document.getElementById('example-strip'));
   } else if (scene.tryIt && nextChapter(key) === 'start') {
     const nextBlock = document.createElement('div');
     nextBlock.id = 'lesson-next';
@@ -462,15 +472,30 @@ function renderChapterFrame(route, scene) {
   subhead.hidden = !scene.subhead;
   document.getElementById('scope-note').textContent = scene.scope || '';
   document.getElementById('scope-note').hidden = !scene.scope;
+  document.getElementById('structured-caption').hidden =
+    !structured || !scene.scope;
   document.getElementById('sources').innerHTML = scene.sources
     .map(
       (sourceKey) =>
         `<a href="${sources[sourceKey].href}" target="_blank" rel="noopener noreferrer">${sources[sourceKey].label} ↗</a>`,
     )
     .join('');
-  document.getElementById('source-details').open = structured;
-  document.getElementById('source-details').hidden =
-    scene.page === 'home' || scene.group === 'supplement';
+  const sourceDetails = document.getElementById('source-details');
+  sourceDetails.open = false;
+  sourceDetails.hidden =
+    !scene.sources.length ||
+    scene.page === 'home' ||
+    scene.group === 'supplement';
+  document.getElementById('source-label').textContent = structured
+    ? 'Sources'
+    : 'Go deeper in the documentation';
+  const sourcePreview = document.getElementById('source-preview');
+  sourcePreview.textContent = structured
+    ? sourcePreviewTitles(scene.sources).join(' · ')
+    : '';
+  sourcePreview.title = sourcePreview.textContent;
+  sourcePreview.hidden = !structured;
+  document.getElementById('shelf-row-sources').hidden = sourceDetails.hidden;
   document.getElementById('chapter-position').textContent = positionLabel(key);
   const next = nextChapter(key);
   const link = document.getElementById('next-link');
@@ -480,7 +505,9 @@ function renderChapterFrame(route, scene) {
       ? 'Back to the start ↺'
       : `Next: ${chapters[next].title} →`;
   document.getElementById('view-scope').innerHTML = chapterScope(key);
-  document.getElementById('chapter-listen').innerHTML = listenChips(key);
+  const chapterListen = document.getElementById('chapter-listen');
+  chapterListen.innerHTML = listenChips(key, { shelf: structured });
+  chapterListen.hidden = !chapterListen.innerHTML;
   document.getElementById('chapter-outcomes').innerHTML = chapterOutcomes(key);
   document.body.dataset.page = scene.kind === 'page' ? scene.page : 'map';
 }
@@ -489,6 +516,21 @@ function forStep(value, route) {
   if (!value) return [];
   if (Array.isArray(value)) return value;
   return [value[route.step] || []].flat();
+}
+
+function updateLessonOptional(scene) {
+  const optional = document.getElementById('lesson-optional');
+  if (scene.kind !== 'map' || !hasClaims(scene)) {
+    optional.hidden = true;
+    return;
+  }
+  const rows = [
+    document.querySelector('#optional-example [data-shelf-row]'),
+    document.querySelector('#optional-listen [data-shelf-row]'),
+    document.querySelector('#optional-guides [data-shelf-row]'),
+    document.querySelector('#optional-sources [data-shelf-row]'),
+  ].filter(Boolean);
+  optional.hidden = !rows.some((row) => !row.hidden);
 }
 
 // Leaving a chapter remembers where the reader was, so browser Back lands on
@@ -593,22 +635,31 @@ function render() {
   document.getElementById('page').hidden = true;
   document.getElementById('page').innerHTML = '';
   document.getElementById('exploration').hidden = false;
+  const structured = scene.kind === 'map' && hasClaims(scene);
   if (chapterChanged) {
     document.getElementById('figure-title').textContent = scene.figure;
   }
   if (mapChanged) {
-    document.getElementById('chapter-guides').innerHTML = forStep(
-      scene.guides,
-      route,
-    )
+    const guideIds = forStep(scene.guides, route);
+    const guides = guideIds
       .map((guide) =>
         hasClaims(scene)
-          ? guidePreview(guide)
+          ? guidePreview(guide, { shelf: true })
           : suppliedPosters.some((poster) => poster.id === guide)
             ? posterInline(guide)
             : guideFigure(guide, { compact: true }),
       )
       .join('');
+    const chapterGuides = document.getElementById('chapter-guides');
+    chapterGuides.innerHTML = structured
+      ? shelfRow({
+          id: 'guides',
+          label: 'Field guides',
+          preview: guidePreviewTitles(guideIds),
+          body: guides,
+        })
+      : guides;
+    chapterGuides.hidden = !chapterGuides.innerHTML;
     document.getElementById('chapter-mistake').innerHTML = forStep(
       scene.mistakes,
       route,
@@ -636,7 +687,6 @@ function render() {
     clearMapSelection();
   }
   const strip = document.getElementById('example-strip');
-  const structured = hasClaims(scene);
   const selection = structured ? resolveLessonSelection(scene, route) : null;
   const legacyHop = structured ? -1 : hopIndexForRoute(scene, route);
   const requestedOpener = pendingOpener;
@@ -650,9 +700,11 @@ function render() {
         detail: element?.dataset.detail || null,
       },
       lessonState.variant,
+      { shelf: structured },
     );
     strip.hidden = !strip.innerHTML;
   }
+  updateLessonOptional(scene);
   if (structured) {
     lessonState.claim = selection.claim;
     lessonState.hop = selection.hop;
