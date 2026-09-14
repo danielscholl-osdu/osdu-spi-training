@@ -53,6 +53,7 @@ const player = createPlayer(
 );
 
 const movable = [
+  'chapter-claims',
   'chapter-listen',
   'chapter-guides',
   'chapter-outcomes',
@@ -378,7 +379,10 @@ function renderChapterFrame(route, scene) {
   document.body.classList.toggle('has-claims', structured);
   document.body.classList.toggle('is-lifecycle', isLifecycleLesson(scene));
   delete document.getElementById('diagram').dataset.policy;
-  document.getElementById('chapter-claims').innerHTML = claimStrip(key);
+  const claims = document.getElementById('chapter-claims');
+  claims.innerHTML = claimStrip(key);
+  if (isLifecycleLesson(scene))
+    document.querySelector('#exploration .visual-workspace').after(claims);
   const comparison = partitionComparison(key);
   const comparisonSlot = document.getElementById('chapter-comparison');
   comparisonSlot.innerHTML = comparison;

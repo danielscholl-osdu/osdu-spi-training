@@ -2245,6 +2245,18 @@ test('lesson 02 is operated by its lifecycle stages', () => {
     );
     const next = creationMoments[index + 1];
     assert.doesNotMatch(markup, /Previous|Already have a stack|Connect to it/);
+    assert.ok(
+      markup.startsWith(
+        '<nav class="creation-steps" aria-label="Lifecycle stages">',
+      ),
+      `${moment.id}: stage navigation starts the workspace`,
+    );
+    assert.ok(
+      markup.indexOf('id="creation-story"') <
+        markup.indexOf('class="architecture-map '),
+      `${moment.id}: stage explanation precedes the map`,
+    );
+    assert.doesNotMatch(markup, /creation-intro|Illustrated lifecycle/);
     assert.equal(
       [...markup.matchAll(/data-stage-link/g)].length,
       creationMoments.length + (next ? 1 : 0),

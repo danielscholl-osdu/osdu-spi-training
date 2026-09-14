@@ -111,8 +111,7 @@ export function creationWalkthrough(route) {
     ? { claim: 0 }
     : {};
   const next = creationMoments[index + 1];
-  return `<div class="creation-intro"><span>Illustrated lifecycle</span></div>
-    <nav class="creation-steps" aria-label="Lifecycle stages">${creationMoments.map((item, i) => `<a href="${routeHref('bring-up', item.id)}" data-route-key="${item.id}" data-stage-link ${i === index ? 'aria-current="step"' : ''}><span>${String(i + 1).padStart(2, '0')}</span><b>${item.name}</b></a>`).join('')}</nav>
+  return `<nav class="creation-steps" aria-label="Lifecycle stages">${creationMoments.map((item, i) => `<a href="${routeHref('bring-up', item.id)}" data-route-key="${item.id}" data-stage-link ${i === index ? 'aria-current="step"' : ''}><span>${String(i + 1).padStart(2, '0')}</span><b>${item.name}</b></a>`).join('')}</nav>
     <div class="creation-story" id="creation-story"><div><span class="group-label">${moment.owner}</span><h3 id="creation-story-title" tabindex="-1">${moment.title}</h3><p>${moment.copy}</p><a class="small-link look-closer" href="${routeHref('bring-up', moment.id, moment.detail, inspectionSelection)}" data-look-closer>Look closer ↗</a></div><div class="timing"><b>${moment.time}</b>${moment.timeKind ? `<small>${moment.timeKind}</small>` : ''}</div></div>
     ${architectureMap(index)}
     ${next ? `<div class="creation-controls"><a href="${routeHref('bring-up', next.id)}" data-route-key="next" data-stage-link data-stage-continue>Continue to ${next.name} →</a></div>` : ''}`;
