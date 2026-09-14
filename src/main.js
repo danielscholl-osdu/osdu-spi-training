@@ -367,6 +367,7 @@ function positionLabel(key) {
 function renderChapterFrame(route, scene) {
   const key = route.chapter;
   const structured = scene.kind === 'map' && hasClaims(scene);
+  const shelf = scene.group === 'learn';
   movable.forEach(({ element, marker }) => marker.after(element));
   const tryIt = document.getElementById('chapter-try-it');
   tryIt.innerHTML = scene.group === 'learn' ? tryItBand(scene) : '';
@@ -394,7 +395,8 @@ function renderChapterFrame(route, scene) {
   const context = document.getElementById('claim-context');
   context.innerHTML = '';
   context.hidden = !structured;
-  if (structured) {
+  document.querySelector('.below-figure').hidden = shelf;
+  if (shelf) {
     document
       .getElementById('optional-example')
       .append(document.getElementById('example-strip'));
@@ -417,8 +419,7 @@ function renderChapterFrame(route, scene) {
   }
   if (scene.kind === 'map' && scene.group === 'learn') {
     document.getElementById('chapter-outcomes').after(tryIt);
-    if (structured) tryIt.after(lessonOptional);
-    else tryIt.after(document.getElementById('example-strip'));
+    tryIt.after(lessonOptional);
   } else if (scene.tryIt && nextChapter(key) === 'start') {
     document.getElementById('chapter-outcomes').after(tryIt);
   }
@@ -462,7 +463,7 @@ function renderChapterFrame(route, scene) {
   document.getElementById('scope-note').textContent = scene.scope || '';
   document.getElementById('scope-note').hidden = !scene.scope;
   document.getElementById('structured-caption').hidden =
-    !structured || !scene.scope;
+    !shelf || scene.kind !== 'map' || !scene.scope;
   document.getElementById('sources').innerHTML = scene.sources
     .map(
       (sourceKey) =>
@@ -475,16 +476,16 @@ function renderChapterFrame(route, scene) {
     !scene.sources.length ||
     scene.page === 'home' ||
     scene.group === 'supplement';
-  document.getElementById('source-label').textContent = structured
+  document.getElementById('source-label').textContent = shelf
     ? 'Sources'
     : 'Go deeper in the documentation';
   const sourcePreview = document.getElementById('source-preview');
-  sourcePreview.textContent = structured ? sourcesPreview(scene.sources) : '';
-  sourcePreview.hidden = !structured;
+  sourcePreview.textContent = shelf ? sourcesPreview(scene.sources) : '';
+  sourcePreview.hidden = !shelf;
   const sourceBadge = document.getElementById('source-badge');
   if (!sourceBadge.innerHTML)
     sourceBadge.innerHTML = badge('notebook', 'shelf-badge');
-  sourceBadge.hidden = !structured;
+  sourceBadge.hidden = !shelf;
   document.getElementById('shelf-row-sources').hidden = sourceDetails.hidden;
   document.getElementById('chapter-position').textContent = positionLabel(key);
   const next = nextChapter(key);
@@ -512,7 +513,7 @@ function renderChapterFrame(route, scene) {
   }
   document.getElementById('view-scope').innerHTML = chapterScope(key);
   const chapterListen = document.getElementById('chapter-listen');
-  chapterListen.innerHTML = listenChips(key, { shelf: structured });
+  chapterListen.innerHTML = listenChips(key, { shelf });
   chapterListen.hidden = !chapterListen.innerHTML;
   document.getElementById('chapter-outcomes').innerHTML = chapterOutcomes(key);
   document.body.dataset.page = scene.kind === 'page' ? scene.page : 'map';
@@ -526,7 +527,7 @@ function forStep(value, route) {
 
 function updateLessonOptional(scene) {
   const optional = document.getElementById('lesson-optional');
-  if (scene.kind !== 'map' || !hasClaims(scene)) {
+  if (scene.group !== 'learn') {
     optional.hidden = true;
     return;
   }
@@ -657,6 +658,7 @@ function render() {
       );
       player.reflect();
     }
+    updateLessonOptional(scene);
     // A timestamp in the hash seeks whether or not the page re-rendered;
     // a bare #listen leaves the current position alone.
     if (
@@ -691,6 +693,7 @@ function render() {
   document.getElementById('page').innerHTML = '';
   document.getElementById('exploration').hidden = false;
   const structured = scene.kind === 'map' && hasClaims(scene);
+  const shelf = scene.kind === 'map' && scene.group === 'learn';
   let guideTarget = null;
   if (chapterChanged) {
     document.getElementById('figure-title').textContent = scene.figure;
@@ -699,7 +702,7 @@ function render() {
     const guideIds = forStep(scene.guides, route);
     const guides = guideIds
       .map((guide) =>
-        hasClaims(scene)
+        shelf
           ? guidePreview(guide, { shelf: true })
           : suppliedPosters.some((poster) => poster.id === guide)
             ? posterInline(guide)
@@ -707,7 +710,7 @@ function render() {
       )
       .join('');
     const chapterGuides = document.getElementById('chapter-guides');
-    chapterGuides.innerHTML = structured
+    chapterGuides.innerHTML = shelf
       ? shelfRow({
           id: 'guides',
           label: 'Field guides',
@@ -752,6 +755,8 @@ function render() {
   const requestedOpener = pendingOpener;
   const openerHop = requestedOpener?.dataset.hop;
   const openerWasLookCloser = requestedOpener?.hasAttribute('data-look-closer');
+  const stripWasOpen =
+    !chapterChanged && Boolean(strip.querySelector('details')?.open);
   if (!hasClaims(scene) || mapChanged) {
     strip.innerHTML = exampleStrip(
       route.chapter,
@@ -760,7 +765,7 @@ function render() {
         detail: element?.dataset.detail || null,
       },
       lessonState.variant,
-      { shelf: structured },
+      { shelf },
     );
     strip.hidden = !strip.innerHTML;
   }
@@ -774,7 +779,7 @@ function render() {
     applyFocus();
   } else if (scene.example) {
     lessonState.hop = legacyHop;
-    lessonState.exampleOpen = legacyHop >= 0;
+    lessonState.exampleOpen = legacyHop >= 0 || stripWasOpen;
     strip.querySelector('details').open = lessonState.exampleOpen;
   }
   if (guideTarget) openContainingDetails(guideTarget);

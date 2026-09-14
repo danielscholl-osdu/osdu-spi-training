@@ -3472,7 +3472,25 @@ test('every published guide and poster remains beside a map lesson', () => {
     assert.ok(besideLessons.has(item.id), item.id);
 });
 
-test('legacy lessons retain standalone examples and poster thumbnails', () => {
+test('the shelf and caption are gated on learn lessons, not on claims', () => {
+  const main = readFileSync(new URL('../src/main.js', import.meta.url), 'utf8');
+  assert.match(main, /const shelf = scene\.group === 'learn';/);
+  assert.match(
+    main,
+    /const shelf = scene\.kind === 'map' && scene\.group === 'learn';/,
+  );
+  assert.match(
+    main,
+    /if \(scene\.group !== 'learn'\) \{\s*optional\.hidden = true;/,
+  );
+  assert.match(main, /listenChips\(key, \{ shelf \}\)/);
+  assert.match(
+    main,
+    /document\.querySelector\('\.below-figure'\)\.hidden = shelf;/,
+  );
+});
+
+test('renderers keep a non-shelf default for pages outside the lesson frame', () => {
   const frame = readFileSync(
     new URL('../src/index.html', import.meta.url),
     'utf8',

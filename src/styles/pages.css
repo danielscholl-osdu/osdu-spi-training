@@ -1768,11 +1768,8 @@ body:has(.audio-dock:not([hidden])) main {
 
 /* Learn views: outcomes */
 .outcomes {
-  margin-top: 26px;
-  padding: 20px 22px 18px;
-  border-radius: 10px;
-  background: var(--navy);
-  color: #fff;
+  margin: 28px 0 0;
+  color: var(--ink);
 }
 .outcomes-head h2 {
   font-family: Manrope, var(--font);
@@ -1802,30 +1799,13 @@ body:has(.audio-dock:not([hidden])) main {
   width: 26px;
   height: 26px;
   border-radius: 50%;
-  border: 1.5px solid #8fd3ec;
-  color: #8fd3ec;
+  border: 1.5px solid var(--blue);
+  color: var(--blue);
   display: grid;
   place-items: center;
   font-size: 12px;
   font-weight: 700;
   margin-top: 1px;
-}
-.outcomes-next {
-  margin: 16px 0 0;
-  padding-top: 14px;
-  border-top: 1px solid #ffffff2e;
-  font-size: 14px;
-  line-height: 1.55;
-  color: #d5e4ee;
-}
-.outcomes-next b {
-  color: #fff;
-}
-.outcomes-next span {
-  display: block;
-  margin-top: 4px;
-  font-size: 13px;
-  color: #a9c2d3;
 }
 
 /* Owners: boundary line */
@@ -2655,18 +2635,18 @@ body:has(.audio-dock:not([hidden])) main {
 
 /* Closing the round trip on the last map view */
 .outcomes-close {
-  margin: 16px 0 0;
+  margin: 18px 0 0;
   padding-top: 14px;
-  border-top: 1px solid #ffffff2e;
+  border-top: 1px solid var(--line);
   font-size: 14px;
   line-height: 1.55;
-  color: #d5e4ee;
+  color: var(--muted);
 }
 .outcomes-close p {
   margin: 0 0 10px;
 }
 .outcomes-close b {
-  color: #fff;
+  color: var(--ink);
 }
 .outcomes-close ul {
   list-style: none;
@@ -2677,20 +2657,26 @@ body:has(.audio-dock:not([hidden])) main {
   gap: 10px;
 }
 .outcomes-close li {
+  counter-increment: none;
   display: grid;
+  grid-template-columns: 1fr;
   gap: 3px;
   padding: 10px 12px;
+  border: 1px solid var(--line);
   border-radius: 8px;
-  background: #ffffff14;
+  background: var(--white);
+}
+.outcomes-close li::before {
+  content: none;
 }
 .outcomes-close li a {
-  color: #fff;
+  color: var(--blue);
   font-weight: 700;
   text-decoration: none;
 }
 .outcomes-close li span {
   font-size: 13px;
-  color: #a9c2d3;
+  color: var(--muted);
 }
 @media (max-width: 760px) {
   .outcomes-close ul {
@@ -2968,25 +2954,8 @@ body:has(.audio-dock:not([hidden])) main {
   padding: 4px 0 4px 16px;
   margin: 24px 0;
 }
-.has-claims .outcomes {
-  border: 0;
-  background: transparent;
-  padding: 0;
-  margin: 28px 0 0;
-  display: block;
-}
-.has-claims .outcomes {
-  color: var(--ink);
-}
-.has-claims .outcomes .guide-kicker {
+.outcomes .guide-kicker {
   color: var(--muted);
-}
-.has-claims .outcomes li::before {
-  border-color: var(--blue);
-  color: var(--blue);
-}
-.has-claims .outcomes ol {
-  margin-top: 12px;
 }
 .try-it {
   min-width: 0;

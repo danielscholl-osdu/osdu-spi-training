@@ -495,9 +495,7 @@ export function chapterOutcomes(key) {
     ${
       key === 'handshake'
         ? `<div class="outcomes-close"><p><b>That is the round trip.</b> A request went down to its Azure provider, a change to that provider went out through the fork, and a candidate image came back in through the lock. From here, choose:</p><ul><li><a href="${routeHref('not-true')}">07 · ${chapters['not-true'].title} →</a><span>The assumptions the documentation contradicts, with a command for each.</span></li><li><a href="${routeHref('listen')}">Listen →</a><span>The recordings, cued from the views you have seen.</span></li><li><a href="${routeHref('field-guides')}">Field guides →</a><span>The diagrams from the views on one printable page.</span></li></ul></div>`
-        : next && !hasClaims(chapter)
-          ? `<p class="outcomes-next"><b>Next, ${chapters[next].title}</b> asks: ${escapeHtml(chapters[next].question)} <span>${escapeHtml(chapters[next].builds)}</span></p>`
-          : ''
+        : ''
     }
   </section>`;
 }
