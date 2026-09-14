@@ -33,7 +33,7 @@ export const chapters = {
     group: 'start',
     title: 'Start here',
     subtitle: 'What this site is for',
-    headline: 'Understand the OSDU Azure SPI machinery.',
+    headline: 'Understanding the Azure SPI machinery',
     subhead:
       'The stack, the provider inside each service, and the engineering that keeps them current.',
     intro:

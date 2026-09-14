@@ -222,11 +222,34 @@ body[data-page='home'] main {
   margin-inline: auto;
 }
 body[data-page='home'] .intro {
-  display: block;
+  display: grid;
+  grid-template-columns: minmax(0, 5fr) minmax(0, 7fr);
+  column-gap: 40px;
+  row-gap: 0;
+  align-items: start;
+}
+body[data-page='home'] .intro h1,
+body[data-page='home'] .subhead {
+  grid-column: 1 / -1;
+}
+body[data-page='home'] .intro .subhead {
+  max-width: 860px;
+}
+body[data-page='home'] #hero-image {
+  grid-column: 1;
+  max-width: none;
+  margin: 26px 0 0;
+}
+body[data-page='home'] #introduction {
+  grid-column: 2;
+  margin-top: 26px;
 }
 body[data-page='home'] .intro p {
   max-width: 640px;
   margin-top: 14px;
+}
+body[data-page='home'] #introduction > p:first-child {
+  margin-top: 0;
 }
 .subhead {
   font-family: Manrope, var(--font);
@@ -832,9 +855,13 @@ details[open] summary span {
     font-size: 14px;
     padding: 11px 2px;
   }
-  .intro {
+  .intro,
+  body[data-page='home'] .intro {
     display: block;
     margin-bottom: 22px;
+  }
+  body[data-page='home'] #introduction > p:first-child {
+    margin-top: 14px;
   }
   .intro h1 {
     font-size: 32px;

@@ -1250,6 +1250,10 @@ test('audio markers are ordered, inside the recording, and point at real views',
   );
   assert.ok(chapters.start.subhead.length > 20, 'the start page has a subhead');
   assert.ok(
+    !chapters.start.headline.endsWith('.'),
+    'the start headline is a title, not a sentence',
+  );
+  assert.ok(
     home.includes('start/watch.webp'),
     'the Watch card uses the gear badge',
   );
