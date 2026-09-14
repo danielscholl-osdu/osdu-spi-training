@@ -14,56 +14,9 @@ The site has seven lessons that walk an engineer down the Azure stack, into one 
 
 The word "factory" is the owner's. What it meant in practice was one orchestrating session that never wrote most of the code itself, a set of specialised agents it could hand work to, a review layer that was deliberately drawn from different vendors, and two pieces of shared state that every agent could read: an issue tracker and a design-intent document.
 
-```mermaid
-flowchart TB
-    Owner["Owner<br/>direction, taste, approval,<br/>environment fixes"]
+![The factory: owner, orchestrator, workers, reviewers, and shared state](factory-diagram.png)
 
-    subgraph Orchestration["Claude Code orchestrator session (Fable 5.1)"]
-        Orch["Orchestrator<br/>plans, briefs, verifies in the browser,<br/>merges, keeps the record"]
-        Sub["Subagents<br/>posters, fact-checks, adversarial critics,<br/>bounded implementations"]
-        Peers["Peer Claude sessions<br/>fact-check reviewer, Start page rebuild,<br/>beads rib fixes"]
-    end
-
-    subgraph Keelson["Keelson workbench (beads-work workflow)"]
-        Plan["plan<br/>gpt-6-astra"]
-        Gate["approval gate<br/>owner corrections folded in"]
-        Impl["implement in a worktree<br/>gpt-5.6-sol"]
-        Rev["three review lanes<br/>gpt-5.6-terra"]
-        Triage["triage and fix<br/>gpt-6-astra"]
-        PR["draft PR"]
-        Plan --> Gate --> Impl --> Rev --> Triage --> PR
-    end
-
-    subgraph External["External review, brought in by the owner"]
-        Codex["OpenAI Codex<br/>15 usability and editorial reviews,<br/>one implementation"]
-        Astra["GPT-6 Astra in ChatGPT<br/>8 design conversations"]
-        Copilot["Copilot PR reviewer<br/>13 reviews, 10 inline comments"]
-    end
-
-    subgraph Media["Generated media"]
-        NLM["Gemini NotebookLM<br/>audio deep dives, brief, video"]
-        Img["Gemini image model<br/>hero and badge artwork"]
-    end
-
-    subgraph State["Shared state"]
-        Beads[("beads tracker<br/>81 issues, 4 memories")]
-        Tracker[("tracker artifact<br/>design intent, 23 revisions,<br/>38 publishes")]
-        Rules[("AGENTS.md<br/>the content standard,<br/>edited in 46 commits")]
-    end
-
-    Owner <--> Orch
-    Owner --> Codex & Astra & NLM
-    Codex & Astra --> Owner
-    Orch --> Sub & Peers
-    Orch -->|"workflow_run"| Plan
-    Gate -.->|"approve with corrections"| Orch
-    PR --> Copilot
-    PR -->|"browser check, fix pass, merge"| Orch
-    Orch <--> Beads & Tracker & Rules
-    Keelson <--> Beads
-    NLM --> Orch
-    Orch --> Img
-```
+The drawing is kept as an editable Excalidraw file beside the image (`factory-diagram.excalidraw`). The numbers on it come from the [appendix](by-the-numbers.md).
 
 ### The cast
 

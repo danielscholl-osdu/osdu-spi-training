@@ -12,3 +12,6 @@ docs/reference/
 
 # Managed by Keelson and review sessions; formatted in their own checkouts.
 .worktrees/
+
+# Poster source rendered to PNG; laid out by hand.
+docs/case-study/software-factory.html
