@@ -253,13 +253,13 @@ function homePage() {
     </section>
     <section class="home-sources" aria-labelledby="home-sources-title">
       <h2 id="home-sources-title">Go deeper</h2>
-      <div class="deeper-grid">${start.deeper
+      <ul class="deeper-list">${start.deeper
         .map((entry) => {
           const source = sources[entry.source];
           if (!source) throw new Error(`Unknown source key: ${entry.source}`);
-          return `<a class="deeper-card owner-${entry.owner}" href="${source.href}" target="_blank" rel="noopener noreferrer"><span class="deeper-kicker">${escapeHtml(entry.kicker)}</span><b>${escapeHtml(entry.title)} ↗</b><small>${escapeHtml(entry.note)}</small></a>`;
+          return `<li class="deeper-item owner-${entry.owner}"><span class="deeper-kicker">${escapeHtml(entry.kicker)}</span><a class="deeper-title" href="${source.href}" target="_blank" rel="noopener noreferrer"><b>${escapeHtml(entry.title)} ↗</b></a><small class="deeper-note">${escapeHtml(entry.note)}</small></li>`;
         })
-        .join('')}</div>
+        .join('')}</ul>
     </section>`;
 }
 

@@ -1193,9 +1193,9 @@ test('audio markers are ordered, inside the recording, and point at real views',
   );
   assert.ok(!home.includes('source-cards'), 'the source cards are gone');
   assert.equal(
-    home.split('class="deeper-card').length - 1,
+    home.split('class="deeper-item').length - 1,
     chapters.start.deeper.length,
-    'Go deeper renders one card per entry',
+    'Go deeper renders one list item per entry',
   );
   for (const entry of chapters.start.deeper)
     assert.ok(
@@ -1394,6 +1394,41 @@ test('audio markers are ordered, inside the recording, and point at real views',
     listen.split('data-marker-start').length - 1,
     episodes.find((episode) => episode.id === 'branches').markers.length,
   );
+});
+
+test('Start documentation list preserves its six sources', () => {
+  const home = pageRenderers.home(parseRoute('#start'));
+  const listStart = home.indexOf('<ul class="deeper-list">');
+  const list = home.slice(listStart, home.indexOf('</ul>', listStart) + 5);
+
+  assert.ok(listStart > home.indexOf('class="home-lessons"'));
+  assert.equal(chapters.start.deeper.length, 6);
+  assert.equal(list.split('class="deeper-item').length - 1, 6);
+  assert.ok(!list.includes('deeper-card'));
+
+  let previousEntry = -1;
+  for (const entry of chapters.start.deeper) {
+    const source = sources[entry.source];
+    const itemStart = list.indexOf(
+      `<li class="deeper-item owner-${entry.owner}">`,
+      previousEntry + 1,
+    );
+    const nextItem = list.indexOf('<li class="deeper-item', itemStart + 1);
+    const item = list.slice(
+      itemStart,
+      nextItem === -1 ? list.length : nextItem,
+    );
+
+    assert.ok(itemStart > previousEntry, `${entry.source} keeps authored order`);
+    assert.ok(
+      item.includes(
+        `<span class="deeper-kicker">${escapeHtml(entry.kicker)}</span><a class="deeper-title" href="${source.href}" target="_blank" rel="noopener noreferrer"><b>${escapeHtml(entry.title)} ↗</b></a><small class="deeper-note">${escapeHtml(entry.note)}</small>`,
+      ),
+      `${entry.source} keeps its kicker, linked title, and note`,
+    );
+    assert.equal(item.split('<a ').length - 1, 1, `${entry.source} links once`);
+    previousEntry = itemStart;
+  }
 });
 
 test('posters and field guides resolve their images, renderers, sources, and links', () => {

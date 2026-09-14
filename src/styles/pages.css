@@ -213,26 +213,21 @@ body[data-page='home'] .page > section > h2 {
   font-weight: 700;
 }
 /* Home: go deeper */
-.deeper-grid {
+.deeper-list {
+  margin: 0;
+  padding: 0;
+  list-style: none;
   display: grid;
-  grid-template-columns: repeat(3, minmax(0, 1fr));
-  gap: 12px;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  column-gap: 32px;
 }
-.deeper-card {
-  display: flex;
-  flex-direction: column;
+.deeper-item {
+  min-width: 0;
+  display: grid;
   gap: 5px;
-  padding: 14px 16px 15px;
-  border: 1px solid var(--line);
-  border-top: 4px solid var(--owner, #9fb3c3);
-  border-radius: 10px;
-  background: #fff;
-  color: var(--ink);
-  text-decoration: none;
-}
-.deeper-card:hover {
-  border-color: var(--blue);
-  border-top-color: var(--owner, var(--blue));
+  align-content: start;
+  padding: 14px 0 15px;
+  border-bottom: 1px solid var(--line);
 }
 .deeper-kicker {
   font-size: 11px;
@@ -241,12 +236,20 @@ body[data-page='home'] .page > section > h2 {
   text-transform: uppercase;
   color: var(--owner, #6b8397);
 }
-.deeper-card b {
+.deeper-title {
+  width: fit-content;
+  color: var(--ink);
+  text-decoration: none;
+}
+.deeper-title:hover {
+  color: var(--blue);
+}
+.deeper-title b {
   font-size: 15px;
   font-weight: 700;
   line-height: 1.3;
 }
-.deeper-card small {
+.deeper-note {
   font-size: 13px;
   line-height: 1.5;
   color: #3e596e;
@@ -1964,8 +1967,7 @@ body:has(.audio-dock:not([hidden])) main {
   .source-cards,
   .myth-grid,
   .profile-columns,
-  .spi-names,
-  .deeper-grid {
+  .spi-names {
     grid-template-columns: 1fr 1fr;
   }
   .zoom-ladder {
@@ -2018,7 +2020,7 @@ body:has(.audio-dock:not([hidden])) main {
     display: none;
   }
   .spi-names,
-  .deeper-grid,
+  .deeper-list,
   .journey,
   .source-cards,
   .myth-grid,
