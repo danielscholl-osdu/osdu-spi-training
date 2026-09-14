@@ -197,8 +197,7 @@ export const myths = [
     claim: 'mvn -P azure builds the Azure provider.',
     reality:
       'The core profile is active by default and Maven drops it as soon as any -P is passed. Bare -P azure loses the core module and the provider fails to resolve it. CI always builds -P core,azure; on a first-tier fork_upstream it builds core only, because the generated tree has no Azure module.',
-    correction:
-      'The provider build needs both core and Azure Maven profiles.',
+    correction: 'The provider build needs both core and Azure Maven profiles.',
     check: 'mvn -P core,azure -DskipTests package',
     source: 'mavenProfile',
     route: '#fork-day/cascade?detail=cascade-run',

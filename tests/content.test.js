@@ -987,7 +987,13 @@ test('selection intent is additive and invalid qualifiers preserve legacy routes
 test('field checks name a source, a command, and a place on the site', () => {
   assert.equal(new Set(myths.map((myth) => myth.id)).size, myths.length);
   for (const myth of myths) {
-    for (const field of ['claim', 'correction', 'reality', 'check', 'routeLabel'])
+    for (const field of [
+      'claim',
+      'correction',
+      'reality',
+      'check',
+      'routeLabel',
+    ])
       assert.ok(myth[field]?.trim(), `${myth.id}: ${field}`);
     assert.doesNotMatch(myth.correction, /[<>\r\n]/, `${myth.id}: plain text`);
     assert.doesNotMatch(
@@ -1445,7 +1451,10 @@ test('Start documentation list preserves its six sources', () => {
       nextItem === -1 ? list.length : nextItem,
     );
 
-    assert.ok(itemStart > previousEntry, `${entry.source} keeps authored order`);
+    assert.ok(
+      itemStart > previousEntry,
+      `${entry.source} keeps authored order`,
+    );
     assert.ok(
       item.includes(
         `<span class="deeper-kicker">${escapeHtml(entry.kicker)}</span><a class="deeper-title" href="${source.href}" target="_blank" rel="noopener noreferrer"><b>${escapeHtml(entry.title)} ↗</b></a><small class="deeper-note">${escapeHtml(entry.note)}</small>`,
@@ -1850,8 +1859,14 @@ test('field checks expose corrections before optional evidence', () => {
 test('field checks preserve theme and anchor membership', () => {
   const markup = pageRenderers.myths(parseRoute('#not-true'));
 
-  assert.equal(markup.split('class="myth-theme"').length - 1, mythThemes.length);
-  assert.equal(markup.split('class="field-check-row"').length - 1, myths.length);
+  assert.equal(
+    markup.split('class="myth-theme"').length - 1,
+    mythThemes.length,
+  );
+  assert.equal(
+    markup.split('class="field-check-row"').length - 1,
+    myths.length,
+  );
   let previousTheme = -1;
   for (const theme of mythThemes) {
     const themeStart = markup.indexOf(
