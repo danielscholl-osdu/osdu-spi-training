@@ -1924,12 +1924,15 @@ test('structured claims resolve their focus, evidence, and scopes on every scene
       );
     if (!lifecycle)
       assert.equal(
-        claimsMarkup.split('Select an idea to highlight it on the map.').length -
-          1,
+        claimsMarkup.split('Select an idea to highlight it on the map.')
+          .length - 1,
         1,
         `${key}: claim instruction occurs once`,
       );
-    assert.doesNotMatch(claimsMarkup, /claim-count|\d+\s*\/\s*\d+|claims, one map/);
+    assert.doesNotMatch(
+      claimsMarkup,
+      /claim-count|\d+\s*\/\s*\d+|claims, one map/,
+    );
     if (!lifecycle) {
       assert.equal(
         [...claimsMarkup.matchAll(/data-claim="\d+"/g)].length,
