@@ -38,6 +38,7 @@ import { parseRoute, routeHref } from './router.js';
 const order = Object.keys(chapters);
 const learnOrder = order.filter((key) => chapters[key].group === 'learn');
 let previousRoute = null;
+let previousHash = null;
 let lastSelectedElement = null;
 const inspector = document.getElementById('inspector');
 const mastheadLinks = document.querySelectorAll('.masthead-nav a');
@@ -271,6 +272,7 @@ function closeInspector(restoreFocus = true) {
   if (route.detail) {
     history.replaceState(null, '', routeHref(route.chapter, route.step));
     previousRoute = { ...route, detail: null, claim: null, hop: null };
+    previousHash = location.hash;
   }
 }
 
@@ -542,17 +544,46 @@ function openContainingDetails(target) {
   });
 }
 
+function openShelfRowIds() {
+  return [...document.querySelectorAll('#lesson-optional [data-shelf-row]')]
+    .filter((row) => row.querySelector(':scope > details')?.open)
+    .map((row) => row.id);
+}
+
+function closeShelfRows() {
+  document
+    .querySelectorAll('#lesson-optional [data-shelf-row] > details')
+    .forEach((details) => {
+      details.open = false;
+    });
+}
+
 // Leaving a chapter remembers where the reader was, so browser Back lands on
 // the marker or guide they left from instead of the top of the page.
 const scrollMemory = new Map();
 let historyPop = false;
+let directHashNavigation = false;
 history.scrollRestoration = 'manual';
+document.addEventListener(
+  'click',
+  (event) => {
+    if (!isModifiedClick(event) && event.target.closest('a[href^="#"]'))
+      directHashNavigation = true;
+  },
+  { capture: true },
+);
 window.addEventListener('popstate', () => {
-  historyPop = true;
+  historyPop = !directHashNavigation;
+  directHashNavigation = false;
 });
-function settleChapterScroll(route) {
-  const remembered = historyPop ? scrollMemory.get(route.chapter) : undefined;
-  window.scrollTo({ top: remembered ?? 0, behavior: 'instant' });
+function settleChapterScroll() {
+  const remembered = historyPop ? scrollMemory.get(location.hash) : undefined;
+  if (remembered)
+    remembered.shelfRows.forEach((id) => {
+      document.querySelector(`#${id} > details`)?.setAttribute('open', '');
+    });
+  window.scrollTo({ top: remembered?.top ?? 0, behavior: 'instant' });
+  return Boolean(remembered);
 }
 
 // The dock is the player on every page but Audio deep dives; there it shows
@@ -589,8 +620,13 @@ function render() {
   const route = parseRoute(location.hash);
   const scene = chapters[route.chapter];
   const chapterChanged = previousRoute?.chapter !== route.chapter;
-  if (chapterChanged && previousRoute)
-    scrollMemory.set(previousRoute.chapter, window.scrollY);
+  const routeChanged = previousHash !== null && previousHash !== location.hash;
+  if (routeChanged)
+    scrollMemory.set(previousHash, {
+      top: window.scrollY,
+      shelfRows: openShelfRowIds(),
+    });
+  const freshNavigation = routeChanged && !historyPop;
   const mapChanged = chapterChanged || previousRoute?.step !== route.step;
   const focusedKey = document.activeElement?.dataset.routeKey;
   document.title = `${scene.title} · OSDU Azure SPI Fieldnotes`;
@@ -625,17 +661,24 @@ function render() {
       (chapterChanged || episodeChanged || previousRoute?.time !== route.time)
     )
       player.seekTo(route.time, false);
+    let guideTarget = null;
     if (route.guide) {
       const target = document.getElementById(`guide-${route.guide}`);
       openContainingDetails(target);
-      target?.scrollIntoView({ block: 'start' });
-    } else if (chapterChanged && previousRoute) {
-      settleChapterScroll(route);
+      guideTarget = target;
+    }
+    const restored = historyPop && settleChapterScroll();
+    if (!restored && guideTarget)
+      guideTarget.scrollIntoView({ block: 'start' });
+    else if (!restored && chapterChanged && previousRoute) {
+      settleChapterScroll();
     }
     if (chapterChanged && previousRoute) focusChapter();
     historyPop = false;
     watchListenPlayer();
     previousRoute = route;
+    previousHash = location.hash;
+    directHashNavigation = false;
     return;
   }
   watchListenPlayer();
@@ -717,10 +760,7 @@ function render() {
     strip.hidden = !strip.innerHTML;
   }
   updateLessonOptional(scene);
-  if (guideTarget) {
-    openContainingDetails(guideTarget);
-    guideTarget.scrollIntoView({ block: 'start' });
-  }
+  if (freshNavigation) closeShelfRows();
   if (structured) {
     lessonState.claim = selection.claim;
     lessonState.hop = selection.hop;
@@ -732,6 +772,7 @@ function render() {
     lessonState.exampleOpen = legacyHop >= 0;
     strip.querySelector('details').open = lessonState.exampleOpen;
   }
+  if (guideTarget) openContainingDetails(guideTarget);
   if (element) {
     if (requestedOpener?.isConnected) {
       detailOpener = requestedOpener;
@@ -775,17 +816,21 @@ function render() {
   jumpRequested = false;
   if (stageRequested && !chapterChanged) revealStage(stageRequested);
   stageRequested = null;
-  if (chapterChanged) {
-    if (previousRoute) {
-      if (!guideTarget) settleChapterScroll(route);
-      focusChapter();
+  const restored = historyPop && settleChapterScroll();
+  if (!restored) {
+    if (guideTarget) guideTarget.scrollIntoView({ block: 'start' });
+    else if (chapterChanged && previousRoute) {
+      if (!guideTarget) settleChapterScroll();
     }
   }
+  if (chapterChanged && previousRoute) focusChapter();
   historyPop = false;
   // A chapter change keeps focus on the headline; the drawer opens beside it.
   if (element)
     expandInspector(true, { focus: !(chapterChanged && previousRoute) });
   previousRoute = route;
+  previousHash = location.hash;
+  directHashNavigation = false;
 }
 
 // The rail is re-rendered on every chapter change, which drops keyboard focus
@@ -845,6 +890,10 @@ function isModifiedClick(event) {
     event.shiftKey ||
     event.altKey
   );
+}
+function navigateToHash(href) {
+  directHashNavigation = true;
+  location.hash = href;
 }
 
 document.addEventListener('click', (event) => {
@@ -916,7 +965,7 @@ document.getElementById('chapter-claims').addEventListener('click', (event) => {
     pendingOpener = evidence;
     const href = routeHref(route.chapter, step, id, { claim: index });
     if (location.hash === href) render();
-    else location.hash = href;
+    else navigateToHash(href);
     return;
   }
   closeInspector(false);
@@ -926,7 +975,7 @@ document.getElementById('chapter-claims').addEventListener('click', (event) => {
   if (claim.step && (index !== previousClaim || !currentStepIsCompatible)) {
     const href = routeHref(route.chapter, claim.step);
     if (location.hash === href) render();
-    else location.hash = href;
+    else navigateToHash(href);
     return;
   }
   applyFocus();
@@ -948,7 +997,7 @@ document.getElementById('diagram').addEventListener('click', (event) => {
     selection,
   );
   if (location.hash === href) render();
-  else location.hash = href;
+  else navigateToHash(href);
 });
 document
   .getElementById('detail-toggle')

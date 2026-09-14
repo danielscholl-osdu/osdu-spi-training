@@ -3533,3 +3533,31 @@ test('guide and myth arrivals reveal every containing disclosure', () => {
     /openContainingDetails\(figure\);\s*figure\.scrollIntoView[\s\S]*figure\.focus\(\{ preventScroll: true \}\)/,
   );
 });
+
+test('history memory restores open shelf rows before the full-hash offset', () => {
+  const main = readFileSync(new URL('../src/main.js', import.meta.url), 'utf8');
+  assert.match(main, /let previousHash = null/);
+  assert.match(
+    main,
+    /scrollMemory\.set\(previousHash,\s*\{\s*top: window\.scrollY,\s*shelfRows: openShelfRowIds\(\)/,
+  );
+  assert.match(
+    main,
+    /scrollMemory\.get\(location\.hash\)/,
+    'the lifecycle stage and qualifiers remain part of the memory key',
+  );
+  const settle = main.slice(
+    main.indexOf('function settleChapterScroll'),
+    main.indexOf('// The dock is the player'),
+  );
+  assert.ok(
+    settle.indexOf('remembered.shelfRows.forEach') <
+      settle.indexOf('window.scrollTo'),
+    'row height is restored before the saved offset',
+  );
+  assert.doesNotMatch(settle, /guide-|stage|path|localStorage|sessionStorage/);
+  assert.match(
+    main,
+    /const freshNavigation = routeChanged && !historyPop[\s\S]*if \(freshNavigation\) closeShelfRows\(\)/,
+  );
+});
