@@ -40,21 +40,21 @@ const stackMarkers = [
   {
     time: 764,
     title: 'Four owners, four boundaries',
-    copy: 'The CLI and Bicep own Azure. Flux owns the workloads. Controllers and operators own what they manage. You own the decisions.',
+    copy: 'The CLI and Bicep own Azure. Flux owns the workloads. Controllers keep workloads healthy; operators choose when to update, diagnose, or remove the environment.',
     route: '#running-stack',
     routeLabel: 'The owners on the map',
   },
   {
     time: 915,
     title: 'The CLI exits; Flux keeps working',
-    copy: 'The CLI can exit successfully while Flux is still assembling half the system. A successful exit is not a readiness check.',
+    copy: 'The CLI can exit successfully while Flux is still deploying workloads and running initialization Jobs. A successful exit is not a readiness check.',
     route: '#bring-up/reconcile',
     routeLabel: 'Assemble OSDU',
   },
   {
     time: 1015,
-    title: 'The Azure-only bet',
-    copy: 'State lives in Azure PaaS, not in the cluster: Cosmos DB, Service Bus, Storage, Key Vault. Testing the Azure provider against substitutes would bypass the code under test.',
+    title: 'Why the provider uses Azure PaaS',
+    copy: 'The Azure provider uses Cosmos DB, Service Bus, Storage, and Key Vault. Elasticsearch, Redis, and PostgreSQL run inside AKS. Testing the provider against substitutes would bypass the code under test.',
     route: '#running-stack/developer?detail=cosmos',
     routeLabel: 'Per-partition Azure resources',
   },
@@ -99,7 +99,7 @@ const stackMarkers = [
     copy: 'A pod exchanges a projected ServiceAccount token for an Azure access token. No usable Azure data-plane key or connection string is stored in the cluster.',
     route: '#field-guides?guide=identity',
     routeLabel: 'Identity field guide',
-    note: 'Source check — Workload Identity replaces stored keys for Azure data services, not every credential. Redis remains in the platform namespace and authenticates with a middleware password stored in Kubernetes Secrets and mirrored into Key Vault; the partition provider’s common Table Storage read uses Azure identity. Follow the linked Identity field guide.',
+    note: 'Workload Identity replaces stored keys for Azure data services, not every credential. Redis remains in the platform namespace and authenticates with a middleware password stored in Kubernetes Secrets and mirrored into Key Vault; the partition provider’s common Table Storage read uses Azure identity.',
   },
   {
     time: 2222,
@@ -146,7 +146,7 @@ const stackMarkers = [
   {
     time: 3040,
     title: 'Pinned versions and ephemeral pins',
-    copy: 'The environment tracks a reviewed release tag, never a rolling branch. A fork deploy is a pin that records its owning workflow run, then restores itself.',
+    copy: 'The environment tracks a reviewed release tag, never a rolling branch. A fork deploy is a pin that records its owning workflow run; the workflow restores the canonical image if it still owns the pin.',
     route: '#handshake?detail=proof',
     routeLabel: 'Borrow, prove, restore',
   },
@@ -381,7 +381,7 @@ const branchesMarkers = [
   {
     time: 376,
     title: 'Upstream plans to remove the Azure code',
-    copy: 'A snapshot fork stops being OSDU; a hand-merged fork compounds in cost. The fork must own the provider directory permanently while taking shared code daily.',
+    copy: 'A fork that stops taking upstream changes drifts from the community implementation; a hand-merged fork compounds in cost. The fork must own the provider directory permanently while taking shared code daily.',
     route: '#fork-shape?detail=upstream',
     routeLabel: 'Upstream on the map',
   },
@@ -395,7 +395,7 @@ const branchesMarkers = [
   {
     time: 617,
     title: 'One template for eight services',
-    copy: 'The workflows, actions, and rulesets live in osdu-spi. The forks, designed for eight with partition the first, are generated from it and own only their configuration. The rule: split what fails differently.',
+    copy: 'The workflows, actions, and rulesets live in osdu-spi. The forks, designed for eight with partition the first, are generated from it; each owns its Azure provider code, tests, and configuration. The rule: split what fails differently.',
     route: '#fork-shape?detail=engineering',
     routeLabel: 'The template on the map',
   },
@@ -436,7 +436,7 @@ const branchesMarkers = [
   },
   {
     time: 1559,
-    title: 'Memory for an amnesiac runner',
+    title: 'How GitHub records sync progress',
     copy: 'No file, no database, no hidden branch. The state lives in GitHub: a hidden comment in the tracking issue, a repository variable, and the labels.',
     route: '#fork-day/sync?detail=sync-pr',
     routeLabel: 'The sync PR and issue',
@@ -472,7 +472,7 @@ const branchesMarkers = [
   },
   {
     time: 2315,
-    title: 'The Dockerfile that rotted',
+    title: 'Why the template supplies the Dockerfile',
     copy: 'The upstream Azure Dockerfile named a Java 8 base and a JAR that no longer existed. The template now delivers one canonical Dockerfile to every fork.',
     route: '#fork-shape?detail=engineering-files',
     routeLabel: 'Engineering files',
@@ -502,7 +502,7 @@ const branchesMarkers = [
   {
     time: 2932,
     title: 'The tests are in the repository; the knowledge is not',
-    copy: 'Upstream kept the endpoints and tokens in its own pipelines; stripping them orphaned the suites. Hard-coding values in the repository goes stale within a week.',
+    copy: 'Upstream kept the endpoints and tokens in its own pipelines; stripping them orphaned the suites. Copied environment values go stale as soon as the environment changes.',
     route: '#handshake?detail=descriptor',
     routeLabel: 'The descriptor',
   },
@@ -516,10 +516,10 @@ const branchesMarkers = [
   {
     time: 3268,
     title: 'Borrow, prove, restore',
-    copy: 'Not kubectl set image, because Flux would revert it. A compare-and-set on the image lock, a wait for the pod to report the digest, the suites, then an unconditional restore.',
+    copy: 'Not kubectl set image, because Flux would revert it. A compare-and-set on the image lock, a wait for the pod to report the digest, the suites, then a restore that writes the canonical image back if this run still owns the pin.',
     route: '#handshake?detail=delivery',
     routeLabel: 'The image lock',
-    note: 'Restore is unconditional in that it always runs, but it writes the canonical image back only while this run still owns the pin; a newer run’s pin is left alone.',
+    note: 'The recording calls the restore unconditional. It always runs, but it writes the canonical image back only while this run still owns the pin; a newer run’s pin is left alone.',
   },
   {
     time: 3465,
@@ -606,7 +606,7 @@ export const episodes = [
       'https://notebook.google.com/notebook/b54aaf01-b8c2-4d39-98e9-112ed9dc92b7/artifact/5c1f61ff-cf85-4a1b-813d-d80ae3d96a21',
     origin: 'Generated with NotebookLM from the SPI Stack guide',
     summary:
-      'From the provider problem through identity, GitOps, and the shared environment to a full bring-up. The one to start with if the stack is your job.',
+      'Provisioning, Flux, identity, and the shared environment that tests service changes, through to a full bring-up. The one to start with if the stack is your job.',
     markers: withEnds(stackMarkers, 3516),
     transcript: stackTranscript,
   },
@@ -624,7 +624,7 @@ export const episodes = [
     origin:
       'Generated with NotebookLM from the osdu-spi guide, under the title “Why Azure 3D-prints Git branches”',
     summary:
-      'The engineering system on its own: generated branches, labels as state, the meta commit, the Maven trap, the pull_request_target lesson, and the AI fallback that hid its own failure.',
+      'How upstream changes enter a fork, how the fork keeps ownership of its provider, and how builds and tests prepare a change for review.',
     markers: withEnds(branchesMarkers, 4140),
     transcript: branchesTranscript,
   },

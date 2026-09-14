@@ -574,7 +574,7 @@ export function listenChips(
 export const courseMaps = [
   {
     id: 'round-trip',
-    title: 'Down the stack, out to the fork, back in through the lock',
+    title: 'How the stack and the fork connect',
     summary:
       'The stack and the fork meet at one object, the image lock, and that is where the running example crosses from one to the other.',
     render: () => roundTripFigure(),
@@ -626,7 +626,7 @@ export const guideSections = [
 
 function posterArticle(poster) {
   return `<article class="poster" id="guide-${poster.id}">
-    <button type="button" class="poster-image" data-lightbox="${poster.image}" data-lightbox-title="${escapeHtml(poster.title)}" aria-label="Open ${escapeHtml(poster.title)} at full size"><img src="${poster.image}" width="${poster.width}" height="${poster.height}" alt="${escapeHtml(poster.title)}" loading="lazy" /><span aria-hidden="true">View large ⤢</span></button>
+    <button type="button" class="poster-image" data-lightbox="${poster.image}" data-lightbox-title="${escapeHtml(poster.title)}" data-lightbox-notes="poster-checks-${poster.id}" aria-haspopup="dialog" aria-controls="lightbox" aria-label="Enlarge ${escapeHtml(poster.title)}"><img src="${poster.image}" width="${poster.width}" height="${poster.height}" alt="${escapeHtml(poster.title)}" loading="lazy" /><span aria-hidden="true">View large ⤢</span></button>
     <div class="poster-text">
       <span class="guide-kicker">${poster.origin}</span>
       <h3>${poster.title}</h3>
@@ -635,6 +635,11 @@ function posterArticle(poster) {
       <ul>${poster.takeaways.map((item) => `<li>${item}</li>`).join('')}</ul>
       <h4>Read it with these checks</h4>
       <ul class="poster-notes">${poster.notes.map((item) => `<li>${item}</li>`).join('')}</ul>
+      <div id="poster-checks-${poster.id}" class="poster-lightbox-notes" hidden>
+        <p class="poster-origin">${poster.origin}</p>
+        <h4>Read it with these checks</h4>
+        <ul class="poster-notes">${poster.notes.map((item) => `<li>${item}</li>`).join('')}</ul>
+      </div>
       <p class="poster-explore">${poster.explore.map((link) => `<a href="${link.href}">${link.label} →</a>`).join('')}</p>
       ${sourceLinks(poster.sources)}
     </div>

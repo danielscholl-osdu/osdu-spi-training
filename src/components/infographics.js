@@ -31,7 +31,7 @@ const owners = [
   {
     key: 'k8s',
     name: 'Controllers and operators',
-    owns: 'The things they manage',
+    owns: 'workload health',
     detail:
       'Scheduling pods, keeping Elasticsearch and PostgreSQL clusters healthy, issuing certificates, distributing trust bundles.',
     runs: 'Regardless of what Flux or the CLI are doing.',
@@ -41,7 +41,7 @@ const owners = [
   {
     key: 'you',
     name: 'You, the operator',
-    owns: 'The decisions',
+    owns: 'updates, diagnosis, and teardown',
     detail:
       'When to pull new changes, when to refresh images, when to delete the environment, and how to diagnose it.',
     runs: 'When something needs a judgment call.',
@@ -55,7 +55,7 @@ function ownersGuide() {
     .map(
       (owner) => `<article class="owner-card owner-${owner.key}">
         <span class="owner-name">${owner.name}</span>
-        <b>owns ${owner.owns}</b>
+        <b>Owns ${owner.owns}</b>
         <p>${owner.detail}</p>
         <small>${owner.runs}</small>
         <span class="owner-boundary">${owner.boundary}</span>
@@ -63,7 +63,7 @@ function ownersGuide() {
       </article>`,
     )
     .join('')}</div>
-    <p class="guide-thesis">Provisioning and convergence are separate concerns with separate timelines.</p>`;
+    <p class="guide-thesis">A clean spi up exit means the Azure resources exist and Flux has the manifests. Whether the services answer is a separate question on a separate clock.</p>`;
 }
 
 const milestones = [
@@ -309,7 +309,8 @@ const familiar = [
   {
     known: 'Schemas',
     example: 'osdu:wks:master-data--Well:1.0.0',
-    lives: 'Loaded by a Job into the primary partition’s system database',
+    lives:
+      'A loader Job in the osdu namespace writes them into the primary partition’s system database',
     owner: 'flux',
     where: 'AKS · osdu namespace',
     href: '#running-stack/developer?detail=initialization',
@@ -339,7 +340,7 @@ const familiar = [
     known: 'Credentials',
     example: 'connection strings',
     lives:
-      'Workload Identity for Azure; middleware passwords in Secrets mirrored to Key Vault',
+      'Workload Identity for Azure; middleware passwords in Kubernetes Secrets, with the Redis and Elasticsearch values copied to Key Vault',
     owner: 'cli',
     where: 'Azure · shared',
     href: '#running-stack/developer?detail=vault',
@@ -433,7 +434,7 @@ export function roundTripFigure() {
       <span class="loop-arrow" aria-hidden="true">↓</span>
       ${stop('#fork-day', '05', 'One day in the fork', 'generate, integrate, propose, prove')}
       <span class="loop-arrow" aria-hidden="true">↓</span>
-      <div class="loop-stop loop-digest"><b>A candidate digest</b><small>ghcr.io/…:sha-*</small></div>
+      <div class="loop-stop loop-digest"><b>A candidate digest</b><small>ghcr.io/…@sha256:…</small></div>
     </div>
     <div class="loop-cross loop-back"><span aria-hidden="true">←</span><span>pinned into the stack, proved, restored</span></div>
     <a class="loop-seam" href="#handshake"><span class="loop-number">06</span><b>The handshake</b><small>the image lock, the only object both sides write</small></a>
@@ -493,7 +494,7 @@ function labelsGuide() {
           `<div class="label-exit"><code>${label}</code><span>${meaning}</span><small>${action}</small></div>`,
       )
       .join('')}</div>
-    <p class="labels-note">Cascade Monitor reads these every six hours: it dispatches a merged sync, retries an issue whose human-required label a person removed, and escalates anything blocked longer than 48 hours. The labels are the audit trail; nothing else remembers.</p>
+    <p class="labels-note">Cascade Monitor reads these every six hours: it dispatches a merged sync, retries an issue whose human-required label a person removed, and escalates anything blocked longer than 48 hours. The labels are what a person reads to find the state and the next action.</p>
   </div>`;
 }
 

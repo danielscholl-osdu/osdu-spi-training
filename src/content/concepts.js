@@ -70,7 +70,7 @@ export const spiMeanings = [
     id: 'stack',
     kicker: 'In your subscription',
     name: 'The Azure stack',
-    copy: 'The Azure environment that runs the OSDU services: Bicep for the resources, the spi CLI to drive it, Flux for the workloads.',
+    copy: 'The Azure environment that runs the OSDU services. The spi CLI runs Bicep to provision the resources; Flux deploys the workloads.',
     repo: {
       label: 'Azure/osdu-spi-stack',
       href: 'https://github.com/Azure/osdu-spi-stack',
@@ -83,7 +83,7 @@ export const spiMeanings = [
     id: 'interface',
     kicker: 'In each service',
     name: 'The service interface',
-    copy: 'Inside every OSDU service, partition for example, the seam where common code calls a cloud provider. The Azure implementation lives behind it.',
+    copy: 'The interface through which shared OSDU code calls a cloud provider. The Azure implementation lives behind it, in each service fork.',
     repo: {
       label: 'Azure/osdu-spi-partition',
       href: 'https://github.com/Azure/osdu-spi-partition',
@@ -97,7 +97,7 @@ export const spiMeanings = [
     id: 'engineering',
     kicker: 'In GitHub',
     name: 'The engineering system',
-    copy: 'The template that gives every service fork its sync, cascade, build, and validation workflows, so the Azure code stays maintainable.',
+    copy: 'The shared template that gives every service fork its workflows: sync upstream changes, build images, and validate the Azure provider.',
     repo: {
       label: 'Azure/osdu-spi',
       href: 'https://github.com/Azure/osdu-spi',

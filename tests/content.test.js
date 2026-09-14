@@ -2808,10 +2808,49 @@ test('a supplied poster beside a lesson opens in the lightbox with its notes', (
     assert.ok(guides.includes(`id="guide-${poster.id}"`), poster.id);
     assert.ok(guides.includes(`data-lightbox="${poster.image}"`), poster.id);
   }
-  assert.ok(
-    !guides.includes('data-lightbox-notes'),
-    'notes are already beside the poster there',
+  // The checks under a poster travel into the lightbox, where the image
+  // would otherwise stand alone without them.
+  for (const poster of suppliedPosters) {
+    assert.ok(
+      guides.includes(`data-lightbox-notes="poster-checks-${poster.id}"`),
+      `${poster.id}: names its checks for the lightbox`,
+    );
+    const checks = guides.slice(
+      guides.indexOf(`<div id="poster-checks-${poster.id}"`),
+    );
+    for (const note of poster.notes)
+      assert.ok(checks.includes(note), `${poster.id}: ${note.slice(0, 40)}`);
+    assert.ok(
+      guides.includes(`aria-label="Enlarge ${poster.title}"`),
+      `${poster.id}: the button says what it does`,
+    );
+  }
+});
+
+test('marker notes and summaries stand on their own', () => {
+  for (const episode of episodes)
+    for (const marker of episode.markers) {
+      assert.ok(
+        !/^Source check/i.test(marker.note || ''),
+        `${episode.id} ${marker.time}: the renderer adds the Source check label`,
+      );
+      assert.ok(
+        !/^Source check/i.test(marker.copy),
+        `${episode.id} ${marker.time}: copy is the summary, not a correction`,
+      );
+    }
+  assert.doesNotMatch(
+    chapters.listen.subhead,
+    /marker opens/,
+    'markers seek; the link beside a marker navigates',
   );
+});
+
+test('the round-trip map pins a digest, not a tag', () => {
+  const map = pageRenderers.guides(parseRoute('#field-guides'));
+  const digest = map.slice(map.indexOf('A candidate digest'));
+  assert.match(digest.slice(0, 200), /@sha256:/);
+  assert.doesNotMatch(digest.slice(0, 200), /:sha-\*/);
 });
 
 test('the profiles easy mistake opens its guide beside lesson 02', () => {

@@ -25,6 +25,7 @@ export function createPlayer(element, dock) {
     const playing = !element.paused && !element.ended;
     dock.hidden =
       dock.dataset.dismissed === 'true' ||
+      dock.dataset.covered === 'true' ||
       (element.paused && !element.currentTime);
     dock.classList.toggle('is-playing', playing);
     dock.dataset.episode = episode.id;

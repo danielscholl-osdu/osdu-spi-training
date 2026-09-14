@@ -495,10 +495,55 @@ function forStep(value, route) {
   return [value[route.step] || []].flat();
 }
 
+// Leaving a chapter remembers where the reader was, so browser Back lands on
+// the marker or guide they left from instead of the top of the page.
+const scrollMemory = new Map();
+let historyPop = false;
+history.scrollRestoration = 'manual';
+window.addEventListener('popstate', () => {
+  historyPop = true;
+});
+function settleChapterScroll(route) {
+  const remembered = historyPop ? scrollMemory.get(route.chapter) : undefined;
+  window.scrollTo({ top: remembered ?? 0, behavior: 'instant' });
+}
+
+// The dock is the player on every page but Audio deep dives; there it shows
+// only while the full player is scrolled out of view.
+let playerWatch = null;
+function watchListenPlayer() {
+  const audio = document.getElementById('deep-dive');
+  if (playerWatch) {
+    window.removeEventListener('scroll', playerWatch);
+    window.removeEventListener('resize', playerWatch);
+    audio.removeEventListener('timeupdate', playerWatch);
+    playerWatch = null;
+  }
+  const dock = document.getElementById('audio-dock');
+  const controls = document.getElementById('listen-controls');
+  if (!controls) {
+    dock.dataset.covered = 'false';
+    return;
+  }
+  playerWatch = () => {
+    const box = controls.getBoundingClientRect();
+    const covered = String(box.bottom > 0 && box.top < window.innerHeight);
+    if (dock.dataset.covered === covered) return;
+    dock.dataset.covered = covered;
+    player.reflect();
+  };
+  window.addEventListener('scroll', playerWatch, { passive: true });
+  window.addEventListener('resize', playerWatch);
+  audio.addEventListener('timeupdate', playerWatch);
+  playerWatch();
+}
+
 function render() {
   const route = parseRoute(location.hash);
   const scene = chapters[route.chapter];
   const chapterChanged = previousRoute?.chapter !== route.chapter;
+  if (chapterChanged && previousRoute)
+    scrollMemory.set(previousRoute.chapter, window.scrollY);
   const mapChanged = chapterChanged || previousRoute?.step !== route.step;
   const focusedKey = document.activeElement?.dataset.routeKey;
   document.title = `${scene.title} · OSDU Azure SPI Fieldnotes`;
@@ -538,12 +583,15 @@ function render() {
         .getElementById(`guide-${route.guide}`)
         ?.scrollIntoView({ block: 'start' });
     } else if (chapterChanged && previousRoute) {
-      window.scrollTo({ top: 0, behavior: 'instant' });
+      settleChapterScroll(route);
     }
     if (chapterChanged && previousRoute) focusChapter();
+    historyPop = false;
+    watchListenPlayer();
     previousRoute = route;
     return;
   }
+  watchListenPlayer();
 
   document.getElementById('page').hidden = true;
   document.getElementById('page').innerHTML = '';
@@ -668,10 +716,11 @@ function render() {
   stageRequested = null;
   if (chapterChanged) {
     if (previousRoute) {
-      window.scrollTo({ top: 0, behavior: 'instant' });
+      settleChapterScroll(route);
       focusChapter();
     }
   }
+  historyPop = false;
   // A chapter change keeps focus on the headline; the drawer opens beside it.
   if (element)
     expandInspector(true, { focus: !(chapterChanged && previousRoute) });
