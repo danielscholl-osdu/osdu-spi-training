@@ -5,6 +5,8 @@ export const myths = [
     claim: 'The command finished, so it is ready.',
     reality:
       'A successful spi up exit means orchestration completed without a fatal error; it does not establish API readiness. Flux reconciliation and initialization Jobs may still be working, and spi status --watch follows them but does not make an API call. A successful authenticated request verifies only the path exercised. The schema Job’s 150-minute value is a deadline, not an expected wait.',
+    correction:
+      'A successful spi up exit proves orchestration completed, not that an API is ready.',
     check: 'spi status --watch',
     source: 'lifecycle',
     route: '#bring-up/inspect?detail=readiness',
@@ -16,6 +18,8 @@ export const myths = [
     claim: 'GitOps is suspended, so nothing changes.',
     reality:
       'Suspension stops fetching new commits. The cached revision keeps being applied, so live edits to Flux-managed objects are reverted, external chart repositories keep their own schedules, and controllers keep running.',
+    correction:
+      'Suspension stops new commits, but Flux keeps applying its cached revision.',
     check: 'kubectl get gitrepository osdu-spi-stack-system -n osdu-flux',
     source: 'flux',
     route: '#running-stack/developer?detail=flux',
@@ -28,6 +32,8 @@ export const myths = [
     claim: 'Async indexing works with the default images.',
     reality:
       'The community indexer-queue builds a Service Bus connection string regardless of Workload Identity and reads the DISABLED placeholder. Records-changed indexing needs a Workload-Identity-capable replacement image.',
+    correction:
+      'Records-changed indexing needs a Workload-Identity-capable replacement image.',
     check:
       'az keyvault secret list --vault-name <vault> --query "[?ends_with(name,`sb-connection`)].name"',
     source: 'entra',
@@ -40,6 +46,8 @@ export const myths = [
     claim: 'There is a certificate, so the connection is encrypted.',
     reality:
       'Port 80 serves the API routes in every ingress mode and nothing redirects. A client that uses an http:// URL sends its bearer token in plaintext, even when a Let’s Encrypt certificate exists.',
+    correction:
+      'Port 80 still serves API routes without redirecting clients to HTTPS.',
     check: 'spi info --show-apis   # use the https:// endpoint',
     source: 'gateway',
     route: '#running-stack/request?detail=gateway',
@@ -51,6 +59,8 @@ export const myths = [
     claim: 'The stack is just AKS.',
     reality:
       'AKS runs the Kubernetes workloads, while the same resource group also contains Azure data services outside the cluster. For opendes, those resources include Cosmos DB, Storage, and Service Bus.',
+    correction:
+      'The resource group contains Azure data services alongside AKS.',
     check: 'az resource list -g spi-stack-<name> --output table',
     source: 'architecture',
     route: '#running-stack/developer?detail=environment',
@@ -62,6 +72,8 @@ export const myths = [
     claim: 'Profiles save money.',
     reality:
       'bare, minimal, and core select Kubernetes workloads. All three provision the full Azure estate, including the cluster and every PaaS service. A bare deployment simply has nothing running on top.',
+    correction:
+      'Profiles change Kubernetes workloads, not the Azure estate they provision.',
     check:
       'az resource list -g spi-stack-<name> --query "length(@)"   # same count under any profile',
     source: 'architecture',
@@ -75,6 +87,8 @@ export const myths = [
     claim: 'The token was accepted, so the call is authorized.',
     reality:
       'The sidecar validates the JWT against the configured Entra issuers and projects x-app-id and x-user-id. That is authentication. The service still decides authorization: for most services that is an entitlements lookup, while the partition service admits app-only callers instead. A 401 or 403 alone does not say which of the two boundaries failed.',
+    correction:
+      'JWT validation authenticates the caller; each service still decides authorization.',
     check:
       'kubectl get requestauthentication spi-osdu-jwt-authn -n osdu -o yaml',
     source: 'identity',
@@ -87,6 +101,8 @@ export const myths = [
     claim: 'The role assignment is missing.',
     reality:
       'Cosmos DB data-plane grants are Cosmos-native assignments that do not appear in standard Azure role-assignment queries, and propagation can lag five to fifteen minutes. Services cache clients at startup, so a fresh grant may need a pod restart.',
+    correction:
+      'Cosmos DB data-plane grants do not appear in standard Azure role-assignment queries.',
     check:
       'az cosmosdb sql role assignment list --account-name <account> -g spi-stack-<name>',
     source: 'entra',
@@ -99,6 +115,8 @@ export const myths = [
     claim: 'Deleting the Secret rotates the password.',
     reality:
       'Reconciliation does not regenerate a chart Secret, and the next spi up copies the same value back from the persistent seed. Deleting the seed itself is worse: a later spi up can generate values the running middleware does not know.',
+    correction:
+      'Deleting a chart Secret does not rotate the persistent seed value.',
     check: 'kubectl get secret spi-secrets -n osdu-flux',
     source: 'secrets',
     route: '#running-stack/developer?detail=vault',
@@ -111,6 +129,8 @@ export const myths = [
     claim: 'Re-applying the manifest will retry it.',
     reality:
       'A HelmRelease that has exhausted its remediation retries is marked Stalled with reason RetriesExceeded, and re-applying the unchanged manifest does not move its generation. spi reconcile clears the failure count and forces one attempt; a terminal stall (a bad chart or CEL expression) needs a real change.',
+    correction:
+      'Re-applying an unchanged manifest does not reset an exhausted HelmRelease retry count.',
     check: 'flux get helmreleases -n osdu-flux   # look for RetriesExceeded',
     source: 'flux',
     route: '#running-stack/developer?detail=flux',
@@ -122,6 +142,8 @@ export const myths = [
     claim: 'The smoke test passed, so the API works.',
     reality:
       'The scheduled smoke test defaults to the bare profile, which deploys no OSDU services at all. It proves infrastructure and GitOps readiness. Even a non-bare run proves the network and TLS path, not authenticated API behavior.',
+    correction:
+      'The default bare smoke test proves infrastructure and GitOps readiness, not authenticated API behavior.',
     check:
       'gh run list --workflow smoke.yml --limit 5   # then open one: the profile input is bare unless set',
     source: 'smoke',
@@ -134,6 +156,8 @@ export const myths = [
     claim: 'The teardown job was green, so it was deleted.',
     reality:
       'The CI teardown step requests resource-group deletion asynchronously and tolerates failure. Green means the request was made. A separate orphan sweeper exists precisely because that is not enough.',
+    correction:
+      'A green teardown means deletion was requested, not that the resource group is gone.',
     check: 'az group exists --name <resource-group-from-run>',
     source: 'smoke',
     route: '#bring-up/remove',
@@ -145,6 +169,8 @@ export const myths = [
     claim: 'A fork is a copy we took once and patch as we go.',
     reality:
       'The service fork keeps a relationship with upstream, not a copy of it. Every day the filter regenerates fork_upstream from the upstream tip, and the cascade carries that into the fork-owned tree. What the fork owns is a short list of paths, not the repository.',
+    correction:
+      'The fork regenerates from upstream daily while owning only a short list of paths.',
     check:
       'git log -1 --format=%B fork_upstream | grep -E "Upstream-Sha|Filter-Rev"',
     source: 'ownership',
@@ -158,6 +184,8 @@ export const myths = [
       'When the sync conflicts, I merge upstream into fork_upstream by hand.',
     reality:
       'fork_upstream is generated, never merged into. A conflict is resolved on fork_integration, where the generated tree meets the fork-owned code. A hand merge on fork_upstream would be overwritten by the next generation and would put Azure paths into the merge base.',
+    correction:
+      'Conflicts are resolved on fork_integration because fork_upstream is generated.',
     check: 'git branch -r --contains fork_upstream | head',
     source: 'synchronization',
     route: '#fork-day/cascade?detail=fork-integration',
@@ -169,6 +197,8 @@ export const myths = [
     claim: 'mvn -P azure builds the Azure provider.',
     reality:
       'The core profile is active by default and Maven drops it as soon as any -P is passed. Bare -P azure loses the core module and the provider fails to resolve it. CI always builds -P core,azure; on a first-tier fork_upstream it builds core only, because the generated tree has no Azure module.',
+    correction:
+      'The provider build needs both core and Azure Maven profiles.',
     check: 'mvn -P core,azure -DskipTests package',
     source: 'mavenProfile',
     route: '#fork-day/cascade?detail=cascade-run',
@@ -180,6 +210,8 @@ export const myths = [
     claim: 'human-required is a note for whoever looks next.',
     reality:
       'It is state. While the label is on the tracking issue nothing retries. For a failed cascade, removing it is the signal: the monitor relabels the issue cascade-active within six hours and runs the cascade again. For a blocked one, fix on fork_integration and run Cascade Integration again. Fixing the conflict without doing either leaves the fork stopped.',
+    correction:
+      'Nothing retries while the human-required label remains on the tracking issue.',
     check: 'gh issue list --label human-required --label cascade-failed',
     source: 'cascadeMonitor',
     route: '#fork-day/review?detail=labels',
@@ -191,6 +223,8 @@ export const myths = [
     claim: 'A release builds a fresh image for the version tag.',
     reality:
       'Validation already pushed an immutable sha-* image for the release commit. Release Please tags the commit; the release workflow waits for that image and adds the semantic-version tag to it. The bytes on the merge commit are the bytes that get the version; a PR run borrowed the stack for its own, earlier digest.',
+    correction:
+      'A release tags the immutable image already built for the release commit.',
     check:
       'gh api /orgs/Azure/packages/container/osdu-spi-partition/versions --jq ".[0].metadata.container.tags"',
     source: 'release',
@@ -204,6 +238,8 @@ export const myths = [
       'Template sync will overwrite the workflow change I made in my fork.',
     reality:
       'It opens a pull request. Sync Template compares the template commit range with the fork and proposes the difference as one PR labeled template-sync, updated in place if the template moves again. A local change you want to keep is a review comment, not a lost file.',
+    correction:
+      'Template sync proposes workflow changes in a pull request instead of overwriting local files.',
     check: 'gh pr list --label template-sync',
     source: 'templateSync',
     route: '#fork-day?detail=template-pr',
@@ -216,6 +252,8 @@ export const myths = [
       'Template sync will deliver .spi/service.yaml along with the workflows.',
     reality:
       'It is excluded by name. The service repository writes its own descriptor, and changes to it are reviewed with the code. Workflows, actions, rulesets, and the Dockerfile arrive from osdu-spi; the descriptor never does. osdu-spi-partition has not written one yet; once it adopts the lane, the gate will say so after it says not onboarded.',
+    correction:
+      '.spi/service.yaml is excluded from template sync and belongs to the service repository.',
     check: 'jq .exclusions .github/sync-config.json   # in osdu-spi',
     source: 'descriptor',
     route: '#fork-shape?detail=descriptor-file',
@@ -227,6 +265,8 @@ export const myths = [
     claim: 'The stack only ever runs released versions of a fork.',
     reality:
       'Every eligible same-repository PR and every push to main or fork_integration pushes a sha-* digest, and Deploy Gate lets that run borrow the stack for it. A release is a later, optional tag on one of those digests. The version PR can sit unmerged for weeks while candidates are proved daily.',
+    correction:
+      'Eligible pull requests and branch pushes can deploy sha-* images before a release.',
     check:
       'gh run list --workflow Validation --json headBranch,event,conclusion | head',
     source: 'deployTest',
@@ -240,6 +280,8 @@ export const myths = [
       'Validation Summary is green, so the change ran in a real environment.',
     reality:
       'The deploy lane can skip with a visible reason and the summary still passes: the repository is not onboarded, there is no .spi/service.yaml, no image was pushed, or the run came from another repository. Deploy Gate reports which. Green is not evidence that the environment was borrowed.',
+    correction:
+      'A green summary can include a skipped deploy lane, so it does not prove the environment was borrowed.',
     check:
       'gh run view <run-id> -R Azure/osdu-spi-partition --json jobs --jq \'.jobs[] | select(.name=="Deploy Gate") | .databaseId\'\ngh run view --job <job-id> -R Azure/osdu-spi-partition --log | grep "Deploy and Test skipped"',
     source: 'validation',
@@ -252,6 +294,8 @@ export const myths = [
     claim: 'The restore step puts the previous image back.',
     reality:
       'Only while this run still owns the pin. spi service reset --if-run compares the run id in the lock annotation with its own; a newer run’s pin is left alone and the reset exits 2, which the lane treats as success. A cancelled run or a lost runner strands the pin. An operator clears it with spi service reset --ephemeral --stale-only; the scheduled sweep that would run that command is designed, not yet wired.',
+    correction:
+      'Reset restores the previous image only while the run still owns the pin.',
     check:
       'kubectl -n osdu-flux get configmap osdu-image-lock -o jsonpath="{.metadata.annotations.spi-stack\\.osdu\\.dev/pins}"',
     source: 'ephemeralPins',

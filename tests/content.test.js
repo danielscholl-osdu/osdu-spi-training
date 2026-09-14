@@ -987,8 +987,23 @@ test('selection intent is additive and invalid qualifiers preserve legacy routes
 test('field checks name a source, a command, and a place on the site', () => {
   assert.equal(new Set(myths.map((myth) => myth.id)).size, myths.length);
   for (const myth of myths) {
-    for (const field of ['claim', 'reality', 'check', 'routeLabel'])
+    for (const field of ['claim', 'correction', 'reality', 'check', 'routeLabel'])
       assert.ok(myth[field]?.trim(), `${myth.id}: ${field}`);
+    assert.doesNotMatch(myth.correction, /[<>\r\n]/, `${myth.id}: plain text`);
+    assert.doesNotMatch(
+      myth.correction,
+      /:|\b(?:simply|actually|in reality)\b/i,
+      `${myth.id}: plain wording`,
+    );
+    assert.equal(
+      myth.correction.match(/[.!?](?=\s|$)/g)?.length,
+      1,
+      `${myth.id}: one sentence`,
+    );
+    assert.ok(
+      myth.correction.split(/\s+/).length < 20,
+      `${myth.id}: short correction`,
+    );
     assert.ok(sources[myth.source], `${myth.id}: source`);
     verifyRoute(myth.route, myth.id);
   }
@@ -1003,6 +1018,10 @@ test('readiness misconception separates possible convergence from API proof', ()
   assert.equal(readiness.source, 'lifecycle');
   assert.equal(readiness.route, '#bring-up/inspect?detail=readiness');
   assert.equal(readiness.routeLabel, 'Readiness signals');
+  assert.match(
+    readiness.correction,
+    /orchestration completed, not that an API is ready/,
+  );
   assert.match(readiness.reality, /does not establish API readiness/);
   assert.match(
     readiness.reality,
@@ -1017,6 +1036,13 @@ test('readiness misconception separates possible convergence from API proof', ()
   assert.match(readiness.reality, /not an expected wait/);
   for (const phrase of ['first of five', 'the rest', 'later milestone'])
     assert.doesNotMatch(misconceptionCopy, new RegExp(phrase, 'i'));
+
+  const restore = myths.find((myth) => myth.id === 'restore-always-restores');
+  assert.match(
+    restore.correction,
+    /only while the run still owns the pin/,
+    'conditional restore stays visible',
+  );
 });
 
 test('audio markers are ordered, inside the recording, and point at real views', () => {
