@@ -1,6 +1,6 @@
 # Hackathon project submission draft
 
-Field contents for the Microsoft Hackathon 2026 project form. The idea form ([hackathon-submission.md](hackathon-submission.md)) was the proposal; this is the result and the hack-week plan. Character limits are the form's. Every figure comes from the [case study](README.md) and [by the numbers](by-the-numbers.md).
+Field contents for the Microsoft Hackathon 2026 project form. The idea form ([hackathon-submission.md](hackathon-submission.md)) was the proposal; this is the result. Character limits are the form's. Every figure comes from the [case study](README.md) and [by the numbers](by-the-numbers.md).
 
 ## Step 1: Basics
 
@@ -36,8 +36,6 @@ software factory, agentic engineering, human in the loop, Claude Code, Keelson, 
 Images cannot be added until the project is saved once. Paste the text, save, then drop each file at the italic placeholder line and delete the placeholder.
 
 ---
-
-**Status: the site and the case study are live. Hack week adds a learner pilot, the hands-on walkthrough, re-recordings from approved scripts, and the demo video.**
 
 **Live site:** https://danielscholl-osdu.github.io/osdu-spi-training/
 
@@ -88,12 +86,9 @@ _[Image: one-change-before-after.png, lesson 01 before and after]_
 
 _[Image: usage/usage-by-channel.png, where the tokens went]_
 
-### Hack week plan
+### What remains open
 
-- **Learner pilot.** Two or three engineers who know OSDU but not the Azure implementation work through lessons 01 to 03. Success measure: each can trace one request through the stack and name where a fork's change enters the image lock, without help.
-- **Hands-on walkthrough.** Run the personal-account walkthrough that gates two of the hands-on bands and publish the bands or cut them.
-- **Recordings.** Re-record the two introductory pieces from approved scripts.
-- **Demo video.** One to two minutes: the site in use, the factory at work, the findings.
+Whether the site shortens onboarding is not yet measured: the content test checked the structure, reading the source repositories checked the facts, the browser pass checked the behaviour, and a pilot with real learners would assess whether it teaches. Whether the factory saved labour against building by hand, and whether this mix of tools beats another, are questions the record cannot answer.
 
 ### Technology deployed
 
@@ -143,4 +138,4 @@ Engineers who already know OSDU take weeks to become productive on its Azure imp
 
 ## Project video
 
-Eligibility for the executive challenge depends on a project video submitted by the deadline, September 21 at 23:59 Pacific. The one-minute NotebookLM overview serves until the demo cut in the hack week plan replaces it.
+Eligibility for the executive challenge depends on a project video submitted by September 21 at 23:59 Pacific. The one-minute NotebookLM overview is the submission; a demo cut of the site in use would be a stronger one if there is time.
