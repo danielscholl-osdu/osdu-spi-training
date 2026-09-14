@@ -25,6 +25,7 @@ jobs:
           cache: npm
       - run: npm ci
       - run: npm run check
+      - run: mkdir -p dist/case-study && cp -R docs/case-study/media dist/case-study/media
       - uses: actions/upload-pages-artifact@v3
         with:
           path: dist
