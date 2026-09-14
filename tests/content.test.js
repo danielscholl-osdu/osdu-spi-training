@@ -2374,6 +2374,31 @@ test('claim controls keep one compact column at phone width', () => {
   assert.doesNotMatch(claimRule, /repeat\(2|1fr\s+1fr/);
 });
 
+test('shelf styles use compact rows and retain complete phone previews', () => {
+  const css = readFileSync(
+    new URL('../src/styles/pages.css', import.meta.url),
+    'utf8',
+  );
+  assert.match(css, /\.lesson-shelf\s*\{[\s\S]*border-top:/);
+  assert.match(
+    css,
+    /\.shelf-row:has\(> \.shelf-row-actions\)[\s\S]*grid-template-columns:/,
+  );
+  assert.match(
+    css,
+    /\.shelf-row > details:not\(\[open\]\) > \.shelf-row-body\s*\{[\s\S]*display: none/,
+  );
+  assert.match(
+    css,
+    /@media \(max-width: 760px\)[\s\S]*\.shelf-row-preview\s*\{[\s\S]*white-space: normal/,
+  );
+  assert.doesNotMatch(css, /\.optional-grid/);
+  assert.doesNotMatch(
+    css,
+    /\.has-claims #source-details > summary\s*\{[\s\S]*display: none/,
+  );
+});
+
 test('lesson 01 editorial copy introduces its example and complete command', () => {
   const chapter = chapters['running-stack'];
   const misconception = myths.find((myth) => myth.id === 'stack-is-only-aks');
