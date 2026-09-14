@@ -20,7 +20,7 @@ Internal and external participants. The source repositories the course explains 
 
 ## Images
 
-Leave the form without images at the idea stage. The poster and diagram in this folder show measured results and belong with the final showcase.
+Upload `hackathon-idea.png` (1600 by 900 at two times scale; its source is `hackathon-idea.html`). It shows the two deliverables side by side, the course as a miniature of the site's map and the factory as the orchestration chain, with the question the project tests and what it will measure. It carries no measured numbers. The poster and diagram in this folder show results and belong with the final showcase.
 
 ## Description
 
