@@ -569,10 +569,10 @@ summary {
 summary::-webkit-details-marker {
   display: none;
 }
-summary span {
+.summary-marker {
   font-size: 18px;
 }
-details[open] summary span {
+details[open] > summary .summary-marker {
   transform: rotate(45deg);
 }
 #sources {

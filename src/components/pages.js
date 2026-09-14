@@ -174,7 +174,7 @@ export function partitionComparison(key) {
   const comparison = chapters[key]?.comparison;
   if (!comparison) return '';
   return `<details class="partition-comparison">
-    <summary><b>${escapeHtml(comparison.title)}</b><span aria-hidden="true">+</span></summary>
+    <summary><b>${escapeHtml(comparison.title)}</b><span class="summary-marker" aria-hidden="true">+</span></summary>
     <div class="partition-comparison-body">
       ${partitionLookupFigure(comparison)}
       <section class="partition-comparison-notes" aria-label="Comparison limits">
@@ -551,7 +551,7 @@ function listenPage(route) {
     </section>
     <section class="listen-transcript" aria-label="Transcript">
       <div class="section-heading"><h2>Transcript</h2></div>
-      <details class="transcript-details"><summary>Show the transcript <span aria-hidden="true">+</span></summary>
+      <details class="transcript-details"><summary>Show the transcript <span class="summary-marker" aria-hidden="true">+</span></summary>
       <div class="transcript" id="transcript">${episode.transcript
         .map(
           (segment) =>

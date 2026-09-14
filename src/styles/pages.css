@@ -3004,10 +3004,6 @@ body:has(.audio-dock:not([hidden])) main {
 }
 .try-it summary span {
   font-weight: 700;
-  font-size: inherit;
-}
-.try-it details[open] summary span {
-  transform: none;
 }
 .try-it details[open] > summary {
   border-bottom: 1px solid var(--line);
