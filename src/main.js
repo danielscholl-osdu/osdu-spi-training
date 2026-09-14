@@ -540,10 +540,24 @@ function updateLessonOptional(scene) {
   optional.hidden = !rows.some((row) => !row.hidden);
 }
 
+// A field-guide section shows one sheet under its cards; null hides them all.
+function showSheet(body, id) {
+  body.querySelectorAll('[data-sheet-open]').forEach((card) => {
+    const shown = card.dataset.sheetOpen === id;
+    card.setAttribute('aria-expanded', String(shown));
+    card.classList.toggle('is-shown', shown);
+  });
+  body.querySelectorAll('[data-sheet]').forEach((sheet) => {
+    sheet.hidden = sheet.dataset.sheet !== id;
+  });
+}
+
 function openContainingDetails(target) {
   const details = [];
-  for (let node = target; node; node = node.parentElement)
+  for (let node = target; node; node = node.parentElement) {
     if (node.tagName === 'DETAILS') details.push(node);
+    if (node.dataset?.sheet) showSheet(node.parentElement, node.dataset.sheet);
+  }
   details.reverse().forEach((item) => {
     item.open = true;
   });
@@ -1108,6 +1122,22 @@ function setLightboxZoom(zoomed) {
 }
 document.getElementById('lightbox-zoom').addEventListener('click', () => {
   setLightboxZoom(!lightbox.classList.contains('is-zoomed'));
+});
+
+document.addEventListener('click', (event) => {
+  const card = event.target.closest('[data-sheet-open]');
+  if (!card) return;
+  const body = card.closest('.guide-set-body');
+  if (!body) return;
+  const id =
+    card.getAttribute('aria-expanded') === 'true'
+      ? null
+      : card.dataset.sheetOpen;
+  showSheet(body, id);
+  if (id)
+    document
+      .getElementById(`guide-${id}`)
+      ?.scrollIntoView({ block: 'nearest' });
 });
 
 // An easy mistake can open a field guide rendered beside the lesson in place

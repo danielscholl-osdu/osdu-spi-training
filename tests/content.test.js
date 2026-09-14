@@ -20,6 +20,7 @@ import {
   creationWalkthrough,
 } from '../src/components/architecture.js';
 import { infographics } from '../src/components/infographics.js';
+import { badge } from '../src/components/badges.js';
 import { escapeHtml } from '../src/components/node.js';
 import { resolveDetail } from '../src/components/evidence.js';
 import {
@@ -3697,24 +3698,158 @@ test('field guide groups open in place and keep every sheet', () => {
   const guides = pageRenderers.guides(parseRoute('#field-guides'));
   const groups = guides.split('<details class="guide-set').slice(1);
   assert.equal(groups.length, guideSections.length);
+  const entries = [...courseMaps, ...nativeGuides, ...suppliedPosters];
+  const titleOf = (id) => entries.find((entry) => entry.id === id).title;
+  const kindOf = (id) =>
+    courseMaps.some((entry) => entry.id === id)
+      ? 'Map'
+      : suppliedPosters.some((entry) => entry.id === id)
+        ? 'Poster'
+        : 'Field guide';
+  const words = ['no', 'one', 'two', 'three', 'four', 'five', 'six', 'seven'];
   for (const [i, section] of guideSections.entries()) {
     assert.match(
       groups[i],
       new RegExp(`^ owner-\\w+" id="guide-set-${i}">`),
       `${section.title} starts closed and names its owner`,
     );
-    for (const id of section.ids)
+    const summary = groups[i].slice(
+      groups[i].indexOf('<summary>'),
+      groups[i].indexOf('</summary>'),
+    );
+    assert.ok(
+      summary.includes(badge('sheet', 'shelf-badge')),
+      `${section.title} row carries the sheet badge`,
+    );
+    assert.ok(
+      summary.includes(`<h2 id="guide-section-${i}"`),
+      `${section.title} keeps its heading`,
+    );
+    const titles = section.ids.map(titleOf);
+    const preview =
+      titles.length === 1
+        ? titles[0]
+        : titles.length === 2
+          ? `${titles[0]} and ${titles[1]}`
+          : `${titles[0]}, ${titles[1]}, and ${words[titles.length - 2]} more`;
+    assert.ok(
+      summary.includes(
+        `<span class="shelf-row-preview">${section.lessons ? '' : escapeHtml(preview)}`,
+      ) && summary.includes(escapeHtml(preview)),
+      `${section.title} previews its sheets: ${preview}`,
+    );
+    assert.doesNotMatch(
+      summary.replace(/<b>\d\d<\/b>/g, ''),
+      /\d+ sheets?/,
+      `${section.title} shows no bare count`,
+    );
+    if (section.lessons)
+      assert.ok(
+        summary.includes('<span class="zoom-tags">'),
+        `${section.title} keeps its lesson chips`,
+      );
+    assert.ok(
+      summary.includes('<span class="summary-marker" aria-hidden="true">+'),
+      `${section.title} uses the shared marker`,
+    );
+    const body = groups[i].slice(
+      groups[i].indexOf('<div class="guide-set-body">'),
+    );
+    const grid = body.slice(
+      body.indexOf('<div class="contact-sheet">'),
+      body.indexOf('<div class="guide-sheet"'),
+    );
+    assert.equal(
+      (grid.match(/<button type="button" class="sheet-card"/g) || []).length,
+      section.ids.length,
+      `${section.title} shows one card per sheet`,
+    );
+    assert.equal(
+      (body.match(/<div class="guide-sheet"/g) || []).length,
+      section.ids.length,
+      `${section.title} holds one hidden sheet per card`,
+    );
+    for (const id of section.ids) {
+      const card = grid.slice(grid.indexOf(`data-sheet-open="${id}"`));
+      assert.ok(card.length > 0, `${section.title}: ${id} card`);
+      assert.ok(
+        card.startsWith(
+          `data-sheet-open="${id}" aria-expanded="false" aria-controls="guide-${id}">`,
+        ),
+        `${id} card starts closed and names its sheet`,
+      );
+      assert.ok(
+        card.includes(
+          `<span class="guide-kicker">${kindOf(id)}</span><b class="sheet-card-title">${titleOf(id)}</b>`,
+        ),
+        `${id} card shows its kind and title`,
+      );
+      assert.equal(
+        card
+          .slice(0, card.indexOf('</button>'))
+          .includes('class="sheet-card-thumb"'),
+        kindOf(id) === 'Poster',
+        `${id} card shows a thumbnail only for a poster`,
+      );
+      assert.ok(
+        body.includes(`<div class="guide-sheet" data-sheet="${id}" hidden>`),
+        `${section.title}: ${id} sheet renders hidden`,
+      );
       assert.ok(
         groups[i].includes(`id="guide-${id}"`),
         `${section.title}: ${id}`,
       );
+    }
+    for (const [j, id] of section.ids.entries())
+      if (j)
+        assert.ok(
+          grid.indexOf(`data-sheet-open="${section.ids[j - 1]}"`) <
+            grid.indexOf(`data-sheet-open="${id}"`),
+          `${section.title} keeps its order`,
+        );
   }
   for (const poster of suppliedPosters) {
     const article = guides.slice(guides.indexOf(`id="guide-${poster.id}"`));
     assert.ok(article.includes('<details class="poster-more">'), poster.id);
+    assert.ok(
+      article.includes(`data-lightbox-notes="poster-checks-${poster.id}"`),
+      `${poster.id} keeps its checks in the lightbox`,
+    );
     for (const item of poster.takeaways)
       assert.ok(article.includes(item), `${poster.id}: ${item.slice(0, 40)}`);
   }
+});
+
+test('a guide route shows its sheet before scrolling to it', () => {
+  const main = readFileSync(new URL('../src/main.js', import.meta.url), 'utf8');
+  const show = main.slice(
+    main.indexOf('function showSheet'),
+    main.indexOf('function openContainingDetails'),
+  );
+  assert.match(show, /card\.setAttribute\('aria-expanded', String\(shown\)\)/);
+  assert.match(show, /sheet\.hidden = sheet\.dataset\.sheet !== id/);
+  assert.doesNotMatch(show, /innerHTML|scroll|focus/);
+  const helper = main.slice(
+    main.indexOf('function openContainingDetails'),
+    main.indexOf('function openShelfRowIds'),
+  );
+  assert.match(
+    helper,
+    /if \(node\.dataset\?\.sheet\) showSheet\(node\.parentElement, node\.dataset\.sheet\)/,
+    'a route or guide-open arrival reveals the hidden sheet on its way up',
+  );
+  const click = main.slice(
+    main.indexOf("const card = event.target.closest('[data-sheet-open]')"),
+  );
+  assert.match(
+    click,
+    /const id =\s*card\.getAttribute\('aria-expanded'\) === 'true'\s*\?\s*null\s*:\s*card\.dataset\.sheetOpen;\s*showSheet\(body, id\)/,
+    'pressing a card swaps the shown sheet and pressing it again closes it',
+  );
+  assert.doesNotMatch(
+    click.slice(0, click.indexOf('});')),
+    /openContainingDetails|innerHTML/,
+  );
 });
 
 test('guide and myth arrivals reveal every containing disclosure', () => {

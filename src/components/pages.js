@@ -793,15 +793,37 @@ function guideEntry(id) {
   return guide;
 }
 
-// Each lesson group is a disclosure so a reader reaches the fork sheets
-// without scrolling past the stack's; every group starts closed and a
-// ?guide= route opens whichever group holds its guide.
+function sheetEntry(id) {
+  const map = courseMaps.find((entry) => entry.id === id);
+  if (map) return { kind: 'Map', ...map };
+  const poster = suppliedPosters.find((entry) => entry.id === id);
+  if (poster) return { kind: 'Poster', ...poster };
+  const guide = nativeGuides.find((entry) => entry.id === id);
+  if (!guide) throw new Error(`Unknown field guide: ${id}`);
+  return { kind: 'Field guide', ...guide };
+}
+
+export function sheetPreview(ids) {
+  const titles = ids.map((id) => sheetEntry(id).title);
+  if (titles.length <= 1) return titles[0] || '';
+  if (titles.length === 2) return `${titles[0]} and ${titles[1]}`;
+  return `${titles[0]}, ${titles[1]}, and ${countOf(titles.length - 2, 'more', 'more')}`;
+}
+
 // The lesson numbers a group sits beside, drawn as the chips the six-place
 // ladder uses, so the row and the map inside it read the same way.
 function lessonChips(lessons) {
   const numbers = lessons?.match(/\d\d/g);
   if (!numbers) return '';
   return `<span class="zoom-tags"><small>${numbers.length > 1 ? 'Lessons' : 'Lesson'}</small>${numbers.map((n) => `<b>${n}</b>`).join('')}</span> · `;
+}
+
+function sheetCard(id) {
+  const entry = sheetEntry(id);
+  const thumb = entry.image
+    ? `<img class="sheet-card-thumb" src="${entry.image}" width="${entry.width}" height="${entry.height}" alt="" loading="lazy" />`
+    : '';
+  return `<button type="button" class="sheet-card" data-sheet-open="${id}" aria-expanded="false" aria-controls="guide-${id}">${thumb}<span class="sheet-card-text"><span class="guide-kicker">${entry.kind}</span><b class="sheet-card-title">${entry.title}</b><span class="sheet-card-summary">${entry.summary}</span></span></button>`;
 }
 
 function guidesPage() {
@@ -811,8 +833,11 @@ function guidesPage() {
         section,
         i,
       ) => `<details class="guide-set owner-${section.owner}" id="guide-set-${i}">
-      <summary><div class="section-heading"><h2 id="guide-section-${i}">${section.title}</h2><p>${lessonChips(section.lessons)}${section.ids.length} ${section.ids.length === 1 ? 'sheet' : 'sheets'}</p></div></summary>
-      <div class="guide-set-body">${section.ids.map(guideEntry).join('')}</div>
+      <summary><span class="shelf-row-badge">${badge('sheet', 'shelf-badge')}</span><span class="shelf-row-head"><h2 id="guide-section-${i}" class="guide-set-title">${section.title}</h2><span class="shelf-row-preview">${lessonChips(section.lessons)}${escapeHtml(sheetPreview(section.ids))}</span></span><span class="summary-marker" aria-hidden="true">+</span></summary>
+      <div class="guide-set-body">
+        <div class="contact-sheet">${section.ids.map(sheetCard).join('')}</div>
+        ${section.ids.map((id) => `<div class="guide-sheet" data-sheet="${id}" hidden>${guideEntry(id)}</div>`).join('')}
+      </div>
     </details>`,
     )
     .join('');

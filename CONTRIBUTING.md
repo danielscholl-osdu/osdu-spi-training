@@ -13,7 +13,7 @@ Install the pinned tools with `npm ci`, then start `npm run dev`. Work in `src/`
 | Poster captions, takeaways, and field-guide summaries                               | `src/content/posters.js`           |
 | A native field guide or specialized comparison drawing                              | `src/components/infographics.js`   |
 | Page layouts, shelf rows, and chapter-local disclosure rendering                    | `src/components/pages.js`          |
-| Footer badge drawings (Try it and Go deeper rows)                                   | `src/components/badges.js`         |
+| Badge drawings (Try it, Go deeper rows, and Field guides section rows)              | `src/components/badges.js`         |
 | Player and dock behavior                                                            | `src/components/player.js`         |
 | Explanation shown when a component is selected                                      | `src/content/component-details.js` |
 | Creation-step copy, command examples, and ownership                                 | `src/content/creation-moments.js`  |
