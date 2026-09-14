@@ -593,9 +593,14 @@ export const courseMaps = [
 // The Field guides page groups every map, guide, and poster by the lessons it
 // sits beside, so a learner finds the sheet for the lesson they are on.
 export const guideSections = [
-  { title: 'Maps of the course', ids: ['round-trip', 'ladder'] },
+  {
+    title: 'Maps of the course',
+    owner: 'course',
+    ids: ['round-trip', 'ladder'],
+  },
   {
     title: 'The stack',
+    owner: 'cli',
     lessons: 'Lessons 01 and 02',
     ids: [
       'familiar',
@@ -609,16 +614,19 @@ export const guideSections = [
   },
   {
     title: 'One service',
+    owner: 'fork',
     lessons: 'Lesson 03',
     ids: ['identity', 'one-request'],
   },
   {
     title: 'The fork',
+    owner: 'fork',
     lessons: 'Lessons 04 and 05',
     ids: ['contribution-chain', 'clocks', 'labels'],
   },
   {
     title: 'The seam',
+    owner: 'seam',
     lessons: 'Lesson 06',
     ids: ['borrow-prove-restore', 'backing-environment'],
   },
@@ -671,11 +679,22 @@ function guideEntry(id) {
 // Each lesson group is a disclosure so a reader reaches the fork sheets
 // without scrolling past the stack's; every group starts closed and a
 // ?guide= route opens whichever group holds its guide.
+// The lesson numbers a group sits beside, drawn as the chips the six-place
+// ladder uses, so the row and the map inside it read the same way.
+function lessonChips(lessons) {
+  const numbers = lessons?.match(/\d\d/g);
+  if (!numbers) return '';
+  return `<span class="zoom-tags"><small>${numbers.length > 1 ? 'Lessons' : 'Lesson'}</small>${numbers.map((n) => `<b>${n}</b>`).join('')}</span> · `;
+}
+
 function guidesPage() {
   return guideSections
     .map(
-      (section, i) => `<details class="guide-set" id="guide-set-${i}">
-      <summary><div class="section-heading"><h2 id="guide-section-${i}">${section.title}</h2><p>${section.lessons ? `${section.lessons} · ` : ''}${section.ids.length} ${section.ids.length === 1 ? 'sheet' : 'sheets'}</p></div></summary>
+      (
+        section,
+        i,
+      ) => `<details class="guide-set owner-${section.owner}" id="guide-set-${i}">
+      <summary><div class="section-heading"><h2 id="guide-section-${i}">${section.title}</h2><p>${lessonChips(section.lessons)}${section.ids.length} ${section.ids.length === 1 ? 'sheet' : 'sheets'}</p></div></summary>
       <div class="guide-set-body">${section.ids.map(guideEntry).join('')}</div>
     </details>`,
     )
@@ -711,5 +730,5 @@ export function chapterNavigation(current) {
       return `<div class="rail-group"><span class="rail-group-label">${group.label}</span>${links}</div>`;
     })
     .join('');
-  return `<a href="${routeHref('start')}" class="chapter-link start-link" ${current === 'start' ? 'aria-current="page"' : ''}><span class="number" aria-hidden="true">⌂</span><span>${start.title}<small>${start.subtitle}</small></span></a>${groups}`;
+  return groups;
 }

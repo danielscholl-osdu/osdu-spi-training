@@ -392,10 +392,35 @@ body[data-page='home'] .page > section > h2 {
   align-items: center;
   justify-content: space-between;
   gap: 16px;
-  padding: 14px 18px;
+  padding: 14px 18px 14px 20px;
   border: 1px solid var(--line);
+  border-left: 5px solid var(--owner, var(--navy));
   border-radius: 10px;
   background: #fff;
+}
+.guide-set.owner-seam > summary {
+  border-left-color: var(--cli);
+  background:
+    linear-gradient(#fff, #fff) padding-box,
+    linear-gradient(var(--cli) 50%, var(--fork) 50%) border-box;
+  border-left-color: transparent;
+}
+.guide-set > summary .zoom-tags {
+  display: inline-flex;
+  vertical-align: middle;
+}
+.guide-set.owner-seam > summary .zoom-tags b {
+  border-color: var(--cli);
+  color: var(--cli);
+}
+.guide-set > summary .zoom-tags b {
+  font-size: 11px;
+  font-weight: 700;
+  padding: 2px 6px;
+  border-radius: 4px;
+  background: #fff;
+  border: 1px solid var(--owner, var(--navy));
+  color: var(--owner, var(--navy));
 }
 .guide-set > summary::-webkit-details-marker {
   display: none;

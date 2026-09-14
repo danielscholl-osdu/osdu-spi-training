@@ -2941,12 +2941,13 @@ test('no decorative kicker or method sentence survives in content or renderers',
 
 test('field guide groups open in place and keep every sheet', () => {
   const guides = pageRenderers.guides(parseRoute('#field-guides'));
-  const groups = guides.split('<details class="guide-set"').slice(1);
+  const groups = guides.split('<details class="guide-set').slice(1);
   assert.equal(groups.length, guideSections.length);
   for (const [i, section] of guideSections.entries()) {
-    assert.ok(
-      groups[i].startsWith(` id="guide-set-${i}">`),
-      `${section.title} starts closed`,
+    assert.match(
+      groups[i],
+      new RegExp(`^ owner-\\w+" id="guide-set-${i}">`),
+      `${section.title} starts closed and names its owner`,
     );
     for (const id of section.ids)
       assert.ok(

@@ -137,11 +137,6 @@ summary:focus-visible {
   border-right: 1px solid var(--line);
   padding: 34px 15px 24px 22px;
 }
-.rail-label {
-  font-size: 12px;
-  color: var(--muted);
-  margin-bottom: 22px;
-}
 .rail nav {
   display: grid;
   gap: 6px;
@@ -158,9 +153,6 @@ summary:focus-visible {
   text-transform: uppercase;
   color: #7b93a6;
   padding: 6px 0 2px;
-}
-.start-link {
-  margin-bottom: 4px;
 }
 .chapter-link {
   display: flex;
@@ -759,9 +751,6 @@ details[open] summary span {
     border-right: 0;
     border-bottom: 1px solid var(--line);
     padding: 0 22px;
-  }
-  .rail-label {
-    display: none;
   }
   .rail nav {
     display: flex;
