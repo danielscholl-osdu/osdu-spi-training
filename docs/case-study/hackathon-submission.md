@@ -20,7 +20,7 @@ Internal and external participants. The source repositories the course explains 
 
 ## Images
 
-Upload `hackathon-idea.png` (1600 by 900 at two times scale; its source is `hackathon-idea.html`). It shows the two deliverables side by side, the course as a miniature of the site's map and the factory as the orchestration chain, with the question the project tests and what it will measure. It carries no measured numbers. The poster and diagram in this folder show results and belong with the final showcase.
+Upload `hackathon-splash.png` as the gallery image: a wordless scene in the tone of the site's machinery artwork, an engineer directing an assembly line of three agent arms that build the site, with a field notebook capturing the record and feeding back to the engineer (source `hackathon-splash.html`). `hackathon-idea.png` is the explanatory alternative (1600 by 900 at two times scale; its source is `hackathon-idea.html`). It shows the two deliverables side by side, the course as a miniature of the site's map and the factory as the orchestration chain, with the question the project tests and what it will measure. It carries no measured numbers. The poster and diagram in this folder show results and belong with the final showcase.
 
 ## Description
 
