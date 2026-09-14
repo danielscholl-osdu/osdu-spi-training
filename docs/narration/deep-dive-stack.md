@@ -1,62 +1,8 @@
-# The stack deep dive: script for approval
+# The stack deep dive: narration
 
-**Status: draft for approval, revised after review.** This script replaces the recording _Engineering the OSDU SPI Stack on Azure_ when it is approved and a new recording is produced from it. Until a recording is replaced, the current recording, its transcript in `src/content/transcripts/stack.js`, and the marker notes in `src/content/audio.js` stay exactly as they are. Nothing on the site changes because this file exists.
+## Part 1 · The environment
 
-The current recording spends its first six minutes on why OSDU exists and reaches the provider model at 6:08. This script is written for engineers who already know OSDU and are learning Azure SPI. It opens on the engineering question, keeps the marker order of the current episode as its chapter spine, drops the OSDU introduction, and states each corrected claim from the marker notes as the plain fact. It covers lessons 01 to 03: what runs in the stack, how it comes to life, and where the Azure provider sits inside a service.
-
-The spoken text is kept separately in `docs/narration/deep-dive-stack.md`. That file is what a narrator or generator receives; this document carries the editorial record around it.
-
-**Length:** 4,431 words of narration, about 29.5 minutes at 150 words a minute and 34.1 at 130. Target: 25 to 35 minutes; the length follows the content and is not forced to a figure.
-
-**Structure.** The narration is spoken in five parts, and each part heading is a spoken transition. The 21 chapter headings inside them are the marker titles the site will use for seeking; they are not announced. Target timestamps are at 150 words a minute.
-
-**Part 1 · The environment**
-
-1. Shared core, swappable providers · 00:00 (230 words)
-2. Fifty resources, one command · 01:32 (274 words)
-3. A development and test environment by design · 03:22 (308 words)
-
-**Part 2 · Owners, and what runs where**
-
-4. Four owners, four boundaries · 05:25 (231 words)
-5. The CLI exits; Flux keeps working · 06:57 (260 words)
-6. Why the provider uses Azure PaaS · 08:41 (204 words)
-7. The three that stayed in the cluster · 10:03 (212 words)
-8. Letting Azure run the cluster · 11:28 (152 words)
-9. One local Helm chart · 12:28 (160 words)
-
-**Part 3 · Assembly and reconciliation**
-
-10. Ordering is the design; the deliberate pause · 13:32 (185 words)
-11. When reconciliation gets stuck · 14:46 (166 words)
-
-**Part 4 · Identity**
-
-12. Identity is two different jobs: outbound · 15:53 (221 words)
-13. The shared-identity trade-off · 17:21 (145 words)
-14. The async path that does not work · 18:19 (110 words)
-15. Inbound: rewriting identity at the door · 19:03 (258 words)
-
-**Part 5 · From an empty OSDU to a borrowed one**
-
-16. Making an empty OSDU useful · 20:46 (251 words)
-17. The image lock · 22:27 (214 words)
-18. One environment, eight forks by design · 23:52 (241 words)
-19. Pinned versions and ephemeral pins · 25:29 (239 words)
-20. Trusting a repository without trusting its pull requests · 27:04 (207 words)
-21. What the design is really about · 28:27 (163 words)
-
-Single narrator. Plain engineering language. One metaphor, the site's: machinery. The example partition is `opendes`; the environment placeholder is `<name>`. No real environment or subscription is named.
-
-**Adoption status, dated.** As of 13 September 2026, checked at `osdu-spi-partition` revision `3a5690d`, the reference partition fork has no `.spi/service.yaml` and its validation workflow has no Deploy Gate; the template at `osdu-spi` `080f0b8` implements the lane. Chapter 18 states that status. Recheck it immediately before recording: if the fork has adopted the lane by then, replace the status sentences with the demonstrated result.
-
-**Division of labour with the fork deep dive.** This episode establishes the environment's side of the contract with the forks: the lock, the pin annotation, the reset rule, and trust. The fork deep dive explains the job that uses them, step by step, and does not repeat the environment's mechanics.
-
-## Script
-
-### Part 1 · The environment
-
-#### 1. Shared core, swappable providers · target 00:00
+### 1. Shared core, swappable providers
 
 What is actually running when someone says "the stack", and how was it engineered so that a service fork can prove an Azure change against it? You already know the OSDU APIs and data partitions. What is new is the environment around them, and the provider inside each service.
 
@@ -66,7 +12,7 @@ Take one request as the running example: a lookup of the partition called opende
 
 The provider implements the cloud-specific behavior behind the shared interface. The stack exists so that code can be run and proved against the real Azure services.
 
-#### 2. Fifty resources, one command · target 01:32
+### 2. Fifty resources, one command
 
 Provisioning this environment by hand means roughly fifty Azure resources in the right order: the cluster, its identities, the data services that need the cluster's OIDC issuer before they can be wired, Key Vault, networking. The spi CLI compresses that into one invocation: spi up --env <name>. It creates a resource group named spi-stack-<name>, runs Bicep to create AKS first, reads the cluster's OIDC issuer, then provisions the data services and managed identities that depend on it, seeds the cluster with namespaces, configuration, and credentials, and activates Flux.
 
@@ -74,7 +20,7 @@ The command has three profiles, bare, minimal, and core, with core the default, 
 
 The documentation records timing as observations. Prior smoke runs in centralus were observed at roughly 45 to 50 minutes, including about 30 minutes for AKS and 10 to 15 minutes for the Flux extension. Those are planning estimates from earlier runs, not a guarantee for the current release or for another region; the CLI defaults to westus3, and its help names eastus2 and centralus as constrained. The phases overlap, so they are not added. And the CLI returning is not the environment being ready. API readiness can follow the CLI exit, and the fifth chapter says how to tell.
 
-#### 3. A development and test environment by design · target 03:22
+### 3. A development and test environment by design
 
 First, the scope. This stack is a development and test environment. Every OSDU service shares one Azure managed identity. There is no backup and no disaster recovery. The middleware is sized for testing. It is not production, and it is not Azure Data Manager for Energy.
 
@@ -84,9 +30,9 @@ The trade-off is real and the documentation states it. Because every OSDU pod is
 
 Disposable has a precise meaning too. Ordinary spi down --env <name> deletes the cluster, the data services, and their data. It waits up to 45 minutes, and that is a timeout, not a promised duration; an incomplete delete exits nonzero and lists what remains, so you run it again. What survives is the managed identities, the resource group spi-stack-<name>, and its naming tags, so the next spi up reuses the same names and identity client ids. Cluster seed Secrets are lost and middleware passwords are regenerated. spi down --purge is the separate, final choice: it removes the identities' external grants and deletes the resource group itself. And a green teardown job in CI is not proof of deletion. The CI step requests the deletion asynchronously and tolerates failure, which is why az group exists is the check.
 
-### Part 2 · Owners, and what runs where
+## Part 2 · Owners, and what runs where
 
-#### 4. Four owners, four boundaries · target 05:25
+### 4. Four owners, four boundaries
 
 Four owners keep this machinery from fighting itself, and each one has a boundary. This part follows those boundaries through the environment: who creates what, what runs in Azure, what stays in the cluster, and what the cluster's platform demands.
 
@@ -100,7 +46,7 @@ And people own the decisions: when to update the environment, when to diagnose i
 
 The practical use of the boundaries is diagnosis. When something fails, start in the namespace that owns the failed workload, and ask which owner's view of the world you are looking at. kubectl get kustomizations -n osdu-flux shows Flux's view. kubectl get pods -n platform shows the middleware's.
 
-#### 5. The CLI exits; Flux keeps working · target 06:57
+### 5. The CLI exits; Flux keeps working
 
 A successful spi up does not establish API readiness. Before spi up returns, it waits for the Git source, verifies that Flux has the requested revision, then suspends the Git source and writes the deploy record. Flux is already reconciling while those final CLI stages run. There is no moment when the CLI stops and Flux starts; they overlap. A successful exit means the orchestration completed without a fatal error.
 
@@ -108,7 +54,7 @@ The documentation lists five signals, and each establishes something different. 
 
 spi status --watch follows the third and fourth: workloads turning Ready, Jobs reaching Complete. It makes no API request. A pod in the Running phase is not necessarily Ready, and a finished Job should read Complete, not Running. spi info --show-apis discovers the endpoints. spi token exchanges a short-lived Kubernetes token for an OSDU bearer as the environment's deploy identity; its JSON output includes the bearer's expiry, which is the figure to check when a long suite sees a 401 mid-run. Then one authenticated lookup of opendes proves that one path. It proves nothing about search, storage, or ingestion. Check the signal you actually need.
 
-#### 6. Why the provider uses Azure PaaS · target 08:41
+### 6. Why the provider uses Azure PaaS
 
 The Azure provider talks to Cosmos DB, Service Bus, Storage, and Key Vault. The community implementation, CIMPL, runs its dependencies inside Kubernetes: PostgreSQL, RabbitMQ, MinIO. Testing the Azure provider against substitutes like those would bypass the very code the environment exists to prove. So the stack uses the Azure services, and it is Azure-only by design rather than by preference.
 
@@ -116,7 +62,7 @@ The layout follows the partition model you know. In this stack the partition ope
 
 One operational fact belongs here because it looks like a bug. Cosmos data-plane grants are Cosmos-native role assignments. They do not appear in az role assignment output, they propagate in five to fifteen minutes, and services cache their clients at startup. A fresh grant can therefore need a pod restart before it takes effect. "The role assignment is missing" is usually the wrong diagnosis.
 
-#### 7. The three that stayed in the cluster · target 10:03
+### 7. The three that stayed in the cluster
 
 Three systems did not move to Azure services, and each has a reason.
 
@@ -128,7 +74,7 @@ PostgreSQL stays because Airflow needs a small relational database for its own m
 
 They run in the platform namespace, managed by the operators in foundation, outside the Istio mesh that the OSDU pods join. And they carry the consequence the identity part comes back to: the Redis and Elasticsearch passwords are real credentials. They live in Kubernetes Secrets and are mirrored into Key Vault. Deleting a Secret does not rotate them: reconciliation does not regenerate a chart Secret, and the next spi up copies the same value back from the persistent seed in osdu-flux. Deleting the seed itself is worse, because a later spi up can generate values the running middleware does not know.
 
-#### 8. Letting Azure run the cluster · target 11:28
+### 8. Letting Azure run the cluster
 
 The cluster is AKS Automatic. Microsoft manages the nodes, the managed Istio revision, and the platform defaults, and the stack lives by the platform's rules. Two of those rules shape everything above them.
 
@@ -136,7 +82,7 @@ The first is a version floor. The cluster pins Kubernetes 1.36. Below 1.36, AKS 
 
 The second is Deployment Safeguards, and they cannot be bypassed. Every pod must run as non-root, drop Linux capabilities, declare resource requests and limits, and carry probes. That is good hygiene, and it collides with the community Helm charts, which were not written for it.
 
-#### 9. One local Helm chart · target 12:28
+### 9. One local Helm chart
 
 Patching the community charts at deploy time was considered and rejected, because a patch depends on the exact structure of the upstream template. When the community moves a block or renames a value, the patch stops applying, and either the deployment is rejected or it lands without the security context you thought you had added.
 
@@ -144,9 +90,9 @@ Instead the stack keeps one local chart, osdu-spi-service, and every OSDU servic
 
 The cost is that the community chart version no longer tells you what is running; the image reference does. The partition HelmRelease in osdu-flux installs the osdu-spi-service chart into the osdu namespace, and the resulting Deployment is named partition. To see the image it runs, read the Deployment's container image, not a chart version.
 
-### Part 3 · Assembly and reconciliation
+## Part 3 · Assembly and reconciliation
 
-#### 10. Ordering is the design; the deliberate pause · target 13:32
+### 10. Ordering is the design; the deliberate pause
 
 Now the assembly itself: the order Flux applies things in, the pause the CLI leaves it in, and the two ways it gets stuck.
 
@@ -154,7 +100,7 @@ Flux does not apply everything at once. The Kustomizations form a strict depende
 
 When spi up finishes, it suspends the Git source. Suspension stops Flux fetching new commits. It does not stop reconciliation. The cached revision keeps being applied, so a live edit to a Flux-managed object is reverted, external chart repositories keep their own schedules, and the controllers keep running. What the pause buys is that a colleague's merge to the stack repository cannot change the environment under you while you are chasing a failure in it. "Suspended means frozen" is one of the easy mistakes on the site: nothing is frozen, only the fetch.
 
-#### 11. When reconciliation gets stuck · target 14:46
+### 11. When reconciliation gets stuck
 
 Two documented traps end a rollout without an obvious error.
 
@@ -162,9 +108,9 @@ The first is retry exhaustion. When a HelmRelease fails to install or upgrade, h
 
 The second is the immutable Job template. A Job's pod template cannot change after the Job exists. When a chart change touches that template, the initialization HelmRelease, osdu-spi-init or osdu-spi-legal, holds at RollbackFailed, and the Helm error names the field as immutable. Both cases are in the Flux reconciliation guide with the commands to check. Neither is fixed by waiting.
 
-### Part 4 · Identity
+## Part 4 · Identity
 
-#### 12. Identity is two different jobs: outbound · target 15:53
+### 12. Identity is two different jobs: outbound
 
 Identity in this environment is two separate jobs, and conflating them wastes hours in the wrong layer. Outbound identity answers whether a pod can obtain an Azure token to call Cosmos DB, Storage, Service Bus, or Key Vault. Inbound identity answers whether an incoming OSDU request is accepted and as whom. This part takes them in that order.
 
@@ -172,19 +118,19 @@ Outbound uses Workload Identity. Each OSDU pod runs under the ServiceAccount wor
 
 Workload Identity replaces stored keys for the Azure data services. It does not replace every credential. Redis runs in the platform namespace and authenticates with a middleware password from the Secret platform/redis-credentials, whose value is mirrored into Key Vault; Elasticsearch has one too. In the running example, the partition provider reads Redis with that password, then reads the partition table in common Storage with Workload Identity.
 
-#### 13. The shared-identity trade-off · target 17:21
+### 13. The shared-identity trade-off
 
 There is one such identity for all the OSDU services. Every OSDU pod is the same Azure principal. That is operationally simple for a test target: one set of role assignments, one federated credential, nothing to keep in step as services are added. It is not an architecture for production, and the decision register says so.
 
 Two clarifications keep the picture accurate. Partition-specific Azure resources, the Cosmos account and Storage account that opendes owns, do not imply isolation between services; they are all reached by the same identity. And the workload identity is not the only identity in the environment. There is a separate deploy identity, which the fork lane and spi token use, and there are member and no-access test identities for exercising entitlements as a non-admin and as a caller absent from the groups. spi token --member and spi token --no-access select them.
 
-#### 14. The async path that does not work · target 18:19
+### 14. The async path that does not work
 
 Enforcing identity-based access on Service Bus has one documented casualty. The intended indexing path is Service Bus, then indexer-queue, then indexer, then Elasticsearch. The community indexer-queue image builds a Service Bus connection string regardless of Workload Identity, finds the placeholder DISABLED, and cannot authenticate. Records-changed indexing therefore needs a Workload-Identity-capable replacement image.
 
 The stack does not work around it by re-enabling connection strings for that one service. It documents the boundary and leaves the path broken until the image supports token-based authentication. "Async indexing works with the default images" is on the site's list of things that are not true, with the Key Vault check that shows the DISABLED value.
 
-#### 15. Inbound: rewriting identity at the door · target 19:03
+### 15. Inbound: rewriting identity at the door
 
 Inbound identity has a constraint that comes from the Azure provider itself: it reads the caller's identity from HTTP headers, x-app-id and x-user-id, and its Spring filter chain does not read the request principal directly. A header the client can write is not an identity. So the stack establishes it at the edge.
 
@@ -194,9 +140,9 @@ Then the service still makes its own authorization decision. A token being accep
 
 One more thing at the door. Port 80 serves the API routes in every ingress mode, and nothing redirects. A client that uses an http URL sends its bearer token in plaintext, even when a certificate exists for the host. Use the https endpoint that spi info --show-apis prints.
 
-### Part 5 · From an empty OSDU to a borrowed one
+## Part 5 · From an empty OSDU to a borrowed one
 
-#### 16. Making an empty OSDU useful · target 20:46
+### 16. Making an empty OSDU useful
 
 The last part covers what turns a converged environment into a usable one, and then what the environment provides so that a service fork can borrow it.
 
@@ -206,13 +152,13 @@ The stack runs these as initialization Jobs managed by Flux, in the osdu namespa
 
 Not every runtime input comes from Git. Before Flux starts, the CLI creates bootstrap inputs in the namespaces that consume them: the namespaces themselves, seed credentials, ServiceAccounts, ConfigMaps such as spi-cluster-config, and identity bindings, across osdu-flux, platform, and osdu. osdu-flux holds the stack's GitOps inputs, apart from the extension-controlled flux-system namespace, and the test-caller ServiceAccounts that spi token uses are in spi-test. The workloads consume those inputs when Flux starts. A rebuild from Git alone does not recreate them; spi up does.
 
-#### 17. The image lock · target 22:27
+### 17. The image lock
 
 Every service image in the environment is named in one ConfigMap, osdu-image-lock, in the osdu-flux namespace. It has one key per service, PARTITION_IMAGE_DIGEST among them, and Flux substitutes the values into the manifests at apply time. The environment pins by digest, never by tag, so a retag in a registry cannot change what runs. A deploy is an edit to the lock.
 
 Between fork runs, the lock holds the canonical image for each service. Today that comes from the community registry on GitLab. A service fork publishes to GHCR under its repository name, ghcr.io/azure/osdu-spi-partition, and that package must stay public: if its visibility flips, pods fail with ErrImagePull, and the fork's weekly settings check can only report it. The stack also provisions a small Azure Container Registry, but it is not the source of either kind of image; mirroring into it is a possible follow-up, not the implemented path. Promoting a fork's image to become a service's canonical image is designed in the decision register and not built; today a fork run captures the canonical image when it pins and writes that captured canonical image back afterwards, so the lock returns to the community image after every run. To see what the environment considers canonical, read the ConfigMap: kubectl get configmap osdu-image-lock -n osdu-flux.
 
-#### 18. One environment, eight forks by design · target 23:52
+### 18. One environment, eight forks by design
 
 Everything so far is about deploying OSDU. The reason the stack is engineered this carefully is that a standing shared environment is the test target for the service forks. The design is for eight forks, one per service, each borrowing its own service's slot.
 
@@ -220,7 +166,7 @@ Three facts stay separate here. The template implements the testing lane. A fork
 
 While the partition slot is pinned to a candidate, the other services keep running their canonical images. A candidate that is ready but wrong can fail a sibling's suite. Runs from one fork are serialised per service by a concurrency group, and that group is repository-scoped: it orders that fork's own runs and nothing else. Several onboarded forks can share the environment at once, one service slot each, and the environment's maintenance flag is what stops new deploys while it is being worked on. The environment is a stack like any other: spi up made it, Flux assembles it, and its deploy identity survives spi down, so onboarded forks keep working across a rebuild.
 
-#### 19. Pinned versions and ephemeral pins · target 25:29
+### 19. Pinned versions and ephemeral pins
 
 The shared environment tracks a reviewed release tag of the stack, never a rolling branch. If the substrate moved under the forks, every fork would fail at once and none would know why.
 
@@ -228,7 +174,7 @@ A fork deploy is a pin. The environment's side of it is three CLI verbs. spi ser
 
 Restore has one rule. spi service reset partition --if-run with a run's id writes the captured canonical image back only while the annotation still names that run. A newer run's pin is left alone; the reset exits 2, and the fork's lane treats that as success. So a green restore is a claim about one run, not about the environment. A cancelled run, an expired token, or a lost runner can strand a pin. The sweep verb exists, spi service reset --ephemeral --stale-only, but the scheduled workflow step that would run it is not built, so today a stranded pin is work for a person.
 
-#### 20. Trusting a repository without trusting its pull requests · target 27:04
+### 20. Trusting a repository without trusting its pull requests
 
 For a fork's workflow to write the lock at all, the environment has to trust it, and it does so without a stored secret. spi onboard partition --repo, with the fork's owner and name, adds a federated credential on the environment's deploy identity for one subject: that repository's protected environment named spi-stack. It also writes five repository settings into the fork: the client id as a secret, and the tenant id, subscription id, resource group, and cluster as variables. Trust is an OIDC relationship between the fork's GitHub environment and the deploy identity.
 
@@ -236,85 +182,8 @@ In the cluster the deploy identity holds two Roles. spi-fork-deployer in osdu-fl
 
 That is the environment's side of the contract: a lock that one identity may patch, a pin annotation that names the owning run, a reset that honours that name, and trust granted one repository at a time. Whether a particular run may use any of it is decided in the fork, by a gate that runs before any Azure login. The fork deep dive follows that job step by step.
 
-#### 21. What the design is really about · target 28:27
+### 21. What the design is really about
 
 Step back and the design has one purpose: let the Azure provider code be run against real Azure services by the forks that own it. Ordered assembly and a suspended source keep the environment steady while you work in it. Identity is exchanged, not stored, for the Azure services, and rewritten from the token at the edge for callers. The image lock gives a run a controlled way to deploy and restore its candidate. The environment is still shared, so a candidate can affect other services.
 
 What you can now say: the stack is a resource group with AKS and the Azure data services beside it, not the cluster alone. spi up creates; Flux assembles; controllers keep workloads healthy; CLI exit, convergence, readiness, and proof are separate signals. And the provider you will change lives inside the service image, which is where the fork deep dive picks up: how that provider stays fork-owned while the shared code around it is regenerated every day.
-
-## Word list the narration must keep
-
-- Service Provider Interface, never software provider interface.
-- The provider implements the cloud-specific behavior behind the shared interface; the partition provider also uses Redis inside AKS.
-- Development and test environment. Never production, never Azure Data Manager for Energy.
-- Plans to remove. Upstream's removal of its Azure implementations is planned (community ADR 61, osdu-spi ADR-038); as of September 2026 the directory is still there.
-- Observed at roughly 45 to 50 minutes in centralus, a planning estimate from prior runs. Never "takes", never "guaranteed".
-- Profiles change the Kubernetes workloads and do not remove the baseline AKS cluster or Azure data services. No cost claim and no resource-count claim: ADR-021 removes Redis volumes and their Azure disks when workloads are removed.
-- spi token exchanges a short-lived Kubernetes token for an OSDU bearer; the JSON output carries the bearer's expiry. No lifetime figure is spoken for the bearer.
-- CLI exit, Git artifact, Ready, Complete, and an authenticated request are separate signals, each establishing something different. Not "none implies the next".
-- Bootstrap inputs are created in the namespaces that consume them (osdu-flux, platform, osdu); osdu-flux holds the stack's GitOps inputs; test-caller ServiceAccounts are in spi-test.
-- Cosmos data-plane role propagation is five to fifteen minutes; no other figure for waiting on role assignments.
-- Workload Identity replaces stored keys for the Azure data services, not every credential; Redis and Elasticsearch passwords remain in Kubernetes Secrets mirrored into Key Vault.
-- Captured canonical image, consistently. Restore writes it back only while the run still owns the pin; a lost runner can strand a pin; the stale sweep's workflow step is not built.
-- Five repository settings, not five variables: AZURE_CLIENT_ID is a secret; the other four are variables.
-- Designed for eight forks; the partition fork is the reference and, as of September 2026, the only one, and it has not adopted the lane. The template implements the lane; a fork adopts and configures it; a run executes it.
-- The environment is still shared, so a candidate can affect other services. Never "without the forks breaking each other or the environment".
-- Public repositories under Apache 2.0. Nothing is proprietary.
-
-## What this script says differently from the current recording
-
-Timestamps are the markers in `src/content/audio.js` for the `stack` episode (transcript times in the current recording).
-
-| Marker                                                         | The current recording                                                                                                                                          | This script                                                                                                                                                                                                                                                                                             |
-| -------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| 0:00 Why OSDU exists                                           | Six minutes on a merger, trapped data, and what OSDU is, plus praise of the source material.                                                                   | Dropped. Chapter 1 opens on the engineering question and assumes the listener knows OSDU.                                                                                                                                                                                                               |
-| 7:57 Fifty resources, one command                              | "You wait approximately 45 to 50 minutes" as a property of the tool; "a multi-day expert exercise".                                                            | 45 to 50 minutes is an observation from prior centralus smoke runs and a planning estimate, region-dependent, with overlapping phases not summed; API readiness can follow the CLI exit. Profiles change the workloads and leave the cluster and data services; no cost or resource-count claim.        |
-| 10:57 A development and test environment by design             | "Destroy itself two hours later"; "40 of those 50 minutes just waiting for Entra ID to propagate role assignments for 30 different microservices".             | No lifetime claim. Cosmos data-plane role propagation is five to fifteen minutes, and services cache clients at startup.                                                                                                                                                                                |
-| 15:15 The CLI exits; Flux keeps working                        | The CLI and Flux described as a handoff.                                                                                                                       | The two overlap; five readiness signals stated as separate signals with what each establishes; spi token exchanges a short-lived Kubernetes token for an OSDU bearer whose expiry is in its JSON output.                                                                                                |
-| 19:51 The three that stayed in the cluster                     | "450 gigabytes of premium SSD storage".                                                                                                                        | Dropped; not in the reviewed documentation. Redis and PostgreSQL reasons stated from ADR-003.                                                                                                                                                                                                           |
-| 30:31 When reconciliation gets stuck                           | A Flux-versus-webhook fight over 50 and 100 millicores, resolved by hard-coding the request.                                                                   | The two documented traps only: Stalled with RetriesExceeded, and RollbackFailed on an immutable Job template, with spi reconcile as the retry.                                                                                                                                                          |
-| 33:55 Identity is two different jobs: outbound                 | "There is literally no password stored anywhere in the cluster."                                                                                               | Workload Identity replaces stored keys for the Azure data services. Redis and Elasticsearch passwords remain in Secrets mirrored into Key Vault; the partition provider reads Redis with that password, then Table Storage with Workload Identity.                                                      |
-| 37:02 The shared-identity trade-off                            | "Holds the keys to the entire kingdom"; only one identity described.                                                                                           | Plain statement of the trade-off, plus the separate deploy, member, and no-access identities.                                                                                                                                                                                                           |
-| 44:21 Making an empty OSDU useful                              | Bootstrap inputs described in one place.                                                                                                                       | Bootstrap inputs are created in the namespaces that consume them, across osdu-flux, platform, and osdu; osdu-flux holds the GitOps inputs; test callers are in spi-test.                                                                                                                                |
-| 47:43 The image lock                                           | The lock "holds the repository URL, the release tag, and the digest"; compared to a package lock file.                                                         | One key per service holding a digest; Flux substitutes at apply time; canonical images from the community registry, fork images from GHCR, ACR not the source; a run restores the captured canonical image.                                                                                             |
-| 48:57 One environment, eight forks by design                   | Eight active forks "inject Azure-specific optimizations" and "deploy their unmerged, untested code into this one persistent environment all day long".         | Designed for eight; the template implements the lane, a fork adopts and configures it, a run executes it; partition is the reference fork and, as of September 2026, the only one, and has not adopted the lane, so the run shown is illustrative. Serialised per service by a repository-scoped group. |
-| 50:40 Pinned versions and ephemeral pins                       | Last-write-wins on the lock; a run "queries spi status as JSON" and aborts when superseded; "a scheduled sweeper cron job" restores orphan pins automatically. | Compare-and-set on the lock; spi service verify with lock_mismatch; reset with --if-run writes the captured canonical image back only while the run owns the pin, exit 2 treated as success; the sweep verb exists but its scheduled step is unbuilt, so a stranded pin is work for a person.           |
-| 55:20 Trusting a repository without trusting its pull requests | RBAC described generally.                                                                                                                                      | The two Roles named with their verbs and the five repository settings (one secret, four variables). The fork's gate is named and left to the fork deep dive.                                                                                                                                            |
-| 56:46 What the design is really about                          | Closing speculation about complexity "too massive for any single human mind".                                                                                  | Closes on the separate signals and on the shared environment: the lock gives a run a controlled way to deploy and restore, and a candidate can still affect other services. Hands off to the fork deep dive.                                                                                            |
-
-Throughout: no "masterclass", "brutal honesty", "nightmare", "wild to think about", no mock surprise, no construction-site or interior-decorator analogy, no evaluation of the documentation's candour, and no instruction to the narrator inside the spoken text.
-
-## Generation brief
-
-Give the narrator or generator **`docs/narration/deep-dive-stack.md`** as the only selected source. Never this document: it quotes the current recording's obsolete claims in the table above and carries instructions and post-production commands that are not narration. Do not select the SPI Stack guide, the decision register, or the site; they are the sources the script was checked against, and giving the generator the mechanisms again is what produced the current hour-long recording with the six-minute introduction.
-
-Suggested generation prompt, for NotebookLM or a narrator:
-
-> Read the attached script as written, in order, as a single narrator. The audience is engineers who already know OSDU and are learning the Azure stack. Speak the five part headings as transitions. Do not announce the numbered chapter headings inside them; they mark where the recording will be indexed, and the text under each must stay in order and complete. Do not add an introduction to OSDU, the energy industry, or data platforms. Do not add facts, commands, durations, counts, percentages, or guarantees that are not in the script. Do not add analogies; the script uses one word, machinery, and no others. Do not praise the source material, express surprise, or describe anything as a nightmare, a masterclass, brutal, wild, or terrifying. Do not describe the stack as production or as Azure Data Manager for Energy. Where the script states a condition in the same sentence as a behaviour, keep the condition in the same sentence. Calm, precise, plain. Aim for 25 to 35 minutes.
-
-If the generator produces a two-voice conversation, the second voice may ask the question a part answers, and nothing else; every answer must come from the script.
-
-### Review the recording before it replaces anything
-
-- By the two-minute mark the listener has heard the Service Provider Interface named, that the interface and its implementation ship in one image, and that the opendes lookup reads a cache then common Table Storage.
-- The 45 to 50 minute figure is spoken as an observation from prior centralus runs, never as a duration the tool takes.
-- Profiles are spoken as changing the workloads and leaving the cluster and data services; no cost or resource-count claim.
-- spi token is spoken as an exchange whose JSON output carries the bearer's expiry; no lifetime figure is attached to the bearer.
-- The five readiness signals are spoken as separate signals, each with what it establishes.
-- The role-propagation figure is five to fifteen minutes and nothing else.
-- Workload Identity is scoped to the Azure data services, and Redis and Elasticsearch passwords are mentioned in the same chapter.
-- Bootstrap inputs are spoken as created across osdu-flux, platform, and osdu, with test callers in spi-test.
-- Restore is spoken with its condition: only while the run still owns the pin, the captured canonical image; a lost runner can strand a pin; the sweep step is not built.
-- The forks are "designed for eight" with partition the first and only, the three adoption facts are kept apart, and the acceptance run is illustrative, after the status has been rechecked against the reference fork.
-- The onboarding values are "five repository settings".
-- The closing says the environment is still shared and a candidate can affect other services; no isolation guarantee.
-- No chapter names a real environment or subscription; only opendes and <name> appear.
-- The closing hands off to the fork deep dive rather than speculating.
-
-### After recording
-
-1. Encode: `ffmpeg -i <input> -ac 1 -c:a aac -b:a 56k public/audio/<slug>.m4a`.
-2. Transcribe: `uvx --from mlx-whisper mlx_whisper public/audio/<slug>.m4a --model mlx-community/whisper-large-v3-turbo --output-format vtt --language en`, keep the VTT in `docs/reference/`, and regenerate `src/content/transcripts/stack.js` from it. The transcript represents the recording; do not edit it to say what the recording should have said.
-3. Update the `stack` episode in `src/content/audio.js`: file, duration, `origin`, and the 21 markers with the recorded chapter times and the titles above. The part transitions are not markers. Drop the source-check notes the new recording no longer needs; add one for anything the narrator changed.
-4. Re-point the `listen` cues in `src/content/chapters.js` that name the `stack` episode (lessons 01, 02, and 06) at the new marker times. The content test requires each cue to start on a marker of its episode.
-5. Retitle the episode on the Audio deep dives page from the script's subject, not from the generator's title; the generated title belongs in `origin`.
