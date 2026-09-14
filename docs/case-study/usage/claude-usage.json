@@ -1,0 +1,154 @@
+{
+  "by_channel_day_model": [
+    {
+      "channel": "main",
+      "day": "Fri 11",
+      "model": "claude-fable-5-1",
+      "uncached": 4218,
+      "cache_write": 826761,
+      "cache_read": 39177053,
+      "output": 212478,
+      "turns": 168
+    },
+    {
+      "channel": "main",
+      "day": "Fri 11",
+      "model": "claude-opus-5",
+      "uncached": 846,
+      "cache_write": 355081,
+      "cache_read": 96480445,
+      "output": 144444,
+      "turns": 423
+    },
+    {
+      "channel": "main",
+      "day": "Mon 14",
+      "model": "claude-fable-5-1",
+      "uncached": 7706,
+      "cache_write": 522756,
+      "cache_read": 49951444,
+      "output": 200722,
+      "turns": 273
+    },
+    {
+      "channel": "main",
+      "day": "Sat 12",
+      "model": "claude-fable-5-1",
+      "uncached": 12710,
+      "cache_write": 1867611,
+      "cache_read": 84863033,
+      "output": 550856,
+      "turns": 451
+    },
+    {
+      "channel": "main",
+      "day": "Sun 13",
+      "model": "<synthetic>",
+      "uncached": 0,
+      "cache_write": 0,
+      "cache_read": 0,
+      "output": 0,
+      "turns": 1
+    },
+    {
+      "channel": "main",
+      "day": "Sun 13",
+      "model": "claude-fable-5-1",
+      "uncached": 25662,
+      "cache_write": 2618227,
+      "cache_read": 262341654,
+      "output": 916725,
+      "turns": 1046
+    },
+    {
+      "channel": "main",
+      "day": "Sun 13",
+      "model": "claude-opus-5",
+      "uncached": 24,
+      "cache_write": 37111,
+      "cache_read": 615026,
+      "output": 6208,
+      "turns": 11
+    },
+    {
+      "channel": "peer",
+      "day": "Sat 12",
+      "model": "claude-opus-5",
+      "uncached": 62,
+      "cache_write": 331085,
+      "cache_read": 4299269,
+      "output": 40776,
+      "turns": 29
+    },
+    {
+      "channel": "peer",
+      "day": "Sun 13",
+      "model": "claude-opus-5",
+      "uncached": 410,
+      "cache_write": 571032,
+      "cache_read": 53610419,
+      "output": 153755,
+      "turns": 201
+    },
+    {
+      "channel": "subagent",
+      "day": "Fri 11",
+      "model": "claude-fable-5-1",
+      "uncached": 1580,
+      "cache_write": 338483,
+      "cache_read": 5487680,
+      "output": 16708,
+      "turns": 55
+    },
+    {
+      "channel": "subagent",
+      "day": "Mon 14",
+      "model": "claude-fable-5-1",
+      "uncached": 1796,
+      "cache_write": 558801,
+      "cache_read": 7058146,
+      "output": 5263,
+      "turns": 58
+    },
+    {
+      "channel": "subagent",
+      "day": "Sat 12",
+      "model": "claude-fable-5-1",
+      "uncached": 98,
+      "cache_write": 183966,
+      "cache_read": 274685,
+      "output": 7085,
+      "turns": 4
+    },
+    {
+      "channel": "subagent",
+      "day": "Sat 12",
+      "model": "claude-opus-5",
+      "uncached": 216,
+      "cache_write": 497347,
+      "cache_read": 17093970,
+      "output": 3157,
+      "turns": 108
+    },
+    {
+      "channel": "subagent",
+      "day": "Sun 13",
+      "model": "claude-fable-5-1",
+      "uncached": 7562,
+      "cache_write": 1719829,
+      "cache_read": 28150636,
+      "output": 38921,
+      "turns": 253
+    },
+    {
+      "channel": "subagent",
+      "day": "Sun 13",
+      "model": "claude-opus-5",
+      "uncached": 32,
+      "cache_write": 100598,
+      "cache_read": 809171,
+      "output": 57,
+      "turns": 16
+    }
+  ]
+}

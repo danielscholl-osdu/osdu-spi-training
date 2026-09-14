@@ -47,8 +47,8 @@
    "y": 72,
    "width": 1400,
    "height": 19,
-   "text": "One owner, one orchestrator, workers and reviewers from three vendors, and two stores every agent could read. Thursday 11 to Sunday 14 September 2026.",
-   "originalText": "One owner, one orchestrator, workers and reviewers from three vendors, and two stores every agent could read. Thursday 11 to Sunday 14 September 2026.",
+   "text": "One owner, one orchestrator, workers and reviewers from three vendors, and two stores every agent could read. Friday 11 to Monday 14 September 2026.",
+   "originalText": "One owner, one orchestrator, workers and reviewers from three vendors, and two stores every agent could read. Friday 11 to Monday 14 September 2026.",
    "fontSize": 15,
    "fontFamily": 3,
    "textAlign": "left",
@@ -298,9 +298,9 @@
   {
    "type": "rectangle",
    "id": "codex",
-   "x": 1200,
+   "x": 1170,
    "y": 96,
-   "width": 300,
+   "width": 330,
    "height": 60,
    "strokeColor": "#6d28d9",
    "backgroundColor": "#ddd6fe",
@@ -334,12 +334,12 @@
   {
    "type": "text",
    "id": "codex_t",
-   "x": 1210,
+   "x": 1180,
    "y": 108,
-   "width": 280,
+   "width": 310,
    "height": 36,
-   "text": "OpenAI Codex\n15 review rounds, 1 implementation",
-   "originalText": "OpenAI Codex\n15 review rounds, 1 implementation",
+   "text": "OpenAI Codex\nprototype, lesson 01, 15 reviews",
+   "originalText": "OpenAI Codex\nprototype, lesson 01, 15 reviews",
    "fontSize": 14,
    "fontFamily": 3,
    "textAlign": "center",
@@ -434,9 +434,9 @@
   {
    "type": "arrow",
    "id": "a_codex_owner",
-   "x": 1198,
+   "x": 1168,
    "y": 126,
-   "width": 286,
+   "width": 256,
    "height": 34,
    "strokeColor": "#6d28d9",
    "backgroundColor": "transparent",
@@ -460,7 +460,7 @@
      0
     ],
     [
-     -286,
+     -256,
      34
     ]
    ],
@@ -526,7 +526,7 @@
   {
    "type": "text",
    "id": "rev_lbl",
-   "x": 960,
+   "x": 930,
    "y": 96,
    "width": 230,
    "height": 32,
@@ -1020,12 +1020,12 @@
   {
    "type": "text",
    "id": "kl_title",
-   "x": 760,
+   "x": 1000,
    "y": 488,
    "width": 430,
    "height": 56,
-   "text": "Keelson beads-work, the long lane\n19 runs, 13 merged PRs, 16 to 53 minutes each,\nthree at a time on Saturday afternoon",
-   "originalText": "Keelson beads-work, the long lane\n19 runs, 13 merged PRs, 16 to 53 minutes each,\nthree at a time on Saturday afternoon",
+   "text": "Keelson beads-work, the long lane\n17 runs, 13 merged PRs, 16 to 53 minutes each,\nthree at a time on Sunday afternoon",
+   "originalText": "Keelson beads-work, the long lane\n17 runs, 13 merged PRs, 16 to 53 minutes each,\nthree at a time on Sunday afternoon",
    "fontSize": 15,
    "fontFamily": 3,
    "textAlign": "left",
@@ -1269,7 +1269,7 @@
   {
    "type": "rectangle",
    "id": "lanes",
-   "x": 720,
+   "x": 910,
    "y": 566,
    "width": 190,
    "height": 64,
@@ -1292,7 +1292,7 @@
      "type": "text"
     },
     {
-     "id": "a_impl_lanes",
+     "id": "a_triage_pr",
      "type": "arrow"
     },
     {
@@ -1309,7 +1309,7 @@
   {
    "type": "text",
    "id": "lanes_t",
-   "x": 730,
+   "x": 920,
    "y": 578,
    "width": 170,
    "height": 40,
@@ -1341,7 +1341,7 @@
   {
    "type": "rectangle",
    "id": "triage",
-   "x": 950,
+   "x": 1140,
    "y": 566,
    "width": 150,
    "height": 64,
@@ -1368,7 +1368,7 @@
      "type": "arrow"
     },
     {
-     "id": "a_triage_pr",
+     "id": "a_pr_copilot",
      "type": "arrow"
     }
    ],
@@ -1381,7 +1381,7 @@
   {
    "type": "text",
    "id": "triage_t",
-   "x": 960,
+   "x": 1150,
    "y": 578,
    "width": 130,
    "height": 40,
@@ -1413,7 +1413,7 @@
   {
    "type": "ellipse",
    "id": "pr",
-   "x": 1140,
+   "x": 720,
    "y": 562,
    "width": 150,
    "height": 72,
@@ -1436,11 +1436,11 @@
      "type": "text"
     },
     {
-     "id": "a_triage_pr",
+     "id": "a_impl_lanes",
      "type": "arrow"
     },
     {
-     "id": "a_pr_copilot",
+     "id": "a_triage_pr",
      "type": "arrow"
     },
     {
@@ -1454,7 +1454,7 @@
   {
    "type": "text",
    "id": "pr_t",
-   "x": 1160,
+   "x": 740,
    "y": 588,
    "width": 110,
    "height": 20,
@@ -1526,8 +1526,8 @@
    "y": 578,
    "width": 170,
    "height": 40,
-   "text": "Copilot\nPR review",
-   "originalText": "Copilot\nPR review",
+   "text": "Copilot review\nrequested",
+   "originalText": "Copilot review\nrequested",
    "fontSize": 16,
    "fontFamily": 3,
    "textAlign": "center",
@@ -1682,7 +1682,7 @@
     "gap": 2
    },
    "endBinding": {
-    "elementId": "lanes",
+    "elementId": "pr",
     "focus": 0,
     "gap": 2
    },
@@ -1692,7 +1692,7 @@
   {
    "type": "arrow",
    "id": "a_lanes_triage",
-   "x": 912,
+   "x": 1102,
    "y": 598,
    "width": 36,
    "height": 0,
@@ -1738,7 +1738,7 @@
   {
    "type": "arrow",
    "id": "a_triage_pr",
-   "x": 1102,
+   "x": 872,
    "y": 598,
    "width": 36,
    "height": 0,
@@ -1769,12 +1769,12 @@
     ]
    ],
    "startBinding": {
-    "elementId": "triage",
+    "elementId": "pr",
     "focus": 0,
     "gap": 2
    },
    "endBinding": {
-    "elementId": "pr",
+    "elementId": "lanes",
     "focus": 0,
     "gap": 2
    },
@@ -1815,7 +1815,7 @@
     ]
    ],
    "startBinding": {
-    "elementId": "pr",
+    "elementId": "triage",
     "focus": 0,
     "gap": 2
    },
@@ -1926,12 +1926,12 @@
   {
    "type": "text",
    "id": "lanes_lbl",
-   "x": 720,
+   "x": 910,
    "y": 640,
    "width": 220,
    "height": 48,
-   "text": "gpt-5.6-terra: correctness,\nconventions, coverage;\n12 of 13 came back clean",
-   "originalText": "gpt-5.6-terra: correctness,\nconventions, coverage;\n12 of 13 came back clean",
+   "text": "gpt-5.6-terra, fresh context,\ncaptured diff; 27 candidates,\n1 blocking across 13 runs",
+   "originalText": "gpt-5.6-terra, fresh context,\ncaptured diff; 27 candidates,\n1 blocking across 13 runs",
    "fontSize": 12,
    "fontFamily": 3,
    "textAlign": "left",
@@ -1958,7 +1958,7 @@
   {
    "type": "text",
    "id": "triage_lbl",
-   "x": 950,
+   "x": 1140,
    "y": 640,
    "width": 150,
    "height": 16,
@@ -1990,12 +1990,12 @@
   {
    "type": "text",
    "id": "pr_lbl",
-   "x": 1140,
+   "x": 720,
    "y": 640,
    "width": 170,
    "height": 32,
-   "text": "opened by the run;\nthe bead stays claimed",
-   "originalText": "opened by the run;\nthe bead stays claimed",
+   "text": "opened before review;\nthe bead stays claimed",
+   "originalText": "opened before review;\nthe bead stays claimed",
    "fontSize": 12,
    "fontFamily": 3,
    "textAlign": "left",
@@ -2026,8 +2026,8 @@
    "y": 640,
    "width": 200,
    "height": 32,
-   "text": "13 reviews, 10 comments;\nmedian merge 6 min later",
-   "originalText": "13 reviews, 10 comments;\nmedian merge 6 min later",
+   "text": "13 reviews, 9 comments;\nmedian merge 6 min later",
+   "originalText": "13 reviews, 9 comments;\nmedian merge 6 min later",
    "fontSize": 12,
    "fontFamily": 3,
    "textAlign": "left",
@@ -2186,7 +2186,7 @@
   {
    "type": "text",
    "id": "gate_orch_lbl",
-   "x": 772,
+   "x": 808,
    "y": 452,
    "width": 200,
    "height": 16,
@@ -2218,10 +2218,10 @@
   {
    "type": "arrow",
    "id": "a_pr_orch",
-   "x": 1215,
+   "x": 795,
    "y": 560,
-   "width": 255,
-   "height": 158,
+   "width": 0,
+   "height": 148,
    "strokeColor": "#047857",
    "backgroundColor": "transparent",
    "fillStyle": "solid",
@@ -2245,15 +2245,7 @@
     ],
     [
      0,
-     -90
-    ],
-    [
-     -255,
-     -90
-    ],
-    [
-     -255,
-     -158
+     -148
     ]
    ],
    "startBinding": {
@@ -2272,12 +2264,12 @@
   {
    "type": "text",
    "id": "pr_orch_lbl",
-   "x": 980,
-   "y": 452,
-   "width": 310,
-   "height": 16,
-   "text": "browser check, fix pass, mark ready, merge",
-   "originalText": "browser check, fix pass, mark ready, merge",
+   "x": 808,
+   "y": 476,
+   "width": 200,
+   "height": 32,
+   "text": "browser check, fix pass,\nmark ready, merge",
+   "originalText": "browser check, fix pass,\nmark ready, merge",
    "fontSize": 12,
    "fontFamily": 3,
    "textAlign": "left",
@@ -3200,10 +3192,10 @@
    "id": "l4",
    "x": 610,
    "y": 964,
-   "width": 170,
+   "width": 200,
    "height": 32,
-   "text": "run: plan, gate,\nimplement, lanes",
-   "originalText": "run: plan, gate,\nimplement, lanes",
+   "text": "run: plan, gate, implement,\ndraft PR, review lanes, fix",
+   "originalText": "run: plan, gate, implement,\ndraft PR, review lanes, fix",
    "fontSize": 12,
    "fontFamily": 3,
    "textAlign": "left",
@@ -3234,8 +3226,8 @@
    "y": 912,
    "width": 170,
    "height": 32,
-   "text": "draft PR opened,\nCopilot reviews it",
-   "originalText": "draft PR opened,\nCopilot reviews it",
+   "text": "Copilot review\nrequested on the PR",
+   "originalText": "Copilot review\nrequested on the PR",
    "fontSize": 12,
    "fontFamily": 3,
    "textAlign": "left",
@@ -3512,8 +3504,8 @@
    "y": 1040,
    "width": 540,
    "height": 16,
-   "text": "The rule the owner set on Saturday, stored as a tracker memory",
-   "originalText": "The rule the owner set on Saturday, stored as a tracker memory",
+   "text": "The rule the owner set on Sunday, stored as a tracker memory",
+   "originalText": "The rule the owner set on Sunday, stored as a tracker memory",
    "fontSize": 12,
    "fontFamily": 3,
    "textAlign": "left",
