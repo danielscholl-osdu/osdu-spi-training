@@ -533,6 +533,15 @@ function updateLessonOptional(scene) {
   optional.hidden = !rows.some((row) => !row.hidden);
 }
 
+function openContainingDetails(target) {
+  const details = [];
+  for (let node = target; node; node = node.parentElement)
+    if (node.tagName === 'DETAILS') details.push(node);
+  details.reverse().forEach((item) => {
+    item.open = true;
+  });
+}
+
 // Leaving a chapter remembers where the reader was, so browser Back lands on
 // the marker or guide they left from instead of the top of the page.
 const scrollMemory = new Map();
@@ -618,8 +627,7 @@ function render() {
       player.seekTo(route.time, false);
     if (route.guide) {
       const target = document.getElementById(`guide-${route.guide}`);
-      const holder = target?.closest('details');
-      if (holder) holder.open = true;
+      openContainingDetails(target);
       target?.scrollIntoView({ block: 'start' });
     } else if (chapterChanged && previousRoute) {
       settleChapterScroll(route);
@@ -636,6 +644,7 @@ function render() {
   document.getElementById('page').innerHTML = '';
   document.getElementById('exploration').hidden = false;
   const structured = scene.kind === 'map' && hasClaims(scene);
+  let guideTarget = null;
   if (chapterChanged) {
     document.getElementById('figure-title').textContent = scene.figure;
   }
@@ -666,6 +675,9 @@ function render() {
     )
       .map((id) => mythCallout(id, route.chapter))
       .join('');
+  }
+  if (route.guide && (mapChanged || previousRoute?.guide !== route.guide)) {
+    guideTarget = document.getElementById(`guide-${route.guide}`);
   }
   if (mapChanged) {
     document.getElementById('diagram').innerHTML =
@@ -705,6 +717,10 @@ function render() {
     strip.hidden = !strip.innerHTML;
   }
   updateLessonOptional(scene);
+  if (guideTarget) {
+    openContainingDetails(guideTarget);
+    guideTarget.scrollIntoView({ block: 'start' });
+  }
   if (structured) {
     lessonState.claim = selection.claim;
     lessonState.hop = selection.hop;
@@ -761,7 +777,7 @@ function render() {
   stageRequested = null;
   if (chapterChanged) {
     if (previousRoute) {
-      settleChapterScroll(route);
+      if (!guideTarget) settleChapterScroll(route);
       focusChapter();
     }
   }
@@ -1042,8 +1058,7 @@ document.addEventListener('click', (event) => {
   if (!opener) return;
   const figure = document.getElementById(`guide-${opener.dataset.guideOpen}`);
   if (!figure) return;
-  const holder = figure.closest('details');
-  if (holder) holder.open = true;
+  openContainingDetails(figure);
   figure.scrollIntoView({ block: 'start' });
   figure.tabIndex = -1;
   figure.focus({ preventScroll: true });

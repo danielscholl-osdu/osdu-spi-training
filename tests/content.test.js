@@ -3498,3 +3498,38 @@ test('field guide groups open in place and keep every sheet', () => {
       assert.ok(article.includes(item), `${poster.id}: ${item.slice(0, 40)}`);
   }
 });
+
+test('guide and myth arrivals reveal every containing disclosure', () => {
+  const main = readFileSync(new URL('../src/main.js', import.meta.url), 'utf8');
+  const helper = main.slice(
+    main.indexOf('function openContainingDetails'),
+    main.indexOf('// Leaving a chapter remembers'),
+  );
+  assert.match(
+    helper,
+    /for \(let node = target; node; node = node\.parentElement\)/,
+  );
+  assert.match(helper, /details\.reverse\(\)\.forEach/);
+  assert.match(helper, /item\.open = true/);
+  assert.doesNotMatch(
+    helper,
+    /scroll|focus|history|location|player|selectDetail/,
+  );
+  assert.equal(
+    (
+      main.match(
+        /^\s+openContainingDetails\((?:target|guideTarget|figure)\);/gm,
+      ) || []
+    ).length,
+    3,
+    'page guide routes, map guide routes, and local myths share the helper',
+  );
+  assert.match(
+    main,
+    /openContainingDetails\(guideTarget\);\s*guideTarget\.scrollIntoView/,
+  );
+  assert.match(
+    main,
+    /openContainingDetails\(figure\);\s*figure\.scrollIntoView[\s\S]*figure\.focus\(\{ preventScroll: true \}\)/,
+  );
+});
