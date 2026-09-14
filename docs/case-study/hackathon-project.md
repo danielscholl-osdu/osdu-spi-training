@@ -22,6 +22,10 @@ Agentic Loop Engineering Ready; Hack2Enable; Human-Agent Builder Teams: The Futu
 
 software factory, agentic engineering, human in the loop, Claude Code, Keelson, beads, Codex, GitHub Copilot, NotebookLM, OSDU, Azure SPI, onboarding, training, case study
 
+## Project video
+
+Eligibility for the executive challenge depends on a project video submitted by the deadline. The one-minute NotebookLM overview covers the case study and can serve as the submission as it stands. A stronger cut, if there is time, is one to two minutes in three parts: thirty seconds of the site in use (a lesson, a claim focusing the map, the evidence drawer), thirty seconds of the factory (the beads board, a workflow run pausing for approval, a merged pull request), and the closing findings from the case study. The hackathon runs the week of September 14 and the deadline is September 21 at 23:59 Pacific.
+
 ## Media (after the first save)
 
 1. `hackathon-splash.png`, the gallery image.
@@ -67,6 +71,10 @@ About 150 messages over four days and roughly 15 to 21 hours of active attention
 ### What remains open
 
 Whether the site shortens onboarding is not yet measured; a pilot with real learners is the next step. Whether the factory saved labour against building by hand, and whether this mix of tools beats another, are open questions the record cannot answer.
+
+### AI tools used
+
+The project is itself the test of AI-assisted work, so every major tool is disclosed. Building: Claude Code as orchestrator and its subagents; Keelson workflows running OpenAI models through GitHub Copilot; OpenAI Codex for the first-day prototype and one lesson rebuild. Reviewing: OpenAI Codex, GPT Astra in ChatGPT, GitHub Copilot's pull request reviewer, and a second Claude Code session. Media: Google NotebookLM for the audio deep dives and the video overview, and the Gemini image model for artwork. The case study prose was drafted by a Claude Code session from the records and edited by the engineer.
 
 ### Supporting material in the repository
 
