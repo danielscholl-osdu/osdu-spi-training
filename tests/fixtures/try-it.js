@@ -1,3 +1,6 @@
+// Copyright (c) Microsoft Corporation.
+// Licensed under the MIT License.
+
 export const singleVariantTryIt = {
   activity: 'trace the partition lookup',
   summary: 'Try it: trace the partition lookup · browser only',

@@ -1,3 +1,6 @@
+// Copyright (c) Microsoft Corporation.
+// Licensed under the MIT License.
+
 import { node, escapeHtml } from './node.js';
 import { creationMoments } from '../content/creation-moments.js';
 import { routeHref } from '../router.js';

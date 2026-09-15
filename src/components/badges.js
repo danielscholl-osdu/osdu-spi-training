@@ -1,3 +1,6 @@
+// Copyright (c) Microsoft Corporation.
+// Licensed under the MIT License.
+
 // Small decorative drawings for the lesson footer, in the field-notes style of
 // the generated artwork (navy linework, muted owner-color fills, no words).
 // They carry no claim; each is aria-hidden where it is placed.

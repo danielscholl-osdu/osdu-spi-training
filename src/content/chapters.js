@@ -1,3 +1,6 @@
+// Copyright (c) Microsoft Corporation.
+// Licensed under the MIT License.
+
 /**
  * @typedef {object} TryItAction
  * @property {string} [command] Inert shell text; mutually exclusive with click.

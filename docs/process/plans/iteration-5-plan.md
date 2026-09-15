@@ -4,7 +4,7 @@ Status: agreed; phases 1–6 delivered, see ../iterations/iteration-5.md. Phase 
 
 Principles agreed before building: not so heavy that a reader cannot reach an understanding; not so shallow that an engineer finds it simplistic; no confusion between the three things called SPI; concepts grow in order and every one links to the documentation that holds the depth; graphics, audio, diagrams, and interaction before paragraphs; and the writing, drawing, and naming stay plain, specific, and human. Two adjustments to the views below follow from that: the ownership-through-the-tree drawing is the map for 04, with the branches beside it, and 06 draws only the running example's hops and keeps everything else inside components.
 
-The site today teaches the SPI Stack: what a stack is, how `spi up` builds it, where inside a service OSDU stops and Azure begins, and (in one view) how a change reaches it. The new material doubles the subject. The complete guide (`osdu-spi-complete-guide.pdf`, 103 pages) adds the engineering system as a full book, and adds a third book about the seam where the two systems meet. Two generated posters and two generated audio overviews arrived with it.
+The site today teaches the SPI Stack: what a stack is, how `spi up` builds it, where inside a service OSDU stops and Azure begins, and (in one view) how a change reaches it. The new material doubles the subject. The complete guide (103 pages) adds the engineering system as a full book, and adds a third book about the seam where the two systems meet. Two generated posters and two generated audio overviews arrived with it.
 
 This plan says how the site absorbs that without becoming two sites.
 

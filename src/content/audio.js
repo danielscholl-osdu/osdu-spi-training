@@ -1,3 +1,6 @@
+// Copyright (c) Microsoft Corporation.
+// Licensed under the MIT License.
+
 // Three generated audio discussions. Marker times come from the transcripts
 // in docs/reference; `note` records where the narration differs from the
 // source documentation. Nothing here navigates on its own.

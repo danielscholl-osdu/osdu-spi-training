@@ -63,13 +63,13 @@ Source links must point at the published docs (`azure.github.io/osdu-spi/`) or `
 
 - `dist/` is generated.
 - `src/content/transcripts/*.js` and `docs/reference/*.vtt` represent the recordings. Put corrections in marker notes in `audio.js`. A recording is replaced from an approved script such as `docs/azure-spi-brief-script.md`.
-- The reference PDFs and the dated review documents in `docs/process/reviews/` are preserved verbatim; record responses in separate files.
+- The dated review documents in `docs/process/reviews/` are preserved verbatim; record responses in separate files.
 
 ## Project Locations for relating code
 
 - `osdu-spi` is located ../osdu-spi
 - `osdu-spi-stack` is located ../osdu-spi-stack
-- `cimpl-stack` is located /Users/danielscholl/source/cimpl-stack
+- `cimpl-stack` is located ../../cimpl-stack
 
 <!-- BEGIN BEADS INTEGRATION v:1 profile:minimal hash:7510c1e2 -->
 

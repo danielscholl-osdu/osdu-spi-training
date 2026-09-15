@@ -1,3 +1,6 @@
+// Copyright (c) Microsoft Corporation.
+// Licensed under the MIT License.
+
 export const sources = {
   architecture: {
     label: 'Stack architecture (dc2c956)',

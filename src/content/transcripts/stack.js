@@ -1,3 +1,6 @@
+// Copyright (c) Microsoft Corporation.
+// Licensed under the MIT License.
+
 // Generated from docs/reference/engineering-the-osdu-spi-stack-on-azure.vtt
 // (Whisper large-v3-turbo). Timestamps are seconds into the recording.
 export const transcript = [

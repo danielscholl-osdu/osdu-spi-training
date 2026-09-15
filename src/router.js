@@ -1,3 +1,6 @@
+// Copyright (c) Microsoft Corporation.
+// Licensed under the MIT License.
+
 import { chapters } from './content/chapters.js';
 import { creationMoments } from './content/creation-moments.js';
 import { forkMoments } from './content/fork-moments.js';

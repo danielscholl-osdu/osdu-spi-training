@@ -1,6 +1,6 @@
 # Introduction conversation brief
 
-Use **azure-spi-introduction.pdf** as the only selected source. Do not select the three guides or the earlier orientation source. The introduction is written to stay above the mechanisms those documents explain; giving the generator the mechanisms again is what produced a compressed deep dive last time.
+Use a PDF rendering of `azure-spi-introduction-source.md` as the only selected source. Do not select the three guides or the earlier orientation source. The introduction is written to stay above the mechanisms those documents explain; giving the generator the mechanisms again is what produced a compressed deep dive last time.
 
 ## Why the earlier orientation missed
 

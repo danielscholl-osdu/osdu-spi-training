@@ -1,3 +1,6 @@
+// Copyright (c) Microsoft Corporation.
+// Licensed under the MIT License.
+
 // Generated from docs/reference/why-azure-3d-prints-git-branches.vtt (mlx-whisper large-v3-turbo). Timestamps are seconds into the recording.
 export const transcript = [
   {

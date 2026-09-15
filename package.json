@@ -4,6 +4,11 @@
   "private": true,
   "type": "module",
   "description": "A visual learning site for engineers new to Azure OSDU SPI Stack.",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/danielscholl-osdu/osdu-spi-training.git"
+  },
   "engines": {
     "node": ">=22.12.0"
   },

@@ -23,7 +23,7 @@ The implementation plan identifies this as a review of the new spine before furt
 
 This changes the meaning of the lesson: the Azure provider appears absent beneath “main.” The 56-pixel headings also wrap and overlap enough to be difficult to read. The five moment buttons have similar text clipping on a phone.
 
-Evidence: [phone ownership table](/Users/danielscholl/source/spi-workspace/training/output/playwright/fork-shape-mobile-table.png), [phone moment controls](/Users/danielscholl/source/spi-workspace/training/output/playwright/fork-day-mobile-controls.png), [responsive table rules](/Users/danielscholl/source/spi-workspace/training/src/styles/architecture.css:932).
+Evidence: [phone ownership table](../../../output/playwright/fork-shape-mobile-table.png), [phone moment controls](../../../output/playwright/fork-day-mobile-controls.png), [responsive table rules](../../../src/styles/architecture.css:932).
 
 **Change:** preserve the corner's grid position as the immediate fix. Then give phone readers labeled ownership cards or an intentionally scrollable table with a persistent path column and clear scroll affordance. Do not compress branch names into tiny columns. Use a readable moment selector that keeps the active step and next action visible.
 
@@ -33,7 +33,7 @@ Evidence: [phone ownership table](/Users/danielscholl/source/spi-workspace/train
 
 **High priority · source contradiction.** The “From the template” row groups `.spi/service.yaml` with workflows and `build/Dockerfile`. Its explanation says all arrive through Sync Template. The descriptor runbook says the service repository owns this file and template sync never changes it; the actual sync configuration explicitly excludes `.spi`.
 
-Evidence: [table row](/Users/danielscholl/source/spi-workspace/training/src/components/diagrams.js:80), [explanation](/Users/danielscholl/source/spi-workspace/training/src/content/component-details.js:407), [descriptor ownership](/Users/danielscholl/source/spi-workspace/osdu-spi/doc/src/runbooks/service-descriptor.md:3), [sync exclusion](/Users/danielscholl/source/spi-workspace/osdu-spi/.github/sync-config.json:146).
+Evidence: [table row](../../../src/components/diagrams.js:80), [explanation](../../../src/content/component-details.js:407), [descriptor ownership](../../../../osdu-spi/doc/src/runbooks/service-descriptor.md:3), [sync exclusion](../../../../osdu-spi/.github/sync-config.json:146).
 
 **Change:** show separate rows for template-maintained machinery and service-maintained acceptance configuration. Both are protected from upstream generation, but they have different authors and update paths. That distinction is exactly what view 04 should teach.
 
@@ -43,7 +43,7 @@ Evidence: [table row](/Users/danielscholl/source/spi-workspace/training/src/comp
 
 The transition to 06 also suggests a tagged release is what first becomes eligible to borrow a stack. The implemented lane accepts eligible same-repository PRs and pushes after image publication. A semantic release is not its prerequisite. “Retagged, not rebuilt” is true of the release retagging operation: validation can still be building the image for that release commit concurrently. Do not imply the earlier integration candidate and a later release commit are necessarily one unchanged digest.
 
-Evidence: [Wait and Release moments](/Users/danielscholl/source/spi-workspace/training/src/content/fork-moments.js:28), [two PRs hidden in the explanation](/Users/danielscholl/source/spi-workspace/training/src/content/component-details.js:509), [release phases](/Users/danielscholl/source/spi-workspace/osdu-spi/doc/src/workflows/release.md:18), [implemented acceptance lane](/Users/danielscholl/source/spi-workspace/osdu-spi/doc/src/architecture/deploy_test.md:17).
+Evidence: [Wait and Release moments](../../../src/content/fork-moments.js:28), [two PRs hidden in the explanation](../../../src/content/component-details.js:509), [release phases](../../../../osdu-spi/doc/src/workflows/release.md:18), [implemented acceptance lane](../../../../osdu-spi/doc/src/architecture/deploy_test.md:17).
 
 **Change:** distinguish “Integration PR” from “Version release PR.” Introduce “CI builds and pushes this commit's digest” before the handshake. Make publication an optional continuation of the source story. Keep the chapter order as a teaching order and explicitly say that acceptance also runs before release.
 
@@ -59,7 +59,7 @@ These are small edits with large consequences for credibility:
 | Every cascade resets `fork_integration` to `main`.                      | The normal cascade merges `main` first, then `fork_upstream`, preserving local work. A hard reset is conditional stale-state recovery; cleanup is a separate concern.                                                           |
 | The partition provider “does not call Cosmos, Storage, or Service Bus.” | It does read **Table Storage in common Storage**, after checking cache. Say it does not visit the partition's Cosmos DB, blob Storage, or Service Bus.                                                                          |
 
-Sources: [package mapping and pin requirements](/Users/danielscholl/source/spi-workspace/osdu-spi-stack/docs/design/fork-deployment.md:142), [canonical source policy](/Users/danielscholl/source/spi-workspace/osdu-spi-stack/docs/decisions/033-explicit-canonical-image-source-policy.md:23), [cascade trigger](/Users/danielscholl/source/spi-workspace/osdu-spi/.github/template-workflows/cascade.yml:3), [normal merge order](/Users/danielscholl/source/spi-workspace/osdu-spi/.github/template-workflows/cascade.yml:203), [partition lookup implementation](/Users/danielscholl/source/spi-workspace/osdu-spi-partition/provider/partition-azure/src/main/java/org/opengroup/osdu/partition/provider/azure/service/PartitionServiceImpl.java:98).
+Sources: [package mapping and pin requirements](../../../../osdu-spi-stack/docs/design/fork-deployment.md:142), [canonical source policy](../../../../osdu-spi-stack/docs/decisions/033-explicit-canonical-image-source-policy.md:23), [cascade trigger](../../../../osdu-spi/.github/template-workflows/cascade.yml:3), [normal merge order](../../../../osdu-spi/.github/template-workflows/cascade.yml:203), [partition lookup implementation](../../../../osdu-spi-partition/provider/partition-azure/src/main/java/org/opengroup/osdu/partition/provider/azure/service/PartitionServiceImpl.java:98).
 
 Also remove the unqualified “bring up in an hour” promise. The site's own lifecycle material correctly distinguishes provisioning observations from API readiness; the landing page should carry the same care.
 
@@ -67,7 +67,7 @@ Also remove the unqualified “bring up in an hour” promise. The site's own li
 
 **Medium priority · reproduced.** `#engineering-system?detail=repo` opens the handshake and selects `delivery`. The chapter alias works, but the old component's meaning is lost. The previous scene also exposed `stack-source`, `upstream`, and `engineering`, which no longer belong in this destination.
 
-Evidence: [alias handling](/Users/danielscholl/source/spi-workspace/training/src/router.js:5), [selection fallback](/Users/danielscholl/source/spi-workspace/training/src/main.js:223).
+Evidence: [alias handling](../../../src/router.js:5), [selection fallback](../../../src/main.js:223).
 
 **Change:** map retired chapter-and-detail combinations to their new semantic homes. For example, the old service repository detail belongs in 04, while delivery belongs in 06. Extend the existing route check to assert the selected component, not just that a chapter resolves.
 
@@ -96,7 +96,7 @@ Use a persistent name such as “Partition cache fallback” and illustrative co
 
 View 05 says it builds on the three branches from 04. The ownership table in 04 shows upstream, `fork_upstream`, and `main`: one external source and only two of the fork's three branches. `fork_integration` first appears in explanation prose.
 
-Evidence: [table columns](/Users/danielscholl/source/spi-workspace/training/src/components/diagrams.js:32).
+Evidence: [table columns](../../../src/components/diagrams.js:32).
 
 **Change:** introduce the three jobs visibly: generated input (`fork_upstream`), integration workspace (`fork_integration`), protected result (`main`). Keep the community repository outside that group. The ownership matrix can remain compact if a small branch relationship diagram makes the omitted workspace explicit.
 
@@ -108,7 +108,7 @@ Customer mirrors are useful depth, but they should follow that understanding. Th
 
 The day view changes active lanes, which is useful, but most of the transformation still lives in sentences. There are also two adjacent sequences: five running-example hops ending at a digest and five workflow moments ending at template receipt. Their numbering describes different things.
 
-Evidence: [desktop workflow](/Users/danielscholl/source/spi-workspace/training/output/playwright/fork-day-cascade-map.png), [moment renderer](/Users/danielscholl/source/spi-workspace/training/src/components/diagrams.js:198).
+Evidence: [desktop workflow](../../../output/playwright/fork-day-cascade-map.png), [moment renderer](../../../src/components/diagrams.js:198).
 
 **Change:** retain the running-example hops, but make one sequence the clear primary control. Draw the provider change and upstream change entering the integration workspace, and show the resulting artifact. Reduce repeated narration around it. Keep branches in stable positions across moments so the learner can compare states visually.
 
@@ -120,7 +120,7 @@ One optional failure comparison would add more teaching value than another poste
 
 The A/B/C grouping is understandable, but the central write is described in an arrow caption while the lock is in another column. On a phone, the whole run precedes the stack section, so the reader encounters Verify, Prove, and Restore before reaching the lock and pod they operate on.
 
-Evidence: [handshake diagram](/Users/danielscholl/source/spi-workspace/training/output/playwright/handshake-desktop-map.png), [seam renderer](/Users/danielscholl/source/spi-workspace/training/src/components/diagrams.js:225).
+Evidence: [handshake diagram](../../../output/playwright/handshake-desktop-map.png), [seam renderer](../../../src/components/diagrams.js:225).
 
 **Change:** make the six existing hops drive a small state demonstration. Keep a lock/pod state visible alongside each step, or interleave it in the phone flow:
 
@@ -146,7 +146,7 @@ For a learn view, aim for a short question, a one-sentence connection to the pre
 
 The explanations also need to answer the current click. In 03, “Common code” opens upstream sync mechanics, and “Table Storage” opens a Service Bus/indexer compatibility explanation. Neither explains this stage of the partition request. Give the runtime components runtime explanations; introduce their source ownership as the bridge to 04.
 
-Evidence: [start on phone](/Users/danielscholl/source/spi-workspace/training/output/playwright/start-mobile-top.png), [runtime detail content](/Users/danielscholl/source/spi-workspace/training/src/content/component-details.js:262).
+Evidence: [start on phone](../../../output/playwright/start-mobile-top.png), [runtime detail content](../../../src/content/component-details.js:262).
 
 ## Audio and field guides after the story is stable
 

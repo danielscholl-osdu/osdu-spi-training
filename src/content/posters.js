@@ -1,3 +1,6 @@
+// Copyright (c) Microsoft Corporation.
+// Licensed under the MIT License.
+
 // Supplied posters are reference artifacts and stay as given; `notes` records
 // where their wording differs from the source documentation.
 export const suppliedPosters = [

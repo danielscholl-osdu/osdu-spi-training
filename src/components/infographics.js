@@ -1,3 +1,6 @@
+// Copyright (c) Microsoft Corporation.
+// Licensed under the MIT License.
+
 import { escapeHtml } from './node.js';
 import { zoomLevels, spiMeanings } from '../content/concepts.js';
 import { chapters } from '../content/chapters.js';

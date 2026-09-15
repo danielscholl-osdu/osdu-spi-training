@@ -1,3 +1,6 @@
+// Copyright (c) Microsoft Corporation.
+// Licensed under the MIT License.
+
 // Generated from rebuilding-osdu-for-real-azure-infrastructure.vtt (mlx-whisper large-v3-turbo; Cosmos DB corrected). Timestamps are seconds into the recording.
 export const transcript = [
   {

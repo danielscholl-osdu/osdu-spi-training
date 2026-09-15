@@ -1,6 +1,6 @@
 # Orientation conversation brief
 
-Use **azure-spi-orientation.pdf** as the only selected source for this conversation. Keep the three original PDFs as deeper reference material, outside this generation's selected context. The source document contains the subject matter; this brief is the separate instruction for shaping the conversation.
+Use a PDF rendering of `azure-spi-orientation-source.md` as the only selected source for this conversation. Keep the three original guides as deeper reference material, outside this generation's selected context. The source document contains the subject matter; this brief is the separate instruction for shaping the conversation.
 
 Suggested generation prompt:
 

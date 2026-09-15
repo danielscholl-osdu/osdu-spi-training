@@ -1,3 +1,6 @@
+// Copyright (c) Microsoft Corporation.
+// Licensed under the MIT License.
+
 // A day in a service fork, as moments on the branch map. Times are the
 // scheduled triggers in the template workflows; nothing here is measured.
 // The running example is the partition cache fallback (commit fc2dfbf in

@@ -1,3 +1,6 @@
+// Copyright (c) Microsoft Corporation.
+// Licensed under the MIT License.
+
 // Generated from microsofts-architectural-divorce-from-osdu.vtt (mlx-whisper large-v3-turbo; misheard names such as osdu-spi, osdu-spi-stack, CIMPL, and partition-aws corrected). Timestamps are seconds into the recording.
 export const transcript = [
   {

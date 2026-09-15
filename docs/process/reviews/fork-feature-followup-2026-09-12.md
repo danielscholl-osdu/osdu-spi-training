@@ -26,7 +26,7 @@ I would address the first three findings below before adding further lessons, re
 
 On a 390×844 viewport, I selected the running example's **Restore** hop in 06. The URL and selection changed to `restore`, and the state panel correctly showed A restored and the pod returning from B to A. However, the entire state panel was above the viewport: its bottom was about 130px above the visible area. The explanation sheet opened from roughly y=295 to the bottom of the screen and covered the selected Restore control itself. The learner sees a long explanation, while the diagram that demonstrates it is missing.
 
-[Observed Restore result on a phone](/Users/danielscholl/source/spi-workspace/training/output/playwright/review2-restore-mobile.png)
+[Observed Restore result on a phone](../../../output/playwright/review2-restore-mobile.png)
 
 The upstream-deletion toggle has the same spatial problem. At 390px, the changed upstream provider and test cells were about 446px and 308px above the viewport after clicking the toggle. At desktop size, the provider cell was also above the viewport and the test cell was behind the header. The nearby result paragraph appears, which is useful, but the actual before/after ownership comparison is not visible.
 
@@ -34,7 +34,7 @@ The upstream-deletion toggle has the same spatial problem. At 390px, the changed
 
 Do not solve this by making every selection scroll. Links below a map still need their current in-place behavior. Fix the geometry of the explicit map jump and the location of the changing evidence.
 
-The relevant jump currently centers the selected element and then expands the inspector in [main.js](/Users/danielscholl/source/spi-workspace/training/src/main.js:245). The changing state is a separate section above the controls in [diagrams.js](/Users/danielscholl/source/spi-workspace/training/src/components/diagrams.js:308).
+The relevant jump currently centers the selected element and then expands the inspector in [main.js](../../../src/main.js:245). The changing state is a separate section above the controls in [diagrams.js](../../../src/components/diagrams.js:308).
 
 **Verification:** At desktop and phone sizes, select Restore and toggle upstream deletion. Assert that the changed visual state is in the usable viewport and not covered by the header, player, or explanation. A selected attribute and a zero-overflow measurement do not establish that the learner saw the result.
 
@@ -44,7 +44,7 @@ The relevant jump currently centers the selected element and then expands the in
 
 The handshake cue at 48:46 correctly plays the interface episode in place. Its marker notes correct three material claims: GHCR rather than an Azure registry, suites running once each rather than three times, and restore being conditional on ownership. Those corrections appear on Listen, but neither the map cue nor the player displays them. The same gap affects the fork's labels cue: its note corrects the narration's webhook claim to the monitor's six-hour schedule.
 
-The implementation resolves each marker to obtain its end time, but does not render its `note` in [listenChips](/Users/danielscholl/source/spi-workspace/training/src/components/pages.js:252). The existing handshake correction is in [audio.js](/Users/danielscholl/source/spi-workspace/training/src/content/audio.js:319).
+The implementation resolves each marker to obtain its end time, but does not render its `note` in [listenChips](../../../src/components/pages.js:252). The existing handshake correction is in [audio.js](../../../src/content/audio.js:319).
 
 **Recommended change:** When a cue starts, show its short source-check note beside the cue or in an accessible player disclosure, with the correction's existence immediately visible. Keep it synchronized as the recording enters subsequent marked sections. The learner should not have to leave the map and find the corresponding marker to discover that the narration needs qualification.
 
@@ -68,9 +68,9 @@ There is also a precise wording error: “its gate skips today” is not the cur
 
 Use this once at the conceptual transition, with a concise reminder on a direct visit to 06. Keep the detail about pending capabilities inside components or the scope note. There is no need for a large warning banner or live-status language.
 
-Correct the present-tense gate claim in [chapters.js](/Users/danielscholl/source/spi-workspace/training/src/content/chapters.js:404) and the [descriptor explanation](/Users/danielscholl/source/spi-workspace/training/src/content/component-details.js:419). Source evidence is the partition [validation workflow](/Users/danielscholl/source/spi-workspace/osdu-spi-partition/.github/workflows/validate.yml:1) and the template's [deploy-and-test design](/Users/danielscholl/source/spi-workspace/osdu-spi/doc/src/architecture/deploy_test.md:7), which dates the shipped lane to 10 September.
+Correct the present-tense gate claim in [chapters.js](../../../src/content/chapters.js:404) and the [descriptor explanation](../../../src/content/component-details.js:419). Source evidence is the partition [validation workflow](../../../../osdu-spi-partition/.github/workflows/validate.yml:1) and the template's [deploy-and-test design](../../../../osdu-spi/doc/src/architecture/deploy_test.md:7), which dates the shipped lane to 10 September.
 
-A related small factual correction: the version-PR explanation says the cache fallback has a `fix:` prefix. Commit `fc2dfbf` is titled `[Azure] Fixes for High API Error Count`. Keep `fix: → patch` as an explicitly illustrative conventional-commit example, or cite the actual release-driving commit; do not attribute that prefix to the named historical fix. See [component-details.js](/Users/danielscholl/source/spi-workspace/training/src/content/component-details.js:530).
+A related small factual correction: the version-PR explanation says the cache fallback has a `fix:` prefix. Commit `fc2dfbf` is titled `[Azure] Fixes for High API Error Count`. Keep `fix: → patch` as an explicitly illustrative conventional-commit example, or cite the actual release-driving commit; do not attribute that prefix to the named historical fix. See [component-details.js](../../../src/content/component-details.js:530).
 
 ## 4. Honor timestamp-only Listen navigation
 
@@ -80,7 +80,7 @@ A related small factual correction: the version-PR explanation says the cache fa
 2. In the same loaded page, navigate to `#listen?episode=interface&t=2926`.
 3. The URL changes, but the audio remains at 239 seconds.
 
-The seek runs only when the chapter or episode changes in [main.js](/Users/danielscholl/source/spi-workspace/training/src/main.js:160). A time-only hash change does neither. Fresh-load seeking works.
+The seek runs only when the chapter or episode changes in [main.js](../../../src/main.js:160). A time-only hash change does neither. Fresh-load seeking works.
 
 Handle explicit timestamp changes independently of page rendering. Keep a bare `#listen` from resetting the current position. Add one browser check covering two timestamp links within the same episode, then Back/Forward through them.
 
@@ -90,7 +90,7 @@ Handle explicit timestamp changes independently of page rendering. Keep a bare `
 
 After the deletion toggle, the visible upstream cell becomes absent, but its accessible name remains “present, scheduled for removal”; the test row remains “present.” The change is CSS-generated content, while `aria-label` keeps its original value. Mobile also hides the branch-heading controls, so the per-cell accessible names should carry their branch identity explicitly.
 
-Update the actual cell state and accessible text together. For example: “Upstream tip: absent”; “main: fork-owned.” Preserve a keyboard-accessible way to inspect branch explanations on the phone layout. Relevant code: [treeCell](/Users/danielscholl/source/spi-workspace/training/src/components/diagrams.js:136) and the [CSS toggle](/Users/danielscholl/source/spi-workspace/training/src/styles/architecture.css:989).
+Update the actual cell state and accessible text together. For example: “Upstream tip: absent”; “main: fork-owned.” Preserve a keyboard-accessible way to inspect branch explanations on the phone layout. Relevant code: [treeCell](../../../src/components/diagrams.js:136) and the [CSS toggle](../../../src/styles/architecture.css:989).
 
 This was a DOM/accessibility-tree inspection, not a full screen-reader audit.
 

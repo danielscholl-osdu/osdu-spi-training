@@ -1,3 +1,6 @@
+// Copyright (c) Microsoft Corporation.
+// Licensed under the MIT License.
+
 export function escapeHtml(value) {
   return String(value).replace(
     /[&<>"']/g,

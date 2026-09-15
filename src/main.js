@@ -1,3 +1,6 @@
+// Copyright (c) Microsoft Corporation.
+// Licensed under the MIT License.
+
 import { chapters } from './content/chapters.js';
 import { sources } from './content/sources.js';
 import { suppliedPosters } from './content/posters.js';

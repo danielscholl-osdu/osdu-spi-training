@@ -1,3 +1,6 @@
+// Copyright (c) Microsoft Corporation.
+// Licensed under the MIT License.
+
 import { episodes, defaultEpisode, episodeById } from '../content/audio.js';
 import { formatTime } from './pages.js';
 

@@ -1,3 +1,6 @@
+// Copyright (c) Microsoft Corporation.
+// Licensed under the MIT License.
+
 import { escapeHtml } from './node.js';
 import { chapters, chapterGroups } from '../content/chapters.js';
 import { myths, mythThemes } from '../content/myths.js';

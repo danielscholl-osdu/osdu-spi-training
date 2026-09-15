@@ -1,3 +1,6 @@
+// Copyright (c) Microsoft Corporation.
+// Licensed under the MIT License.
+
 import { componentDetails } from '../content/component-details.js';
 
 export function resolveDetail(id, chapterKey, details = componentDetails) {

@@ -1,3 +1,6 @@
+// Copyright (c) Microsoft Corporation.
+// Licensed under the MIT License.
+
 // The site's mental map: six places. The resource group holds the data services
 // and the cluster side by side; the cluster nests namespaces and services. The
 // sixth place, the source, feeds the service rather than containing anything.

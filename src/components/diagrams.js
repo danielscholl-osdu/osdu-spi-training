@@ -1,3 +1,6 @@
+// Copyright (c) Microsoft Corporation.
+// Licensed under the MIT License.
+
 import { node } from './node.js';
 import { architectureOverview, creationWalkthrough } from './architecture.js';
 import { forkMoments, meanwhile } from '../content/fork-moments.js';
