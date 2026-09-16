@@ -148,10 +148,19 @@ function verifyTryIt(tryIt, context) {
   };
   const action = (step, field) => {
     const hasCommand =
-      typeof step.command === 'string' && Boolean(step.command.trim());
+      (typeof step.command === 'string' && Boolean(step.command.trim())) ||
+      (step.command !== null && typeof step.command === 'object');
     const hasClick =
       typeof step.click === 'string' && Boolean(step.click.trim());
     assert.notEqual(hasCommand, hasClick, `${context}: ${field} action`);
+    if (hasCommand && typeof step.command === 'object') {
+      assert.deepEqual(Object.keys(step.command).sort(), [
+        'posix',
+        'powershell',
+      ]);
+      for (const shell of ['posix', 'powershell'])
+        nonempty(step.command[shell], `${field}.command.${shell}`);
+    }
     nonempty(step.expect, `${field}.expect`);
     if (step.sources) sourceKeys(step.sources, `${field}.sources`);
   };
@@ -1568,6 +1577,12 @@ test('tryIt validation rejects focused invalid clones', () => {
   malformedStep.variants[0].steps[0].command = 'spi --help';
   assert.throws(() => verifyTryIt(malformedStep, 'malformed step'), /action/);
 
+  const missingShell = structuredClone(multipleVariantTryIt);
+  missingShell.variants[0].steps[0].command = { posix: 'spi --help' };
+  assert.throws(() => verifyTryIt(missingShell, 'missing shell'));
+  missingShell.variants[0].steps[0].command.powershell = '';
+  assert.throws(() => verifyTryIt(missingShell, 'empty shell'), /powershell/);
+
   const missingRemains = structuredClone(singleVariantTryIt);
   missingRemains.variants[0].cleanup.remains = '';
   assert.throws(
@@ -1631,7 +1646,7 @@ test('tryIt renderer returns an inert, escaped native disclosure', () => {
     assert.doesNotMatch(markup, /<details[^>]*\sopen(?:\s|>)/);
     assert.doesNotMatch(
       markup,
-      /data-(?:detail|map-jump|evidence)|<(?:button|input|form)\b|\son[a-z]+=/,
+      /data-(?:detail|map-jump|evidence)|<(?:button|form)\b|\son[a-z]+=/,
     );
   }
 

@@ -22,6 +22,7 @@ import {
 } from './infographics.js';
 import { routeHref, parseRoute } from '../router.js';
 import { badge } from './badges.js';
+import { tryItShells } from '../try-it-shell.js';
 
 export function formatTime(seconds) {
   const whole = Math.max(0, Math.floor(seconds));
@@ -113,9 +114,20 @@ export function shelfRow({ id, label, preview = '', body, badge: art = '' }) {
   </section>`;
 }
 
-function tryItAction(step) {
+function tryItCommand(command, shell) {
+  if (typeof command === 'string')
+    return `<pre class="try-it-command"><code>${escapeHtml(command)}</code></pre>`;
+  return Object.keys(tryItShells)
+    .map(
+      (key) =>
+        `<pre class="try-it-command" data-try-it-content="${key}"${key === shell ? '' : ' hidden'}><code>${escapeHtml(command[key])}</code></pre>`,
+    )
+    .join('');
+}
+
+function tryItAction(step, shell) {
   const action = step.command
-    ? `<pre class="try-it-command"><code>${escapeHtml(step.command)}</code></pre>`
+    ? tryItCommand(step.command, shell)
     : `<p class="try-it-click"><b>Click:</b> ${escapeHtml(step.click)}</p>`;
   return `${action}<p class="try-it-expect"><b>Look for:</b> ${escapeHtml(step.expect)}</p>${step.sources?.length ? sourceLinks(step.sources) : ''}`;
 }
@@ -131,7 +143,7 @@ function walkedDate(iso) {
   });
 }
 
-function tryItVariant(variant, index, count) {
+function tryItVariant(variant, index, count, shell) {
   return `<section class="try-it-variant" aria-labelledby="try-it-variant-${index}">
     <header>
       ${count > 1 ? `<span class="guide-kicker">Route ${index + 1}</span>` : ''}
@@ -162,7 +174,7 @@ function tryItVariant(variant, index, count) {
     </dl>
     <section class="try-it-steps">
       <h4>Steps</h4>
-      <ol>${variant.steps.map((step) => `<li>${tryItAction(step)}</li>`).join('')}</ol>
+      <ol>${variant.steps.map((step) => `<li>${tryItAction(step, shell)}</li>`).join('')}</ol>
     </section>
     <section class="try-it-alternate">
       <h4>Common alternate result</h4>
@@ -171,7 +183,7 @@ function tryItVariant(variant, index, count) {
     </section>
     <section class="try-it-cleanup">
       <h4>Clean up</h4>
-      <ol>${variant.cleanup.steps.map((step) => `<li>${tryItAction(step)}</li>`).join('')}</ol>
+      <ol>${variant.cleanup.steps.map((step) => `<li>${tryItAction(step, shell)}</li>`).join('')}</ol>
       <p><b>What remains:</b> ${escapeHtml(variant.cleanup.remains)}</p>
     </section>
     <p class="try-it-walked">Walked on ${escapeHtml(walkedDate(variant.tested.date))} against ${escapeHtml(variant.tested.stack)}.</p>
@@ -179,18 +191,35 @@ function tryItVariant(variant, index, count) {
   </section>`;
 }
 
-export function tryItBand(chapter) {
+export function tryItBand(chapter, shell = 'posix') {
   if (!chapter.tryIt) return '';
+  if (!Object.hasOwn(tryItShells, shell)) shell = 'posix';
   const { activity, summary, variants, connection } = chapter.tryIt;
   const [title, qualifier] = summary.split(' · ');
+  const hasCommands = variants.some((variant) =>
+    [...variant.steps, ...variant.cleanup.steps].some((step) => step.command),
+  );
+  const shellPicker = hasCommands
+    ? `<fieldset class="try-it-shell" aria-describedby="try-it-shell-hint">
+        <legend>Commands for</legend>
+        <div class="try-it-shell-options">${Object.entries(tryItShells)
+          .map(
+            ([key, label]) =>
+              `<label><input type="radio" name="try-it-shell" value="${key}" data-try-it-shell${key === shell ? ' checked' : ''}><span>${escapeHtml(label)}</span></label>`,
+          )
+          .join('')}</div>
+        <p id="try-it-shell-hint">Choose the shell you run commands in; WSL uses the Bash option. Replace angle-bracket placeholders before running a command.</p>
+      </fieldset>`
+    : '';
   return `<section class="try-it" aria-label="Try it: ${escapeHtml(activity)}">
     <details>
       <summary>${chapter.tryIt.badge ? `<span class="try-it-badge">${badge(chapter.tryIt.badge, 'shelf-badge')}</span>` : ''}<span class="try-it-head"><span class="try-it-title">${escapeHtml(title)}</span>${chapter.tryIt.outcome ? `<span class="try-it-outcome">${escapeHtml(chapter.tryIt.outcome)}</span>` : ''}<span class="try-it-qualifier">Optional${qualifier ? ` · ${escapeHtml(qualifier)}` : ''}</span></span><span class="summary-marker" aria-hidden="true">+</span></summary>
       <div class="try-it-body">
         <p class="try-it-safety">You run this activity in your own account. This site executes nothing and reports no live environment state.</p>
+        ${shellPicker}
         <div class="try-it-variants">${variants
           .map((variant, index) =>
-            tryItVariant(variant, index, variants.length),
+            tryItVariant(variant, index, variants.length, shell),
           )
           .join('')}</div>
         ${connection ? `<section class="try-it-connection"><h3>Using an existing environment</h3><p>${escapeHtml(connection.text)}</p>${sourceLinks(connection.sources)}</section>` : ''}
