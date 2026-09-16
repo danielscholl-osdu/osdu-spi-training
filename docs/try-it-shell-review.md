@@ -19,6 +19,8 @@ These checks passed on 16 September 2026 with Windows PowerShell 5.1.26100.9444 
 
 ## Publication evidence still needed
 
+Editorial follow-up, 16 September 2026: the owner subsequently confirmed having run the Azure walkthrough and continuing to work through it. The Lesson 02 edit removes the stale “not walked” note and all learner-facing walkthrough-date footers. It preserves the metadata and does not establish a new Windows-specific walkthrough record. The paragraphs below record the original shell review.
+
 The prior `tested` records in chapter content remain the evidence for the existing routes; they do not establish a Windows walkthrough. Before publishing the new Windows route, walk installation and the Azure activity on Windows and record the actual CLI release, stack revision, template applicability, PowerShell version, OS, and date. The existing Azure activity already says it has not been walked end to end (fn-dt3). This feature does not close that gap or authorize a test deployment.
 
 No browser was available through the browser testing connection in this session. Visual verification at desktop and phone widths, native keyboard navigation, focus/scroll preservation while switching, and retaining the manual choice across lesson navigation remain to be checked in a connected browser. The feature PR stays a draft pending that review and the Windows walkthrough.

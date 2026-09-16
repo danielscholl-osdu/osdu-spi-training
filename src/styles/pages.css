@@ -3221,8 +3221,7 @@ body:has(.audio-dock:not([hidden])) main {
   margin-top: 4px;
   overflow-wrap: anywhere;
 }
-.try-it-time,
-.try-it-walked {
+.try-it-time {
   margin: 14px 0 0;
   font-size: 12px;
   color: var(--muted);

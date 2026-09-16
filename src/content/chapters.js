@@ -349,23 +349,23 @@ export const chapters = {
       activity: 'bring up an environment',
       summary: 'Try it: bring up an environment · Azure charges apply',
       outcome:
-        'Provision an environment yourself, watch it reach readiness, and prove one API path.',
+        'Set up an environment, monitor the deployment, and test an API request.',
       badge: 'workstation-cloud',
       variants: [
         {
           label: 'Run it in your subscription',
           result:
-            'An environment you provisioned yourself, observed to readiness with spi status --watch and proven on one API path with an authenticated partition lookup, then a deliberate keep-or-remove choice.',
+            'Create an environment in your Azure subscription, monitor its progress with spi status --watch, and test the partition API with an authenticated request. Then decide whether to keep the environment for lesson 06 or remove it.',
           access: 'Azure resources billed separately',
           accessNote:
-            'Your identity must create resource groups, deploy the Azure services, and create role assignments; the stack’s own CI runs with Contributor plus User Access Administrator at subscription scope. AKS Automatic capacity varies by region: westus3 is the default, and the CLI help names eastus2 and centralus as constrained. Commands are quoted from cli.py at dc2c956; this route has not yet been walked end to end and waits for the recorded walkthrough (fn-dt3).',
+            'Use your own Azure subscription. You pay for the resources you create until you remove them.',
           prerequisites: [
             {
-              text: 'The spi CLI and its five tools from lesson 01, with spi --version reporting spi 0.16.0.',
+              text: 'Complete the workstation setup in lesson 01. Check that spi --version reports spi 0.16.0, and that curl is available (curl.exe in Windows PowerShell).',
               sources: ['install'],
             },
             {
-              text: 'An Azure subscription you may bill, with the roles above, and curl on the workstation (curl.exe in Windows PowerShell).',
+              text: 'Your Azure identity needs permission to create resource groups, deploy services, and create role assignments. The stack’s CI uses Contributor plus User Access Administrator at subscription scope; see the role setup for reference.',
               sources: ['ciSetup'],
             },
           ],
@@ -377,35 +377,35 @@ export const chapters = {
               'A few minutes of effort; spi down itself waits up to 45 minutes.',
           },
           effects:
-            'spi up creates a resource group named spi-stack-<name> and, in it, an AKS Automatic cluster, Cosmos DB, Storage, Service Bus, Key Vault, and managed identities, then seeds the cluster and activates Flux. Everything in that group is billed to your subscription for as long as it exists. --dry-run alone creates or updates the resource group and its naming tag.',
+            'spi up creates a resource group named spi-stack-<name> containing an AKS Automatic cluster, Cosmos DB, Storage, Service Bus, Key Vault, and managed identities. It then configures the cluster and starts Flux. Even --dry-run creates or updates the resource group and its naming tag.',
           steps: [
             {
               command: 'az login\naz account show',
               expect:
-                'The subscription you mean to bill, by name and id. Switch with az account set before going further.',
+                'Check the subscription name and ID: this is where Azure will bill the deployment. If it is wrong, use az account set to select your subscription before continuing.',
             },
             {
               command: 'spi up --env <name> --dry-run',
               expect:
-                'This needs Azure access. The CLI creates or updates the resource group and its naming tag, then runs what-if previews of the AKS and PaaS templates and prints “Dry-run complete”. It is a preview of the stack, not a no-op: the group now exists and needs the same cleanup as a real run. Resources that depend on the AKS OIDC issuer are missing from the preview.',
+                'Check the proposed AKS and data-service changes and the final “Dry-run complete” message. The resource group now exists, even though the stack has not been deployed; use the cleanup steps below if you stop here. Resources that depend on the AKS OIDC issuer are not included in this preview.',
               sources: ['lifecycle', 'cli'],
             },
             {
               command: 'spi up --env <name> --tag <release>',
               expect:
-                'The default core profile. <release> is the tag matching your CLI, vX.Y.Z, so v0.16.0 for spi 0.16.0; the CLI refuses a tag whose version differs from its own, which keeps the tested pair reproducible. Each az and kubectl command is shown before it runs. When the CLI returns it has verified the requested Git revision and suspended Git fetching, and it says Flux is reconciling in the background. That is CLI exit, not readiness.',
+                'Replace <release> with v0.16.0 to match your CLI; a mismatched tag is rejected. This deploys the core profile in westus3. To choose another region, add --location <region> to both spi up commands; the pinned CLI help notes capacity constraints in eastus2 and centralus. A successful exit confirms the requested Git revision, not API readiness: Flux continues the rollout in the background.',
               sources: ['lifecycle', 'cli'],
             },
             {
               command: 'spi status --watch',
               expect:
-                'Workload health and initialization: Kustomizations and HelmReleases turning Ready, then initialization Jobs reaching Complete. It makes no API request, and a Running pod is not necessarily ready.',
+                'Watch for Kustomizations and HelmReleases to become Ready and initialization Jobs to become Complete. A Running pod alone does not mean it is ready. This command checks rollout progress, not API responses.',
               sources: ['lifecycle'],
             },
             {
               command: 'spi info --show-apis',
               expect:
-                'The cluster’s endpoints with the full OSDU API list, including the partition base URL /api/partition/v1/ under your environment’s host. Copy that host for the next step.',
+                'Find the partition API URL ending in /api/partition/v1/. Copy its hostname and replace <host> in the next command with it.',
               sources: ['cli'],
             },
             {
@@ -416,33 +416,33 @@ export const chapters = {
                   'curl.exe -sS -H "Authorization: Bearer $(spi token)" "https://<host>/api/partition/v1/partitions/opendes"',
               },
               expect:
-                'spi token mints a ten-minute bearer as the deploy identity and writes only the token to stdout, so it composes into the header. A JSON body of stored configuration for opendes. This proves only that path: one authenticated partition lookup, nothing about search, storage, or ingestion.',
+                'The response should contain the stored configuration for opendes as JSON. The command uses spi token to get a ten-minute bearer token for the deploy identity and include it in the Authorization header. A successful response confirms this authenticated partition lookup works; it does not test search, storage, or ingestion.',
               sources: ['workloadIdentity', 'cli'],
             },
             {
               click:
                 'Decide: keep the environment for lesson 06, or remove it now.',
               expect:
-                'Keeping it costs money for every hour it runs and saves a second 45 to 50 minute provisioning later. Removing it now is the first clean-up step below.',
+                'Keep it to avoid provisioning again for lesson 06; Azure charges continue while you keep the resources. To remove it now, follow the cleanup steps below.',
             },
           ],
           alternate: {
             observation:
               'spi up fails in the AKS or PaaS stage with a regional capacity or quota error.',
-            next: 'Rerun with --location <region> to choose another region, keeping the same --env, partition list, and ingress settings. The resource group from the failed run already exists and needs the same cleanup as a completed one, so run spi down --env <name> when you are done, whether or not provisioning finished.',
+            next: 'Choose another region with --location <region> and retry with the same --env, partition list, and ingress settings. A failed run can leave resources behind. Follow the cleanup steps when you are done, even if provisioning did not finish.',
           },
           cleanup: {
             steps: [
               {
                 command: 'spi down --env <name>',
                 expect:
-                  'Deletes the cluster, the data services, and their data, waiting up to 45 minutes; that is a timeout, not a promise. An incomplete delete exits nonzero and lists what remains, so rerun it. Managed identities, the resource group, and its naming tags stay.',
+                  'This deletes the cluster, data services, and their data, but keeps the resource group, managed identities, and naming tags for reuse. The command waits up to 45 minutes; that is a timeout, not an expected duration. If it exits with an error, inspect the listed remaining resources and retry.',
                 sources: ['lifecycle'],
               },
               {
                 command: 'spi down --env <name> --purge',
                 expect:
-                  'When you are done for good: removes the identities’ external grants, then deletes the resource group itself within the same 45-minute deadline. az group exists --name spi-stack-<name> prints false.',
+                  'Use --purge when you no longer need the environment. It removes the identities’ external grants and deletes the resource group, including the identities, with a 45-minute timeout. Confirm removal with az group exists --name spi-stack-<name>; it should print false.',
                 sources: ['lifecycle'],
               },
             ],
@@ -457,7 +457,7 @@ export const chapters = {
             'workloadIdentity',
           ],
           tested: {
-            cli: 'spi 0.16.0; commands quoted from cli.py at dc2c956; Azure route not walked',
+            cli: 'spi 0.16.0; commands quoted from cli.py at dc2c956',
             stack: 'osdu-spi-stack dc2c956 (release 0.16.0)',
             template: 'Not applicable: no fork is used.',
             shell: 'zsh',
@@ -468,10 +468,10 @@ export const chapters = {
         {
           label: 'Read a run without Azure',
           result:
-            'You can name the five readiness signals as separate signals, say what the CLI verifies before it returns, and say what ordinary spi down keeps, without creating anything.',
+            'Follow the deployment lifecycle without creating an environment. Learn what each readiness signal tells you, what the CLI checks before it exits, and what spi down leaves behind.',
           access: 'browser only',
           accessNote:
-            'The three --help commands read the CLI installed in lesson 01 and contact no subscription; skip them if it is not installed.',
+            'You can follow this route entirely in your browser. The three --help commands are optional and do not contact Azure.',
           prerequisites: [
             {
               text: 'A browser. The spi CLI from lesson 01 if you want to read its help; no Azure subscription and no sign-in.',
@@ -490,44 +490,44 @@ export const chapters = {
               click:
                 'Open the deployment lifecycle document and read “From invocation to CLI exit”.',
               expect:
-                'A stage table that ends in Git-source finalization: the CLI waits for the source, verifies the requested artifact revision, then suspends the source and writes the deploy record before it returns. Under the table: “Flux runs concurrently with those final CLI stages”; there is no moment when the CLI stops and Flux starts.',
+                'Follow the stage table to Git-source finalization. Before returning, the CLI verifies the requested revision, suspends Git fetching, and writes the deploy record. Flux is already working during these final stages; it does not wait for the CLI to exit.',
               sources: ['lifecycle'],
             },
             {
               click: 'In the same document, read “Timing and readiness”.',
               expect:
-                'A five-row signal table: the CLI exits successfully, the Git source has an artifact, Kustomizations and HelmReleases are Ready, initialization Jobs are Complete, an authenticated API request succeeds. Each establishes a different thing and none implies the next. The 45 to 50 minute figure is a centralus planning estimate from prior runs, not a measurement or a guarantee.',
+                'Compare the five signals: CLI exit, a Git-source artifact, Ready Kustomizations and HelmReleases, Complete initialization Jobs, and a successful authenticated API request. Each confirms something different; none guarantees the next. The 45 to 50 minute estimate comes from prior centralus runs, not a measurement of this release.',
               sources: ['lifecycle'],
             },
             {
               click: 'Read “Steady state and teardown”.',
               expect:
-                'Ordinary spi down deletes data and compute; managed identities, the resource group spi-stack-<name>, and its tags survive, so the next spi up reuses the same names. spi down --env <name> --purge is a separate destructive choice that deletes the group and its identities after external-grant cleanup.',
+                'Compare what each removal option leaves behind. Ordinary spi down deletes data and compute but keeps the resource group, managed identities, and naming tags for reuse. Adding --purge also removes the identities’ external grants and deletes the group and identities.',
               sources: ['lifecycle'],
             },
             {
               command: 'spi up --help',
               expect:
-                'Read, do not run. --env is required; --profile defaults to core; --location defaults to westus3 and its help names eastus2 and centralus as regions with capacity constraints; --tag pins an immutable release tag; --dry-run says it creates the resource group. This needs only the CLI from lesson 01 and makes no Azure call.',
+                'Run only the --help command here; it does not deploy anything. Find the required --env option, the core profile and westus3 defaults, and --tag for pinning a release. Notice that --dry-run still creates a resource group when used for a deployment.',
               sources: ['cli'],
             },
             {
               command: 'spi status --help',
               expect:
-                'Two options besides --help: --watch (-w) for continuous refresh, and --json. The description is deployment health and reconciliation progress; nothing about API requests.',
+                'Find --watch (-w) for continuous refresh and --json for structured output. The command reports deployment health and reconciliation progress; it does not test an API request.',
               sources: ['cli'],
             },
             {
               command: 'spi down --help',
               expect:
-                '--env is required. The description says managed identities survive unless --purge, and --purge deletes the resource group itself, including the managed identities.',
+                'Find the required --env option and read what --purge adds: deletion of the resource group and managed identities, which ordinary spi down keeps.',
               sources: ['cli'],
             },
           ],
           alternate: {
             observation:
               'spi: command not found, or spi --version reports a release other than 0.16.0.',
-            next: 'The three commands are optional here. Install the CLI with lesson 01’s band, or read the same options in cli.py at the reviewed revision.',
+            next: 'Skip the optional commands and read the options in the linked CLI source, or use lesson 01’s setup to install the matching release.',
           },
           cleanup: {
             steps: [

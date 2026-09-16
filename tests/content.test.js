@@ -1608,6 +1608,22 @@ test('tryIt renderer returns an inert, escaped native disclosure', () => {
     /<summary>[\s\S]*<span class="try-it-title">Try it: trace the partition lookup<\/span>[\s\S]*<span class="try-it-qualifier">Optional · browser only<\/span>[\s\S]*<\/summary>/,
   );
   assert.doesNotMatch(single, /<summary>.*About 5 minutes.*<\/summary>/s);
+  for (const tryIt of [
+    singleVariantTryIt,
+    multipleVariantTryIt,
+    ...Object.values(chapters).flatMap((chapter) =>
+      chapter.tryIt ? [chapter.tryIt] : [],
+    ),
+  ]) {
+    const markup = tryItBand({ tryIt });
+    assert.doesNotMatch(markup, /Walked on|try-it-walked|not (?:yet )?walked/);
+    for (const variant of tryIt.variants) {
+      assert.ok(
+        !markup.includes(variant.tested.date),
+        `${variant.label}: walkthrough date stays in content, not the page`,
+      );
+    }
+  }
   for (const text of [
     'Read the provider path',
     'Prerequisites',
@@ -1619,9 +1635,8 @@ test('tryIt renderer returns an inert, escaped native disclosure', () => {
     'Common alternate result',
     'Clean up',
     'What remains',
-    'Walked on 13 September 2026 against',
     'Sources:',
-    'executes nothing and reports no live environment state',
+    'does not run commands or show your environment’s current status',
   ])
     assert.ok(single.includes(text), text);
   assert.match(
@@ -1642,6 +1657,7 @@ test('tryIt renderer returns an inert, escaped native disclosure', () => {
   assert.match(multiple, /<code>spi up --env &lt;name&gt;<\/code>/);
 
   for (const markup of [single, multiple]) {
+    assert.doesNotMatch(markup, /try-it-tested/);
     assert.match(markup, /<details>/);
     assert.doesNotMatch(markup, /<details[^>]*\sopen(?:\s|>)/);
     assert.doesNotMatch(
