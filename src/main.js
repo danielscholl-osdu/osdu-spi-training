@@ -41,6 +41,10 @@ import { escapeHtml } from './components/node.js';
 import { createPlayer } from './components/player.js';
 import { creationMoments } from './content/creation-moments.js';
 import { parseRoute, routeHref } from './router.js';
+import { applyTryItShell, detectTryItShell } from './try-it-shell.js';
+
+// Kept only in memory for this page visit, across lesson navigation.
+let tryItShell = detectTryItShell(navigator);
 
 const order = Object.keys(chapters);
 const learnOrder = order.filter((key) => chapters[key].group === 'learn');
@@ -429,7 +433,7 @@ function renderChapterFrame(route, scene) {
   const shelf = scene.group === 'learn';
   movable.forEach(({ element, marker }) => marker.after(element));
   const tryIt = document.getElementById('chapter-try-it');
-  tryIt.innerHTML = scene.group === 'learn' ? tryItBand(scene) : '';
+  tryIt.innerHTML = scene.group === 'learn' ? tryItBand(scene, tryItShell) : '';
   tryIt.hidden = !tryIt.innerHTML;
   lessonState = {
     claim: 0,
@@ -930,6 +934,15 @@ document.getElementById('skip-link').addEventListener('click', (event) => {
   event.preventDefault();
   focusChapter();
 });
+
+document
+  .getElementById('chapter-try-it')
+  .addEventListener('change', (event) => {
+    const input = event.target.closest('[data-try-it-shell]');
+    if (!input) return;
+    tryItShell = input.value;
+    applyTryItShell(event.currentTarget, tryItShell);
+  });
 
 // The what-if switch in 04 swaps each affected cell's text and accessible
 // name together, so the table and its screen-reader reading agree.

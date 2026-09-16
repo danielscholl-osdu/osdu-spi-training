@@ -3,7 +3,7 @@
 
 /**
  * @typedef {object} TryItAction
- * @property {string} [command] Inert shell text; mutually exclusive with click.
+ * @property {string|{posix: string, powershell: string}} [command] Shared or shell-specific inert text; mutually exclusive with click.
  * @property {string} [click] One browser action; mutually exclusive with command.
  * @property {string} expect The observation that confirms the action's result.
  * @property {string[]} [sources] Keys from the shared source registry.
@@ -180,11 +180,15 @@ export const chapters = {
             'Installs the spi tool into uv’s tool directory and puts it on PATH. Nothing is created or changed in Azure or GitHub; spi check reads tool versions only.',
           steps: [
             {
-              command:
-                'uv tool install "$(curl -fsSL https://api.github.com/repos/Azure/osdu-spi-stack/releases/latest \\\n  | grep -o \'https://github.com/Azure/osdu-spi-stack/releases/download/[^"]*-py3-none-any.whl\')"\nspi --version',
+              command: {
+                posix:
+                  'uv tool install --default-index https://packagefeedproxy.microsoft.io/pypi/simple/ \\\n  "$(curl -fsSL https://api.github.com/repos/Azure/osdu-spi-stack/releases/latest \\\n  | grep -o \'https://github.com/Azure/osdu-spi-stack/releases/download/[^"]*-py3-none-any.whl\')"\nspi --version',
+                powershell:
+                  "$wheel = (Invoke-RestMethod https://api.github.com/repos/Azure/osdu-spi-stack/releases/latest).assets.Where({ $_.name -like '*-py3-none-any.whl' }).browser_download_url\nuv tool install --default-index https://packagefeedproxy.microsoft.io/pypi/simple/ $wheel\nspi --version",
+              },
               expect:
-                'uv installs the spi tool, and spi --version prints the release, for example spi 0.16.0. The macOS and Linux form is shown; the install guide has the PowerShell form.',
-              sources: ['install'],
+                'uv installs the spi tool, and spi --version prints the latest release. The lesson 02 walkthrough records spi 0.16.0; use the install guide’s pinned-release instructions if you need that version.',
+              sources: ['installShells'],
             },
             {
               command: 'spi check',
@@ -361,7 +365,7 @@ export const chapters = {
               sources: ['install'],
             },
             {
-              text: 'An Azure subscription you may bill, with the roles above, and curl on the workstation.',
+              text: 'An Azure subscription you may bill, with the roles above, and curl on the workstation (curl.exe in Windows PowerShell).',
               sources: ['ciSetup'],
             },
           ],
@@ -405,8 +409,12 @@ export const chapters = {
               sources: ['cli'],
             },
             {
-              command:
-                'curl -sS -H "Authorization: Bearer $(spi token)" \\\n  "https://<host>/api/partition/v1/partitions/opendes"',
+              command: {
+                posix:
+                  'curl -sS -H "Authorization: Bearer $(spi token)" \\\n  "https://<host>/api/partition/v1/partitions/opendes"',
+                powershell:
+                  'curl.exe -sS -H "Authorization: Bearer $(spi token)" "https://<host>/api/partition/v1/partitions/opendes"',
+              },
               expect:
                 'spi token mints a ten-minute bearer as the deploy identity and writes only the token to stdout, so it composes into the header. A JSON body of stored configuration for opendes. This proves only that path: one authenticated partition lookup, nothing about search, storage, or ingestion.',
               sources: ['workloadIdentity', 'cli'],

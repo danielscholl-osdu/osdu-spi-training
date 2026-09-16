@@ -33,6 +33,13 @@ export const sources = {
     path: 'docs/install.md',
     href: 'https://github.com/Azure/osdu-spi-stack/blob/main/docs/install.md',
   },
+  installShells: {
+    label: 'CLI installation for macOS, Linux, and PowerShell (c15d9bc)',
+    repo: 'osdu-spi-stack',
+    path: 'docs/install.md',
+    href: 'https://github.com/Azure/osdu-spi-stack/blob/c15d9bc2cb8db9156bf2d87180c0262b97e9e16b/docs/install.md',
+    revision: 'c15d9bc2cb8db9156bf2d87180c0262b97e9e16b',
+  },
   images: {
     label: 'Image sources and canonical policy',
     repo: 'osdu-spi-stack',

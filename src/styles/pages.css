@@ -3102,6 +3102,51 @@ body:has(.audio-dock:not([hidden])) main {
   grid-template-columns: repeat(auto-fit, minmax(min(100%, 320px), 1fr));
   gap: 16px;
 }
+.try-it-shell {
+  min-width: 0;
+  margin: 0 0 18px;
+  padding: 0;
+  border: 0;
+}
+.try-it-shell legend {
+  margin-bottom: 8px;
+  font-size: 13px;
+  font-weight: 700;
+}
+.try-it-shell-options {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+.try-it-shell-options label {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-height: 44px;
+  padding: 8px 12px;
+  border: 1px solid var(--line);
+  border-radius: 6px;
+  font-size: 13px;
+  cursor: pointer;
+}
+.try-it-shell-options label:has(:checked) {
+  border-color: var(--cli);
+  background: var(--cli-bg);
+}
+.try-it-shell-options input {
+  flex: none;
+  margin: 0;
+  accent-color: var(--cli);
+}
+.try-it-shell-options input:focus-visible {
+  outline: 3px solid var(--cli);
+  outline-offset: 4px;
+}
+.try-it-shell p {
+  margin: 8px 0 0;
+  color: var(--muted);
+  font-size: 12px;
+}
 .try-it-variant {
   min-width: 0;
   padding: 18px;
