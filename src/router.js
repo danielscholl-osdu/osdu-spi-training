@@ -23,13 +23,23 @@ export const retiredGuides = {
 export const retiredDetails = {
   'engineering-system': {
     repo: ['fork-shape', null, 'main-branch'],
-    'stack-source': ['running-stack', 'developer', 'config-source'],
+    'stack-source': ['bring-up', 'reconcile', 'config-source'],
     upstream: ['fork-shape', null, 'upstream'],
     engineering: ['fork-shape', null, 'engineering'],
     image: ['fork-day', 'prove', 'candidate'],
     delivery: ['handshake', null, 'delivery'],
     running: ['handshake', null, 'running'],
     proof: ['handshake', null, 'proof'],
+  },
+  // Lesson 01 draws the service closed and holds the source nodes for the
+  // lifecycle; their published routes land where each is drawn now.
+  'running-stack': {
+    provider: ['spi-boundary', null, 'azureimpl'],
+    'config-source': ['bring-up', 'reconcile', 'config-source'],
+    'image-source': ['bring-up', 'reconcile', 'image-source'],
+  },
+  'bring-up': {
+    provider: ['spi-boundary', null, 'azureimpl'],
   },
   'fork-day': {
     'release-pr': ['fork-day', 'review', 'integration-pr'],

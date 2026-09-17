@@ -497,6 +497,43 @@ test('evidence resolver applies chapter context without inferring ownership', ()
   assert.deepEqual(details, original);
 });
 
+test('lesson 01 draws its rung: the service closed, the sources held for lesson 02, a boundary claim with no focus', () => {
+  const overview = diagramRenderers.overview(parseRoute('#running-stack'));
+  const ids = [...overview.matchAll(/data-detail="([^"]+)"/g)].map((m) => m[1]);
+  for (const absent of ['provider', 'config-source', 'image-source'])
+    assert.ok(!ids.includes(absent), `${absent} waits for a later lesson`);
+  assert.ok(ids.includes('service'));
+  assert.match(overview, /Lesson 03 opens one of them\./);
+  assert.doesNotMatch(overview, /Both are packaged inside the service/);
+  const assembling = diagramRenderers.creation(
+    parseRoute('#bring-up/reconcile'),
+  );
+  for (const earlier of ['start', 'provision', 'bootstrap'])
+    assert.doesNotMatch(
+      diagramRenderers.creation(parseRoute(`#bring-up/${earlier}`)),
+      /data-detail="config-source"/,
+      `${earlier}: the sources wait for the workloads`,
+    );
+  for (const source of ['config-source', 'image-source'])
+    assert.ok(
+      assembling.includes(`data-detail="${source}"`),
+      `${source} appears when Flux assembles the workloads`,
+    );
+  assert.doesNotMatch(assembling, /data-detail="provider"/);
+  const [boundary, , namespace] = chapters['running-stack'].outcomes;
+  assert.deepEqual(boundary.focus, []);
+  assert.deepEqual(boundary.scopes, ['environment', 'aks', 'resources']);
+  assert.deepEqual(namespace.focus, ['gateway', 'service']);
+  assert.ok(
+    !chapters['running-stack'].example.hops.some(
+      (hop) => hop.detail === 'provider',
+    ),
+    'the example stays outside the service until lesson 03',
+  );
+  for (const hop of chapters['running-stack'].example.hops)
+    assert.ok(ids.includes(hop.detail), `${hop.detail} is drawn on the map`);
+});
+
 test('lesson 01 claim evidence resolves all three claims in stack context', () => {
   const details = chapters['running-stack'].outcomes.map(({ evidence }) =>
     resolveDetail(evidence, 'running-stack'),
@@ -504,11 +541,12 @@ test('lesson 01 claim evidence resolves all three claims in stack context', () =
 
   assert.deepEqual(
     details.map(({ owner }) => owner),
-    [null, null, 'The partition service fork'],
+    [null, null, null],
+    'lesson 01 names no owner: the service is drawn closed at its rung',
   );
   assert.deepEqual(
     details.map(({ source }) => source),
-    ['architecture', 'architecture', 'partitionPom'],
+    ['architecture', 'architecture', 'architecture'],
   );
   assert.match(details[0].summary, /resource group contains AKS/);
   assert.match(details[0].summary, /--env <name>.*whole environment/);
@@ -517,11 +555,17 @@ test('lesson 01 claim evidence resolves all three claims in stack context', () =
     /opendes.*Cosmos DB SQL account.*Storage account.*Service Bus namespace/,
   );
   assert.match(details[1].summary, /common Storage.*Gremlin.*service identity/);
+  assert.equal(details[2].context, 'The osdu namespace');
   assert.match(
     details[2].summary,
-    /partition-core.*provider\/partition-azure.*one executable/,
+    /Kubernetes workloads, one image each, behind the Istio gateway/,
   );
-  assert.match(details[2].summary, /POM.*Spring Boot.*Dockerfile.*entry point/);
+  assert.match(details[2].summary, /Lesson 03 opens the partition service/);
+  assert.doesNotMatch(
+    details[2].summary,
+    /partition-core|POM|Spring Boot|Dockerfile/,
+    'the packaging inside the service waits for lesson 03',
+  );
 });
 
 test('lesson 02 claim evidence resolves all three claims without false owners', () => {
@@ -973,7 +1017,7 @@ test('selection intent is additive and invalid qualifiers preserve legacy routes
   }
 
   const collisions = [
-    ['running-stack', 'request', 'shared-data', 1, 4],
+    ['running-stack', 'request', 'shared-data', 1, 3],
     ['running-stack', 'request', 'service', 2, 2],
     ['spi-boundary', '', 'azureimpl', 0, 3],
   ];
@@ -1014,11 +1058,11 @@ test('selection intent is additive and invalid qualifiers preserve legacy routes
     [infographics.familiar(), '#running-stack/request?detail=gateway&claim=2'],
     [
       mythCallout('certificate-means-encrypted', 'running-stack'),
-      '#running-stack/request?detail=gateway&claim=0',
+      '#running-stack/request?detail=gateway&claim=2',
     ],
     [
       mythCallout('token-accepted-means-authorized', 'running-stack'),
-      '#running-stack/request?detail=gateway&claim=0',
+      '#running-stack/request?detail=gateway&claim=2',
     ],
     [
       mythCallout('smoke-proves-api', 'bring-up'),
@@ -2307,10 +2351,21 @@ test('the fork moments and the retired engineering route keep resolving', () => 
     '#engineering-system?detail=repo': ['fork-shape', '', 'main-branch'],
     '#engineering-system?detail=image': ['fork-day', 'prove', 'candidate'],
     '#engineering-system?detail=stack-source': [
-      'running-stack',
-      'developer',
+      'bring-up',
+      'reconcile',
       'config-source',
     ],
+    '#running-stack/developer?detail=provider': [
+      'spi-boundary',
+      '',
+      'azureimpl',
+    ],
+    '#running-stack?detail=image-source': [
+      'bring-up',
+      'reconcile',
+      'image-source',
+    ],
+    '#bring-up/inspect?detail=provider': ['spi-boundary', '', 'azureimpl'],
     '#fork-day/review?detail=release-pr': [
       'fork-day',
       'review',
@@ -2787,7 +2842,7 @@ test('lesson 01 editorial copy introduces its example and complete command', () 
   );
   assert.equal(
     chapter.outcomes[2].why,
-    'Each service image includes its Azure provider.',
+    'Each service is a Deployment in the osdu namespace; aks-istio-ingress routes the API paths to them.',
   );
   assert.equal(chapter.example.title, 'a partition lookup');
   assert.match(
@@ -3479,10 +3534,14 @@ test('lesson 03 evidence deep links stay step-less and map to claims', () => {
       claim,
     );
   }
-  assert.equal(
-    parseRoute('#running-stack/request?detail=provider').step,
-    'request',
-  );
+  {
+    const moved = parseRoute('#running-stack/request?detail=provider');
+    assert.deepEqual(
+      [moved.chapter, moved.step, moved.detail],
+      ['spi-boundary', '', 'azureimpl'],
+      'the provider is drawn where lesson 03 opens the service',
+    );
+  }
 
   const stack = episodes.find((episode) => episode.id === 'stack');
   const outboundIdentity = stack.markers.find((marker) => marker.time === 2035);
@@ -3837,7 +3896,7 @@ test('shelf presentation keeps audio chips inside the row body', () => {
   });
   assert.match(
     example,
-    /data-shelf-row="example"[\s\S]*<summary><span class="shelf-row-badge"><svg[\s\S]*<\/svg><\/span><span class="shelf-row-head"><span class="shelf-row-label">Follow the example<\/span><span class="shelf-row-preview">Five hops · a partition lookup<\/span>/,
+    /data-shelf-row="example"[\s\S]*<summary><span class="shelf-row-badge"><svg[\s\S]*<\/svg><\/span><span class="shelf-row-head"><span class="shelf-row-label">Follow the example<\/span><span class="shelf-row-preview">Four hops · a partition lookup<\/span>/,
   );
   assert.equal((example.match(/<details/g) || []).length, 1);
 

@@ -39,7 +39,7 @@ export function architectureMap(stage = null, path = 'developer') {
         ${stage === 4 ? `<div class="join-actions">${node('connect', 'Connect to a shared stack', 'Use the owner’s cluster coordinates')}${node('readiness', 'Observe readiness', 'Health · initialization · API response')}${node('caller', 'Get an API caller', 'spi token · app-only bearer')}</div>` : ''}
         ${!building ? node('client', 'OSDU API client', 'Bearer + data-partition-id', request ? 'path-emphasis' : '') : ''}
       </section>
-      ${workloads ? `<section class="external-inputs" aria-label="Sources outside the deployed stack"><span class="group-label">Outside the deployed stack</span>${node('config-source', 'osdu-spi-stack Git', 'Workload configuration → Flux')}${node('image-source', 'GitLab / GHCR', 'Community / fork images')}</section>` : ''}
+      ${building && workloads ? `<section class="external-inputs" aria-label="Sources outside the deployed stack"><span class="group-label">Outside the deployed stack</span>${node('config-source', 'osdu-spi-stack Git', 'Workload configuration → Flux')}${node('image-source', 'GitLab / GHCR', 'Community / fork images')}</section>` : ''}
     </div>
     <div class="boundary-crossing"><span>${moment ? moment.action : request ? 'Authenticated OSDU request' : 'CLI provisions Azure and prepares AKS'}</span><span aria-hidden="true">↓</span></div>
     <section class="azure-boundary" aria-label="Azure cloud boundary">
@@ -55,7 +55,7 @@ export function architectureMap(stage = null, path = 'developer') {
                   ? `<div class="controllers">${node('flux', 'Flux', 'Reconcile workloads', '', 'flux-system')}${node('operators', 'Operators', 'ECK · CNPG · certificates', '', 'foundation')}</div>
                 ${node('gateway', 'Istio gateway', 'Routes OSDU API requests', request ? 'path-emphasis' : '', 'aks-istio-ingress')}
                 <div class="inside-arrow" aria-hidden="true">↓</div>
-                <section data-scope="service-boundary" class="service-boundary ${request ? 'path-emphasis' : ''}"><div class="group-label">osdu · OSDU service workloads</div><div class="service-code">${node('service', 'Shared OSDU code', 'Partition · entitlements · storage', 'shared-code')}${node('provider', 'Azure SPI provider', 'Cloud-specific operations', 'fork-code')}</div><small>Both are packaged inside the service.</small></section>
+                <section data-scope="service-boundary" class="service-boundary ${request ? 'path-emphasis' : ''}"><div class="group-label">osdu · OSDU service workloads</div>${node('service', 'OSDU services', 'Partition · entitlements · storage · one image each')}<small>Lesson 03 opens one of them.</small></section>
                 ${node('middleware', 'Platform middleware', 'Elasticsearch · Redis · PostgreSQL', '', 'platform')}
                 ${node('initialization', 'Initialize OSDU', 'Partitions · entitlements · schema load', '', 'osdu')}`
                   : removed

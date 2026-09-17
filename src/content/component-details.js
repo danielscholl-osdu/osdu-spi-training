@@ -120,20 +120,14 @@ export const componentDetails = {
     source: 'architecture',
     here: {
       'running-stack': {
-        context: 'Inside the partition workload',
-        owner: 'The partition service fork',
+        context: 'The osdu namespace',
         summary:
-          'The partition workload in the osdu namespace packages shared partition-core with provider/partition-azure in one executable. The provider POM declares the partition-core dependency; Spring Boot repackages the application, and the Dockerfile and entry point run that JAR.',
+          'Partition, entitlements, legal, schema, storage, search, and indexer run here as Kubernetes workloads, one image each, behind the Istio gateway. Lesson 03 opens the partition service to show the shared code and the Azure provider packaged inside it.',
         artifact: {
-          label: 'Provider module dependency',
-          code: 'provider/partition-azure/pom.xml\n<artifactId>partition-core</artifactId>',
+          label: 'List the service workloads',
+          code: 'kubectl get deployments -n osdu',
         },
-        source: 'partitionPom',
-        goDeeper: [
-          'partitionDockerfile',
-          'partitionEntrypoint',
-          'architecture',
-        ],
+        source: 'architecture',
       },
     },
   },

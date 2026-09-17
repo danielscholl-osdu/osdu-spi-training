@@ -152,6 +152,9 @@ function applyFocus() {
     : null;
   const staged = Boolean(stage) && !tracing;
   const settled = staged || (stepped && !step);
+  // A claim with boundaries and no focused components is about a container:
+  // its scopes light up and no component recedes.
+  const container = !settled && !tracing && !stepped && !claim.focus?.length;
   const focus = new Set(
     step
       ? [step.detail]
@@ -185,7 +188,7 @@ function applyFocus() {
   diagram.querySelectorAll('.node').forEach((node) => {
     const active = focus.has(node.dataset.detail);
     node.classList.toggle('is-focus', !settled && active);
-    node.classList.toggle('is-receded', !settled && !active);
+    node.classList.toggle('is-receded', !settled && !container && !active);
     node.classList.toggle('is-path', tracing && active);
     node.classList.toggle('is-traced', tracing && active);
   });
