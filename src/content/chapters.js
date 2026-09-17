@@ -203,7 +203,7 @@ export const chapters = {
             {
               command: 'spi up --help',
               expect:
-                'Run this help command; it does not deploy anything. Find --env for the environment name, --profile for the workloads, --location for the region, and --tag for a pinned release. Lesson 02 uses these options to create an environment.',
+                'Run this help command; it does not deploy anything. Find --env for the environment name, --profile for the workloads, and --location for the region. Lesson 02 uses these options to create an environment.',
             },
           ],
           alternate: {
@@ -361,7 +361,7 @@ export const chapters = {
         {
           label: 'Run it in your subscription',
           result:
-            'Create an environment in your Azure subscription, monitor its progress with spi status --watch, and test the partition API with an authenticated request. Then decide whether to keep the environment for lesson 06 or remove it.',
+            'Create an environment in your Azure subscription, read what the lifecycle document says about readiness while it provisions, monitor progress with spi status --watch, and test the partition API with an authenticated request. Then decide whether to keep the environment for lesson 06 or remove it.',
           access: 'Azure resources billed separately',
           accessNote:
             'Use your own Azure subscription. You pay for the resources you create until you remove them.',
@@ -377,7 +377,7 @@ export const chapters = {
           ],
           time: {
             active:
-              'About 30 minutes at the keyboard across the steps, most of it after provisioning.',
+              'About 30 minutes at the keyboard across the steps, most of it after provisioning, plus about 10 minutes of reading that fits inside the provisioning wait.',
             wait: 'Fresh provisioning was observed at roughly 45 to 50 minutes in centralus, and application readiness can take longer; these are planning estimates from prior runs, not guarantees for the current release or another region.',
             cleanup:
               'A few minutes of effort; spi down itself waits up to 45 minutes.',
@@ -397,15 +397,22 @@ export const chapters = {
               sources: ['lifecycle', 'cli'],
             },
             {
-              command: 'spi up --env <name> --tag <release>',
+              command: 'spi up --env <name>',
               expect:
-                'Replace <release> with v0.16.0 to match your CLI; a mismatched tag is rejected. This deploys the core profile in westus3. To choose another region, add --location <region> to both spi up commands; the pinned CLI help notes capacity constraints in eastus2 and centralus. A successful exit confirms the requested Git revision, not API readiness: Flux continues the rollout in the background.',
+                'This deploys the core profile in westus3, and Flux follows the main branch of the stack repository. To choose another region, add --location <region> to both spi up commands; the pinned CLI help notes capacity constraints in eastus2 and centralus. A successful exit confirms the requested Git revision, not API readiness: Flux continues the rollout in the background.',
               sources: ['lifecycle', 'cli'],
+            },
+            {
+              click:
+                'While provisioning runs, open the deployment lifecycle document and read “From invocation to CLI exit”, then “Timing and readiness”.',
+              expect:
+                'Follow the stage table to Git-source finalization: before returning, the CLI verifies the requested revision, suspends Git fetching, and writes the deploy record, while Flux is already reconciling. Then compare the five readiness signals: CLI exit, a Git-source artifact, Ready Kustomizations and HelmReleases, Complete initialization Jobs, and a successful authenticated API request. Each confirms something different, and none guarantees the next.',
+              sources: ['lifecycle'],
             },
             {
               command: 'spi status --watch',
               expect:
-                'Watch for Kustomizations and HelmReleases to become Ready and initialization Jobs to become Complete. A Running pod alone does not mean it is ready. This command checks rollout progress, not API responses.',
+                'Watch for Kustomizations and HelmReleases to become Ready and initialization Jobs to become Complete. A Running pod alone does not mean it is ready. This command checks rollout progress, not API responses; add --json in a separate run when you want the same status as structured output.',
               sources: ['lifecycle'],
             },
             {
@@ -429,7 +436,8 @@ export const chapters = {
               click:
                 'Decide: keep the environment for lesson 06, or remove it now.',
               expect:
-                'Keep it to avoid provisioning again for lesson 06; Azure charges continue while you keep the resources. To remove it now, follow the cleanup steps below.',
+                'Keep it to avoid provisioning again for lesson 06; Azure charges continue while you keep the resources. To remove it now, follow the cleanup steps below, and read “Steady state and teardown” to compare what each removal option leaves behind.',
+              sources: ['lifecycle'],
             },
           ],
           alternate: {
@@ -464,89 +472,6 @@ export const chapters = {
           ],
           tested: {
             cli: 'spi 0.16.0; commands quoted from cli.py at dc2c956',
-            stack: 'osdu-spi-stack dc2c956 (release 0.16.0)',
-            template: 'Not applicable: no fork is used.',
-            shell: 'zsh',
-            os: 'macOS 26.6.2 on Apple silicon',
-            date: '2026-09-13',
-          },
-        },
-        {
-          label: 'Read a run without Azure',
-          result:
-            'Follow the deployment lifecycle without creating an environment. Learn what each readiness signal tells you, what the CLI checks before it exits, and what spi down leaves behind.',
-          access: 'browser only',
-          accessNote:
-            'You can follow this route entirely in your browser. The three --help commands are optional and do not contact Azure.',
-          prerequisites: [
-            {
-              text: 'A browser. The spi CLI from lesson 01 if you want to read its help; no Azure subscription and no sign-in.',
-              sources: ['install'],
-            },
-          ],
-          time: {
-            active: 'About 15 minutes of reading.',
-            wait: 'No automated waiting.',
-            cleanup: 'Nothing to clean up.',
-          },
-          effects:
-            'Nothing is created or changed. The linked documents are read in the browser, and --help prints option text without calling Azure.',
-          steps: [
-            {
-              click:
-                'Open the deployment lifecycle document and read “From invocation to CLI exit”.',
-              expect:
-                'Follow the stage table to Git-source finalization. Before returning, the CLI verifies the requested revision, suspends Git fetching, and writes the deploy record. Flux is already working during these final stages; it does not wait for the CLI to exit.',
-              sources: ['lifecycle'],
-            },
-            {
-              click: 'In the same document, read “Timing and readiness”.',
-              expect:
-                'Compare the five signals: CLI exit, a Git-source artifact, Ready Kustomizations and HelmReleases, Complete initialization Jobs, and a successful authenticated API request. Each confirms something different; none guarantees the next. The 45 to 50 minute estimate comes from prior centralus runs, not a measurement of this release.',
-              sources: ['lifecycle'],
-            },
-            {
-              click: 'Read “Steady state and teardown”.',
-              expect:
-                'Compare what each removal option leaves behind. Ordinary spi down deletes data and compute but keeps the resource group, managed identities, and naming tags for reuse. Adding --purge also removes the identities’ external grants and deletes the group and identities.',
-              sources: ['lifecycle'],
-            },
-            {
-              command: 'spi up --help',
-              expect:
-                'Run only the --help command here; it does not deploy anything. Find the required --env option, the core profile and westus3 defaults, and --tag for pinning a release. Notice that --dry-run still creates a resource group when used for a deployment.',
-              sources: ['cli'],
-            },
-            {
-              command: 'spi status --help',
-              expect:
-                'Find --watch (-w) for continuous refresh and --json for structured output. The command reports deployment health and reconciliation progress; it does not test an API request.',
-              sources: ['cli'],
-            },
-            {
-              command: 'spi down --help',
-              expect:
-                'Find the required --env option and read what --purge adds: deletion of the resource group and managed identities, which ordinary spi down keeps.',
-              sources: ['cli'],
-            },
-          ],
-          alternate: {
-            observation:
-              'spi: command not found, or spi --version reports a release other than 0.16.0.',
-            next: 'Skip the optional commands and read the options in the linked CLI source, or use lesson 01’s setup to install the matching release.',
-          },
-          cleanup: {
-            steps: [
-              {
-                click: 'Close the document tabs.',
-                expect: 'Nothing to remove; --help changed nothing.',
-              },
-            ],
-            remains: 'Nothing was created.',
-          },
-          sources: ['lifecycle', 'cli'],
-          tested: {
-            cli: 'spi 0.16.0',
             stack: 'osdu-spi-stack dc2c956 (release 0.16.0)',
             template: 'Not applicable: no fork is used.',
             shell: 'zsh',

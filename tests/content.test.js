@@ -2826,13 +2826,38 @@ test('lesson 02 is operated by its lifecycle stages', () => {
   );
   assert.deepEqual(
     tryIt.variants.map((variant) => variant.access),
-    ['Azure resources billed separately', 'browser only'],
+    ['Azure resources billed separately'],
+  );
+  const run = tryIt.variants[0];
+  const deployCommands = run.steps
+    .map(({ command }) => command)
+    .filter(
+      (command) => typeof command === 'string' && command.startsWith('spi up'),
+    );
+  assert.deepEqual(deployCommands, [
+    'spi up --env <name> --dry-run',
+    'spi up --env <name>',
+  ]);
+  assert.ok(
+    [...run.steps, ...run.cleanup.steps].every(
+      ({ command }) => !JSON.stringify(command ?? '').includes('--tag'),
+    ),
+    'the release tag stays out of the commands learners run',
+  );
+  assert.ok(
+    run.steps.some(
+      ({ click, sources }) =>
+        /Timing and readiness/.test(click || '') &&
+        sources?.includes('lifecycle'),
+    ),
+    'the readiness signals stay in the route that runs it',
   );
   assert.match(tryIt.connection.text, /spi connect --resource-group/);
   const band = tryItBand(chapter);
+  assert.doesNotMatch(band, /Route \d/);
   assert.ok(
     band.indexOf('Run it in your subscription') <
-      band.indexOf('Read a run without Azure'),
+      band.indexOf('Timing and readiness'),
   );
   assert.match(
     band,
