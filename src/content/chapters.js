@@ -170,7 +170,7 @@ export const chapters = {
               sources: ['install'],
             },
             {
-              text: 'Continuing to lesson 02? Use the install guide’s pinned-release instructions to install spi 0.16.0 instead of running the latest-release installer below.',
+              text: 'Continuing to lesson 02? Install the latest release and keep it installed. Lesson 02 deploys with the CLI you install here.',
               sources: ['install'],
             },
           ],
@@ -192,7 +192,7 @@ export const chapters = {
                   "$wheel = (Invoke-RestMethod https://api.github.com/repos/Azure/osdu-spi-stack/releases/latest).assets.Where({ $_.name -like '*-py3-none-any.whl' }).browser_download_url\nuv tool install --default-index https://packagefeedproxy.microsoft.io/pypi/simple/ $wheel\nspi --version",
               },
               expect:
-                'Check the version printed by spi --version. The command above installs the latest release, which may differ from the spi 0.16.0 used in lesson 02. If you chose the pinned installation, check that it reports 0.16.0.',
+                'Check the version printed by spi --version. The installer above takes the latest release; note the version it reports, because lesson 02 deploys with this same CLI.',
               sources: ['installShells'],
             },
             {
@@ -367,7 +367,7 @@ export const chapters = {
             'Use your own Azure subscription. You pay for the resources you create until you remove them.',
           prerequisites: [
             {
-              text: 'Complete the workstation setup in lesson 01. Check that spi --version reports spi 0.16.0, and that curl is available (curl.exe in Windows PowerShell).',
+              text: 'Complete the workstation setup in lesson 01, and keep that CLI current rather than reinstalling an older release. Check that spi --version prints a version and that curl is available (curl.exe in Windows PowerShell).',
               sources: ['install'],
             },
             {
@@ -399,8 +399,8 @@ export const chapters = {
             {
               command: 'spi up --env <name>',
               expect:
-                'This deploys the core profile in westus3, and Flux follows the main branch of the stack repository. To choose another region, add --location <region> to both spi up commands; the pinned CLI help notes capacity constraints in eastus2 and centralus. A successful exit confirms the requested Git revision, not API readiness: Flux continues the rollout in the background.',
-              sources: ['lifecycle', 'cli'],
+                'This deploys the core profile in westus3, and Flux follows the main branch of the stack repository. The Bicep templates come from the installed CLI, which carries them inside its wheel, while the Kubernetes manifests come from that branch; keeping the CLI current keeps the two together. To choose another region, add --location <region> to both spi up commands; the pinned CLI help notes capacity constraints in eastus2 and centralus. A successful exit confirms the requested Git revision, not API readiness: Flux continues the rollout in the background.',
+              sources: ['lifecycle', 'cli', 'packaging'],
             },
             {
               click:

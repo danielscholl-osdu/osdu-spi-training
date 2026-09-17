@@ -1601,18 +1601,33 @@ test('tryIt validation rejects focused invalid clones', () => {
 test('Try it guidance preserves tools for lesson 02 and bounds the optional image check', () => {
   const setup = chapters['running-stack'].tryIt;
   const install = setup.variants[0];
-  const release =
-    chapters['bring-up'].tryIt.variants[0].tested.cli.split(';')[0];
-  const versionChoice = install.prerequisites.find(({ text }) =>
-    text.includes(release),
+  const continuation = install.prerequisites.find(({ text }) =>
+    /lesson 02/.test(text),
   );
-  assert.ok(versionChoice, 'name the lesson 02 version before installation');
+  assert.ok(
+    continuation,
+    'name the lesson 02 continuation before installation',
+  );
   const setupMarkup = tryItBand(chapters['running-stack']);
   assert.ok(
-    setupMarkup.indexOf(escapeHtml(versionChoice.text)) <
+    setupMarkup.indexOf(escapeHtml(continuation.text)) <
       setupMarkup.indexOf('class="try-it-command"'),
-    'the version choice precedes the installer',
+    'the continuation note precedes the installer',
   );
+  const release = /spi[\s-]?\d+\.\d+\.\d+|\bv\d+\.\d+\.\d+/;
+  assert.match(
+    chapters['bring-up'].tryIt.variants[0].tested.cli,
+    release,
+    'the publication record still names the walked release',
+  );
+  for (const [key, chapter] of Object.entries(chapters)) {
+    if (!chapter.tryIt) continue;
+    assert.doesNotMatch(
+      tryItBand(chapter),
+      release,
+      `${key}: a CLI release version goes stale, so it stays out of the band`,
+    );
+  }
   assert.match(install.time.cleanup, /No cleanup needed.*lesson 02/);
   assert.match(install.cleanup.steps[0].expect, /^Optional:/);
   assert.match(install.cleanup.steps[0].expect, /Keep the CLI installed/);

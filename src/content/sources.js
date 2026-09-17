@@ -466,6 +466,12 @@ export const sources = {
     href: 'https://github.com/Azure/osdu-spi-stack/blob/dc2c95638ded6459538085cfdb2ada46b692c27b/src/spi/cli.py',
     revision: 'dc2c95638ded6459538085cfdb2ada46b692c27b',
   },
+  packaging: {
+    label: 'CLI packaging: templates inside the wheel',
+    repo: 'osdu-spi-stack',
+    path: 'pyproject.toml',
+    href: 'https://github.com/Azure/osdu-spi-stack/blob/main/pyproject.toml',
+  },
   ciSetup: {
     label: 'CI setup: subscription roles (dc2c956)',
     repo: 'osdu-spi-stack',
