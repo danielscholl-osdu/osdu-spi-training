@@ -12,6 +12,8 @@ export const singleVariantTryIt = {
       access: 'browser only',
       prerequisites: [
         {
+          kind: 'browser',
+          label: 'A browser',
           text: 'Open the published partition provider source in a browser.',
           sources: ['partitionProvider'],
         },
@@ -20,12 +22,23 @@ export const singleVariantTryIt = {
         active: 'About 5 minutes',
         wait: 'No automated waiting.',
         cleanup: 'Less than 1 minute.',
+        minutes: { active: 5, wait: 0, cleanup: 1 },
       },
+      footprint: [
+        {
+          place: 'workstation',
+          state: 'untouched',
+          note: 'Nothing installed.',
+        },
+        { place: 'github', state: 'reads', note: 'Published source only.' },
+        { place: 'azure', state: 'untouched', note: 'No sign-in.' },
+      ],
       effects:
         'This reads published source only; it creates or changes no resources.',
       steps: [
         {
           click: 'Open PartitionServiceImpl from the source link.',
+          touch: { kind: 'reads', note: 'reads published source' },
           expect:
             'The provider class shows the cache read before Azure Table Storage.',
           sources: ['partitionProvider'],
@@ -40,6 +53,7 @@ export const singleVariantTryIt = {
         steps: [
           {
             click: 'Close the source tab.',
+            touch: { kind: 'reads', note: 'nothing to remove' },
             expect: 'The browser tab closes; there are no resources to remove.',
           },
         ],
@@ -69,7 +83,16 @@ export const multipleVariantTryIt = {
       access: 'workstation setup',
       prerequisites: [
         {
+          kind: 'tool',
+          label: 'The SPI CLI',
           text: 'Install the SPI CLI on the workstation.',
+          sources: ['install'],
+        },
+        {
+          kind: 'tool',
+          label: 'curl',
+          shell: 'posix',
+          text: 'Fetches the release.',
           sources: ['install'],
         },
       ],
@@ -77,12 +100,23 @@ export const multipleVariantTryIt = {
         active: 'About 5 minutes',
         wait: 'No automated waiting.',
         cleanup: 'Less than 1 minute.',
+        minutes: { active: 5, wait: 0, cleanup: 1 },
       },
+      footprint: [
+        { place: 'workstation', state: 'reads', note: 'Local CLI help only.' },
+        {
+          place: 'github',
+          state: 'untouched',
+          note: 'Nothing read or written.',
+        },
+        { place: 'azure', state: 'untouched', note: 'No sign-in.' },
+      ],
       effects:
         'This reads local CLI help only; it creates no GitHub or Azure resources.',
       steps: [
         {
           command: 'spi --help',
+          touch: { kind: 'reads', note: 'prints help' },
           expect: 'The terminal lists the installed CLI commands.',
           sources: ['install'],
         },
@@ -95,6 +129,7 @@ export const multipleVariantTryIt = {
         steps: [
           {
             click: 'Close the terminal window.',
+            touch: { kind: 'reads', note: 'nothing to remove' },
             expect: 'The local help session ends.',
           },
         ],
@@ -119,6 +154,8 @@ export const multipleVariantTryIt = {
         'An Azure subscription and permissions to create resources are required.',
       prerequisites: [
         {
+          kind: 'access',
+          label: 'An Azure role that can create resources',
           text: 'Complete the CLI installation and deployment prerequisites.',
           sources: ['install', 'lifecycle'],
         },
@@ -127,12 +164,23 @@ export const multipleVariantTryIt = {
         active: 'About 10 minutes',
         wait: 'Automated provisioning continues separately.',
         cleanup: 'Active cleanup takes about 5 minutes.',
+        minutes: { active: 10, wait: 45, cleanup: 5 },
       },
+      footprint: [
+        { place: 'workstation', state: 'changes', note: 'Keeps your sign-in.' },
+        {
+          place: 'github',
+          state: 'reads',
+          note: 'Flux reads the stack branch.',
+        },
+        { place: 'azure', state: 'bills', note: 'Creates the environment.' },
+      ],
       effects:
         'This route creates billable Azure resources for your environment before the steps finish.',
       steps: [
         {
           command: 'spi up --env <name>',
+          touch: { kind: 'creates', note: 'creates and bills the environment' },
           expect: 'The CLI begins the documented environment lifecycle.',
           sources: ['lifecycle'],
         },
@@ -145,10 +193,18 @@ export const multipleVariantTryIt = {
         steps: [
           {
             command: 'spi down --env <name>',
+            touch: { kind: 'removes', note: 'deletes the environment' },
             expect: 'The CLI begins removal of the environment.',
             sources: ['lifecycle'],
           },
         ],
+        ledger: {
+          columns: ['spi down'],
+          rows: [
+            { item: 'Cluster', after: ['removed'] },
+            { item: 'Deployment identity', after: ['kept'] },
+          ],
+        },
         remains:
           'The deployment identity and any resources documented as retained remain afterwards.',
       },

@@ -166,11 +166,36 @@ export const chapters = {
             'You need permission to install tools on your workstation, but no Azure subscription or GitHub account.',
           prerequisites: [
             {
-              text: 'Start with uv installed. The Bash/zsh installer also needs curl and grep; the PowerShell installer uses Invoke-RestMethod. You can install any missing SPI prerequisite tools after running spi check.',
+              kind: 'tool',
+              label: 'uv',
+              text: 'Installs and runs the CLI.',
               sources: ['install'],
             },
             {
-              text: 'Continuing to lesson 02? Install the latest release and keep it installed. Lesson 02 deploys with the CLI you install here.',
+              kind: 'tool',
+              label: 'curl and grep',
+              shell: 'posix',
+              text: 'Fetch the latest release and pick its wheel.',
+              sources: ['installShells'],
+            },
+            {
+              kind: 'tool',
+              label: 'Invoke-RestMethod',
+              shell: 'powershell',
+              text: 'Built into PowerShell; fetches the latest release.',
+              sources: ['installShells'],
+            },
+            {
+              kind: 'tool',
+              label: 'az, bicep, kubectl, kubelogin, flux',
+              text: 'Install any that are missing after spi check reports them.',
+              sources: ['install'],
+            },
+            {
+              kind: 'lesson',
+              chapter: 'bring-up',
+              label: 'Continuing to lesson 02?',
+              text: 'Install the latest release and keep it installed. Lesson 02 deploys with the CLI you install here.',
               sources: ['install'],
             },
           ],
@@ -180,7 +205,25 @@ export const chapters = {
             wait: 'No automated waiting.',
             cleanup:
               'No cleanup needed to continue to lesson 02. Optional uninstall takes under a minute.',
+            minutes: { active: 10, wait: 0, cleanup: 1 },
           },
+          footprint: [
+            {
+              place: 'workstation',
+              state: 'changes',
+              note: 'spi installed on PATH through uv, plus any tools you add.',
+            },
+            {
+              place: 'github',
+              state: 'reads',
+              note: 'The installer downloads the latest release; nothing is written.',
+            },
+            {
+              place: 'azure',
+              state: 'untouched',
+              note: 'No sign-in; spi check only reads tool versions.',
+            },
+          ],
           effects:
             'Installs spi locally through uv and makes it available on PATH. Any prerequisite tools you install also stay on your workstation. Nothing is created or changed in Azure or GitHub; spi check only reads tool versions.',
           steps: [
@@ -191,17 +234,23 @@ export const chapters = {
                 powershell:
                   "$wheel = (Invoke-RestMethod https://api.github.com/repos/Azure/osdu-spi-stack/releases/latest).assets.Where({ $_.name -like '*-py3-none-any.whl' }).browser_download_url\nuv tool install --default-index https://packagefeedproxy.microsoft.io/pypi/simple/ $wheel\nspi --version",
               },
+              touch: {
+                kind: 'local',
+                note: 'installs spi on this workstation',
+              },
               expect:
                 'Check the version printed by spi --version. The installer above takes the latest release; note the version it reports, because lesson 02 deploys with this same CLI.',
               sources: ['installShells'],
             },
             {
               command: 'spi check',
+              touch: { kind: 'reads', note: 'reads tool versions' },
               expect:
                 'Check that az, bicep, kubectl, kubelogin, and flux each show OK and a version, followed by “All 5 tools available.” If a tool is missing, install it and rerun spi check. This confirms the tools are available, not that you have access to an Azure subscription.',
             },
             {
               command: 'spi up --help',
+              touch: { kind: 'reads', note: 'prints help; deploys nothing' },
               expect:
                 'Run this help command; it does not deploy anything. Find --env for the environment name, --profile for the workloads, and --location for the region. Lesson 02 uses these options to create an environment.',
             },
@@ -215,6 +264,10 @@ export const chapters = {
             steps: [
               {
                 command: 'uv tool uninstall spi',
+                touch: {
+                  kind: 'removes',
+                  note: 'removes spi from this workstation',
+                },
                 expect:
                   'Optional: run this only if you no longer want the CLI installed. It removes spi and its entry on PATH. Keep the CLI installed if you are continuing to lesson 02.',
               },
@@ -367,11 +420,22 @@ export const chapters = {
             'Use your own Azure subscription. You pay for the resources you create until you remove them.',
           prerequisites: [
             {
-              text: 'Complete the workstation setup in lesson 01, and keep that CLI current rather than reinstalling an older release. Check that spi --version prints a version and that curl is available (curl.exe in Windows PowerShell).',
+              kind: 'lesson',
+              chapter: 'running-stack',
+              label: 'The CLI from lesson 01',
+              text: 'Keep it current rather than reinstalling an older release; spi --version prints a version.',
               sources: ['install'],
             },
             {
-              text: 'Your Azure identity needs permission to create resource groups, deploy services, and create role assignments. The stack’s CI uses Contributor plus User Access Administrator at subscription scope; see the role setup for reference.',
+              kind: 'tool',
+              label: 'curl',
+              text: 'curl.exe in Windows PowerShell.',
+              sources: ['install'],
+            },
+            {
+              kind: 'access',
+              label: 'An Azure role that can create',
+              text: 'Resource groups, services, and role assignments. The stack’s CI uses Contributor plus User Access Administrator at subscription scope.',
               sources: ['ciSetup'],
             },
           ],
@@ -381,23 +445,50 @@ export const chapters = {
             wait: 'Fresh provisioning was observed at roughly 45 to 50 minutes in centralus, and application readiness can take longer; these are planning estimates from prior runs, not guarantees for the current release or another region.',
             cleanup:
               'A few minutes of effort; spi down itself waits up to 45 minutes.',
+            minutes: { active: 30, wait: 50, cleanup: 5 },
           },
+          footprint: [
+            {
+              place: 'workstation',
+              state: 'changes',
+              note: 'az login keeps your sign-in here; the CLI runs from here.',
+            },
+            {
+              place: 'github',
+              state: 'reads',
+              note: 'Flux follows the stack’s main branch; nothing is written.',
+            },
+            {
+              place: 'azure',
+              state: 'bills',
+              note: 'Resource group spi-stack-<name>: AKS, Cosmos DB, Storage, Service Bus, Key Vault, identities.',
+            },
+          ],
           effects:
             'spi up creates a resource group named spi-stack-<name> containing an AKS Automatic cluster, Cosmos DB, Storage, Service Bus, Key Vault, and managed identities. It then configures the cluster and starts Flux. Even --dry-run creates or updates the resource group and its naming tag.',
           steps: [
             {
               command: 'az login\naz account show',
+              touch: { kind: 'local', note: 'signs in; creates nothing' },
               expect:
                 'Check the subscription name and ID: this is where Azure will bill the deployment. If it is wrong, use az account set to select your subscription before continuing.',
             },
             {
               command: 'spi up --env <name> --dry-run',
+              touch: {
+                kind: 'creates',
+                note: 'creates the resource group, even as a dry run',
+              },
               expect:
                 'Check the proposed AKS and data-service changes and the final “Dry-run complete” message. The resource group now exists, even though the stack has not been deployed; use the cleanup steps below if you stop here. Resources that depend on the AKS OIDC issuer are not included in this preview.',
               sources: ['lifecycle', 'cli'],
             },
             {
               command: 'spi up --env <name>',
+              touch: {
+                kind: 'creates',
+                note: 'creates and starts billing the environment',
+              },
               expect:
                 'This deploys the core profile in westus3, and Flux follows the main branch of the stack repository. The Bicep templates come from the installed CLI, which carries them inside its wheel, while the Kubernetes manifests come from that branch; keeping the CLI current keeps the two together. To choose another region, add --location <region> to both spi up commands; the pinned CLI help notes capacity constraints in eastus2 and centralus. A successful exit confirms the requested Git revision, not API readiness: Flux continues the rollout in the background.',
               sources: ['lifecycle', 'cli', 'packaging'],
@@ -405,18 +496,21 @@ export const chapters = {
             {
               click:
                 'While provisioning runs, open the deployment lifecycle document and read “From invocation to CLI exit”, then “Timing and readiness”.',
+              touch: { kind: 'reads', note: 'reading while you wait' },
               expect:
                 'Follow the stage table to Git-source finalization: before returning, the CLI verifies the requested revision, suspends Git fetching, and writes the deploy record, while Flux is already reconciling. Then compare the five readiness signals: CLI exit, a Git-source artifact, Ready Kustomizations and HelmReleases, Complete initialization Jobs, and a successful authenticated API request. Each confirms something different, and none guarantees the next.',
               sources: ['lifecycle'],
             },
             {
               command: 'spi status --watch',
+              touch: { kind: 'reads', note: 'reads rollout progress' },
               expect:
                 'Watch for Kustomizations and HelmReleases to become Ready and initialization Jobs to become Complete. A Running pod alone does not mean it is ready. This command checks rollout progress, not API responses; add --json in a separate run when you want the same status as structured output.',
               sources: ['lifecycle'],
             },
             {
               command: 'spi info --show-apis',
+              touch: { kind: 'reads', note: 'reads the API URLs' },
               expect:
                 'Find the partition API URL ending in /api/partition/v1/. Copy its hostname and replace <host> in the next command with it.',
               sources: ['cli'],
@@ -428,6 +522,7 @@ export const chapters = {
                 powershell:
                   'curl.exe -sS -H "Authorization: Bearer $(spi token)" "https://<host>/api/partition/v1/partitions/opendes"',
               },
+              touch: { kind: 'reads', note: 'one authenticated lookup' },
               expect:
                 'The response should contain the stored configuration for opendes as JSON. The command uses spi token to get a ten-minute bearer token for the deploy identity and include it in the Authorization header. A successful response confirms this authenticated partition lookup works; it does not test search, storage, or ingestion.',
               sources: ['workloadIdentity', 'cli'],
@@ -435,6 +530,10 @@ export const chapters = {
             {
               click:
                 'Decide: keep the environment for lesson 06, or remove it now.',
+              touch: {
+                kind: 'reads',
+                note: 'a decision; billing continues until you remove it',
+              },
               expect:
                 'Keep it to avoid provisioning again for lesson 06; Azure charges continue while you keep the resources. To remove it now, follow the cleanup steps below, and read “Steady state and teardown” to compare what each removal option leaves behind.',
               sources: ['lifecycle'],
@@ -449,17 +548,45 @@ export const chapters = {
             steps: [
               {
                 command: 'spi down --env <name>',
+                touch: {
+                  kind: 'removes',
+                  note: 'deletes the cluster and data; keeps the names',
+                },
                 expect:
                   'This deletes the cluster, data services, and their data, but keeps the resource group, managed identities, and naming tags for reuse. The command waits up to 45 minutes; that is a timeout, not an expected duration. If it exits with an error, inspect the listed remaining resources and retry.',
                 sources: ['lifecycle'],
               },
               {
                 command: 'spi down --env <name> --purge',
+                touch: {
+                  kind: 'removes',
+                  note: 'deletes the resource group and identities',
+                },
                 expect:
                   'Use --purge when you no longer need the environment. It removes the identities’ external grants and deletes the resource group, including the identities, with a 45-minute timeout. Confirm removal with az group exists --name spi-stack-<name>; it should print false.',
                 sources: ['lifecycle'],
               },
             ],
+            ledger: {
+              columns: ['spi down', 'spi down --purge'],
+              rows: [
+                { item: 'AKS cluster', after: ['removed', 'removed'] },
+                {
+                  item: 'Cosmos DB, Storage, Service Bus, Key Vault, and their data',
+                  after: ['removed', 'removed'],
+                },
+                {
+                  item: 'Resource group spi-stack-<name>',
+                  after: ['kept', 'removed'],
+                },
+                { item: 'Managed identities', after: ['kept', 'removed'] },
+                {
+                  item: 'The identities’ external grants',
+                  after: ['kept', 'removed'],
+                },
+                { item: 'Naming tags', after: ['kept', 'removed'] },
+              ],
+            },
             remains:
               'After ordinary spi down: the resource group spi-stack-<name>, its managed identities, and its naming tags, so a later spi up reuses the same names. After --purge: nothing of the environment.',
           },
@@ -622,21 +749,49 @@ export const chapters = {
             'Read the source on GitHub without creating an environment. Only the optional final command needs access to a running stack.',
           prerequisites: [
             {
-              text: 'A browser for the source steps. For the optional image check, use a stack from lesson 02 with kubectl connected through spi connect.',
-              sources: ['partitionProvider', 'lifecycle'],
+              kind: 'browser',
+              label: 'A browser',
+              text: 'For the source steps.',
+              sources: ['partitionProvider'],
+            },
+            {
+              kind: 'lesson',
+              chapter: 'bring-up',
+              label: 'Optional: a stack from lesson 02',
+              text: 'With kubectl connected through spi connect, for the image check only.',
+              sources: ['lifecycle'],
             },
           ],
           time: {
             active: 'About 15 minutes.',
             wait: 'No automated waiting.',
             cleanup: 'Under a minute.',
+            minutes: { active: 15, wait: 0, cleanup: 1 },
           },
+          footprint: [
+            {
+              place: 'workstation',
+              state: 'untouched',
+              note: 'Nothing installed; the optional kubectl step uses a connection you already have.',
+            },
+            {
+              place: 'github',
+              state: 'reads',
+              note: 'The reference fork’s source at a pinned commit, in the browser.',
+            },
+            {
+              place: 'azure',
+              state: 'reads',
+              note: 'Optional: one field of one Deployment, through kubectl.',
+            },
+          ],
           effects:
             'Nothing is created or changed. The steps read the reference fork at a pinned commit; the optional kubectl step reads one field of one Deployment.',
           steps: [
             {
               click:
                 'Open PartitionServiceImpl at 3a5690d and find getPartition.',
+              touch: { kind: 'reads', note: 'reads the pinned source' },
               expect:
                 'The provider checks its cache first with safeGet. If the result is null, tableStore.getPartition reads stored configuration from Azure Table Storage in common Storage. The provider wraps the result in PartitionInfo and caches it with safePut; an empty result returns 404. This lookup does not visit the partition’s Cosmos DB, blob Storage, or Service Bus.',
               sources: ['partitionProvider'],
@@ -644,6 +799,7 @@ export const chapters = {
             {
               click:
                 'Scroll to the private safeGet method near the end of the same file.',
+              touch: { kind: 'reads', note: 'reads the pinned source' },
               expect:
                 'A failed cache read does not stop the lookup. In safeGet, the catch block logs a warning and returns null, so getPartition falls back to Table Storage just as it would for a cache miss.',
               sources: ['partitionProvider', 'partitionCacheFix'],
@@ -651,12 +807,14 @@ export const chapters = {
             {
               click:
                 'Open the provider POM and find partition-core, then spring-boot-maven-plugin.',
+              touch: { kind: 'reads', note: 'reads the pinned source' },
               expect:
                 'The Azure module depends on partition-core, the shared service code, at the same project version. The spring-boot-maven-plugin repackage goal bundles both into one executable JAR, with PartitionApplication as its entry point.',
               sources: ['partitionPom'],
             },
             {
               click: 'Open build/Dockerfile.',
+              touch: { kind: 'reads', note: 'reads the pinned source' },
               expect:
                 'The image receives the already-built JAR through COPY ${JAR_FILE} /app.jar. Maven does not run here. The OpenJDK 17 base runs that JAR, which contains both the shared code and the Azure provider.',
               sources: ['partitionDockerfile'],
@@ -664,6 +822,10 @@ export const chapters = {
             {
               command:
                 "kubectl get deployment partition -n osdu -o jsonpath='{.spec.template.spec.containers[0].image}'",
+              touch: {
+                kind: 'reads',
+                note: 'optional; reads one Deployment field',
+              },
               expect:
                 'Optional: read the image reference configured in the partition Deployment’s pod template. This shows the intended image, not whether every running pod has adopted it or whether it was built from the fork source you just read. Lesson 06 explains how a candidate image is pinned into an environment.',
               sources: ['partitionRelease', 'images'],
@@ -678,6 +840,7 @@ export const chapters = {
             steps: [
               {
                 click: 'Close the tabs.',
+                touch: { kind: 'reads', note: 'nothing to remove' },
                 expect:
                   'Nothing to remove; the optional kubectl step read one field.',
               },
