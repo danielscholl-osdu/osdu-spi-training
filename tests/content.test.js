@@ -1598,6 +1598,38 @@ test('tryIt validation rejects focused invalid clones', () => {
   );
 });
 
+test('Try it guidance preserves tools for lesson 02 and bounds the optional image check', () => {
+  const setup = chapters['running-stack'].tryIt;
+  const install = setup.variants[0];
+  const release =
+    chapters['bring-up'].tryIt.variants[0].tested.cli.split(';')[0];
+  const versionChoice = install.prerequisites.find(({ text }) =>
+    text.includes(release),
+  );
+  assert.ok(versionChoice, 'name the lesson 02 version before installation');
+  const setupMarkup = tryItBand(chapters['running-stack']);
+  assert.ok(
+    setupMarkup.indexOf(escapeHtml(versionChoice.text)) <
+      setupMarkup.indexOf('class="try-it-command"'),
+    'the version choice precedes the installer',
+  );
+  assert.match(install.time.cleanup, /No cleanup needed.*lesson 02/);
+  assert.match(install.cleanup.steps[0].expect, /^Optional:/);
+  assert.match(install.cleanup.steps[0].expect, /Keep the CLI installed/);
+  const help = install.steps.find(({ command }) => command === 'spi up --help');
+  assert.match(help.expect, /does not deploy anything/);
+
+  const source = chapters['spi-boundary'].tryIt.variants[0];
+  assert.equal(source.access, 'browser only');
+  const image = source.steps.find(({ command }) =>
+    command?.startsWith('kubectl get deployment'),
+  );
+  assert.match(image.expect, /^Optional:/);
+  assert.match(image.expect, /configured.*pod template/);
+  assert.match(image.expect, /not whether every running pod/);
+  assert.match(image.expect, /whether it was built from the fork source/);
+});
+
 test('tryIt renderer returns an inert, escaped native disclosure', () => {
   assert.equal(tryItBand({}), '');
 
