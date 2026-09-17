@@ -776,7 +776,7 @@ export const chapters = {
             {
               place: 'github',
               state: 'reads',
-              note: 'The reference fork’s source at a pinned commit, in the browser.',
+              note: 'The reference fork’s source on its main branch, in the browser.',
             },
             {
               place: 'azure',
@@ -785,12 +785,11 @@ export const chapters = {
             },
           ],
           effects:
-            'Nothing is created or changed. The steps read the reference fork at a pinned commit; the optional kubectl step reads one field of one Deployment.',
+            'Nothing is created or changed. The steps read the reference fork’s main branch; the optional kubectl step reads one field of one Deployment.',
           steps: [
             {
-              click:
-                'Open PartitionServiceImpl at 3a5690d and find getPartition.',
-              touch: { kind: 'reads', note: 'reads the pinned source' },
+              click: 'Open PartitionServiceImpl and find getPartition.',
+              touch: { kind: 'reads', note: 'reads the fork’s source' },
               expect:
                 'The provider checks its cache first with safeGet. If the result is null, tableStore.getPartition reads stored configuration from Azure Table Storage in common Storage. The provider wraps the result in PartitionInfo and caches it with safePut; an empty result returns 404. This lookup does not visit the partition’s Cosmos DB, blob Storage, or Service Bus.',
               sources: ['partitionProvider'],
@@ -798,7 +797,7 @@ export const chapters = {
             {
               click:
                 'Scroll to the private safeGet method near the end of the same file.',
-              touch: { kind: 'reads', note: 'reads the pinned source' },
+              touch: { kind: 'reads', note: 'reads the fork’s source' },
               expect:
                 'A failed cache read does not stop the lookup. In safeGet, the catch block logs a warning and returns null, so getPartition falls back to Table Storage just as it would for a cache miss.',
               sources: ['partitionProvider', 'partitionCacheFix'],
@@ -806,14 +805,14 @@ export const chapters = {
             {
               click:
                 'Open the provider POM and find partition-core, then spring-boot-maven-plugin.',
-              touch: { kind: 'reads', note: 'reads the pinned source' },
+              touch: { kind: 'reads', note: 'reads the fork’s source' },
               expect:
                 'The Azure module depends on partition-core, the shared service code, at the same project version. The spring-boot-maven-plugin repackage goal bundles both into one executable JAR, with PartitionApplication as its entry point.',
               sources: ['partitionPom'],
             },
             {
               click: 'Open build/Dockerfile.',
-              touch: { kind: 'reads', note: 'reads the pinned source' },
+              touch: { kind: 'reads', note: 'reads the fork’s source' },
               expect:
                 'The image receives the already-built JAR through COPY ${JAR_FILE} /app.jar. Maven does not run here. The OpenJDK 17 base runs that JAR, which contains both the shared code and the Azure provider.',
               sources: ['partitionDockerfile'],
@@ -832,8 +831,8 @@ export const chapters = {
           ],
           alternate: {
             observation:
-              'The provider file shows a different revision, or you cannot find the named method.',
-            next: 'Reopen the pinned provider source link and check that the revision starts with 3a5690d. The main branch changes as upstream and template updates arrive.',
+              'You cannot find the named method, or the file no longer matches the description.',
+            next: 'The main branch changes as upstream and template updates arrive. Search the file for getPartition and safeGet; if they moved, the file’s history on GitHub shows the change that moved them.',
           },
           cleanup: {
             steps: [
@@ -979,7 +978,7 @@ export const chapters = {
       community: {
         label: 'Community implementation',
         image: 'Community Partition service image',
-        revision: 'Partition 5aa406b9 · CIMPL Stack fe56aa1b',
+        origin: 'Community Partition repository · CIMPL Stack',
         hosting: 'Kubernetes in the CIMPL cluster',
         process: {
           label: 'Inside the community service process',
@@ -1026,7 +1025,7 @@ export const chapters = {
       azure: {
         label: 'Azure implementation',
         image: 'Azure Partition service image',
-        revision: 'osdu-spi-partition 3a5690d · SPI Stack dc2c956',
+        origin: 'Azure/osdu-spi-partition · Azure/osdu-spi-stack',
         hosting: 'Partition service pod in AKS for your environment',
         process: {
           label: 'Inside the Azure service process',

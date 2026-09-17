@@ -575,7 +575,7 @@ function partitionLookupLane(lane, key) {
     <header>
       <span class="guide-kicker">${escapeHtml(lane.label)}</span>
       <h3>${escapeHtml(lane.image)}</h3>
-      <p>${escapeHtml(lane.revision)}</p>
+      <p>${escapeHtml(lane.origin)}</p>
       <small>${escapeHtml(lane.hosting)}</small>
     </header>
     <div class="partition-process">

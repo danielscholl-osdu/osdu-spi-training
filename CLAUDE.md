@@ -57,7 +57,7 @@ A vanilla ES module single-page app. Vite's `root` is `src/`, `publicDir` is `pu
 - `listen` cues start on a marker of their episode;
 - audio, video, and poster files exist in `public/`.
 
-Source links must point at the published docs (`azure.github.io/osdu-spi/`) or `github.com/Azure/osdu-spi-stack` and `osdu-spi-partition`; comparison evidence may also point at the community Partition repository and `cimpl-stack` when the URL uses a pinned full-hash blob revision. When sibling checkouts exist at `../osdu-spi`, `../osdu-spi-stack`, or `../osdu-spi-partition`, each source `path` must also exist there. A missing file means the upstream moved; re-check the claim, and update the "Reviewed against" revisions and dated statements in `docs/README.md`.
+Source links must point at the published docs (`azure.github.io/osdu-spi/`) or the default branch (`main`) of `github.com/Azure/osdu-spi-stack` and `osdu-spi-partition`; comparison evidence may also point at the default branch of the community Partition repository (`master`) and `cimpl-stack` (`main`). A file link never pins a revision and a label never carries a commit id: the site follows the repositories as they are, and the revisions a claim was reviewed against are recorded in `docs/README.md`, not in the interface. A commit link (the cache-fallback fix) names an event, not a snapshot. When sibling checkouts exist at `../osdu-spi`, `../osdu-spi-stack`, or `../osdu-spi-partition`, each source `path` must also exist there. A missing file means the upstream moved; re-check the claim, and update the "Reviewed against" revisions and dated statements in `docs/README.md`.
 
 ## Things not to edit directly
 

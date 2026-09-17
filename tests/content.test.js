@@ -93,19 +93,18 @@ const mapChapters = Object.entries(chapters).filter(
 const pageChapters = Object.entries(chapters).filter(
   ([, chapter]) => chapter.kind === 'page',
 );
+// Source links follow each repository's default branch. A commit link names
+// an event (the fix that landed), never a snapshot of a file.
 const fullRevision = '[0-9a-f]{40}';
 const partitionSourcePattern = new RegExp(
-  `^https://github\\.com/Azure/osdu-spi-partition(?:/blob/(?:main|${fullRevision})/|/commit/${fullRevision}$|$)`,
+  `^https://github\\.com/Azure/osdu-spi-partition(?:/blob/main/|/commit/${fullRevision}$|$)`,
 );
-const stackSourcePattern = new RegExp(
-  `^https://github\\.com/Azure/osdu-spi-stack/blob/(?:main|${fullRevision})/`,
-);
-const communityPartitionSourcePattern = new RegExp(
-  `^https://community\\.opengroup\\.org/osdu/platform/system/partition/-/blob/${fullRevision}/`,
-);
-const cimplStackSourcePattern = new RegExp(
-  `^https://community\\.opengroup\\.org/osdu/platform/deployment-and-operations/cimpl-stack/-/blob/${fullRevision}/`,
-);
+const stackSourcePattern =
+  /^https:\/\/github\.com\/Azure\/osdu-spi-stack\/blob\/main\//;
+const communityPartitionSourcePattern =
+  /^https:\/\/community\.opengroup\.org\/osdu\/platform\/system\/partition\/-\/blob\/master\//;
+const cimplStackSourcePattern =
+  /^https:\/\/community\.opengroup\.org\/osdu\/platform\/deployment-and-operations\/cimpl-stack\/-\/blob\/main\//;
 // Sibling checkouts the content is reviewed against; a same-named directory
 // for a community repository is not one of them.
 const siblingRepos = new Set([
@@ -2057,9 +2056,22 @@ test('tryIt renderer returns an inert, escaped native disclosure', () => {
   );
 });
 
-test('comparison source URLs require approved repositories and immutable revisions', () => {
+test('source URLs follow default branches and never pin a revision', () => {
   assert.match(sources.partitionCacheFix.href, partitionSourcePattern);
-  const pinnedSources = [
+  for (const [key, source] of Object.entries(sources)) {
+    assert.doesNotMatch(
+      source.href,
+      /\/blob\/[0-9a-f]{7,40}\//,
+      `${key}: a file link follows the default branch`,
+    );
+    assert.doesNotMatch(
+      source.label,
+      /\([0-9a-f]{7,40}\)/,
+      `${key}: a label carries no commit id`,
+    );
+    assert.equal(source.revision, undefined, `${key}: no pinned revision`);
+  }
+  const branchSources = [
     ['architecture', stackSourcePattern],
     ['partitionProvider', partitionSourcePattern],
     ['partitionPom', partitionSourcePattern],
@@ -2074,21 +2086,24 @@ test('comparison source URLs require approved repositories and immutable revisio
     ['cimplPartitionSecrets', cimplStackSourcePattern],
   ];
 
-  for (const [key, pattern] of pinnedSources) {
+  for (const [key, pattern] of branchSources) {
     const source = sources[key];
     assert.match(source.href, pattern, key);
     assert.ok(source.href.endsWith(`/${source.path}`), key);
-    assert.ok(source.href.includes(`/blob/${source.revision}/`), key);
-    assert.match(source.label, new RegExp(source.revision.slice(0, 7)), key);
   }
 
   assert.doesNotMatch(
-    'https://community.opengroup.org/osdu/platform/system/partition/-/blob/main/partition-core/pom.xml',
+    'https://community.opengroup.org/osdu/platform/system/partition/-/blob/5aa406b978dec178fe05f1c9a0ee0ca02eb239b4/partition-core/pom.xml',
     communityPartitionSourcePattern,
+    'the community partition repository is read on master, not a snapshot',
   );
   assert.doesNotMatch(
-    'https://community.opengroup.org/osdu/platform/deployment-and-operations/cimpl-stack/-/blob/fe56aa1b/docs/architecture.md',
+    'https://community.opengroup.org/osdu/platform/deployment-and-operations/cimpl-stack/-/blob/fe56aa1b13e9a15aee8af97f103484f8240a9cb3/docs/architecture.md',
     cimplStackSourcePattern,
+  );
+  assert.doesNotMatch(
+    'https://github.com/Azure/osdu-spi-stack/blob/dc2c95638ded6459538085cfdb2ada46b692c27b/docs/architecture.md',
+    stackSourcePattern,
   );
   assert.doesNotMatch(
     'https://github.com/other/osdu-spi-partition/blob/3a5690da3147d022ca9a2402858cd7b96e4688cf/pom.xml',
@@ -3331,12 +3346,12 @@ test('partition comparison record renders one closed, bounded two-lane disclosur
     'GET /api/partition/v1/partitions/opendes',
   );
   assert.equal(
-    comparison.community.revision,
-    'Partition 5aa406b9 · CIMPL Stack fe56aa1b',
+    comparison.community.origin,
+    'Community Partition repository · CIMPL Stack',
   );
   assert.equal(
-    comparison.azure.revision,
-    'osdu-spi-partition 3a5690d · SPI Stack dc2c956',
+    comparison.azure.origin,
+    'Azure/osdu-spi-partition · Azure/osdu-spi-stack',
   );
   assert.deepEqual(comparison.community.sources, [
     'communityPartitionInterface',

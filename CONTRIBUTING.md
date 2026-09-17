@@ -42,7 +42,7 @@ Each component detail contains `label`, `title`, `body`, `artifact: { label, cod
 
 Use `summary` for an authored initial explanation and `more` only for deliberately optional detail. Without `summary`, the drawer shows the complete `title` and `body`; it does not split prose at punctuation or create an automatic disclosure. Source links always put the primary `source` first, then unique `goDeeper` keys in authored order.
 
-A chapter-local comparison keeps its authored record in `chapters.js`, its specialized native figure in `infographics.js`, and its disclosure wrapper in `pages.js`. Cite community implementation behavior from the service repository, environment bindings from the stack configuration, and identify both with pinned source snapshots.
+A chapter-local comparison keeps its authored record in `chapters.js`, its specialized native figure in `infographics.js`, and its disclosure wrapper in `pages.js`. Cite community implementation behavior from the service repository and environment bindings from the stack configuration, linked on their default branches; record the revisions compared in `docs/README.md`, not in the link.
 
 A diagram button's `data-detail` must match a key in that content. Audio markers, field checks, and poster links use site routes; the integrity checks parse each route and confirm that a `detail` names a component on that map and a `guide` names a field guide. They also catch missing explanations, duplicate component IDs within a scene, broken chapter-to-renderer connections, missing poster and audio files, and missing source files when sibling checkouts are present.
 
