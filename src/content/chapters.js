@@ -154,19 +154,23 @@ export const chapters = {
       activity: 'prepare your workstation',
       summary: 'Try it: prepare your workstation · no Azure sign-in',
       outcome:
-        'Install the spi CLI and its prerequisite tools before lesson 02; nothing here signs you in.',
+        'Prepare the command-line tools you’ll use in lesson 02, without signing in to Azure.',
       badge: 'workstation',
       variants: [
         {
           label: 'Install the CLI and check the tools',
           result:
-            'The spi CLI and its five prerequisite tools are installed, and you can tell tool readiness from Azure access: nothing in this activity signs you in.',
+            'Install the SPI CLI and check that its five prerequisite tools are available. You won’t need to sign in to Azure.',
           access: 'workstation setup',
           accessNote:
-            'No Azure subscription or GitHub account is needed for this activity; it is preparation for lesson 02.',
+            'You need permission to install tools on your workstation, but no Azure subscription or GitHub account.',
           prerequisites: [
             {
-              text: 'uv installed, and az, kubectl, kubelogin, and flux installed or installable with your package manager. bicep can come from the az CLI extension.',
+              text: 'Start with uv installed. The Bash/zsh installer also needs curl and grep; the PowerShell installer uses Invoke-RestMethod. You can install any missing SPI prerequisite tools after running spi check.',
+              sources: ['install'],
+            },
+            {
+              text: 'Continuing to lesson 02? Use the install guide’s pinned-release instructions to install spi 0.16.0 instead of running the latest-release installer below.',
               sources: ['install'],
             },
           ],
@@ -174,10 +178,11 @@ export const chapters = {
             active:
               'About 10 minutes when uv and the tools are already present; longer if you install them.',
             wait: 'No automated waiting.',
-            cleanup: 'Under a minute.',
+            cleanup:
+              'No cleanup needed to continue to lesson 02. Optional uninstall takes under a minute.',
           },
           effects:
-            'Installs the spi tool into uv’s tool directory and puts it on PATH. Nothing is created or changed in Azure or GitHub; spi check reads tool versions only.',
+            'Installs spi locally through uv and makes it available on PATH. Any prerequisite tools you install also stay on your workstation. Nothing is created or changed in Azure or GitHub; spi check only reads tool versions.',
           steps: [
             {
               command: {
@@ -187,34 +192,35 @@ export const chapters = {
                   "$wheel = (Invoke-RestMethod https://api.github.com/repos/Azure/osdu-spi-stack/releases/latest).assets.Where({ $_.name -like '*-py3-none-any.whl' }).browser_download_url\nuv tool install --default-index https://packagefeedproxy.microsoft.io/pypi/simple/ $wheel\nspi --version",
               },
               expect:
-                'uv installs the spi tool, and spi --version prints the latest release. The lesson 02 walkthrough records spi 0.16.0; use the install guide’s pinned-release instructions if you need that version.',
+                'Check the version printed by spi --version. The command above installs the latest release, which may differ from the spi 0.16.0 used in lesson 02. If you chose the pinned installation, check that it reports 0.16.0.',
               sources: ['installShells'],
             },
             {
               command: 'spi check',
               expect:
-                'A table titled SPI Stack Prerequisites with five rows, az, bicep, kubectl, kubelogin, and flux, each OK with a version, then “All 5 tools available.” Nothing asked you to sign in: the check reads tool versions and says nothing about your subscription.',
+                'Check that az, bicep, kubectl, kubelogin, and flux each show OK and a version, followed by “All 5 tools available.” If a tool is missing, install it and rerun spi check. This confirms the tools are available, not that you have access to an Azure subscription.',
             },
             {
               command: 'spi up --help',
               expect:
-                'Read, do not run. --env is required; --profile offers bare, minimal, and core, with core the default; --location defaults to westus3; --partition can repeat; --tag pins an immutable release of the GitOps source.',
+                'Run this help command; it does not deploy anything. Find --env for the environment name, --profile for the workloads, --location for the region, and --tag for a pinned release. Lesson 02 uses these options to create an environment.',
             },
           ],
           alternate: {
             observation:
               'A row in the spi check table shows a status other than OK.',
-            next: 'Install that tool with your package manager and rerun spi check. bicep is found through the az CLI’s bicep extension even when no bicep binary is on your PATH, and the check reports it OK.',
+            next: 'Install the missing tool with your package manager, then rerun spi check. Bicep can be provided through the Azure CLI; it does not need a separate bicep executable on PATH.',
           },
           cleanup: {
             steps: [
               {
                 command: 'uv tool uninstall spi',
-                expect: 'uv removes the spi tool and its entry on PATH.',
+                expect:
+                  'Optional: run this only if you no longer want the CLI installed. It removes spi and its entry on PATH. Keep the CLI installed if you are continuing to lesson 02.',
               },
             ],
             remains:
-              'The five prerequisite tools stay installed. Nothing was created in Azure or GitHub.',
+              'Uninstalling spi leaves uv and any prerequisite tools you installed in place. Nothing was created in Azure or GitHub.',
           },
           sources: ['install'],
           tested: {
@@ -679,19 +685,19 @@ export const chapters = {
       activity: 'trace the partition lookup',
       summary: 'Try it: trace the partition lookup · browser only',
       outcome:
-        'Find the lines where the Azure provider reads its cache and falls back to Table Storage.',
+        'Trace the partition lookup from the provider’s cache to its Table Storage fallback.',
       badge: 'code-magnifier',
       variants: [
         {
           label: 'Follow the lookup in the source',
           result:
-            'You can point at the line where the Azure provider reads its cache, the line where it falls back to Table Storage, and the build steps that put both into the one image the partition Deployment runs.',
+            'Follow a partition lookup through the Azure provider’s cache and Table Storage fallback. Then see how the shared service code and Azure provider are packaged into one image.',
           access: 'browser only',
           accessNote:
-            'The last step is optional and needs a stack from lesson 02 with kubectl connected; everything else is reading on GitHub.',
+            'Read the source on GitHub without creating an environment. Only the optional final command needs access to a running stack.',
           prerequisites: [
             {
-              text: 'A browser. For the optional last step only, a stack from lesson 02 and kubectl connected with spi connect.',
+              text: 'A browser for the source steps. For the optional image check, use a stack from lesson 02 with kubectl connected through spi connect.',
               sources: ['partitionProvider', 'lifecycle'],
             },
           ],
@@ -707,41 +713,41 @@ export const chapters = {
               click:
                 'Open PartitionServiceImpl at 3a5690d and find getPartition.',
               expect:
-                'The first line of work is safeGet(partitionServiceCache, partitionId). Only when that returns null does the method call tableStore.getPartition(partitionId), build a PartitionInfo from the map, and safePut it back into the cache. An empty map raises 404 “partition not found”.',
+                'The provider checks its cache first with safeGet. If the result is null, tableStore.getPartition reads stored configuration from Azure Table Storage in common Storage. The provider wraps the result in PartitionInfo and caches it with safePut; an empty result returns 404. This lookup does not visit the partition’s Cosmos DB, blob Storage, or Service Bus.',
               sources: ['partitionProvider'],
             },
             {
               click:
                 'Scroll to the private safeGet method near the end of the same file.',
               expect:
-                'The cache read is wrapped in try/catch: an exception is logged as a warning, “Partition cache (Redis/AMR) read failed … treating as cache miss and using durable store”, and null is returned. A cache outage becomes a miss, so the Table Storage read still happens.',
+                'A failed cache read does not stop the lookup. In safeGet, the catch block logs a warning and returns null, so getPartition falls back to Table Storage just as it would for a cache miss.',
               sources: ['partitionProvider', 'partitionCacheFix'],
             },
             {
               click:
                 'Open the provider POM and find partition-core, then spring-boot-maven-plugin.',
               expect:
-                'A dependency on org.opengroup.osdu:partition-core at the project version: the shared service code is compiled into this module. Under build, spring-boot-maven-plugin runs the repackage goal with mainClass PartitionApplication: one executable JAR holds the shared code and the Azure implementation together.',
+                'The Azure module depends on partition-core, the shared service code, at the same project version. The spring-boot-maven-plugin repackage goal bundles both into one executable JAR, with PartitionApplication as its entry point.',
               sources: ['partitionPom'],
             },
             {
               click: 'Open build/Dockerfile.',
               expect:
-                'COPY ${JAR_FILE} /app.jar onto an MCR OpenJDK 17 base, and no Maven runs in the image. One image, one JAR, both source owners inside it.',
+                'The image receives the already-built JAR through COPY ${JAR_FILE} /app.jar. Maven does not run here. The OpenJDK 17 base runs that JAR, which contains both the shared code and the Azure provider.',
               sources: ['partitionDockerfile'],
             },
             {
               command:
                 "kubectl get deployment partition -n osdu -o jsonpath='{.spec.template.spec.containers[0].image}'",
               expect:
-                'Optional, with a stack up. The image reference the cluster runs for partition: the HelmRelease named partition in osdu-flux installs the osdu-spi-service chart into the osdu namespace, so the Deployment is named partition. A fresh stack runs a community image resolved into the image lock; a fork-built candidate appears only in lesson 06, when a workflow pins one.',
+                'Optional: read the image reference configured in the partition Deployment’s pod template. This shows the intended image, not whether every running pod has adopted it or whether it was built from the fork source you just read. Lesson 06 explains how a candidate image is pinned into an environment.',
               sources: ['partitionRelease', 'images'],
             },
           ],
           alternate: {
             observation:
-              'A link opens main instead of 3a5690d, or a symbol is not where this band says.',
-            next: 'Use the pinned links in the sources; the fork moves as template sync and upstream sync land. The revision in each link is the one this band was checked against.',
+              'The provider file shows a different revision, or you cannot find the named method.',
+            next: 'Reopen the pinned provider source link and check that the revision starts with 3a5690d. The main branch changes as upstream and template updates arrive.',
           },
           cleanup: {
             steps: [
