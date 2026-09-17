@@ -403,6 +403,52 @@ export function partitionComparison(key) {
   </details>`;
 }
 
+// Who to ask about a field check, in the owner colors the maps use, and the
+// tool whose view of the world its check command reads.
+export const mythOwners = {
+  cli: 'CLI + Bicep',
+  flux: 'Flux',
+  k8s: 'Controllers and operators',
+  you: 'You, the operator',
+  fork: 'The service fork',
+};
+export const mythTools = {
+  az: 'az',
+  kubectl: 'kubectl',
+  spi: 'spi',
+  flux: 'flux',
+  gh: 'gh',
+  git: 'git',
+  mvn: 'mvn',
+  jq: 'jq',
+  curl: 'curl',
+};
+
+export function mythTool(check) {
+  const first = check.trim().split(/\s+/)[0];
+  if (!Object.hasOwn(mythTools, first))
+    throw new Error(`Unknown field-check tool: ${first}`);
+  return first;
+}
+
+export function mythChips(myth) {
+  const owner = mythOwners[myth.owner];
+  if (!owner) throw new Error(`Unknown field-check owner: ${myth.owner}`);
+  const tool = mythTool(myth.check);
+  return `<p class="myth-chips"><span class="myth-owner owner-${myth.owner}"><i aria-hidden="true"></i><span class="myth-chip-kind">Ask</span>${owner}</span><span class="myth-tool">${glyph('tool', 'myth-glyph')}<span class="myth-chip-kind">Check with</span><code>${mythTools[tool]}</code></span></p>`;
+}
+
+export function mythOwnerLegend() {
+  return `<div class="myth-owner-legend" aria-label="Owner colors"><span class="myth-owner-legend-title">Ask</span>${Object.entries(
+    mythOwners,
+  )
+    .map(
+      ([key, name]) =>
+        `<span class="owner-${key}"><i aria-hidden="true"></i>${name}</span>`,
+    )
+    .join('')}</div>`;
+}
+
 function mythCard(myth, compact = false) {
   const source = sources[myth.source];
   if (compact)
@@ -417,6 +463,7 @@ function mythCard(myth, compact = false) {
   return `<article class="field-check-row" id="myth-${myth.id}">
     <p class="field-check-assumption" id="${assumptionId}">“${escapeHtml(myth.claim)}”</p>
     <p class="field-check-correction">${escapeHtml(myth.correction)}</p>
+    ${mythChips(myth)}
     <details class="field-check-evidence">
       <summary aria-describedby="${assumptionId}">Check and sources</summary>
       <div class="field-check-evidence-body">
@@ -493,7 +540,7 @@ function homePage() {
 }
 
 function mythsPage() {
-  return mythThemes
+  return `${mythOwnerLegend()}${mythThemes
     .map((theme) => {
       const entries = myths.filter((myth) => myth.theme === theme.id);
       return `<section class="myth-theme" aria-label="${theme.title}">
@@ -501,7 +548,7 @@ function mythsPage() {
         <div class="field-check-list">${entries.map((myth) => mythCard(myth)).join('')}</div>
       </section>`;
     })
-    .join('');
+    .join('')}`;
 }
 
 export function isLifecycleLesson(chapter) {
@@ -762,6 +809,7 @@ export function mythCallout(id, chapterKey) {
   return `<aside class="easy-mistake" aria-label="Easy mistake">
     <div class="easy-mistake-head"><span class="guide-kicker">Easy mistake</span></div>
     <p class="myth-claim">“${myth.claim}”</p>
+    ${mythChips(myth)}
     <p class="myth-reality">${myth.reality}</p>
     <code class="myth-check">${escapeHtml(myth.check)}</code>
     <p class="myth-links">${guideHere ? `<button type="button" class="myth-guide" data-guide-open="${guideHere}">${myth.routeLabel} ↓</button>` : `<a href="${href}" ${sameView ? 'data-map-jump' : ''}>${sameView ? 'Show it on the map ↑' : `${myth.routeLabel} →`}</a>`}<a href="${source.href}" target="_blank" rel="noopener noreferrer">${source.label} ↗</a></p>
@@ -784,7 +832,15 @@ function listenPage(route) {
         <div class="listen-meta"><b data-player="episode">${episode.title}</b><span><span data-player="current">${formatTime(startAt || 0)}</span> / <span data-player="total">${formatTime(episode.duration)}</span></span></div>
         <label class="listen-speed">Speed <select data-player="rate"><option value="0.8">0.8×</option><option value="1" selected>1×</option><option value="1.25">1.25×</option><option value="1.5">1.5×</option><option value="2">2×</option></select></label>
       </div>
-      <input type="range" class="listen-seek" data-player="seek" min="0" max="${Math.floor(episode.duration)}" value="${startAt || 0}" step="1" aria-label="Seek" />
+      <div class="listen-timeline">
+        <div class="listen-ticks" role="group" aria-label="Markers on the timeline">${episode.markers
+          .map(
+            (marker) =>
+              `<button type="button" class="listen-tick" style="left: ${((100 * marker.time) / episode.duration).toFixed(2)}%" data-seek="${marker.time}" data-episode="${episode.id}" data-marker-start="${marker.time}" data-marker-end="${marker.end}" title="${escapeHtml(`${formatTime(marker.time)} · ${marker.title}`)}" aria-label="${escapeHtml(`Play from ${formatTime(marker.time)}, ${marker.title}`)}"></button>`,
+          )
+          .join('')}</div>
+        <input type="range" class="listen-seek" data-player="seek" min="0" max="${Math.floor(episode.duration)}" value="${startAt || 0}" step="1" aria-label="Seek" />
+      </div>
       <p class="listen-origin">${episode.origin}. Where it differs from the documentation, the marker’s source check says so.</p>
     </section>
     <section class="listen-markers" aria-label="Chapter markers">

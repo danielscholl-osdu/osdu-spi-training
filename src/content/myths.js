@@ -4,6 +4,7 @@
 export const myths = [
   {
     id: 'finished-means-ready',
+    owner: 'flux',
     theme: 'readiness',
     claim: 'The command finished, so it is ready.',
     reality:
@@ -17,6 +18,7 @@ export const myths = [
   },
   {
     id: 'suspended-means-frozen',
+    owner: 'flux',
     theme: 'gitops',
     claim: 'GitOps is suspended, so nothing changes.',
     reality:
@@ -31,6 +33,7 @@ export const myths = [
   },
   {
     id: 'async-indexing-works',
+    owner: 'cli',
     theme: 'identity',
     claim: 'Async indexing works with the default images.',
     reality:
@@ -45,6 +48,7 @@ export const myths = [
   },
   {
     id: 'certificate-means-encrypted',
+    owner: 'flux',
     theme: 'network',
     claim: 'There is a certificate, so the connection is encrypted.',
     reality:
@@ -58,6 +62,7 @@ export const myths = [
   },
   {
     id: 'stack-is-only-aks',
+    owner: 'cli',
     theme: 'estate',
     claim: 'The stack is just AKS.',
     reality:
@@ -71,6 +76,7 @@ export const myths = [
   },
   {
     id: 'profiles-save-money',
+    owner: 'cli',
     theme: 'estate',
     claim: 'Profiles save money.',
     reality:
@@ -86,6 +92,7 @@ export const myths = [
   },
   {
     id: 'token-accepted-means-authorized',
+    owner: 'flux',
     theme: 'identity',
     claim: 'The token was accepted, so the call is authorized.',
     reality:
@@ -100,6 +107,7 @@ export const myths = [
   },
   {
     id: 'role-assignment-missing',
+    owner: 'cli',
     theme: 'identity',
     claim: 'The role assignment is missing.',
     reality:
@@ -114,6 +122,7 @@ export const myths = [
   },
   {
     id: 'delete-secret-rotates',
+    owner: 'cli',
     theme: 'identity',
     claim: 'Deleting the Secret rotates the password.',
     reality:
@@ -128,6 +137,7 @@ export const myths = [
   },
   {
     id: 'reapply-retries',
+    owner: 'flux',
     theme: 'gitops',
     claim: 'Re-applying the manifest will retry it.',
     reality:
@@ -141,6 +151,7 @@ export const myths = [
   },
   {
     id: 'smoke-proves-api',
+    owner: 'you',
     theme: 'readiness',
     claim: 'The smoke test passed, so the API works.',
     reality:
@@ -155,6 +166,7 @@ export const myths = [
   },
   {
     id: 'teardown-green-means-deleted',
+    owner: 'cli',
     theme: 'estate',
     claim: 'The teardown job was green, so it was deleted.',
     reality:
@@ -168,6 +180,7 @@ export const myths = [
   },
   {
     id: 'fork-is-a-snapshot',
+    owner: 'fork',
     theme: 'fork',
     claim: 'A fork is a copy we took once and patch as we go.',
     reality:
@@ -182,6 +195,7 @@ export const myths = [
   },
   {
     id: 'merge-fork-upstream',
+    owner: 'fork',
     theme: 'fork',
     claim:
       'When the sync conflicts, I merge upstream into fork_upstream by hand.',
@@ -196,6 +210,7 @@ export const myths = [
   },
   {
     id: 'azure-profile-alone',
+    owner: 'fork',
     theme: 'fork',
     claim: 'mvn -P azure builds the Azure provider.',
     reality:
@@ -208,6 +223,7 @@ export const myths = [
   },
   {
     id: 'human-required-is-a-note',
+    owner: 'fork',
     theme: 'fork',
     claim: 'human-required is a note for whoever looks next.',
     reality:
@@ -221,6 +237,7 @@ export const myths = [
   },
   {
     id: 'release-rebuilds-image',
+    owner: 'fork',
     theme: 'fork',
     claim: 'A release builds a fresh image for the version tag.',
     reality:
@@ -235,6 +252,7 @@ export const myths = [
   },
   {
     id: 'template-sync-overwrites',
+    owner: 'fork',
     theme: 'fork',
     claim:
       'Template sync will overwrite the workflow change I made in my fork.',
@@ -249,6 +267,7 @@ export const myths = [
   },
   {
     id: 'descriptor-comes-from-template',
+    owner: 'fork',
     theme: 'fork',
     claim:
       'Template sync will deliver .spi/service.yaml along with the workflows.',
@@ -263,6 +282,7 @@ export const myths = [
   },
   {
     id: 'acceptance-needs-a-release',
+    owner: 'fork',
     theme: 'fork',
     claim: 'The stack only ever runs released versions of a fork.',
     reality:
@@ -277,6 +297,7 @@ export const myths = [
   },
   {
     id: 'validation-summary-means-deployed',
+    owner: 'fork',
     theme: 'seam',
     claim:
       'Validation Summary is green, so the change ran in a real environment.',
@@ -292,6 +313,7 @@ export const myths = [
   },
   {
     id: 'restore-always-restores',
+    owner: 'you',
     theme: 'seam',
     claim: 'The restore step puts the previous image back.',
     reality:

@@ -45,7 +45,6 @@ import {
   isLifecycleLesson,
   isStepLesson,
   hopIndexForRoute,
-  mythCallout,
   pageRenderers,
   partitionComparison,
   resolveExamplePresentation,
@@ -55,6 +54,11 @@ import {
   guidesPreview,
   sourcesPreview,
   tryItBand,
+  mythCallout,
+  mythChips,
+  mythOwners,
+  mythTool,
+  mythTools,
   tryItLedgerStates,
   tryItNeeds,
   tryItStates,
@@ -1536,10 +1540,80 @@ test('audio markers are ordered, inside the recording, and point at real views',
   const listen = pageRenderers.listen(parseRoute('#listen?episode=branches'));
   const branches = episodes.find((episode) => episode.id === 'branches');
   assert.ok(listen.includes(branches.title));
+  const markerCount = branches.markers.length;
   assert.equal(
-    listen.split('data-marker-start').length - 1,
-    episodes.find((episode) => episode.id === 'branches').markers.length,
+    listen.split('<li data-marker-start').length - 1,
+    markerCount,
+    'one marker card per marker',
   );
+  assert.equal(
+    listen.split('class="listen-tick"').length - 1,
+    markerCount,
+    'one timeline tick per marker',
+  );
+  for (const marker of branches.markers)
+    assert.match(
+      listen,
+      new RegExp(
+        `<button type="button" class="listen-tick" style="left: [0-9.]+%" data-seek="${marker.time}" data-episode="branches" data-marker-start="${marker.time}" data-marker-end="${marker.end}"`,
+      ),
+      `${marker.title}: its tick seeks and lights up with the player`,
+    );
+  assert.match(
+    listen,
+    /<div class="listen-ticks" role="group" aria-label="Markers on the timeline">[\s\S]*<\/div>\s*<input type="range" class="listen-seek"/,
+    'ticks sit directly above the seek bar',
+  );
+});
+
+test('field checks name who to ask and which tool the check reads with', () => {
+  for (const myth of myths) {
+    assert.ok(
+      Object.hasOwn(mythOwners, myth.owner),
+      `${myth.id}: owner ${myth.owner} is not one the maps draw`,
+    );
+    assert.ok(Object.hasOwn(mythTools, mythTool(myth.check)), myth.id);
+  }
+  assert.equal(mythTool('kubectl get pods -n osdu'), 'kubectl');
+  assert.throws(() => mythTool('helm list'), /Unknown field-check tool/);
+  assert.throws(
+    () => mythChips({ owner: 'nobody', check: 'az group list' }),
+    /Unknown field-check owner/,
+  );
+  const page = pageRenderers.myths();
+  assert.match(
+    page,
+    /^<div class="myth-owner-legend" aria-label="Owner colors"><span class="myth-owner-legend-title">Ask<\/span><span class="owner-cli">/,
+    'the page opens with the legend of owner colors',
+  );
+  for (const myth of myths) {
+    const row = page.slice(page.indexOf(`id="myth-${myth.id}"`));
+    const chips = row.indexOf('<p class="myth-chips">');
+    assert.ok(
+      chips > 0 &&
+        chips < row.indexOf('<details class="field-check-evidence">'),
+      `${myth.id}: chips show before the disclosure`,
+    );
+    assert.ok(
+      row.includes(
+        `<span class="myth-owner owner-${myth.owner}"><i aria-hidden="true"></i><span class="myth-chip-kind">Ask</span>${mythOwners[myth.owner]}</span>`,
+      ),
+      `${myth.id}: owner chip`,
+    );
+    assert.ok(
+      row.includes(
+        `<span class="myth-chip-kind">Check with</span><code>${mythTool(myth.check)}</code>`,
+      ),
+      `${myth.id}: tool chip`,
+    );
+  }
+  const callout = mythCallout('stack-is-only-aks', 'running-stack');
+  assert.ok(
+    callout.indexOf('<p class="myth-chips">') <
+      callout.indexOf('<p class="myth-reality">'),
+    'an easy-mistake callout carries the same chips under its claim',
+  );
+  assert.match(callout, /owner-cli[\s\S]*CLI \+ Bicep/);
 });
 
 test('Start documentation list preserves its six sources', () => {

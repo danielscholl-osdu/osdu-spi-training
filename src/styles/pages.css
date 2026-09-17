@@ -1105,6 +1105,51 @@ body[data-page='home'] .page > section > h2 {
   margin: 16px 0 0;
   accent-color: #59cced;
 }
+/* Markers drawn as ticks on the timeline: each is a seek button the player
+   already understands, and the one being played is lit. */
+.listen-timeline {
+  position: relative;
+  margin-top: 6px;
+}
+.listen-timeline .listen-seek {
+  margin-top: 0;
+}
+.listen-ticks {
+  position: relative;
+  height: 14px;
+  margin: 0 8px;
+}
+.listen-tick {
+  position: absolute;
+  top: 0;
+  width: 3px;
+  height: 10px;
+  padding: 0;
+  border: 0;
+  border-radius: 2px;
+  background: #5f88a8;
+  transform: translateX(-50%);
+  cursor: pointer;
+}
+.listen-tick::before {
+  content: '';
+  position: absolute;
+  inset: -6px -7px;
+}
+.listen-tick:hover,
+.listen-tick:focus-visible {
+  height: 14px;
+  background: #59cced;
+}
+.listen-tick:focus-visible {
+  outline: 2px solid #59cced;
+  outline-offset: 3px;
+}
+.listen-tick.is-current {
+  height: 14px;
+  background: #59cced;
+  box-shadow: 0 0 0 2px rgba(89, 204, 237, 0.35);
+}
 .listen-origin {
   margin: 12px 0 0;
   font-size: 13px;
@@ -2039,6 +2084,81 @@ body:has(.audio-dock:not([hidden])) main {
 .field-check-correction {
   font-size: 14px;
   color: #3e596e;
+}
+.myth-chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px 8px;
+  margin: 0;
+  font-size: 12px;
+}
+.myth-owner,
+.myth-tool {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 2px 9px 2px 7px;
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  background: var(--white);
+  color: var(--ink);
+  font-weight: 600;
+  line-height: 1.5;
+}
+.myth-owner {
+  border-color: var(--owner);
+  background: var(--owner-bg);
+}
+.myth-owner i {
+  width: 9px;
+  height: 9px;
+  border-radius: 50%;
+  background: var(--owner);
+}
+.myth-chip-kind {
+  color: var(--muted);
+  font-size: 10px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+}
+.myth-tool code {
+  font-size: 12px;
+}
+.myth-glyph {
+  flex: none;
+  width: 15px;
+  height: 15px;
+  color: var(--muted);
+}
+.myth-owner-legend {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px 16px;
+  margin: 0 0 22px;
+  padding: 10px 14px;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: var(--white);
+  font-size: 13px;
+  color: var(--muted);
+}
+.myth-owner-legend-title {
+  color: var(--ink);
+  font-size: 11px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+}
+.myth-owner-legend i {
+  display: inline-block;
+  width: 10px;
+  height: 10px;
+  margin-right: 6px;
+  border-radius: 50%;
+  background: var(--owner);
+  vertical-align: -1px;
 }
 .field-check-evidence {
   grid-column: 1 / -1;
