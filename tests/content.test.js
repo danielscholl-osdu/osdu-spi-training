@@ -2844,7 +2844,7 @@ test('lesson 01 editorial copy introduces its example and complete command', () 
   assert.match(chapters.start.intro, /Community Implementation \(CIMPL\)/);
   assert.equal(
     chapter.intro,
-    "The stack is one development and test environment in an Azure resource group. OSDU services run in AKS; Azure data services sit alongside it. Some resources belong to a partition such as opendes, while others are shared. CIMPL runs supporting middleware in Kubernetes. Azure SPI uses Azure data services alongside AKS, while Elasticsearch, Redis, and Airflow's database remain in the cluster.",
+    "<p>The stack is one development and test environment in an Azure resource group. OSDU services run in AKS; Azure data services sit alongside it.</p><p>Some resources belong to a partition such as opendes, while others are shared. CIMPL runs supporting middleware in Kubernetes. Azure SPI uses Azure data services alongside AKS, while Elasticsearch, Redis, and Airflow's database remain in the cluster.</p>",
   );
   assert.equal(chapter.figure, 'The deployed stack');
   assert.equal(
@@ -3281,9 +3281,26 @@ test('lesson 03 claims keep the provider seam understandable without evidence', 
     );
 });
 
+test('every lesson opens with a short lead the header can carry', () => {
+  const learnKeys = Object.keys(chapters).filter(
+    (key) => chapters[key].group === 'learn',
+  );
+  for (const key of learnKeys) {
+    const intro = chapters[key].intro;
+    const lead = intro.startsWith('<p>')
+      ? intro.slice(3, intro.indexOf('</p>'))
+      : intro;
+    assert.ok(
+      lead.length > 0 && lead.length <= 160,
+      `${key} lead runs ${lead.length} characters; keep the first paragraph under 160 and move the rest to a second paragraph`,
+    );
+    assert.doesNotMatch(lead, /<p>/, `${key} lead contains a nested paragraph`);
+  }
+});
+
 test('lesson 03 states its prerequisite and place in its lead', () => {
   const chapter = chapters['spi-boundary'];
-  assert.match(chapter.intro, /^Builds on the partition lookup from 01/);
+  assert.match(chapter.intro, /^<p>Builds on the partition lookup from 01/);
   assert.match(chapter.intro, /one service inside the osdu namespace/);
   assert.match(chapter.intro, /partition in your environment/);
   assert.match(chapter.intro, /Service Provider Interface \(SPI\)/);

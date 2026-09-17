@@ -135,7 +135,7 @@ export const chapters = {
     subtitle: 'Place familiar OSDU concepts',
     headline: 'AKS is one part<span>of the stack.</span>',
     intro:
-      "The stack is one development and test environment in an Azure resource group. OSDU services run in AKS; Azure data services sit alongside it. Some resources belong to a partition such as opendes, while others are shared. CIMPL runs supporting middleware in Kubernetes. Azure SPI uses Azure data services alongside AKS, while Elasticsearch, Redis, and Airflow's database remain in the cluster.",
+      "<p>The stack is one development and test environment in an Azure resource group. OSDU services run in AKS; Azure data services sit alongside it.</p><p>Some resources belong to a partition such as opendes, while others are shared. CIMPL runs supporting middleware in Kubernetes. Azure SPI uses Azure data services alongside AKS, while Elasticsearch, Redis, and Airflow's database remain in the cluster.</p>",
     premise: 'You know OSDU. Start with the environment around it.',
     figure: 'The deployed stack',
     selected: 'environment',
@@ -715,7 +715,7 @@ export const chapters = {
     subtitle: 'Find where the Azure code sits',
     headline: 'The provider lives<span>inside the service.</span>',
     intro:
-      'Builds on the partition lookup from 01 and works at one service inside the osdu namespace: partition in your environment. Inside it, a Service Provider Interface (SPI) connects shared behavior to an implementation. The community partition-core-plus implementation and the fork-owned Azure implementation connect that interface to different dependencies. Follow the opendes lookup across the Azure seam.',
+      '<p>Builds on the partition lookup from 01 and works at one service inside the osdu namespace: partition in your environment.</p><p>Inside it, a Service Provider Interface (SPI) connects shared behavior to an implementation. The community partition-core-plus implementation and the fork-owned Azure implementation connect that interface to different dependencies. Follow the opendes lookup across the Azure seam.</p>',
     figure: 'One service, two source owners',
     selected: 'azureimpl',
     diagram: 'spi',
@@ -1113,7 +1113,7 @@ export const chapters = {
     headline:
       'Upstream plans to remove the Azure code.<span>The fork is where it lives.</span>',
     intro:
-      'A service fork is a short list of paths the fork owns, beside a tree regenerated from upstream every day. Read the repository by owner: each row is a path, each column is a branch, and the cells say where the path exists.',
+      '<p>A service fork is a short list of paths the fork owns, beside a tree regenerated from upstream every day.</p><p>Read the repository by owner: each row is a path, each column is a branch, and the cells say where the path exists.</p>',
     premise:
       'The cache fallback from 03 has to live somewhere upstream cannot delete. From here the journey is illustrative: the real fix arrived from upstream before the filter; follow a fix like it made in the fork today.',
     figure: 'One repository, read by owner',
@@ -1193,7 +1193,7 @@ export const chapters = {
     subtitle: 'Generate, integrate, propose, prove, release',
     headline: 'From an upstream update<span>to a candidate image.</span>',
     intro:
-      'The three branches from 04, followed through one change. Upstream is regenerated at midnight, the cascade carries it into the workspace, a person approves, every eligible commit gets an image digest and a turn in the stack, and a release is an optional tag on an image that already exists.',
+      '<p>The three branches from 04, followed through one change.</p><p>Upstream is regenerated at midnight, the cascade carries it into the workspace, a person approves, every eligible commit gets an image digest and a turn in the stack, and a release is an optional tag on an image that already exists.</p>',
     premise: 'Nothing here is a merge you run by hand.',
     figure: 'The branches, in time',
     selected: 'sync-pr',
@@ -1276,7 +1276,7 @@ export const chapters = {
     subtitle: 'Borrow, prove, restore',
     headline: 'Write the lock.<span>Flux rolls out the image.</span>',
     intro:
-      'The fork has a candidate image digest and the stack has a running environment. One credentialed workflow run borrows the partition service’s slot in that environment: it reads the configuration the environment reports, records its run ID and the candidate digest in osdu-image-lock, checks that the pod is running the candidate digest, runs the suites the descriptor declares, and gives the slot back. Watch the lock and the pod change as you step through. The run is illustrative: it uses the lane the newer template ships, which the reference partition fork has not adopted yet.',
+      '<p>The fork has a candidate image digest and the stack has a running environment.</p><p>One credentialed workflow run borrows the partition service’s slot in that environment: it reads the configuration the environment reports, records its run ID and the candidate digest in osdu-image-lock, checks that the pod is running the candidate digest, runs the suites the descriptor declares, and gives the slot back. Watch the lock and the pod change as you step through. The run is illustrative: it uses the lane the newer template ships, which the reference partition fork has not adopted yet.</p>',
     premise:
       'The stack reports its configuration. The service descriptor lists the test suites and their inputs. The lock is the only thing both write.',
     figure: 'One run, one borrowed slot',

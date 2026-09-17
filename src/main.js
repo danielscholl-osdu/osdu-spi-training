@@ -445,6 +445,7 @@ function renderChapterFrame(route, scene) {
     variant: scene.example?.defaultVariant || 'normal',
   };
   document.body.classList.toggle('has-claims', structured);
+  document.body.classList.toggle('is-learn', scene.group === 'learn');
   document.body.classList.toggle('is-lifecycle', isLifecycleLesson(scene));
   delete document.getElementById('diagram').dataset.focus;
   const claims = document.getElementById('chapter-claims');
@@ -498,9 +499,8 @@ function renderChapterFrame(route, scene) {
     scene.group === 'learn'
       ? `${String(learnOrder.indexOf(key) + 1).padStart(2, '0')} · ${scene.title}`
       : scene.title;
-  document.getElementById('chapter-kicker').textContent = structured
-    ? `Lesson ${positionLabel(key)}`
-    : kicker;
+  document.getElementById('chapter-kicker').textContent =
+    scene.group === 'learn' ? `Lesson ${positionLabel(key)}` : kicker;
   document.getElementById('chapter-kicker').hidden =
     scene.page === 'home' || scene.group === 'supplement';
   const hero = document.getElementById('hero-image');

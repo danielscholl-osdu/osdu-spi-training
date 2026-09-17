@@ -303,6 +303,7 @@ body[data-page='home'] #introduction > p:first-child {
   margin: 0 0 15px;
 }
 .premise {
+  /* Lessons restyle and reposition this under the lead; see pages.css. */
   font-size: 15px;
   color: var(--muted);
   margin: 0 0 12px;

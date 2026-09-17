@@ -4055,15 +4055,37 @@ body:has(.audio-dock:not([hidden])) main {
   }
 }
 
-.has-claims .intro {
+/* Learn lessons: one stacked header. Kicker, headline, one lead sentence,
+   then the supporting paragraph. The headline keeps its designed break and
+   balances any line the width forces. */
+.is-learn .intro {
   display: block;
+  margin-bottom: 26px;
 }
-.has-claims .intro h1 {
-  max-width: 18ch;
-  margin-bottom: 12px;
+.is-learn .intro h1 {
+  max-width: 30ch;
+  text-wrap: balance;
+  margin-bottom: 14px;
 }
-.has-claims .intro p {
-  max-width: 66ch;
+.is-learn .intro p {
+  max-width: 62ch;
+}
+.is-learn #introduction > p:first-child {
+  font-size: 17.5px;
+  line-height: 1.5;
+  color: #3e596e;
+}
+.is-learn #introduction > p + p {
+  margin-top: 10px;
+}
+.is-learn .premise {
+  font-family: Manrope, var(--font);
+  font-size: 15px;
+  font-weight: 600;
+  line-height: 1.5;
+  color: var(--navy);
+  max-width: 62ch;
+  margin: 14px 0 0;
 }
 .has-claims .journey li + li::before {
   position: static;
