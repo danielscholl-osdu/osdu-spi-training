@@ -23,7 +23,7 @@ import {
   creationWalkthrough,
 } from '../src/components/architecture.js';
 import { infographics } from '../src/components/infographics.js';
-import { badge } from '../src/components/badges.js';
+import { badge, glyph, glyphNames } from '../src/components/badges.js';
 import { escapeHtml } from '../src/components/node.js';
 import { resolveDetail } from '../src/components/evidence.js';
 import {
@@ -55,6 +55,10 @@ import {
   guidesPreview,
   sourcesPreview,
   tryItBand,
+  tryItLedgerStates,
+  tryItNeeds,
+  tryItStates,
+  tryItTouches,
   guidePreview,
   listenChips,
   posterInline,
@@ -77,6 +81,7 @@ import {
   spiNamesFigure,
 } from '../src/components/infographics.js';
 import { multipleVariantTryIt, singleVariantTryIt } from './fixtures/try-it.js';
+import { tryItShells } from '../src/try-it-shell.js';
 
 const mapChapters = Object.entries(chapters).filter(
   ([, chapter]) => chapter.kind === 'map',
@@ -110,6 +115,7 @@ const tryItAccess = new Set([
   'public GitHub repository',
   'Azure resources billed separately',
 ]);
+const tryItPlaceOrder = ['workstation', 'github', 'azure'];
 
 function verifySourceRecord(key, source) {
   const url = new URL(source.href);
@@ -163,6 +169,15 @@ function verifyTryIt(tryIt, context) {
     }
     nonempty(step.expect, `${field}.expect`);
     if (step.sources) sourceKeys(step.sources, `${field}.sources`);
+    assert.ok(
+      step.touch && Object.hasOwn(tryItTouches, step.touch.kind),
+      `${context}: ${field}.touch names what the step does`,
+    );
+    nonempty(step.touch.note, `${field}.touch.note`);
+    assert.ok(
+      step.touch.note.length <= 60 && !/[.!?]$/.test(step.touch.note),
+      `${context}: ${field}.touch.note is a short clause, not a sentence`,
+    );
   };
 
   assert.ok(tryIt && typeof tryIt === 'object', `${context}: tryIt`);
@@ -199,15 +214,72 @@ function verifyTryIt(tryIt, context) {
       `${context}: ${field}.prerequisites`,
     );
     for (const [index, prerequisite] of variant.prerequisites.entries()) {
-      nonempty(prerequisite.text, `${field}.prerequisites[${index}].text`);
-      sourceKeys(
-        prerequisite.sources,
-        `${field}.prerequisites[${index}].sources`,
-        true,
+      const need = `${field}.prerequisites[${index}]`;
+      assert.ok(
+        Object.hasOwn(tryItNeeds, prerequisite.kind),
+        `${context}: ${need}.kind`,
+      );
+      nonempty(prerequisite.label, `${need}.label`);
+      assert.ok(
+        prerequisite.label.length <= 48,
+        `${context}: ${need}.label fits a chip`,
+      );
+      if (prerequisite.text !== undefined)
+        nonempty(prerequisite.text, `${need}.text`);
+      if (prerequisite.shell !== undefined)
+        assert.ok(
+          Object.hasOwn(tryItShells, prerequisite.shell),
+          `${context}: ${need}.shell`,
+        );
+      if (prerequisite.chapter !== undefined) {
+        assert.equal(
+          prerequisite.kind,
+          'lesson',
+          `${context}: ${need}.chapter`,
+        );
+        assert.ok(
+          chapters[prerequisite.chapter]?.group === 'learn',
+          `${context}: ${need}.chapter names a lesson`,
+        );
+      }
+      sourceKeys(prerequisite.sources, `${need}.sources`, true);
+    }
+    for (const key of ['active', 'wait', 'cleanup']) {
+      nonempty(variant.time?.[key], `${field}.time.${key}`);
+      const minutes = variant.time.minutes?.[key];
+      assert.ok(
+        Number.isInteger(minutes) && minutes >= 0,
+        `${context}: ${field}.time.minutes.${key} is a whole number of planning minutes`,
       );
     }
-    for (const key of ['active', 'wait', 'cleanup'])
-      nonempty(variant.time?.[key], `${field}.time.${key}`);
+    assert.ok(
+      variant.time.minutes.active > 0,
+      `${context}: ${field}.time.minutes.active`,
+    );
+    assert.deepEqual(
+      variant.footprint?.map((entry) => entry.place),
+      tryItPlaceOrder,
+      `${context}: ${field}.footprint states every place once, in order`,
+    );
+    for (const entry of variant.footprint) {
+      assert.ok(
+        Object.hasOwn(tryItStates, entry.state),
+        `${context}: ${field}.footprint.${entry.place}.state`,
+      );
+      nonempty(entry.note, `${field}.footprint.${entry.place}.note`);
+    }
+    if (variant.access === 'Azure resources billed separately')
+      assert.equal(
+        variant.footprint[2].state,
+        'bills',
+        `${context}: ${field}: billed access shows as billed in the footprint`,
+      );
+    else
+      assert.notEqual(
+        variant.footprint[2].state,
+        'bills',
+        `${context}: ${field}: only billed access is drawn as billed`,
+      );
     assert.ok(
       Array.isArray(variant.steps) && variant.steps.length,
       `${context}: ${field}.steps`,
@@ -222,6 +294,30 @@ function verifyTryIt(tryIt, context) {
     );
     for (const [index, step] of variant.cleanup.steps.entries())
       action(step, `${field}.cleanup.steps[${index}]`);
+    if (variant.cleanup.ledger !== undefined) {
+      const { columns, rows } = variant.cleanup.ledger;
+      assert.ok(
+        Array.isArray(columns) && columns.length,
+        `${context}: ${field}.cleanup.ledger.columns`,
+      );
+      assert.ok(
+        Array.isArray(rows) && rows.length,
+        `${context}: ${field}.cleanup.ledger.rows`,
+      );
+      for (const row of rows) {
+        nonempty(row.item, `${field}.cleanup.ledger row item`);
+        assert.equal(
+          row.after?.length,
+          columns.length,
+          `${context}: ${field}.cleanup.ledger row ${row.item} states every column`,
+        );
+        for (const state of row.after)
+          assert.ok(
+            Object.hasOwn(tryItLedgerStates, state),
+            `${context}: ${field}.cleanup.ledger row ${row.item}`,
+          );
+      }
+    }
     nonempty(variant.cleanup.remains, `${field}.cleanup.remains`);
     sourceKeys(variant.sources, `${field}.sources`, true);
     for (const key of ['cli', 'stack', 'template', 'shell', 'os', 'date'])
@@ -1601,13 +1697,16 @@ test('tryIt validation rejects focused invalid clones', () => {
 test('Try it guidance preserves tools for lesson 02 and bounds the optional image check', () => {
   const setup = chapters['running-stack'].tryIt;
   const install = setup.variants[0];
-  const continuation = install.prerequisites.find(({ text }) =>
-    /lesson 02/.test(text),
+  const continuation = install.prerequisites.find(({ label }) =>
+    /lesson 02/i.test(label),
   );
   assert.ok(
     continuation,
     'name the lesson 02 continuation before installation',
   );
+  assert.equal(continuation.kind, 'lesson');
+  assert.equal(continuation.chapter, 'bring-up');
+  assert.match(continuation.text, /keep it installed/);
   const setupMarkup = tryItBand(chapters['running-stack']);
   assert.ok(
     setupMarkup.indexOf(escapeHtml(continuation.text)) <
@@ -1643,6 +1742,98 @@ test('Try it guidance preserves tools for lesson 02 and bounds the optional imag
   assert.match(image.expect, /configured.*pod template/);
   assert.match(image.expect, /not whether every running pod/);
   assert.match(image.expect, /whether it was built from the fork source/);
+});
+
+test('Try it draws the footprint, effort, prerequisite chips, touch markers, and ledger from the content', () => {
+  const setup = tryItBand(chapters['running-stack'], 'powershell');
+  assert.match(
+    setup,
+    /<h4>What this changes<\/h4>\s*<ul class="try-it-footprint">[\s\S]*is-changes[\s\S]*Your workstation[\s\S]*Changed[\s\S]*is-reads[\s\S]*GitHub[\s\S]*Read only[\s\S]*is-untouched[\s\S]*Azure subscription[\s\S]*Untouched[\s\S]*<\/ul>\s*<p>Installs spi locally/,
+    'the footprint precedes the effects sentence and names every place',
+  );
+  assert.match(
+    setup,
+    /<li class="try-it-need is-tool" data-try-it-content="powershell">[\s\S]*Invoke-RestMethod/,
+  );
+  assert.match(
+    setup,
+    /<li class="try-it-need is-tool" data-try-it-content="posix" hidden>[\s\S]*curl and grep/,
+  );
+  assert.match(
+    tryItBand(chapters['running-stack'], 'posix'),
+    /<li class="try-it-need is-tool" data-try-it-content="posix">[\s\S]*curl and grep/,
+  );
+  assert.ok(
+    setup.includes(
+      `<a href="${routeHref('bring-up')}">Continuing to lesson 02?</a>`,
+    ),
+    'a lesson prerequisite links to its lesson',
+  );
+  assert.doesNotMatch(setup, /try-it-effort-segment is-wait/);
+  assert.match(setup, /is-active" style="flex-grow: 10"><span>~10 min/);
+  assert.match(
+    setup,
+    /<dl class="try-it-time"><div class="is-active"><dt>Active effort<\/dt><dd>About 10 minutes/,
+  );
+  assert.match(
+    setup,
+    /<div class="is-wait"><dt>Automated wait<\/dt><dd>No automated waiting\./,
+  );
+  assert.match(setup, /<div class="try-it-effort" aria-hidden="true">/);
+  assert.doesNotMatch(setup, /try-it-ledger/);
+
+  const bringUp = tryItBand(chapters['bring-up']);
+  assert.match(bringUp, /is-wait" style="flex-grow: 50"><span>~50 min/);
+  assert.match(bringUp, /try-it-place is-bills[\s\S]*Created and billed/);
+  const dryRun = bringUp.indexOf(
+    'creates the resource group, even as a dry run',
+  );
+  const dryRunCommand = bringUp.indexOf('spi up --env &lt;name&gt; --dry-run');
+  assert.ok(
+    dryRun > 0 && dryRun < dryRunCommand,
+    'a step says what it does before its command',
+  );
+  assert.match(
+    bringUp,
+    /<p class="try-it-touch is-creates">[\s\S]*Creates<\/span><span class="try-it-touch-note">creates the resource group, even as a dry run/,
+  );
+  assert.match(
+    bringUp,
+    /<table class="try-it-ledger">[\s\S]*<th scope="col"><code>spi down --purge<\/code><\/th>[\s\S]*Resource group spi-stack-&lt;name&gt;<\/th><td class="is-kept">Kept<\/td><td class="is-removed">Removed<\/td>/,
+  );
+  assert.ok(
+    bringUp.indexOf('try-it-ledger') < bringUp.indexOf('What remains:'),
+    'the ledger precedes the remains sentence',
+  );
+
+  for (const name of glyphNames)
+    assert.match(glyph(name), /^<svg class="glyph"[^>]*aria-hidden="true"/);
+  assert.throws(() => glyph('unknown'), /Unknown glyph/);
+  for (const key of Object.keys(tryItTouches)) glyph(key);
+  for (const key of Object.keys(tryItNeeds)) glyph(key);
+  for (const key of ['workstation', 'github', 'azure']) glyph(key);
+
+  const badTouch = structuredClone(singleVariantTryIt);
+  badTouch.variants[0].steps[0].touch.kind = 'writes';
+  assert.throws(() => tryItBand({ tryIt: badTouch }), /Unknown Try it touch/);
+  assert.throws(() => verifyTryIt(badTouch, 'bad touch'), /touch/);
+  const badPlace = structuredClone(singleVariantTryIt);
+  badPlace.variants[0].footprint[0].place = 'laptop';
+  assert.throws(() => tryItBand({ tryIt: badPlace }), /Unknown Try it place/);
+  assert.throws(() => verifyTryIt(badPlace, 'bad place'), /footprint/);
+  const badState = structuredClone(singleVariantTryIt);
+  badState.variants[0].footprint[2].state = 'bills';
+  assert.throws(() => verifyTryIt(badState, 'bad state'), /billed/);
+  const badNeed = structuredClone(singleVariantTryIt);
+  badNeed.variants[0].prerequisites[0].kind = 'thing';
+  assert.throws(() => tryItBand({ tryIt: badNeed }), /prerequisite kind/);
+  assert.throws(() => verifyTryIt(badNeed, 'bad need'), /kind/);
+  const badMinutes = structuredClone(singleVariantTryIt);
+  badMinutes.variants[0].time.minutes.wait = -1;
+  assert.throws(() => verifyTryIt(badMinutes, 'bad minutes'), /minutes/);
+  const badLedger = structuredClone(multipleVariantTryIt);
+  badLedger.variants[1].cleanup.ledger.rows[0].after = ['kept', 'kept'];
+  assert.throws(() => verifyTryIt(badLedger, 'bad ledger'), /every column/);
 });
 
 test('tryIt renderer returns an inert, escaped native disclosure', () => {

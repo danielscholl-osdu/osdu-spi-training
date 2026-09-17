@@ -21,7 +21,7 @@ import {
   partitionLookupFigure,
 } from './infographics.js';
 import { routeHref, parseRoute } from '../router.js';
-import { badge } from './badges.js';
+import { badge, glyph } from './badges.js';
 import { tryItShells } from '../try-it-shell.js';
 
 export function formatTime(seconds) {
@@ -125,11 +125,127 @@ function tryItCommand(command, shell) {
     .join('');
 }
 
+// The vocabularies of the Try it band. Each label is the claim the glyph
+// beside it stands for, so the glyphs stay decorative.
+export const tryItPlaces = {
+  workstation: 'Your workstation',
+  github: 'GitHub',
+  azure: 'Azure subscription',
+};
+export const tryItStates = {
+  untouched: 'Untouched',
+  reads: 'Read only',
+  changes: 'Changed',
+  bills: 'Created and billed',
+};
+export const tryItTouches = {
+  reads: 'Reads only',
+  local: 'Changes your workstation',
+  creates: 'Creates',
+  removes: 'Removes',
+};
+export const tryItNeeds = {
+  tool: 'Tool',
+  lesson: 'Lesson',
+  access: 'Access',
+  browser: 'Browser',
+};
+export const tryItLedgerStates = { kept: 'Kept', removed: 'Removed' };
+
+function tryItTouch(touch) {
+  const label = tryItTouches[touch.kind];
+  if (!label) throw new Error(`Unknown Try it touch: ${touch.kind}`);
+  return `<p class="try-it-touch is-${touch.kind}">${glyph(touch.kind, 'try-it-glyph')}<span class="try-it-touch-kind">${label}</span><span class="try-it-touch-note">${escapeHtml(touch.note)}</span></p>`;
+}
+
 function tryItAction(step, shell) {
   const action = step.command
     ? tryItCommand(step.command, shell)
     : `<p class="try-it-click"><b>Click:</b> ${escapeHtml(step.click)}</p>`;
-  return `${action}<p class="try-it-expect"><b>Look for:</b> ${escapeHtml(step.expect)}</p>${step.sources?.length ? sourceLinks(step.sources) : ''}`;
+  return `${tryItTouch(step.touch)}${action}<p class="try-it-expect"><b>Look for:</b> ${escapeHtml(step.expect)}</p>${step.sources?.length ? sourceLinks(step.sources) : ''}`;
+}
+
+function tryItNeed(item, shell) {
+  const kind = tryItNeeds[item.kind];
+  if (!kind) throw new Error(`Unknown Try it prerequisite kind: ${item.kind}`);
+  if (item.shell && !Object.hasOwn(tryItShells, item.shell))
+    throw new Error(`Unknown Try it shell: ${item.shell}`);
+  const label = item.chapter
+    ? `<a href="${routeHref(item.chapter)}">${escapeHtml(item.label)}</a>`
+    : escapeHtml(item.label);
+  const shellAttr = item.shell
+    ? ` data-try-it-content="${item.shell}"${item.shell === shell ? '' : ' hidden'}`
+    : '';
+  return `<li class="try-it-need is-${item.kind}"${shellAttr}>
+    <span class="try-it-need-head">${glyph(item.kind, 'try-it-glyph')}<span class="try-it-need-kind">${kind}</span><b>${label}</b></span>
+    ${item.text ? `<span class="try-it-need-text">${escapeHtml(item.text)}</span>` : ''}
+    ${sourceLinks(item.sources)}
+  </li>`;
+}
+
+function tryItFootprint(footprint) {
+  return `<ul class="try-it-footprint">${footprint
+    .map((entry) => {
+      const place = tryItPlaces[entry.place];
+      const state = tryItStates[entry.state];
+      if (!place) throw new Error(`Unknown Try it place: ${entry.place}`);
+      if (!state) throw new Error(`Unknown Try it state: ${entry.state}`);
+      return `<li class="try-it-place is-${entry.state}">
+        <span class="try-it-place-head">${glyph(entry.place, 'try-it-glyph')}<span class="try-it-place-name">${place}</span></span>
+        <span class="try-it-place-state">${state}</span>
+        <span class="try-it-place-note">${escapeHtml(entry.note)}</span>
+      </li>`;
+    })
+    .join('')}</ul>`;
+}
+
+const tryItTimeLabels = {
+  active: 'Active effort',
+  wait: 'Automated wait',
+  cleanup: 'Clean-up effort',
+};
+
+// The bar is proportional to the planning minutes in the content; the legend
+// under it carries the qualified statements, so the bar itself is decorative.
+function tryItEffort(time) {
+  const segments = Object.keys(tryItTimeLabels)
+    .filter((key) => time.minutes[key] > 0)
+    .map(
+      (key) =>
+        `<span class="try-it-effort-segment is-${key}" style="flex-grow: ${time.minutes[key]}"><span>~${time.minutes[key]} min</span></span>`,
+    )
+    .join('');
+  return `<div class="try-it-effort" aria-hidden="true">${segments}</div>
+    <dl class="try-it-time">${Object.entries(tryItTimeLabels)
+      .map(
+        ([key, label]) =>
+          `<div class="is-${key}"><dt>${label}</dt><dd>${escapeHtml(time[key])}</dd></div>`,
+      )
+      .join('')}</dl>`;
+}
+
+function tryItLedger(ledger) {
+  if (!ledger) return '';
+  return `<table class="try-it-ledger">
+    <thead><tr><th scope="col">After</th>${ledger.columns
+      .map(
+        (column) => `<th scope="col"><code>${escapeHtml(column)}</code></th>`,
+      )
+      .join('')}</tr></thead>
+    <tbody>${ledger.rows
+      .map(
+        (row) =>
+          `<tr><th scope="row">${escapeHtml(row.item)}</th>${row.after
+            .map((state) => {
+              const label = tryItLedgerStates[state];
+              if (!label)
+                throw new Error(`Unknown Try it ledger state: ${state}`);
+              return `<td class="is-${state}">${label}</td>`;
+            })
+            .join('')}</tr>`,
+      )
+      .join('')}</tbody>
+  </table>`;
 }
 
 function tryItVariant(variant, index, count, shell) {
@@ -145,22 +261,19 @@ function tryItVariant(variant, index, count, shell) {
     </div>
     <section class="try-it-prerequisites">
       <h4>Prerequisites</h4>
-      <ul>${variant.prerequisites
-        .map(
-          (item) =>
-            `<li><span>${escapeHtml(item.text)}</span>${sourceLinks(item.sources)}</li>`,
-        )
+      <ul class="try-it-needs">${variant.prerequisites
+        .map((item) => tryItNeed(item, shell))
         .join('')}</ul>
     </section>
     <section class="try-it-effects">
       <h4>What this changes</h4>
+      ${tryItFootprint(variant.footprint)}
       <p>${escapeHtml(variant.effects)}</p>
     </section>
-    <dl class="try-it-time">
-      <div><dt>Active effort</dt><dd>${escapeHtml(variant.time.active)}</dd></div>
-      <div><dt>Automated wait</dt><dd>${escapeHtml(variant.time.wait)}</dd></div>
-      <div><dt>Clean-up effort</dt><dd>${escapeHtml(variant.time.cleanup)}</dd></div>
-    </dl>
+    <section class="try-it-time-section">
+      <h4>Your time</h4>
+      ${tryItEffort(variant.time)}
+    </section>
     <section class="try-it-steps">
       <h4>Steps</h4>
       <ol>${variant.steps.map((step) => `<li>${tryItAction(step, shell)}</li>`).join('')}</ol>
@@ -173,6 +286,7 @@ function tryItVariant(variant, index, count, shell) {
     <section class="try-it-cleanup">
       <h4>Clean up</h4>
       <ol>${variant.cleanup.steps.map((step) => `<li>${tryItAction(step, shell)}</li>`).join('')}</ol>
+      ${tryItLedger(variant.cleanup.ledger)}
       <p><b>What remains:</b> ${escapeHtml(variant.cleanup.remains)}</p>
     </section>
     ${sourceLinks(variant.sources)}

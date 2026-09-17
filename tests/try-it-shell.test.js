@@ -123,6 +123,7 @@ test('both steps and cleanup support alternatives alongside shared commands', ()
   variant.cleanup.steps = [
     {
       command: { powershell: 'Write-Output done', posix: 'printf done' },
+      touch: { kind: 'reads', note: 'prints done' },
       expect: 'The terminal prints done.',
     },
   ];

@@ -3203,28 +3203,354 @@ body:has(.audio-dock:not([hidden])) main {
   margin-top: 4px;
   font-size: 13px;
 }
-.try-it-prerequisites ul,
 .try-it-steps ol,
 .try-it-cleanup ol {
   margin: 0;
   padding-left: 22px;
 }
-.try-it-prerequisites li,
 .try-it-steps li,
 .try-it-cleanup li {
-  margin-top: 10px;
+  margin-top: 12px;
   font-size: 14px;
 }
-.try-it-prerequisites .guide-sources,
 .try-it-steps .guide-sources,
 .try-it-cleanup .guide-sources {
   margin-top: 4px;
   overflow-wrap: anywhere;
 }
+.try-it-glyph {
+  flex: none;
+  width: 18px;
+  height: 18px;
+}
+/* Prerequisites: one chip per thing you need, switched with the shell picker. */
+.try-it-needs {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+.try-it-need {
+  display: grid;
+  gap: 3px;
+  flex: 1 1 200px;
+  max-width: 100%;
+  margin: 0;
+  padding: 9px 12px 9px 10px;
+  background: var(--white);
+  border: 1px solid var(--line);
+  border-left-width: 3px;
+  border-radius: 6px;
+  font-size: 13px;
+}
+.try-it-need.is-tool {
+  border-left-color: var(--navy);
+}
+.try-it-need.is-lesson {
+  border-left-color: var(--blue);
+}
+.try-it-need.is-access {
+  border-left-color: var(--teal);
+}
+.try-it-need.is-browser {
+  border-left-color: var(--muted);
+}
+.try-it-need-head {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  color: var(--ink);
+}
+.try-it-need-head b {
+  font-size: 14px;
+  overflow-wrap: anywhere;
+}
+.try-it-need-kind {
+  color: var(--muted);
+  font-size: 10px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+}
+.try-it-need-text {
+  color: var(--muted);
+  line-height: 1.45;
+}
+.try-it-need .guide-sources {
+  margin-top: 2px;
+  font-size: 12px;
+}
+/* Footprint: the three places an activity can touch, each stating its state. */
+.try-it-footprint {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 160px), 1fr));
+  gap: 8px;
+  margin: 0 0 10px;
+  padding: 0;
+  list-style: none;
+}
+.try-it-place {
+  display: grid;
+  gap: 4px;
+  align-content: start;
+  min-width: 0;
+  padding: 10px 12px;
+  background: var(--white);
+  border: 1px solid var(--line);
+  border-radius: 6px;
+  font-size: 13px;
+}
+.try-it-place-head {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  color: var(--ink);
+  font-size: 12px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+.try-it-place-state {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  justify-self: start;
+  padding: 2px 8px 2px 6px;
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  font-size: 12px;
+  font-weight: 700;
+}
+.try-it-place-state::before {
+  content: '';
+  width: 9px;
+  height: 9px;
+  border: 1.5px solid var(--navy);
+  border-radius: 50%;
+}
+.try-it-place.is-untouched {
+  border-style: dashed;
+  color: var(--muted);
+}
+.try-it-place.is-untouched .try-it-place-head {
+  color: var(--muted);
+}
+.try-it-place.is-untouched .try-it-place-state::before {
+  border-color: var(--muted);
+}
+.try-it-place.is-reads .try-it-place-state::before {
+  border-style: dotted;
+}
+.try-it-place.is-changes .try-it-place-state::before {
+  background: var(--navy);
+}
+.try-it-place.is-bills {
+  border-color: var(--navy);
+}
+.try-it-place.is-bills .try-it-place-state {
+  border-color: var(--navy);
+  background: var(--navy);
+  color: var(--white);
+}
+.try-it-place.is-bills .try-it-place-state::before {
+  border-color: var(--white);
+  background: var(--white);
+}
+.try-it-place-note {
+  color: var(--muted);
+  line-height: 1.45;
+  overflow-wrap: anywhere;
+}
+.try-it-effects > p {
+  color: var(--muted);
+  font-size: 13px;
+}
+/* Effort: one bar proportional to the planning minutes, then the qualified
+   statements as its legend. */
+.try-it-effort {
+  display: flex;
+  gap: 3px;
+  min-height: 30px;
+  margin: 0 0 8px;
+}
+.try-it-effort-segment {
+  display: flex;
+  flex: 0 1 auto;
+  align-items: center;
+  justify-content: center;
+  min-width: max-content;
+  padding: 0 10px;
+  border-radius: 4px;
+  color: var(--white);
+  font-size: 12px;
+  font-weight: 700;
+  white-space: nowrap;
+}
+.try-it-effort-segment.is-active {
+  background: var(--blue);
+}
+.try-it-effort-segment.is-wait {
+  background: repeating-linear-gradient(
+    135deg,
+    #d5e6f2 0 5px,
+    #eef5fa 5px 10px
+  );
+  border: 1px solid #b9d3e5;
+  color: var(--blue);
+}
+.try-it-effort-segment.is-cleanup {
+  background: var(--muted);
+}
 .try-it-time {
-  margin: 14px 0 0;
+  display: grid;
+  gap: 6px;
+  margin: 0;
   font-size: 12px;
   color: var(--muted);
+}
+.try-it-time div {
+  display: grid;
+  grid-template-columns: 9.5rem minmax(0, 1fr);
+  gap: 0 10px;
+  align-items: baseline;
+  min-width: 0;
+}
+.try-it-time dt {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  color: var(--ink);
+  font-size: 11px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+.try-it-time dt::before {
+  content: '';
+  flex: none;
+  width: 12px;
+  height: 12px;
+  border-radius: 3px;
+  background: var(--blue);
+}
+.try-it-time .is-wait dt::before {
+  background: repeating-linear-gradient(135deg, #d5e6f2 0 3px, #eef5fa 3px 6px);
+  border: 1px solid #b9d3e5;
+}
+.try-it-time .is-cleanup dt::before {
+  background: var(--muted);
+}
+.try-it-time dd {
+  margin: 0;
+  font-size: 13px;
+  line-height: 1.45;
+  overflow-wrap: anywhere;
+}
+@media (max-width: 480px) {
+  .try-it-time div {
+    grid-template-columns: minmax(0, 1fr);
+    gap: 2px;
+  }
+}
+/* Each step says what it does before its command. */
+.try-it-touch {
+  display: inline-flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 6px;
+  max-width: 100%;
+  margin: 0;
+  padding: 3px 10px 3px 7px;
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  background: var(--white);
+  color: var(--ink);
+  font-size: 12px;
+  line-height: 1.4;
+}
+.try-it-touch-kind {
+  font-weight: 700;
+}
+.try-it-touch-note {
+  color: var(--muted);
+}
+.try-it-touch-note::before {
+  content: '· ';
+}
+.try-it-touch.is-reads {
+  color: var(--muted);
+}
+.try-it-touch.is-creates {
+  border-color: var(--navy);
+  background: var(--navy);
+  color: var(--white);
+}
+.try-it-touch.is-creates .try-it-touch-note {
+  color: #c7deee;
+}
+.try-it-touch.is-removes {
+  border-style: dashed;
+  border-color: var(--navy);
+}
+/* Clean-up ledger: what each removal command leaves behind. */
+.try-it-ledger {
+  width: 100%;
+  margin: 14px 0 10px;
+  border-collapse: collapse;
+  background: var(--white);
+  font-size: 13px;
+}
+.try-it-ledger th,
+.try-it-ledger td {
+  padding: 6px 10px;
+  border: 1px solid var(--line);
+  text-align: left;
+  vertical-align: top;
+}
+.try-it-ledger thead th {
+  color: var(--muted);
+  font-size: 11px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+.try-it-ledger thead code {
+  font-size: 12px;
+  text-transform: none;
+  letter-spacing: 0;
+  color: var(--ink);
+}
+.try-it-ledger tbody th {
+  font-weight: 500;
+  overflow-wrap: anywhere;
+}
+.try-it-ledger td {
+  width: 1%;
+  white-space: nowrap;
+  font-weight: 700;
+}
+.try-it-ledger td::before {
+  content: '';
+  display: inline-block;
+  width: 9px;
+  height: 9px;
+  margin-right: 7px;
+  border: 1.5px solid var(--navy);
+  border-radius: 50%;
+  vertical-align: 0;
+}
+.try-it-ledger td.is-kept::before {
+  background: var(--navy);
+}
+.try-it-ledger td.is-removed {
+  color: var(--muted);
+  font-weight: 500;
+}
+.try-it-ledger td.is-removed::before {
+  border-color: var(--muted);
+  border-style: dashed;
 }
 .try-it-tested dl {
   display: grid;
@@ -3232,7 +3558,6 @@ body:has(.audio-dock:not([hidden])) main {
   gap: 8px;
   margin: 18px 0 0;
 }
-.try-it-time div,
 .try-it-tested dl div {
   min-width: 0;
   padding: 9px 10px;
@@ -3240,7 +3565,6 @@ body:has(.audio-dock:not([hidden])) main {
   border: 1px solid var(--line);
   border-radius: 5px;
 }
-.try-it-time dt,
 .try-it-tested dt {
   color: var(--muted);
   font-size: 11px;
@@ -3248,7 +3572,6 @@ body:has(.audio-dock:not([hidden])) main {
   text-transform: uppercase;
   letter-spacing: 0.04em;
 }
-.try-it-time dd,
 .try-it-tested dd {
   margin: 3px 0 0;
   font-size: 13px;
