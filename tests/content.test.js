@@ -375,8 +375,10 @@ function verifyRoute(href, context) {
 
 test('chapters connect to renderers, explanations, and named sources', () => {
   for (const [id, chapter] of Object.entries(chapters)) {
-    for (const field of ['title', 'subtitle', 'headline'])
+    for (const field of ['title', 'subtitle'])
       assert.ok(chapter[field]?.trim(), `${id} is missing ${field}`);
+    if (chapter.group !== 'learn')
+      assert.ok(chapter.headline?.trim(), `${id} is missing headline`);
     assert.ok(
       chapter.intro?.trim() || chapter.subhead?.trim(),
       `${id} opens with neither an intro nor a subhead`,
@@ -2320,10 +2322,10 @@ test('field check remains lesson 07 after the round trip', () => {
   assert.equal(chapters['not-true'].title, 'Things that are not true');
   assert.equal(chapters['not-true'].subtitle, 'Field check');
   assert.equal(
-    chapters['not-true'].headline,
-    'Field check:<span>the assumptions that cause trouble.</span>',
+    chapters['not-true'].subhead,
+    'The assumptions that cause trouble.',
   );
-  assert.ok(!chapters['not-true'].subhead);
+  assert.ok(!chapters['not-true'].headline);
 
   const home = pageRenderers.home(parseRoute('#start'));
   assert.match(
@@ -2952,7 +2954,7 @@ test('lesson 02 editorial copy states the continuing rollout', () => {
   const chapter = chapters['bring-up'];
 
   assert.equal(
-    chapter.headline.replace(/<[^>]+>/g, ' ').trim(),
+    chapter.subhead,
     'spi up creates the environment. Flux continues the rollout.',
   );
   assert.match(
@@ -3217,10 +3219,7 @@ test('lesson 02 is operated by its lifecycle stages', () => {
 
 test('lesson 03 claims keep the provider seam understandable without evidence', () => {
   const chapter = chapters['spi-boundary'];
-  assert.equal(
-    chapter.headline.replace(/<[^>]+>/g, ' ').trim(),
-    'The provider lives inside the service.',
-  );
+  assert.equal(chapter.subhead, 'The provider lives inside the service.');
   assert.equal(chapter.outcomes.length, 3);
   assert.deepEqual(
     chapter.outcomes.map(({ headline, focus, evidence, scopes }) => ({
@@ -3279,6 +3278,31 @@ test('lesson 03 claims keep the provider seam understandable without evidence', 
       outcomes.includes(escapeHtml(claim.text)),
       `carry forward repeats: ${claim.headline}`,
     );
+});
+
+test('every lesson is titled by a phrase and remembered by a sentence', () => {
+  const learnKeys = Object.keys(chapters).filter(
+    (key) => chapters[key].group === 'learn',
+  );
+  for (const key of learnKeys) {
+    const { title, subhead, headline } = chapters[key];
+    assert.doesNotMatch(
+      title,
+      /[.?!:;,]/,
+      `${key} title "${title}" carries punctuation; a lesson title is a phrase`,
+    );
+    assert.equal(
+      headline,
+      undefined,
+      `${key} sets a headline; its H1 is its title`,
+    );
+    assert.match(
+      subhead,
+      /^[A-Za-z].*\.$/,
+      `${key} subhead is the sentence to remember and ends with a full stop`,
+    );
+    assert.doesNotMatch(subhead, /<span>/, `${key} subhead is one line`);
+  }
 });
 
 test('every lesson opens with a short lead the header can carry', () => {

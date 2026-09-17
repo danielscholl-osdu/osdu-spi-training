@@ -348,12 +348,12 @@ export const mythThemes = [
   {
     id: 'network',
     title: 'The front door',
-    built: { label: '01 · What is a stack?', href: '#running-stack/request' },
+    built: { label: '01 · Anatomy of a stack', href: '#running-stack/request' },
   },
   {
     id: 'estate',
     title: 'The Azure estate',
-    built: { label: '01 · What is a stack?', href: '#running-stack' },
+    built: { label: '01 · Anatomy of a stack', href: '#running-stack' },
   },
   {
     id: 'fork',

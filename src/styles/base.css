@@ -323,10 +323,6 @@ h1 {
   letter-spacing: -0.035em;
   margin: 0;
 }
-h1 span {
-  display: block;
-  color: var(--blue);
-}
 .intro p {
   font-size: 16px;
   line-height: 1.6;

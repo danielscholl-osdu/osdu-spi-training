@@ -4055,9 +4055,9 @@ body:has(.audio-dock:not([hidden])) main {
   }
 }
 
-/* Learn lessons: one stacked header. Kicker, headline, one lead sentence,
-   then the supporting paragraph. The headline keeps its designed break and
-   balances any line the width forces. */
+/* Learn lessons: one stacked header. Kicker, the lesson title, the
+   standfirst (the sentence to remember, in the site blue), one lead
+   sentence, then the supporting paragraph. */
 .is-learn .intro {
   display: block;
   margin-bottom: 26px;
@@ -4065,7 +4065,12 @@ body:has(.audio-dock:not([hidden])) main {
 .is-learn .intro h1 {
   max-width: 30ch;
   text-wrap: balance;
-  margin-bottom: 14px;
+  margin-bottom: 6px;
+}
+.is-learn .subhead {
+  max-width: 34ch;
+  text-wrap: balance;
+  margin: 0 0 16px;
 }
 .is-learn .intro p {
   max-width: 62ch;

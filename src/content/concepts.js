@@ -79,7 +79,7 @@ export const spiMeanings = [
       href: 'https://github.com/Azure/osdu-spi-stack',
     },
     href: '#running-stack',
-    hrefLabel: '01 · What is a stack?',
+    hrefLabel: '01 · Anatomy of a stack',
     owner: 'cli',
   },
   {

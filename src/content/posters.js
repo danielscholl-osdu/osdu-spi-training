@@ -213,7 +213,7 @@ export const nativeGuides = [
     title: 'Where the familiar things live',
     summary:
       'Seven OSDU concepts you already use, and the place in the stack each one turns into. Start here before learning anything new.',
-    appearsIn: { label: 'What is a stack?', href: '#running-stack' },
+    appearsIn: { label: 'Anatomy of a stack', href: '#running-stack' },
     sources: ['architecture', 'identity'],
   },
   {
@@ -245,7 +245,7 @@ export const nativeGuides = [
     title: 'Three profiles, one Azure estate',
     summary:
       'Profiles select Kubernetes workloads. Every profile provisions the same cluster and PaaS services.',
-    appearsIn: { label: 'What is a stack?', href: '#running-stack' },
+    appearsIn: { label: 'Anatomy of a stack', href: '#running-stack' },
     sources: ['architecture', 'profiles'],
   },
   {

@@ -131,9 +131,9 @@ export const chapters = {
     kind: 'map',
     group: 'learn',
     book: 'The stack',
-    title: 'What is a stack?',
+    title: 'Anatomy of a stack',
     subtitle: 'Place familiar OSDU concepts',
-    headline: 'AKS is one part<span>of the stack.</span>',
+    subhead: 'AKS is one part of the stack.',
     intro:
       "<p>The stack is one development and test environment in an Azure resource group. OSDU services run in AKS; Azure data services sit alongside it.</p><p>Some resources belong to a partition such as opendes, while others are shared. CIMPL runs supporting middleware in Kubernetes. Azure SPI uses Azure data services alongside AKS, while Elasticsearch, Redis, and Airflow's database remain in the cluster.</p>",
     premise: 'You know OSDU. Start with the environment around it.',
@@ -375,8 +375,7 @@ export const chapters = {
     book: 'The stack',
     title: 'How it comes to life',
     subtitle: 'Create, use, and remove',
-    headline:
-      'spi up creates the environment.<span>Flux continues the rollout.</span>',
+    subhead: 'spi up creates the environment. Flux continues the rollout.',
     intro:
       'Build on lesson 01’s wide map: follow your environment from your workstation into the resource group, AKS cluster, and namespaces, then remove it.',
     figure: 'Follow the environment',
@@ -713,7 +712,7 @@ export const chapters = {
     book: 'One service',
     title: 'The SPI boundary',
     subtitle: 'Find where the Azure code sits',
-    headline: 'The provider lives<span>inside the service.</span>',
+    subhead: 'The provider lives inside the service.',
     intro:
       '<p>Builds on the partition lookup from 01 and works at one service inside the osdu namespace: partition in your environment.</p><p>Inside it, a Service Provider Interface (SPI) connects shared behavior to an implementation. The community partition-core-plus implementation and the fork-owned Azure implementation connect that interface to different dependencies. Follow the opendes lookup across the Azure seam.</p>',
     figure: 'One service, two source owners',
@@ -1110,8 +1109,8 @@ export const chapters = {
     book: 'The fork',
     title: 'The shape of the fork',
     subtitle: 'Who owns which paths',
-    headline:
-      'Upstream plans to remove the Azure code.<span>The fork is where it lives.</span>',
+    subhead:
+      'Upstream plans to remove the Azure code. The fork is where it lives.',
     intro:
       '<p>A service fork is a short list of paths the fork owns, beside a tree regenerated from upstream every day.</p><p>Read the repository by owner: each row is a path, each column is a branch, and the cells say where the path exists.</p>',
     premise:
@@ -1191,7 +1190,7 @@ export const chapters = {
     book: 'The fork',
     title: 'A day in the fork',
     subtitle: 'Generate, integrate, propose, prove, release',
-    headline: 'From an upstream update<span>to a candidate image.</span>',
+    subhead: 'From an upstream update to a candidate image.',
     intro:
       '<p>The three branches from 04, followed through one change.</p><p>Upstream is regenerated at midnight, the cascade carries it into the workspace, a person approves, every eligible commit gets an image digest and a turn in the stack, and a release is an optional tag on an image that already exists.</p>',
     premise: 'Nothing here is a merge you run by hand.',
@@ -1274,7 +1273,7 @@ export const chapters = {
     book: 'The seam',
     title: 'The handshake',
     subtitle: 'Borrow, prove, restore',
-    headline: 'Write the lock.<span>Flux rolls out the image.</span>',
+    subhead: 'Write the lock. Flux rolls out the image.',
     intro:
       '<p>The fork has a candidate image digest and the stack has a running environment.</p><p>One credentialed workflow run borrows the partition service’s slot in that environment: it reads the configuration the environment reports, records its run ID and the candidate digest in osdu-image-lock, checks that the pod is running the candidate digest, runs the suites the descriptor declares, and gives the slot back. Watch the lock and the pod change as you step through. The run is illustrative: it uses the lane the newer template ships, which the reference partition fork has not adopted yet.</p>',
     premise:
@@ -1352,7 +1351,7 @@ export const chapters = {
     book: 'Across the path',
     title: 'Things that are not true',
     subtitle: 'Field check',
-    headline: 'Field check:<span>the assumptions that cause trouble.</span>',
+    subhead: 'The assumptions that cause trouble.',
     intro:
       'Each of these is a reasonable thing to believe about a Kubernetes-and-Azure system. The project’s own documentation says otherwise, and names how to check.',
     premise:

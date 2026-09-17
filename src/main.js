@@ -519,7 +519,9 @@ function renderChapterFrame(route, scene) {
   setRailOpen(false);
   document.getElementById('premise').textContent = scene.premise || '';
   document.getElementById('premise').hidden = structured || !scene.premise;
-  document.getElementById('headline').innerHTML = scene.headline;
+  if (scene.headline)
+    document.getElementById('headline').innerHTML = scene.headline;
+  else document.getElementById('headline').textContent = scene.title;
   document.getElementById('introduction').innerHTML = scene.intro.startsWith(
     '<p',
   )
