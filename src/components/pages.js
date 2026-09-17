@@ -132,17 +132,6 @@ function tryItAction(step, shell) {
   return `${action}<p class="try-it-expect"><b>Look for:</b> ${escapeHtml(step.expect)}</p>${step.sources?.length ? sourceLinks(step.sources) : ''}`;
 }
 
-function walkedDate(iso) {
-  const [year, month, day] = iso.split('-').map(Number);
-  if (!year || !month || !day) return iso;
-  return new Date(Date.UTC(year, month - 1, day)).toLocaleDateString('en-GB', {
-    day: 'numeric',
-    month: 'long',
-    year: 'numeric',
-    timeZone: 'UTC',
-  });
-}
-
 function tryItVariant(variant, index, count, shell) {
   return `<section class="try-it-variant" aria-labelledby="try-it-variant-${index}">
     <header>
@@ -186,7 +175,6 @@ function tryItVariant(variant, index, count, shell) {
       <ol>${variant.cleanup.steps.map((step) => `<li>${tryItAction(step, shell)}</li>`).join('')}</ol>
       <p><b>What remains:</b> ${escapeHtml(variant.cleanup.remains)}</p>
     </section>
-    <p class="try-it-walked">Walked on ${escapeHtml(walkedDate(variant.tested.date))} against ${escapeHtml(variant.tested.stack)}.</p>
     ${sourceLinks(variant.sources)}
   </section>`;
 }
@@ -215,7 +203,7 @@ export function tryItBand(chapter, shell = 'posix') {
     <details>
       <summary>${chapter.tryIt.badge ? `<span class="try-it-badge">${badge(chapter.tryIt.badge, 'shelf-badge')}</span>` : ''}<span class="try-it-head"><span class="try-it-title">${escapeHtml(title)}</span>${chapter.tryIt.outcome ? `<span class="try-it-outcome">${escapeHtml(chapter.tryIt.outcome)}</span>` : ''}<span class="try-it-qualifier">Optional${qualifier ? ` · ${escapeHtml(qualifier)}` : ''}</span></span><span class="summary-marker" aria-hidden="true">+</span></summary>
       <div class="try-it-body">
-        <p class="try-it-safety">You run this activity in your own account. This site executes nothing and reports no live environment state.</p>
+        <p class="try-it-safety">Run commands on your own machine using your own account. This page does not run commands or show your environment’s current status.</p>
         ${shellPicker}
         <div class="try-it-variants">${variants
           .map((variant, index) =>
