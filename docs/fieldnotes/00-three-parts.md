@@ -1,6 +1,6 @@
 # Fieldnote 00 · Three parts
 
-**Status: storyboard for approval.** Replaces the Start video, _How Microsoft engineers Azure OSDU_, when the cut is approved. The narration is `docs/narration/start-video.md` as written (398 words, about 2 minutes 45 seconds); its editorial record, word list, and review checklist are in `docs/start-video-script.md` and apply to this cut. This file adds only the boards and the two bookend lines.
+**Status: approved and published.** Replaced the Start video, _How Microsoft engineers Azure OSDU_. The narration is `docs/narration/start-video.md` as written (398 words, about 2 minutes 45 seconds); its editorial record, word list, and review checklist are in `docs/start-video-script.md` and apply to this cut. This file adds only the boards and the two bookend lines.
 
 Fieldnote 00 has no chapters. It is the Start page's introduction, not a lesson, and the script's five sections are beats the boards follow, not markers.
 
