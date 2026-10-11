@@ -1,6 +1,6 @@
 # The Start video: script for approval
 
-**Status: draft for approval, revised after review.** This script replaces the start page's video, _How Microsoft engineers Azure OSDU_, shown on the Watch card as "How the machinery is engineered", when it is approved and a new recording is produced from it. Until a recording is replaced, the current video, its captions in `public/video/`, and its notes in `src/content/audio.js` stay exactly as they are. Nothing on the site changes because this file exists.
+**Status: recorded.** This script was recorded as Fieldnote 00, _Three parts_ (storyboard `docs/fieldnotes/00-three-parts.md`), which replaced the start page's video, _How Microsoft engineers Azure OSDU_, on the Watch card "How the machinery is engineered". The narration is `docs/narration/start-video.md` voiced as written; the captions are `docs/reference/fieldnote-00-three-parts.vtt`. The old video's three source-check notes were dropped because the narration states the corrected version.
 
 The current video calls the Azure logic proprietary, says the community stripped out all cloud-specific code, and says the environment is restored completely. The site corrects all three in the player's notes. This script states the corrected version so the most prominent introduction needs no corrections. It opens on the three parts the site connects, not on why OSDU exists, and it is written for engineers who already know OSDU.
 
@@ -59,7 +59,7 @@ Two repositories carry this: osdu-spi-stack builds the environment, and osdu-spi
 
 ## What this script says differently from the current recording
 
-Timestamps are the caption cues in `public/video/how-microsoft-engineers-azure-osdu.vtt`.
+Timestamps are the caption cues of the old recording, `docs/reference/how-microsoft-engineers-azure-osdu.vtt`.
 
 | Caption | The current recording                                                                                                              | This script                                                                                                                                                                                                                                                                          |
 | ------- | ---------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |

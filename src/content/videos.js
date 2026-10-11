@@ -16,28 +16,24 @@ export const fieldnotes = [
   {
     id: '00',
     chapter: 'start',
-    title: 'How Microsoft engineers Azure OSDU',
+    title: 'Three parts',
     card: 'How the machinery is engineered',
-    duration: 71,
-    width: 720,
-    height: 1280,
+    duration: 185,
+    width: 1920,
+    height: 1080,
     files: {
-      video: 'video/how-microsoft-engineers-azure-osdu.mp4',
-      poster: 'video/how-microsoft-engineers-azure-osdu.jpg',
-      captions: 'video/how-microsoft-engineers-azure-osdu.vtt',
+      video: 'fieldnote-00/video.mp4',
+      poster: 'fieldnote-00/poster.jpg',
+      captions: 'fieldnote-00/captions.vtt',
       chapters: null,
     },
     chapters: [],
     cutFrom: null,
     origin:
-      'Generated with NotebookLM as a video overview from the introduction source, Azure SPI: An Introduction',
+      'Scripted from the Start narration and narrated with an Azure AI Speech voice; the notebook bookends generated with Gemini image models',
     summary:
-      'Provider ownership moving to Microsoft, the service forks, the candidate image, and a temporary test deployment in a live stack, drawn in one minute.',
-    notes: [
-      'The narration calls the Azure logic proprietary. The service forks are public repositories under the Apache 2.0 license; what changed is ownership, not visibility.',
-      'The narration says the community stripped out all cloud-specific code. Upstream plans that removal (community ADR 61); as of September 2026 the Azure directory is still there.',
-      'Restore is conditional: the run puts the environment back only while it still owns its pin, and a lost runner can leave work for a person.',
-    ],
+      'The stack, the Azure provider inside each service, and the workflows that keep it current: one service, its fork, a candidate tested in a running stack, and what the lessons let you do.',
+    notes: [],
   },
   {
     id: '01',

@@ -1327,9 +1327,9 @@ test('audio markers are ordered, inside the recording, and point at real views',
   const player = fieldnotePlayer(startVideo);
   assert.ok(
     player.includes('data-fieldnote="00"') &&
-      player.includes(`src="${startVideo.files.captions}"`) &&
-      startVideo.notes.every((note) => player.includes(escapeHtml(note))),
-    'the video dialog carries captions and the source-check notes',
+      player.includes(`src="${videoUrl(startVideo.files.captions)}"`) &&
+      !player.includes('Source checks'),
+    'the video dialog carries captions and no source checks',
   );
   assert.ok(
     !player.includes('video-timeline') &&
@@ -1337,7 +1337,7 @@ test('audio markers are ordered, inside the recording, and point at real views',
       !player.includes('video-chapters'),
     'the Start video has no chapters, so its dialog looks as it did',
   );
-  assert.ok(startVideo.duration > 0 && startVideo.notes.length);
+  assert.ok(startVideo.duration > 0);
   assert.ok(home.includes('data-listen-now'), 'home cue has a live note line');
   assert.ok(
     !home.includes('href="#listen"') && !home.includes('All episodes'),
@@ -4784,7 +4784,11 @@ test('the Fieldnotes manifest names real lessons, claims, myths, and files', () 
   const start = fieldnoteById('00');
   assert.equal(start.chapter, 'start');
   assert.equal(start.chapters.length, 0, 'Fieldnote 00 has no chapters');
-  assert.ok(start.notes.length, 'the Start video keeps its source checks');
+  assert.equal(
+    start.notes.length,
+    0,
+    'the Start script states the corrections',
+  );
   for (const video of [...fieldnotes, lessonFieldnote()])
     verifyFieldnote(video);
   assert.equal(
@@ -4977,24 +4981,29 @@ test('the Fieldnotes page lists episodes by book with one player and a transcrip
   assert.equal(page.split('<video').length - 1, 1, 'one player');
   assert.match(
     page,
-    /id="video-transcript" data-captions="video\/how-microsoft-engineers-azure-osdu\.vtt"/,
+    /id="video-transcript" data-captions="https:\/\/danielscholl-osdu\.github\.io\/osdu-spi-training-media\/fieldnote-00\/captions\.vtt"/,
   );
   assert.match(
     pageRenderers.watch(parseRoute('#watch/00')),
     /href="#watch\/00" aria-current="page"/,
   );
-  const captions = fieldnoteFor('start').files.captions;
+  // The published captions live in the media repository; docs/reference keeps the copy.
   const cues = parseVtt(
-    readFileSync(new URL(`../public/${captions}`, import.meta.url), 'utf8'),
+    readFileSync(
+      new URL(
+        '../docs/reference/fieldnote-00-three-parts.vtt',
+        import.meta.url,
+      ),
+      'utf8',
+    ),
   );
   assert.ok(cues.length > 5);
-  assert.equal(cues[0].start, 0);
   assert.ok(cues.every((cue, i) => i === 0 || cue.start >= cues[i - 1].start));
   assert.ok(cues.at(-1).end <= fieldnoteFor('start').duration + 1);
   const transcript = transcriptMarkup(cues);
   assert.ok(
     transcript.startsWith(
-      '<p data-start="0"><button type="button" data-video-seek="0"',
+      `<p data-start="${cues[0].start}"><button type="button" data-video-seek="${cues[0].start}"`,
     ),
   );
   assert.ok(

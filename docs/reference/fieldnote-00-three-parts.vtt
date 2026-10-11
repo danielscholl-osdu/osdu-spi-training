@@ -1,0 +1,223 @@
+WEBVTT
+
+1
+00:00:05.030 --> 00:00:08.191
+Fieldnote zero. Three parts.
+
+2
+00:00:09.454 --> 00:00:11.864
+Azure SPI connects three things:
+
+3
+00:00:11.934 --> 00:00:17.134
+the stack that runs OSDU, the
+Azure provider inside each service,
+
+4
+00:00:17.134 --> 00:00:20.104
+and the workflows that keep
+that provider current.
+
+5
+00:00:20.254 --> 00:00:23.054
+This site explains how
+those parts fit together,
+
+6
+00:00:23.054 --> 00:00:27.464
+from creating an environment to
+building and testing a service change.
+
+7
+00:00:30.050 --> 00:00:32.180
+Start inside one service.
+
+8
+00:00:32.330 --> 00:00:35.540
+Shared OSDU code handles the request.
+
+9
+00:00:35.890 --> 00:00:39.540
+Where it needs a database, a
+queue, or a storage account,
+
+10
+00:00:39.610 --> 00:00:42.820
+it calls a provider through
+the Service Provider Interface,
+
+11
+00:00:42.970 --> 00:00:49.060
+SPI. The provider implements the
+cloud-specific behavior behind that interface,
+
+12
+00:00:49.130 --> 00:00:52.980
+and the Azure provider ships in
+the same image as the shared code,
+
+13
+00:00:53.050 --> 00:00:55.620
+with no network hop between them.
+
+14
+00:00:57.918 --> 00:01:01.878
+That provider is Microsoft's to maintain,
+and the community plans to remove the
+
+15
+00:01:01.878 --> 00:01:03.928
+Azure code from its repositories.
+
+16
+00:01:04.398 --> 00:01:07.758
+So each OSDU service gets
+a public service fork,
+
+17
+00:01:07.758 --> 00:01:11.278
+one repository per service,
+that owns its Azure provider,
+
+18
+00:01:11.278 --> 00:01:14.248
+its Azure tests, and
+its build configuration.
+
+19
+00:01:14.798 --> 00:01:19.038
+Every day a workflow generates a branch
+from the upstream tip with the whole
+
+20
+00:01:19.038 --> 00:01:23.998
+provider tree absent, Azure included, and
+the fork's own provider joins it on the
+
+21
+00:01:23.998 --> 00:01:25.368
+integration branch.
+
+22
+00:01:25.998 --> 00:01:29.448
+Upstream's planned removal
+deletes nothing on the fork side.
+
+23
+00:01:31.794 --> 00:01:34.594
+A change in the fork
+becomes a candidate image,
+
+24
+00:01:34.594 --> 00:01:36.284
+addressed by digest.
+
+25
+00:01:36.674 --> 00:01:40.204
+A passing build is not evidence
+that the provider works on Azure.
+
+26
+00:01:40.514 --> 00:01:44.604
+The template includes a workflow for
+testing a candidate in a running stack:
+
+27
+00:01:44.914 --> 00:01:48.124
+it writes the digest into
+the environment's image lock,
+
+28
+00:01:48.194 --> 00:01:53.164
+waits until the pod runs that digest,
+runs the suites the service declares,
+
+29
+00:01:53.234 --> 00:01:57.644
+and writes the captured canonical
+image back while it still owns the pin;
+
+30
+00:01:58.034 --> 00:02:00.844
+a lost run can leave
+that work for a person.
+
+31
+00:02:01.394 --> 00:02:03.804
+The partition fork
+adopted it in September,
+
+32
+00:02:03.874 --> 00:02:08.124
+and a run on its main branch has
+passed both of the suites it declares.
+
+33
+00:02:10.574 --> 00:02:15.064
+The stack itself is a development and
+test environment in one resource group:
+
+34
+00:02:15.294 --> 00:02:19.294
+AKS beside Cosmos DB,
+Storage, Service Bus,
+
+35
+00:02:19.294 --> 00:02:24.294
+and Key Vault. spi up creates the
+Azure resources and starts Flux,
+
+36
+00:02:24.294 --> 00:02:27.784
+which continues assembling
+workloads after the command returns.
+
+37
+00:02:27.934 --> 00:02:31.144
+It is shared and disposable,
+and it is not production.
+
+38
+00:02:31.534 --> 00:02:33.454
+Two repositories carry this:
+
+39
+00:02:33.454 --> 00:02:39.294
+osdu-spi-stack builds the
+environment, and osdu-spi
+
+40
+00:02:39.294 --> 00:02:41.784
+supplies every fork's workflows.
+
+41
+00:02:41.854 --> 00:02:44.584
+After the lessons you can
+locate a change in a fork,
+
+42
+00:02:44.654 --> 00:02:48.584
+follow it into an image, and say what
+a test in the running stack proves.
+
+43
+00:02:48.734 --> 00:02:50.664
+The lessons follow one example:
+
+44
+00:02:50.894 --> 00:02:54.174
+a partition lookup for
+opendes, through the stack,
+
+45
+00:02:54.174 --> 00:02:56.744
+into the provider, and around the fork.
+
+46
+00:02:59.262 --> 00:03:00.792
+Start with lesson one:
+
+47
+00:03:01.022 --> 00:03:02.392
+anatomy of a stack.
+

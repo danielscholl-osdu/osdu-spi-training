@@ -8,7 +8,7 @@ The training site owns what is said. The video library at `~/workspace/videos` (
 
 | Fieldnote | Lesson                   | Form          | Storyboard                                           | Status                                  |
 | --------- | ------------------------ | ------------- | ---------------------------------------------------- | --------------------------------------- |
-| 00        | Start: three parts       | boards        | [00-three-parts.md](00-three-parts.md)               | storyboard for approval                 |
+| 00        | Start: three parts       | boards        | [00-three-parts.md](00-three-parts.md)               | published                               |
 | 01        | Anatomy of a stack       | boards        | [01-anatomy-of-a-stack.md](01-anatomy-of-a-stack.md) | published                               |
 | 02        | How it comes to life     | mixed         |                                                      | after the pilot (fn-29r)                |
 | 03        | The SPI boundary         | boards + code |                                                      | after the pilot (fn-29r)                |
@@ -37,7 +37,7 @@ Each claim, the example, and the easy mistake is one chapter. Chapter titles are
 ## Identity
 
 - **Voice:** Harper, `en-US-Harper:MAI-Voice-2.1`, one narrator, with the Keelson shorts' settings: no style, default pauses.
-- **Frame:** 1920 by 1080. The site's maps are wide; Fieldnote 00 is the one exception to the current portrait Start video.
+- **Frame:** 1920 by 1080. The site's maps are wide.
 - **Sheet:** the site's paper (`--paper #f4f7fa`) with a faint field-notes rule, ink `#102b43`, owner colors from `src/styles/base.css`, orange only for fork-owned source. DM Sans and Manrope.
 - **Prequel:** an open field notebook on the desk, the camera pushing into the page until its gears register on the series emblem, the machinery gears from `docs/reference/start/machinery.png` cut into layers that turn one tooth as the tag `FIELDNOTE NN · TITLE` sets. About 5 seconds, carrying the line "Fieldnote one. Anatomy of a stack."
 - **Postquel:** "Next" and the next lesson's question on the notebook's empty left page, then the camera pulls back to the spread with the series name. Nothing advances on its own.
