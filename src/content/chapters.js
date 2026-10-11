@@ -1138,7 +1138,7 @@ export const chapters = {
     guides: ['contribution-chain'],
     mistakes: ['fork-is-a-snapshot', 'descriptor-comes-from-template'],
     scope:
-      'osdu-spi-partition is the reference fork and, as of September 2026, the only one; the system is designed for eight, each following the same filter with its own service name. Customer mirror forks form a second tier and copy the service repository, not upstream. The descriptor row is fork-owned by rule; the partition fork has not written its file yet.',
+      'osdu-spi-partition is the reference fork and, as of September 2026, the only one; the system is designed for eight, each following the same filter with its own service name. Customer mirror forks form a second tier and copy the service repository, not upstream. The descriptor row is fork-owned by rule; the partition fork wrote its file in September 2026.',
     sources: ['ownership', 'branches', 'forkTiers', 'workflowSystem'],
     question:
       'Who owns that provider code, and how does it survive upstream deleting it?',
@@ -1258,7 +1258,7 @@ export const chapters = {
           copy: 'What 06 follows',
         },
       ],
-      note: 'The cache fix and its unit tests are real. From here the example follows an illustrative acceptance run using the newer template; the reference partition fork has not adopted that lane or written its descriptor yet. The release moment is optional and comes after all of this.',
+      note: 'The cache fix and its unit tests are real. From here the example follows an illustrative acceptance run in the newer template’s lane, which the reference partition fork adopted in September 2026. The release moment is optional and comes after all of this.',
     },
     outcomes: [
       'A sync is a generated tree plus one PR and one tracking issue; upstream is never merged in as text, and the generated commit lands through a reviewed sync PR. The cascade merges main first, then fork_upstream, into the workspace.',
@@ -1275,7 +1275,7 @@ export const chapters = {
     subtitle: 'Borrow, prove, restore',
     subhead: 'Write the lock. Flux rolls out the image.',
     intro:
-      '<p>The fork has a candidate image digest and the stack has a running environment.</p><p>One credentialed workflow run borrows the partition service’s slot in that environment: it reads the configuration the environment reports, records its run ID and the candidate digest in osdu-image-lock, checks that the pod is running the candidate digest, runs the suites the descriptor declares, and gives the slot back. Watch the lock and the pod change as you step through. The run is illustrative: it uses the lane the newer template ships, which the reference partition fork has not adopted yet.</p>',
+      '<p>The fork has a candidate image digest and the stack has a running environment.</p><p>One credentialed workflow run borrows the partition service’s slot in that environment: it reads the configuration the environment reports, records its run ID and the candidate digest in osdu-image-lock, checks that the pod is running the candidate digest, runs the suites the descriptor declares, and gives the slot back. Watch the lock and the pod change as you step through. The reference partition fork adopted this lane in September 2026; the run you step through is illustrative.</p>',
     premise:
       'The stack reports its configuration. The service descriptor lists the test suites and their inputs. The lock is the only thing both write.',
     figure: 'One run, one borrowed slot',
@@ -1297,8 +1297,14 @@ export const chapters = {
     guides: ['borrow-prove-restore', 'backing-environment'],
     mistakes: ['validation-summary-means-deployed', 'restore-always-restores'],
     scope:
-      'A shared environment can be borrowed by several onboarded forks, one service slot each, serialised per service. The workflow does not yet load test inputs from Key Vault, check every descriptor requirement before borrowing, or verify the pod again before each suite. The lane shown is the one the template ships since 10 September; osdu-spi-partition has neither adopted it nor written its descriptor yet, so this run is illustrative until it does.',
-    sources: ['forkDeploy', 'proof', 'descriptorContract', 'statusContract'],
+      'A shared environment can be borrowed by several onboarded forks, one service slot each, serialised per service. The workflow does not yet load test inputs from Key Vault, check every descriptor requirement before borrowing, or verify the pod again before each suite. The lane shown is the one the template ships since 10 September; osdu-spi-partition adopted it in September 2026. The run’s digests, run IDs, and PR numbers are illustrative.',
+    sources: [
+      'forkDeploy',
+      'proof',
+      'descriptorContract',
+      'partitionDescriptor',
+      'statusContract',
+    ],
     question:
       'How does a candidate image reach a running stack, what proves it, and how is the temporary test deployment restored?',
     builds: 'Uses the candidate digest from 05 and the environment from 01.',

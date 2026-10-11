@@ -516,7 +516,7 @@ export const componentDetails = {
   'descriptor-file': {
     label: 'The descriptor',
     title: 'The one engineering file the template does not write.',
-    body: '.spi/service.yaml declares the acceptance suites the stack should run against this service and what each needs. It is excluded from template sync by name: the service repository writes it, and changes to it are reviewed with the code. The workflows come from osdu-spi. The service team writes this descriptor. osdu-spi-partition has not written its descriptor yet. After onboarding, Deploy Gate skips the run while .spi/service.yaml is missing, with the reason no .spi/service.yaml declares the suites.',
+    body: '.spi/service.yaml declares the acceptance suites the stack should run against this service and what each needs. It is excluded from template sync by name: the service repository writes it, and changes to it are reviewed with the code. The workflows come from osdu-spi. The service team writes this descriptor; osdu-spi-partition wrote its own in September 2026. After onboarding, Deploy Gate skips the run while .spi/service.yaml is missing, with the reason no .spi/service.yaml declares the suites.',
     artifact: {
       label: 'Service-owned, never synced',
       code: '.spi/service.yaml    schemaVersion: 3, written in this repository\nsync-config.json     "exclusions": [".spi", "CODEOWNERS", …]',
@@ -659,7 +659,7 @@ export const componentDetails = {
   'stack-slot': {
     label: 'A slot in the stack',
     title: 'The stack is borrowed for the candidate, not for the release.',
-    body: 'After the push, Deploy Gate decides without credentials whether this run may borrow the environment: only push and pull_request events, only same-repository PRs, not Dependabot, not fork_upstream, and only when the five onboarding values, the descriptor, and a pushed image exist. If it may, the run pins the candidate digest into the environment’s image lock, checks the pod runs it, runs the declared suites, and restores the canonical image. View 06 follows that run step by step. The lane is the newer template’s; the reference partition fork has not adopted it or written its descriptor yet, so from here the example is illustrative.',
+    body: 'After the push, Deploy Gate decides without credentials whether this run may borrow the environment: only push and pull_request events, only same-repository PRs, not Dependabot, not fork_upstream, and only when the five onboarding values, the descriptor, and a pushed image exist. If it may, the run pins the candidate digest into the environment’s image lock, checks the pod runs it, runs the declared suites, and restores the canonical image. View 06 follows that run step by step. The lane is the newer template’s, and the reference partition fork adopted it in September 2026; the run the example follows from here is illustrative.',
     artifact: {
       label: 'Who may borrow',
       code: 'push | pull_request (same repository)\nnot dependabot[bot], not fork_upstream\nonboarded + .spi/service.yaml + image pushed',
@@ -743,10 +743,10 @@ export const componentDetails = {
   descriptor: {
     label: 'The descriptor',
     title: 'The fork declares what its suites need; it never says where.',
-    body: '.spi/service.yaml names each suite, the image that runs it, its timeout, and the bindings it wants: a gateway URL, a partition, a token. The resolver in the run binds those from environment facts and minted tokens. The service repository owns this file; template sync excludes it. osdu-spi-partition has not written one yet, and its checkout does not carry the gate either, so the run shown here is illustrative for that fork. The example below is the shape the runbook gives.',
+    body: '.spi/service.yaml names each suite, the directory and Maven arguments that run it, its timeout, and the bindings it wants: a gateway URL, a partition, a token. The resolver in the run binds those from environment facts and minted tokens. The service repository owns this file; template sync excludes it. osdu-spi-partition wrote its descriptor in September 2026, declaring an acceptance suite and an integration suite. The example below is its acceptance suite; the run shown here is illustrative.',
     artifact: {
       label: 'One suite, declared',
-      code: 'tests:\n  acceptance:\n    path: partition-acceptance-test\n    timeoutMinutes: 15\n    bindings:\n      HOST: { source: gateway }\n      DATA_PARTITION_ID: { source: partition }\n      PRIVILEGED_USER_TOKEN: { source: token }',
+      code: 'tests:\n  acceptance:\n    type: maven\n    path: partition-acceptance-test\n    mavenArguments: [test]\n    timeoutMinutes: 15\n    bindings:\n      HOST: { source: gateway }\n      DATA_PARTITION_ID: { source: partition }\n      PRIVILEGED_USER_TOKEN: { source: token }',
     },
     source: 'descriptor',
   },
