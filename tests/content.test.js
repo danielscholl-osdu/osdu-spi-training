@@ -4874,7 +4874,8 @@ test('a lesson Fieldnote shows its chip, claim cues, and dialog chapters', () =>
   assert.match(chip, /data-video-open="01" data-video-at="0"/);
   assert.match(chip, /<b>Watch this lesson<\/b>.*· 2:50/);
   assert.match(chip, /aria-haspopup="dialog"/);
-  assert.equal(lessonWatch('running-stack'), '', 'no lesson has a cut yet');
+  assert.match(lessonWatch('running-stack'), /data-video-open="01"/);
+  assert.equal(lessonWatch('bring-up'), '', 'a lesson with no cut');
   assert.equal(lessonWatch('start', fieldnoteFor('start')), '');
 
   const strip = claimStrip('running-stack', video);
@@ -4900,7 +4901,8 @@ test('a lesson Fieldnote shows its chip, claim cues, and dialog chapters', () =>
       ),
       `claim ${index} carries its cue beside the selector, not inside it`,
     );
-  assert.ok(!claimStrip('running-stack').includes('claim-watch'));
+  assert.ok(claimStrip('running-stack').includes('claim-watch'));
+  assert.ok(!claimStrip('bring-up').includes('claim-watch'));
   assert.equal(
     claimStrip('fork-shape', { ...video, chapter: 'fork-shape' }),
     '',

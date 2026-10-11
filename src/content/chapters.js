@@ -1377,7 +1377,7 @@ export const chapters = {
     subtitle: 'Short videos',
     headline: 'Fieldnotes from the lessons',
     subhead:
-      'Short narrated videos drawn on the lessons’ own maps. Each chapter is a claim you can select on the map, so the video and the lesson use the same words.',
+      'Short narrated videos, one for each lesson. Each chapter is one of the lesson’s claims, so the video and the lesson use the same words.',
     intro: '',
     hero: {
       image: 'start/machinery.webp',
