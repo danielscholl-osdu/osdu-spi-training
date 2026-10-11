@@ -6,12 +6,13 @@ import { chapters, chapterGroups } from '../content/chapters.js';
 import { myths, mythThemes } from '../content/myths.js';
 import { suppliedPosters, nativeGuides } from '../content/posters.js';
 import { sources } from '../content/sources.js';
+import { episodes, deepDives, episodeById } from '../content/audio.js';
 import {
-  episodes,
-  deepDives,
-  episodeById,
-  frameVideo,
-} from '../content/audio.js';
+  fieldnotes,
+  fieldnoteById,
+  fieldnoteFor,
+  videoUrl,
+} from '../content/videos.js';
 import {
   infographics,
   ownerLegend,
@@ -475,14 +476,165 @@ function mythCard(myth, compact = false) {
   </article>`;
 }
 
-// The video plays only inside the Start page's modal (see main.js). It pauses
-// the audio dock and the dock pauses it.
-export function frameVideoPlayer() {
-  return `<video controls preload="metadata" playsinline poster="${frameVideo.poster}" width="${frameVideo.width}" height="${frameVideo.height}" aria-label="${escapeHtml(frameVideo.title)}" data-frame-video>
-      <source src="${frameVideo.file}" type="video/mp4" />
-      <track kind="captions" src="${frameVideo.captions}" srclang="en" label="English" default />
-    </video>
-    <details class="frame-notes"><summary>Source checks</summary><ul>${frameVideo.notes.map((note) => `<li>${escapeHtml(note)}</li>`).join('')}</ul></details>`;
+export function fieldnoteLabel(video) {
+  return chapters[video.chapter]?.group === 'learn'
+    ? `Fieldnote ${video.id} · ${video.title}`
+    : video.title;
+}
+
+function sentenceAsTitle(text) {
+  const title = text.replace(/\.$/, '');
+  return /^[A-Z][a-z]/.test(title)
+    ? `${title[0].toLowerCase()}${title.slice(1)}`
+    : title;
+}
+
+// Chapter titles come from the lesson, so a chapter mark and the claim it
+// names on the map read the same.
+export function fieldnoteChapterTitle(video, entry) {
+  const lesson = chapters[video.chapter];
+  if (entry.claim !== undefined) {
+    const claim = lesson.outcomes[entry.claim];
+    return typeof claim === 'string' ? claim : claim.headline;
+  }
+  if (entry.example) return `Example: ${lesson.example.title}`;
+  const myth = myths.find((item) => item.id === entry.mistake);
+  return `Easy mistake: ${sentenceAsTitle(myth.claim)}`;
+}
+
+export function fieldnoteChapters(video) {
+  return video.chapters.map((entry, index) => ({
+    ...entry,
+    title: fieldnoteChapterTitle(video, entry),
+    end: video.chapters[index + 1]?.time ?? video.duration,
+    notes: (video.notes || [])
+      .filter((note) => typeof note !== 'string' && note.chapter === index)
+      .map((note) => note.text),
+  }));
+}
+
+// The claim the map shows for a moment in the video: the latest claim chapter
+// that has started, or the first claim before any has.
+export function fieldnoteClaimAt(video, time) {
+  const claims = video.chapters.filter((entry) => entry.claim !== undefined);
+  if (!claims.length) return null;
+  return (claims.filter((entry) => entry.time <= time).at(-1) || claims[0])
+    .claim;
+}
+
+function videoFrame(video) {
+  return `<div class="video-frame" style="--video-ratio: ${(video.width / video.height).toFixed(4)}">${videoTag(video)}${videoTimeline(video)}</div>`;
+}
+
+function videoTag(video) {
+  const poster = videoUrl(video.files.poster);
+  return `<video controls preload="metadata" playsinline${poster ? ` poster="${poster}"` : ''} width="${video.width}" height="${video.height}" aria-label="${escapeHtml(fieldnoteLabel(video))}" data-fieldnote="${video.id}">
+      <source src="${videoUrl(video.files.video)}" type="video/mp4" />
+      <track kind="captions" src="${videoUrl(video.files.captions)}" srclang="en" label="English" default />
+    </video>`;
+}
+
+function videoTimeline(video) {
+  const marks = fieldnoteChapters(video);
+  if (!marks.length) return '';
+  return `<div class="video-timeline" role="group" aria-label="Chapters on the timeline"><span class="video-progress" aria-hidden="true"><span data-video-progress></span></span>${marks
+    .map(
+      (mark) =>
+        `<button type="button" class="video-tick" style="left: ${((100 * mark.time) / video.duration).toFixed(2)}%" data-video-seek="${mark.time}" data-chapter-start="${mark.time}" data-chapter-end="${mark.end}" title="${escapeHtml(`${formatTime(mark.time)} · ${mark.title}`)}" aria-label="${escapeHtml(`Play from ${formatTime(mark.time)}, ${mark.title}`)}"></button>`,
+    )
+    .join('')}</div>`;
+}
+
+function videoChapterList(video, className) {
+  return `<ol class="${className}">${fieldnoteChapters(video)
+    .map(
+      (mark) =>
+        `<li data-chapter-start="${mark.time}" data-chapter-end="${mark.end}"><button type="button" data-video-seek="${mark.time}"><span class="marker-time">${formatTime(mark.time)}</span><b>${escapeHtml(mark.title)}</b></button>${mark.notes.map((note) => `<p class="marker-note"><b>Source check.</b> ${note}</p>`).join('')}</li>`,
+    )
+    .join('')}</ol>`;
+}
+
+function videoNotes(video) {
+  const notes = (video.notes || []).filter((note) => typeof note === 'string');
+  if (!notes.length) return '';
+  return `<details class="frame-notes"><summary>Source checks</summary><ul>${notes.map((note) => `<li>${escapeHtml(note)}</li>`).join('')}</ul></details>`;
+}
+
+// The video dialog's body. A lesson episode adds its chapters and a map jump;
+// the Start video keeps only its captions and notes.
+export function fieldnotePlayer(video) {
+  const lesson = chapters[video.chapter];
+  const chaptered = video.chapters.length > 0;
+  const jump =
+    chaptered && lesson.kind === 'map'
+      ? '<button type="button" class="video-map-jump" data-map-jump data-video-map>Show it on the map ↓</button>'
+      : '';
+  return `<div class="fieldnote-player" data-fieldnote-player="${video.id}">${videoFrame(video)}${
+    chaptered
+      ? `<div class="video-chapters-head"><h3>Chapters</h3>${jump}</div>${videoChapterList(video, 'video-chapters')}`
+      : ''
+  }${videoNotes(video)}</div>`;
+}
+
+export function lessonWatch(key, video = fieldnoteFor(key)) {
+  if (!video || chapters[key]?.group !== 'learn') return '';
+  return `<button type="button" class="lesson-watch" data-video-open="${video.id}" data-video-at="0" aria-haspopup="dialog" aria-controls="video-dialog"><span class="play-glyph" aria-hidden="true">▶</span><b>Watch this lesson</b><span class="lesson-watch-time">· ${formatTime(video.duration)}</span></button>`;
+}
+
+function claimCue(video, index, headline) {
+  const mark = video?.chapters.find((entry) => entry.claim === index);
+  if (!mark) return '';
+  const time = formatTime(mark.time);
+  return `<button type="button" class="claim-watch" data-video-open="${video.id}" data-video-at="${mark.time}" aria-haspopup="dialog" aria-controls="video-dialog" aria-label="${escapeHtml(`Watch from ${time}: ${headline}`)}"><span class="play-glyph" aria-hidden="true">▶</span>${time}</button>`;
+}
+
+export function parseVtt(text) {
+  const stamp = (value) =>
+    value
+      .trim()
+      .split(':')
+      .reduce((total, part) => total * 60 + Number(part), 0);
+  return text
+    .replace(/\r/g, '')
+    .split(/\n{2,}/)
+    .map((block) => {
+      const lines = block.split('\n');
+      const at = lines.findIndex((line) => line.includes('-->'));
+      if (at < 0) return null;
+      const [start, rest] = lines[at].split('-->');
+      return {
+        start: stamp(start),
+        end: stamp(rest.trim().split(/\s/)[0]),
+        text: lines
+          .slice(at + 1)
+          .join(' ')
+          .replace(/<[^>]+>/g, '')
+          .trim(),
+      };
+    })
+    .filter((cue) => cue?.text);
+}
+
+// Caption cues are a line or two each; the transcript joins them into
+// paragraphs that break at a sentence end.
+export function transcriptMarkup(cues) {
+  const paragraphs = [];
+  let current = null;
+  for (const cue of cues) {
+    if (!current) {
+      current = { start: cue.start, text: [] };
+      paragraphs.push(current);
+    }
+    current.text.push(cue.text);
+    if (/[.?!]["”’]?$/.test(cue.text) && current.text.join(' ').length > 240)
+      current = null;
+  }
+  return paragraphs
+    .map(
+      (paragraph) =>
+        `<p data-start="${paragraph.start}"><button type="button" data-video-seek="${paragraph.start}" aria-label="Play from ${formatTime(paragraph.start)}">${formatTime(paragraph.start)}</button>${escapeHtml(paragraph.text.join(' '))}</p>`,
+    )
+    .join('');
 }
 
 function briefChip() {
@@ -512,10 +664,11 @@ function lessonIndex() {
 
 function homePage() {
   const start = chapters.start;
+  const startVideo = fieldnoteFor('start');
   return `<section class="home-introduction" aria-labelledby="home-introduction-title">
       <h2 id="home-introduction-title">Introduction</h2>
       <div class="home-media">
-        <button type="button" class="home-watch home-media-button" data-video-open aria-haspopup="dialog" aria-controls="video-dialog"><img src="start/watch.webp" alt="" width="80" height="40" loading="lazy" /><span><b>Watch · ${Math.round(frameVideo.duration / 60)} min</b><small>${escapeHtml(frameVideo.card)}</small></span></button>
+        <button type="button" class="home-watch home-media-button" data-video-open="${startVideo.id}" aria-haspopup="dialog" aria-controls="video-dialog"><img src="start/watch.webp" alt="" width="80" height="40" loading="lazy" /><span><b>Watch · ${Math.round(startVideo.duration / 60)} min</b><small>${escapeHtml(startVideo.card)}</small></span></button>
         ${briefChip()}
       </div>
     </section>
@@ -663,7 +816,7 @@ export function stepStrip(key) {
   </section>`;
 }
 
-export function claimStrip(key) {
+export function claimStrip(key, video = fieldnoteFor(key)) {
   const chapter = chapters[key];
   if (isStepLesson(chapter)) return stepStrip(key);
   if (isLifecycleLesson(chapter)) return claimStatements(key);
@@ -673,7 +826,8 @@ export function claimStrip(key) {
     <ol class="claim-list">${chapter.outcomes
       .map((claim, index) => {
         const c = typeof claim === 'string' ? { text: claim } : claim;
-        return `<li class="claim-item" data-claim-item="${index}"><button type="button" class="claim" data-claim="${index}" aria-pressed="${index === 0}"><b>${escapeHtml(c.headline || c.text)}</b></button>${c.evidence ? `<a class="claim-evidence" data-evidence="${index}" href="${routeHref(key, c.evidenceStep || c.step || '', c.evidence, { claim: index })}">How we know →</a>` : ''}</li>`;
+        const cue = claimCue(video, index, c.headline || c.text);
+        return `<li class="claim-item${cue ? ' has-cue' : ''}" data-claim-item="${index}"><button type="button" class="claim" data-claim="${index}" aria-pressed="${index === 0}"><b>${escapeHtml(c.headline || c.text)}</b></button>${cue}${c.evidence ? `<a class="claim-evidence" data-evidence="${index}" href="${routeHref(key, c.evidenceStep || c.step || '', c.evidence, { claim: index })}">How we know →</a>` : ''}</li>`;
       })
       .join('')}</ol>
   </section>`;
@@ -868,6 +1022,60 @@ function listenPage(route) {
         )
         .join('')}</div></details>
     </section>`;
+}
+
+function watchPage(route) {
+  const video = fieldnoteById(route?.video) || fieldnotes[0];
+  const books = [];
+  for (const entry of fieldnotes) {
+    const lesson = chapters[entry.chapter];
+    const book = lesson.group === 'learn' ? lesson.book : 'Start';
+    let group = books.find((item) => item.book === book);
+    if (!group) books.push((group = { book, entries: [] }));
+    group.entries.push(entry);
+  }
+  const card = (entry) => {
+    const poster = videoUrl(entry.files.poster);
+    return `<a class="episode-card fieldnote-card" href="#watch/${entry.id}" ${entry === video ? 'aria-current="page"' : ''}>${poster ? `<img src="${poster}" alt="" width="88" height="88" loading="lazy" />` : ''}<span class="episode-card-body"><span class="episode-kicker">Fieldnote ${entry.id} · ${Math.max(1, Math.round(entry.duration / 60))} min</span><b>${escapeHtml(entry.title)}</b><small>${escapeHtml(entry.summary || chapters[entry.chapter].subhead || '')}</small></span></a>`;
+  };
+  const lesson = chapters[video.chapter];
+  const learn = Object.keys(chapters).filter(
+    (key) => chapters[key].group === 'learn',
+  );
+  const lessonLink =
+    lesson.group === 'learn'
+      ? ` <a href="${routeHref(video.chapter)}">Lesson ${String(learn.indexOf(video.chapter) + 1).padStart(2, '0')} · ${escapeHtml(lesson.title)} →</a>`
+      : '';
+  const origin = [
+    video.origin ? `${escapeHtml(video.origin)}.` : '',
+    lessonLink,
+  ]
+    .join('')
+    .trim();
+  const chaptered = video.chapters.length > 0;
+  return `<nav class="fieldnote-books" aria-label="Fieldnotes">${books
+    .map(
+      (group) =>
+        `<section class="fieldnote-book"><h2>${escapeHtml(group.book)}</h2><div class="episode-cards">${group.entries.map(card).join('')}</div></section>`,
+    )
+    .join('')}</nav>
+    <div class="watch-player" data-fieldnote-player="${video.id}">
+      <section class="watch-hero">
+        ${videoFrame(video)}
+        ${origin ? `<p class="listen-origin">${origin}</p>` : ''}
+        ${videoNotes(video)}
+      </section>
+      ${
+        chaptered
+          ? `<section class="listen-markers" aria-label="Chapters"><div class="section-heading"><h2>Chapters</h2></div>${videoChapterList(video, 'marker-list video-chapter-list')}</section>`
+          : ''
+      }
+      <section class="listen-transcript" aria-label="Transcript">
+        <div class="section-heading"><h2>Transcript</h2></div>
+        <details class="transcript-details"><summary>Show the transcript <span class="summary-marker" aria-hidden="true">+</span></summary>
+        <div class="transcript" id="video-transcript" data-captions="${videoUrl(video.files.captions)}"></div></details>
+      </section>
+    </div>`;
 }
 
 // Short cues into the recordings, beside a map. Playing one never leaves the
@@ -1068,6 +1276,7 @@ function guidesPage() {
 export const pageRenderers = {
   home: homePage,
   myths: mythsPage,
+  watch: watchPage,
   listen: listenPage,
   guides: guidesPage,
 };

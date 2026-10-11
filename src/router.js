@@ -4,6 +4,7 @@
 import { chapters } from './content/chapters.js';
 import { creationMoments } from './content/creation-moments.js';
 import { forkMoments } from './content/fork-moments.js';
+import { fieldnoteById } from './content/videos.js';
 
 // Route keys that were published and later split or renamed keep resolving.
 // A retired chapter maps to a new chapter, and each of its components to the
@@ -56,6 +57,12 @@ export function chapterSteps(chapter) {
   return [];
 }
 
+function seconds(value) {
+  if (value === null) return null;
+  const number = Number(value);
+  return Number.isFinite(number) && number >= 0 ? number : null;
+}
+
 function selectionIndex(value) {
   if (!/^(0|[1-9]\d*)$/.test(value || '')) return null;
   const index = Number(value);
@@ -91,7 +98,6 @@ export function parseRoute(hash) {
   const chapter = Object.hasOwn(chapters, resolved) ? resolved : 'start';
   const steps = chapterSteps(chapter);
   const step = steps.includes(requestedStep) ? requestedStep : steps[0] || '';
-  const seconds = Number(params.get('t'));
   let claim = selectionIndex(params.get('claim'));
   let hop = selectionIndex(params.get('hop'));
   if (claim !== null && hop !== null) {
@@ -106,10 +112,12 @@ export function parseRoute(hash) {
     hop,
     guide,
     episode: params.get('episode'),
-    time:
-      params.has('t') && Number.isFinite(seconds) && seconds >= 0
-        ? seconds
+    video:
+      chapter === 'watch' && fieldnoteById(requestedStepRaw)
+        ? requestedStepRaw
         : null,
+    watch: seconds(params.get('watch')),
+    time: seconds(params.get('t')),
   };
 }
 

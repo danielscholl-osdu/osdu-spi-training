@@ -31,11 +31,16 @@ import {
   resolveLessonSelection,
   selectExampleVariant,
   tryItBand,
-  frameVideoPlayer,
+  fieldnoteClaimAt,
+  fieldnoteLabel,
+  fieldnotePlayer,
+  lessonWatch,
+  parseVtt,
+  transcriptMarkup,
   shelfRow,
   sourcesPreview,
 } from './components/pages.js';
-import { frameVideo } from './content/audio.js';
+import { fieldnoteById, fieldnoteFor } from './content/videos.js';
 import { badge } from './components/badges.js';
 import { escapeHtml } from './components/node.js';
 import { createPlayer } from './components/player.js';
@@ -528,6 +533,15 @@ function renderChapterFrame(route, scene) {
     ? scene.intro
     : `<p>${scene.intro}</p>`;
   document.getElementById('introduction').hidden = !scene.intro;
+  const watch = lessonWatch(key);
+  if (watch) {
+    const lead = document.querySelector('#introduction > p');
+    if (lead) lead.insertAdjacentHTML('afterend', watch);
+    else
+      document
+        .getElementById('introduction')
+        .insertAdjacentHTML('beforeend', watch);
+  }
   const subhead = document.getElementById('subhead');
   subhead.textContent = scene.subhead || '';
   subhead.hidden = !scene.subhead;
@@ -732,7 +746,8 @@ function render() {
     const page = document.getElementById('page');
     page.hidden = false;
     const episodeChanged =
-      scene.page === 'listen' && previousRoute?.episode !== route.episode;
+      (scene.page === 'listen' && previousRoute?.episode !== route.episode) ||
+      (scene.page === 'watch' && previousRoute?.video !== route.video);
     if (chapterChanged || episodeChanged) {
       if (scene.page === 'listen' && route.episode)
         player.select(route.episode);
@@ -742,6 +757,7 @@ function render() {
           : route,
       );
       player.reflect();
+      if (scene.page === 'watch') loadTranscript();
     }
     updateLessonOptional(scene);
     // A timestamp in the hash seeks whether or not the page re-rendered;
@@ -752,6 +768,12 @@ function render() {
       (chapterChanged || episodeChanged || previousRoute?.time !== route.time)
     )
       player.seekTo(route.time, false);
+    if (
+      scene.page === 'watch' &&
+      route.time !== null &&
+      (chapterChanged || episodeChanged || previousRoute?.time !== route.time)
+    )
+      seekVideo(document.querySelector('#page video'), route.time);
     let guideTarget = null;
     if (route.guide) {
       const target = document.getElementById(`guide-${route.guide}`);
@@ -767,6 +789,7 @@ function render() {
     if (chapterChanged && previousRoute) focusChapter();
     historyPop = false;
     watchListenPlayer();
+    openRouteVideo(route, chapterChanged);
     previousRoute = route;
     previousHash = location.hash;
     directHashNavigation = false;
@@ -924,6 +947,7 @@ function render() {
   // A chapter change keeps focus on the headline; the drawer opens beside it.
   if (element)
     expandInspector(true, { focus: !(chapterChanged && previousRoute) });
+  openRouteVideo(route, chapterChanged);
   previousRoute = route;
   previousHash = location.hash;
   directHashNavigation = false;
@@ -1139,38 +1163,168 @@ document
   .getElementById('detail-toggle')
   .addEventListener('click', () => closeInspector());
 
-// Watch opens the video over the page. Closing pauses it and returns focus to
-// Watch at the same scroll position, unless the reader navigated meanwhile.
+// Watch opens a Fieldnote over the page. Closing pauses it and returns focus
+// to the opener at the same scroll position, unless the reader navigated.
 const videoDialog = document.getElementById('video-dialog');
 let videoReturn = null;
+
+function seekVideo(video, seconds) {
+  if (!video || seconds === null || seconds === undefined) return;
+  const seek = () => {
+    video.currentTime = seconds;
+    reflectVideo(video);
+  };
+  if (video.readyState >= 1) seek();
+  else video.addEventListener('loadedmetadata', seek, { once: true });
+}
+
+function reflectVideo(video) {
+  const box = video.closest('[data-fieldnote-player]');
+  if (!box) return;
+  const time = video.currentTime;
+  box.querySelectorAll('[data-chapter-start]').forEach((item) => {
+    item.classList.toggle(
+      'is-current',
+      time >= Number(item.dataset.chapterStart) &&
+        time < Number(item.dataset.chapterEnd),
+    );
+  });
+  const progress = box.querySelector('[data-video-progress]');
+  const duration =
+    video.duration || fieldnoteById(video.dataset.fieldnote)?.duration;
+  if (progress && duration)
+    progress.style.width = `${Math.min(100, (100 * time) / duration)}%`;
+  const segments = [...box.querySelectorAll('#video-transcript p[data-start]')];
+  const active = segments
+    .filter((segment) => Number(segment.dataset.start) <= time)
+    .at(-1);
+  segments.forEach((segment) =>
+    segment.classList.toggle('is-current', segment === active),
+  );
+}
+for (const type of ['timeupdate', 'seeked', 'loadedmetadata'])
+  document.addEventListener(
+    type,
+    (event) => {
+      if (event.target.matches?.('video[data-fieldnote]'))
+        reflectVideo(event.target);
+    },
+    true,
+  );
+
+function loadTranscript() {
+  const box = document.getElementById('video-transcript');
+  if (!box) return;
+  fetch(box.dataset.captions)
+    .then((response) => (response.ok ? response.text() : Promise.reject()))
+    .then((text) => {
+      if (!box.isConnected) return;
+      box.innerHTML = transcriptMarkup(parseVtt(text));
+      reflectVideo(
+        box.closest('[data-fieldnote-player]').querySelector('video'),
+      );
+    })
+    .catch(() => {
+      if (box.isConnected) box.textContent = 'The transcript could not load.';
+    });
+}
+
+function openVideo(video, at, { opener, play }) {
+  videoReturn = { opener, hash: location.hash, top: window.scrollY };
+  const body = document.getElementById('video-dialog-body');
+  if (body.firstElementChild?.dataset.fieldnotePlayer !== video.id) {
+    document.getElementById('video-dialog-title').textContent =
+      fieldnoteLabel(video);
+    body.innerHTML = fieldnotePlayer(video);
+  }
+  videoDialog.classList.toggle('is-wide', video.width > video.height);
+  player.element.pause();
+  videoDialog.showModal();
+  const element = videoDialog.querySelector('video');
+  seekVideo(element, at);
+  if (play) element.play().catch(() => {});
+}
+
 document.addEventListener('click', (event) => {
   const opener = event.target.closest('[data-video-open]');
   if (!opener) return;
-  videoReturn = { opener, hash: location.hash, top: window.scrollY };
-  const body = document.getElementById('video-dialog-body');
-  if (!body.firstElementChild) {
-    document.getElementById('video-dialog-title').textContent =
-      frameVideo.title;
-    body.innerHTML = frameVideoPlayer();
-  }
-  videoDialog.showModal();
-  videoDialog
-    .querySelector('video')
-    .play()
-    .catch(() => {});
+  const video = fieldnoteById(opener.dataset.videoOpen);
+  if (!video) return;
+  const at = opener.dataset.videoAt;
+  openVideo(video, at === undefined ? null : Number(at), {
+    opener,
+    play: true,
+  });
 });
+
+// A lesson route with ?watch= opens its Fieldnote at that moment, paused.
+function openRouteVideo(route, chapterChanged) {
+  if (route.watch === null || videoDialog.open) return;
+  if (!chapterChanged && previousRoute?.watch === route.watch) return;
+  const video = fieldnoteFor(route.chapter);
+  if (!video || chapters[route.chapter].group !== 'learn') return;
+  const opener =
+    document.querySelector('#introduction [data-video-open]') ||
+    document.getElementById('headline');
+  openVideo(video, route.watch, { opener, play: false });
+}
+
+function withoutWatch(hash) {
+  const [path, query = ''] = hash.split('?');
+  const params = new URLSearchParams(query);
+  params.delete('watch');
+  const rest = params.toString();
+  return rest ? `${path}?${rest}` : path;
+}
+
 // Synchronous: the dialog's queued close event can lag in a background tab.
-function closeVideo() {
+function closeVideo(restore = true) {
   if (!videoDialog.open) return;
   videoDialog.querySelector('video').pause();
   videoDialog.close();
   const target = videoReturn;
   videoReturn = null;
   if (!target || location.hash !== target.hash) return;
-  target.opener.focus({ preventScroll: true });
-  if (window.scrollY !== target.top)
-    window.scrollTo({ top: target.top, behavior: 'instant' });
+  if (restore) {
+    target.opener.focus({ preventScroll: true });
+    if (window.scrollY !== target.top)
+      window.scrollTo({ top: target.top, behavior: 'instant' });
+  }
+  if (parseRoute(location.hash).watch !== null) {
+    history.replaceState(null, '', withoutWatch(location.hash));
+    previousHash = location.hash;
+    if (previousRoute) previousRoute = { ...previousRoute, watch: null };
+  }
 }
+
+// Show it on the map closes the video, selects the claim whose chapter is
+// playing, and brings the map into view.
+document.addEventListener('click', (event) => {
+  const jump = event.target.closest('[data-video-map]');
+  if (!jump) return;
+  const box = jump.closest('[data-fieldnote-player]');
+  const video = fieldnoteById(box.dataset.fieldnotePlayer);
+  const claim = fieldnoteClaimAt(video, box.querySelector('video').currentTime);
+  const opener = videoReturn?.opener;
+  closeVideo(false);
+  const button =
+    claim === null
+      ? null
+      : document.querySelector(`#chapter-claims [data-claim="${claim}"]`);
+  button?.click();
+  document.getElementById('exploration').scrollIntoView({ block: 'start' });
+  (button || opener)?.focus({ preventScroll: true });
+});
+
+document.addEventListener('click', (event) => {
+  const seek = event.target.closest('[data-video-seek]');
+  if (!seek) return;
+  const video = seek.closest('[data-fieldnote-player]')?.querySelector('video');
+  if (!video) return;
+  seekVideo(video, Number(seek.dataset.videoSeek));
+  video.play().catch(() => {});
+});
+
 videoDialog.addEventListener('keydown', (event) => {
   if (event.key !== 'Tab') return;
   const stops = [...videoDialog.querySelectorAll('button, video, summary')];
@@ -1189,11 +1343,11 @@ videoDialog.addEventListener('cancel', (event) => {
 });
 document
   .getElementById('video-dialog-close')
-  .addEventListener('click', closeVideo);
+  .addEventListener('click', () => closeVideo());
 videoDialog.addEventListener('click', (event) => {
   if (event.target === videoDialog) closeVideo();
 });
-window.addEventListener('hashchange', closeVideo);
+window.addEventListener('hashchange', () => closeVideo());
 
 const lightbox = document.getElementById('lightbox');
 let lightboxOpener = null;

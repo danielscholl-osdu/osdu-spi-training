@@ -1369,6 +1369,24 @@ export const chapters = {
       'Provisioning, convergence, readiness, and proof are different signals, and I check the one I actually need.',
     ],
   },
+  watch: {
+    kind: 'page',
+    page: 'watch',
+    group: 'supplement',
+    title: 'Fieldnotes',
+    subtitle: 'Short videos',
+    headline: 'Fieldnotes from the lessons',
+    subhead:
+      'Short narrated videos drawn on the lessons’ own maps. Each chapter is a claim you can select on the map, so the video and the lesson use the same words.',
+    intro: '',
+    hero: {
+      image: 'start/machinery.webp',
+      width: 656,
+      height: 372,
+      alt: 'Three meshing gears joined by a loop arrow: the Azure stack, the provider interface inside a service, and the fork workflows.',
+    },
+    sources: ['architecture', 'lifecycle', 'forkTiers'],
+  },
   listen: {
     kind: 'page',
     page: 'listen',

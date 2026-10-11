@@ -41,9 +41,9 @@ A vanilla ES module single-page app. Vite's `root` is `src/`, `publicDir` is `pu
 
 **Selection is by ID.** Clickable elements carry `data-detail="<id>"` produced by `node()` in `src/components/node.js`; the ID must be a key in `src/content/component-details.js`, whose `source` must be a key in `src/content/sources.js`. `selectDetail` in `main.js` highlights the element and fills the inspector (beside the map on desktop, a bottom sheet on phones).
 
-**Routing.** `src/router.js` parses `#<chapter>/<step>?detail=<id>&t=<seconds>&guide=<id>`. Steps come from `creation-moments.js` or `fork-moments.js` depending on the chapter. Renamed chapters stay reachable through `chapterAliases`, and removed component IDs through `retiredDetails`; never drop a published route key.
+**Routing.** `src/router.js` parses `#<chapter>/<step>?detail=<id>&t=<seconds>&guide=<id>&watch=<seconds>` and `#watch/<id>?t=<seconds>`. Steps come from `creation-moments.js` or `fork-moments.js` depending on the chapter. Renamed chapters stay reachable through `chapterAliases`, and removed component IDs through `retiredDetails`; never drop a published route key.
 
-**Audio.** `src/components/player.js` owns one `<audio>` element in the page frame (`src/index.html`) that survives chapter changes. Episodes, markers, and source-check notes are in `src/content/audio.js`; marker times are read from the generated `src/content/transcripts/*.js`. The start-page video is separate from the dock and is not an episode.
+**Audio.** `src/components/player.js` owns one `<audio>` element in the page frame (`src/index.html`) that survives chapter changes. Episodes, markers, and source-check notes are in `src/content/audio.js`; marker times are read from the generated `src/content/transcripts/*.js`. Fieldnotes, the lesson videos, are in `src/content/videos.js` and play in the video dialog in `src/index.html` or on the `#watch` page, never in the dock. Entry `00` is the Start video served from `public/video/`; other episode files resolve against `videoBase`, the media repository.
 
 **Posters and field guides.** Posters are listed in `src/content/posters.js` with web copies in `public/posters/`. Supplied originals and the self-contained HTML sources of site-built posters are in `docs/reference/posters/`; edit that HTML and re-render rather than editing a PNG. Native field guides are HTML and SVG functions in `src/components/infographics.js`.
 
@@ -55,7 +55,8 @@ A vanilla ES module single-page app. Vite's `root` is `src/`, `publicDir` is `pu
 - component IDs are unique within a scene;
 - every route in audio markers, field checks, and poster links parses and names a real component or guide;
 - `listen` cues start on a marker of their episode;
-- audio, video, and poster files exist in `public/`.
+- each Fieldnote chapter names a real claim, the example, or one of the lesson's myths, and each `cutFrom` still matches `chapters.js` and `myths.js`;
+- audio, poster, and local video files exist in `public/` (episode files in the media repository are not fetched).
 
 Source links must point at the published docs (`azure.github.io/osdu-spi/`) or the default branch (`main`) of `github.com/Azure/osdu-spi-stack` and `osdu-spi-partition`; comparison evidence may also point at the default branch of the community Partition repository (`master`) and `cimpl-stack` (`main`). A file link never pins a revision and a label never carries a commit id: the site follows the repositories as they are, and the revisions a claim was reviewed against are recorded in `docs/README.md`, not in the interface. A commit link (the cache-fallback fix) names an event, not a snapshot. When sibling checkouts exist at `../osdu-spi`, `../osdu-spi-stack`, or `../osdu-spi-partition`, each source `path` must also exist there. A missing file means the upstream moved; re-check the claim, and update the "Reviewed against" revisions and dated statements in `docs/README.md`.
 
