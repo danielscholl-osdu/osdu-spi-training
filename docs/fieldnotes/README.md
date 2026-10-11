@@ -11,7 +11,7 @@ The training site owns what is said. The video library at `~/workspace/videos` (
 | 00        | Start: three parts       | boards        | [00-three-parts.md](00-three-parts.md)               | published                               |
 | 01        | Anatomy of a stack       | boards        | [01-anatomy-of-a-stack.md](01-anatomy-of-a-stack.md) | published                               |
 | 02        | How it comes to life     | mixed         |                                                      | after the pilot (fn-29r)                |
-| 03        | The SPI boundary         | boards + code |                                                      | after the pilot (fn-29r)                |
+| 03        | The SPI boundary         | boards + code | [03-the-spi-boundary.md](03-the-spi-boundary.md)     | storyboard for approval                 |
 | 04        | The shape of the fork    | mixed         |                                                      | after the claim migration for lesson 04 |
 | 05        | A day in the fork        | mixed         |                                                      | after the claim migration for lesson 05 |
 | 06        | The handshake            | boards        |                                                      | drawn; the run stays illustrative       |
@@ -63,6 +63,10 @@ Written into each line's `ssml` field.
 | osdu-image-lock                 | the O S D U image lock             |
 | fork_upstream, fork_integration | fork upstream, fork integration    |
 | osdu-spi-stack, osdu-spi        | O S D U S P I stack, O S D U S P I |
+| getPartition, safeGet           | get partition, safe get            |
+| partition-core                  | partition core                     |
+| JAR                             | jar                                |
+| 401, 403                        | four oh one, four oh three         |
 
 ## What never appears on screen
 
