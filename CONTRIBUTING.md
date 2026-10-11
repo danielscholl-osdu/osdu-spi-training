@@ -22,6 +22,7 @@ Install the pinned tools with `npm ci`, then start `npm run dev`. Work in `src/`
 | Azure / AKS map and creation-step interaction                                                         | `src/components/architecture.js`   |
 | SPI and engineering-system diagrams                                                                   | `src/components/diagrams.js`       |
 | Shared clickable component markup                                                                     | `src/components/node.js`           |
+| Product icons on map nodes, shared with the Fieldnotes videos                                         | `src/components/icons.js`          |
 | Chapter-aware evidence resolution                                                                     | `src/components/evidence.js`       |
 | Page frame, structured shelf slots, and chapter-local comparison slot                                 | `src/index.html`                   |
 | Chapter navigation, disclosure reveal, scroll memory, and detail-panel behavior                       | `src/main.js`                      |
