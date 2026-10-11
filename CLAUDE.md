@@ -39,7 +39,7 @@ A vanilla ES module single-page app. Vite's `root` is `src/`, `publicDir` is `pu
 - `kind: 'map'` names a `diagram` key in `diagramRenderers` (`src/components/diagrams.js`). The `overview` and `creation` renderers both come from `architecture.js`, which is the single architecture renderer shared by the overview and the lifecycle. A map chapter also names its `guides`, `listen` cues, and outcomes.
 - `kind: 'page'` names a `page` key in `pageRenderers` (`src/components/pages.js`).
 
-**Selection is by ID.** Clickable elements carry `data-detail="<id>"` produced by `node()` in `src/components/node.js`; the ID must be a key in `src/content/component-details.js`, whose `source` must be a key in `src/content/sources.js`. `selectDetail` in `main.js` highlights the element and fills the inspector (beside the map on desktop, a bottom sheet on phones).
+**Selection is by ID.** Clickable elements carry `data-detail="<id>"` produced by `node()` in `src/components/node.js`; the ID must be a key in `src/content/component-details.js`, whose `source` must be a key in `src/content/sources.js`. `selectDetail` in `main.js` highlights the element and fills the inspector (beside the map on desktop, a bottom sheet on phones). A node whose ID is in `nodeIcons` (`src/components/icons.js`) carries that product's icon; the Fieldnotes videos draw the same icons from that file.
 
 **Routing.** `src/router.js` parses `#<chapter>/<step>?detail=<id>&t=<seconds>&guide=<id>&watch=<seconds>` and `#watch/<id>?t=<seconds>`. Steps come from `creation-moments.js` or `fork-moments.js` depending on the chapter. Renamed chapters stay reachable through `chapterAliases`, and removed component IDs through `retiredDetails`; never drop a published route key.
 

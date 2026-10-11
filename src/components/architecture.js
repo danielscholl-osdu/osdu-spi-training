@@ -2,11 +2,12 @@
 // Licensed under the MIT License.
 
 import { node, escapeHtml } from './node.js';
+import { iconSvg } from './icons.js';
 import { creationMoments } from '../content/creation-moments.js';
 import { routeHref } from '../router.js';
 
-function scope(id, title, subtitle) {
-  return `<button class="scope-button" type="button" data-detail="${id}" aria-pressed="false" aria-controls="inspector"><b>${title}</b><small>${subtitle}</small><span class="node-open" aria-hidden="true">Inspect ↗</span></button>`;
+function scope(id, title, subtitle, icon = '') {
+  return `<button class="scope-button${icon ? ' has-emblem' : ''}" type="button" data-detail="${id}" aria-pressed="false" aria-controls="inspector">${icon ? iconSvg(icon, { className: 'scope-emblem' }) : ''}<b>${title}</b><small>${subtitle}</small><span class="node-open" aria-hidden="true">Inspect ↗</span></button>`;
 }
 
 function placeholder(title, copy, removed = false) {
@@ -48,14 +49,14 @@ export function architectureMap(stage = null, path = 'developer') {
         <header class="stack-heading">${scope('environment', empty ? 'The planned stack' : removed ? 'The remaining footprint' : 'The deployed stack', environmentSubtitle)}<span class="boundary-label">${empty ? 'Planned' : removed ? 'Retained' : 'Stack boundary'}</span></header>
         <div class="map-resource-grid">
           <section class="aks-boundary ${empty ? 'planned-boundary' : ''}" data-scope="aks" aria-label="AKS cluster boundary">
-            ${scope('aks', 'AKS Automatic', 'Kubernetes boundary')}
+            ${scope('aks', 'AKS Automatic', 'Kubernetes boundary', 'aks')}
             <div class="cluster-content">
               ${
                 workloads
                   ? `<div class="controllers">${node('flux', 'Flux', 'Reconcile workloads', '', 'flux-system')}${node('operators', 'Operators', 'ECK · CNPG · certificates', '', 'foundation')}</div>
                 ${node('gateway', 'Istio gateway', 'Routes OSDU API requests', request ? 'path-emphasis' : '', 'aks-istio-ingress')}
                 <div class="inside-arrow" aria-hidden="true">↓</div>
-                <section data-scope="service-boundary" class="service-boundary ${request ? 'path-emphasis' : ''}"><div class="group-label">osdu · OSDU service workloads</div>${node('service', 'OSDU services', 'Partition · entitlements · storage · one image each')}<small>Lesson 03 opens one of them.</small></section>
+                <section data-scope="service-boundary" class="service-boundary ${request ? 'path-emphasis' : ''}"><div class="group-label">${iconSvg('k8s', { className: 'label-icon' })}osdu · OSDU service workloads</div>${node('service', 'OSDU services', 'Partition · entitlements · storage · one image each')}<small>Lesson 03 opens one of them.</small></section>
                 ${node('middleware', 'Platform middleware', 'Elasticsearch · Redis · PostgreSQL', '', 'platform')}
                 ${node('initialization', 'Initialize OSDU', 'Partitions · entitlements · schema load', '', 'osdu')}`
                   : removed
@@ -79,8 +80,8 @@ export function architectureMap(stage = null, path = 'developer') {
             <header><b>Azure resources</b><small>Outside AKS</small></header>
             ${
               created
-                ? `<div class="resource-family"><span class="group-label">Per partition · opendes</span><div class="partition-resources">${node('cosmos', 'Cosmos DB SQL', 'Records and metadata')}${node('partition-storage', 'Storage', 'Blobs and tables')}${node('events', 'Service Bus', 'Records-changed events')}</div></div>
-              <div class="resource-family"><span class="group-label">Shared by the environment</span><div class="shared-resources">${node('shared-data', 'Gremlin + common Storage', 'Entitlements graph and shared data')}${node('identity', 'Managed identities', 'Workload and test callers')}${node('vault', 'Key Vault', 'Configuration and credentials')}${node('registry', 'Container Registry', 'Provisioned; not this flow’s image source')}</div></div>`
+                ? `<div class="resource-family partition-family"><span class="group-label">Per partition · opendes</span><div class="partition-resources">${node('cosmos', 'Cosmos DB SQL', 'Records and metadata')}${node('partition-storage', 'Storage', 'Blobs and tables')}${node('events', 'Service Bus', 'Records-changed events')}</div></div>
+              <div class="resource-family shared-family"><span class="group-label">Shared by the environment</span><div class="shared-resources">${node('shared-data', 'Gremlin + common Storage', 'Entitlements graph and shared data')}${node('identity', 'Managed identities', 'Workload and test callers')}${node('vault', 'Key Vault', 'Configuration and credentials')}${node('registry', 'Container Registry', 'Provisioned; not this flow’s image source')}</div></div>`
                 : removed
                   ? `${node('retained', 'Managed identities + resource group', 'Client IDs · spi-name-suffix · retained tags', 'retained', 'Still exists')}${placeholder('Data resources removed', 'OSDU data must be rebuilt or restored separately.', true)}`
                   : placeholder(
