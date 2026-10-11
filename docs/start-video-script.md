@@ -6,7 +6,7 @@ The current video calls the Azure logic proprietary, says the community stripped
 
 The spoken text is kept separately in `docs/narration/start-video.md`. That file is what a narrator or generator receives; this document carries the editorial record around it.
 
-**Length:** 393 words of narration, about 2.6 minutes at 150 words a minute and 3.0 at 130. Target: about two and a half minutes. The reviewed draft was 303 words; the three-part opening, the adoption status, and the CLI-and-Flux overlap account for the growth, and nothing else was added.
+**Length:** 398 words of narration, about 2.7 minutes at 150 words a minute and 3.0 at 130. Target: about two and a half minutes. The reviewed draft was 303 words; the three-part opening, the adoption status, and the CLI-and-Flux overlap account for the growth, and nothing else was added.
 
 **Sections** (the video has no markers; these are the beats a storyboard follows, at 150 words a minute):
 
@@ -18,7 +18,7 @@ The spoken text is kept separately in `docs/narration/start-video.md`. That file
 
 Single narrator. Plain engineering language. One metaphor, the site's: machinery. The example partition is `opendes`; the environment placeholder is `<name>`. No real environment or subscription is named. The card title stays "How the machinery is engineered".
 
-**Adoption status, dated.** As of 13 September 2026, checked at `osdu-spi-partition` revision `3a5690d`, the reference partition fork has no `.spi/service.yaml` and its validation workflow has no Deploy Gate; the template at `osdu-spi` `080f0b8` implements the lane. Section 4 states that status. Recheck it immediately before recording: if the fork has adopted the lane by then, replace the status sentence with the demonstrated result.
+**Adoption status, dated.** Rechecked on 11 October 2026 at `osdu-spi-partition` revision `0656cda5`: the fork added its `.spi/service.yaml` on 16 September 2026 (`7f83d2d6`), and its validation workflow has Deploy Gate and Deploy and Test. Run 37499442304 on `main`, on 6 October 2026, pinned the partition service to the candidate digest, verified the pod, passed both declared suites, and restored the partition service to canonical. Section 4 states that status. On 13 September 2026, at revision `3a5690d`, the fork had neither. Recheck immediately before recording.
 
 ## Script
 
@@ -36,7 +36,7 @@ That provider is Microsoft's to maintain, and the community plans to remove the 
 
 ### 4. A candidate is tested in a running stack
 
-A change in the fork becomes a candidate image, addressed by digest. A passing build is not evidence that the provider works on Azure. The template includes a workflow for testing a candidate in a running stack: it writes the digest into the environment's image lock, waits until the pod runs that digest, runs the suites the service declares, and writes the captured canonical image back while it still owns the pin; a lost run can leave that work for a person. The partition fork has not adopted it yet, so the lessons illustrate that part of the process.
+A change in the fork becomes a candidate image, addressed by digest. A passing build is not evidence that the provider works on Azure. The template includes a workflow for testing a candidate in a running stack: it writes the digest into the environment's image lock, waits until the pod runs that digest, runs the suites the service declares, and writes the captured canonical image back while it still owns the pin; a lost run can leave that work for a person. The partition fork adopted it in September, and a run on its main branch has passed both of the suites it declares.
 
 ### 5. The stack, and what you can then do
 
@@ -53,7 +53,7 @@ Two repositories carry this: osdu-spi-stack builds the environment, and osdu-spi
 - Public service forks. Nothing is proprietary; the forks and both projects are Apache 2.0.
 - spi up creates the Azure resources and starts Flux, which continues assembling workloads after the command returns. Never "assembled by Flux after the CLI returns".
 - Writes the captured canonical image back while it still owns the pin. Never "restores the environment completely", never "the previous image".
-- The template includes the testing workflow; the partition fork has not adopted it yet. Dated above; recheck before recording.
+- The template includes the testing workflow; the partition fork adopted it in September, and a run on its main branch passed both declared suites. Never that every run passes or that every fork has adopted it. Dated above; recheck before recording.
 - Development and test environment. Never production, never Azure Data Manager for Energy.
 - The forks own provider code, tests, and configuration; the template supplies workflows.
 
@@ -61,14 +61,14 @@ Two repositories carry this: osdu-spi-stack builds the environment, and osdu-spi
 
 Timestamps are the caption cues in `public/video/how-microsoft-engineers-azure-osdu.vtt`.
 
-| Caption | The current recording                                                                                                              | This script                                                                                                                                                                                                                                             |
-| ------- | ---------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| 0:06    | "The engineering engine that keeps Microsoft's OSDU data platform running."                                                        | No product framing. The opening names the three parts the site connects: the stack, the Azure provider inside each service, and the workflows that keep it current.                                                                                     |
-| 0:12    | "The community stripped out all cloud-specific code, leaving Microsoft as the sole owner."                                         | The community plans to remove the Azure code, introduced inside the ownership explanation; the generated branch omits the whole provider tree, Azure included, so the removal deletes nothing on the fork side.                                         |
-| 0:32    | "Microsoft's proprietary Azure logic."                                                                                             | Public service forks; the provider is Microsoft's to maintain, not proprietary. The provider implements the cloud-specific behavior behind the shared interface.                                                                                        |
-| 0:44    | "Enter the stack, an on-demand, fully-provisioned Azure environment."                                                              | A development and test environment: one resource group, AKS beside the Azure data services. spi up creates the Azure resources and starts Flux, which continues assembling workloads after the command returns. Not production.                         |
-| 0:48    | "Executes its API-level acceptance tests directly against real Azure data services, and then restores the environment completely." | The template's workflow runs the suites the service declares and writes the captured canonical image back while it still owns the pin; a lost run can leave work for a person. The partition fork has not adopted it yet, so the lessons illustrate it. |
-| 0:59    | "Microsoft ensures its OSDU platform never falls behind the community standard."                                                   | Closes on what the learner can then do: locate a change, follow it into an image, and say what a running-stack test proves. The opendes lookup is the example that runs through the lessons.                                                            |
+| Caption | The current recording                                                                                                              | This script                                                                                                                                                                                                                                                                          |
+| ------- | ---------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| 0:06    | "The engineering engine that keeps Microsoft's OSDU data platform running."                                                        | No product framing. The opening names the three parts the site connects: the stack, the Azure provider inside each service, and the workflows that keep it current.                                                                                                                  |
+| 0:12    | "The community stripped out all cloud-specific code, leaving Microsoft as the sole owner."                                         | The community plans to remove the Azure code, introduced inside the ownership explanation; the generated branch omits the whole provider tree, Azure included, so the removal deletes nothing on the fork side.                                                                      |
+| 0:32    | "Microsoft's proprietary Azure logic."                                                                                             | Public service forks; the provider is Microsoft's to maintain, not proprietary. The provider implements the cloud-specific behavior behind the shared interface.                                                                                                                     |
+| 0:44    | "Enter the stack, an on-demand, fully-provisioned Azure environment."                                                              | A development and test environment: one resource group, AKS beside the Azure data services. spi up creates the Azure resources and starts Flux, which continues assembling workloads after the command returns. Not production.                                                      |
+| 0:48    | "Executes its API-level acceptance tests directly against real Azure data services, and then restores the environment completely." | The template's workflow runs the suites the service declares and writes the captured canonical image back while it still owns the pin; a lost run can leave work for a person. The partition fork adopted it in September, and a run on its main branch passed both declared suites. |
+| 0:59    | "Microsoft ensures its OSDU platform never falls behind the community standard."                                                   | Closes on what the learner can then do: locate a change, follow it into an image, and say what a running-stack test proves. The opendes lookup is the example that runs through the lessons.                                                                                         |
 
 ## Generation brief
 
