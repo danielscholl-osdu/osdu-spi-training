@@ -6,16 +6,16 @@ The training site owns what is said. The video library at `~/workspace/videos` (
 
 ## The series
 
-| Fieldnote | Lesson                   | Form          | Storyboard                                           | Status                                      |
-| --------- | ------------------------ | ------------- | ---------------------------------------------------- | ------------------------------------------- |
-| 00        | Start: three parts       | boards        | [00-three-parts.md](00-three-parts.md)               | storyboard; narration from the Start script |
-| 01        | Anatomy of a stack       | boards        | [01-anatomy-of-a-stack.md](01-anatomy-of-a-stack.md) | published                                   |
-| 02        | How it comes to life     | mixed         |                                                      | after the pilot (fn-29r)                    |
-| 03        | The SPI boundary         | boards + code |                                                      | after the pilot (fn-29r)                    |
-| 04        | The shape of the fork    | mixed         |                                                      | after the claim migration for lesson 04     |
-| 05        | A day in the fork        | mixed         |                                                      | after the claim migration for lesson 05     |
-| 06        | The handshake            | boards        |                                                      | drawn until the fork adopts the lane        |
-| 07        | Things that are not true | boards        |                                                      | after 04 and 05                             |
+| Fieldnote | Lesson                   | Form          | Storyboard                                           | Status                                  |
+| --------- | ------------------------ | ------------- | ---------------------------------------------------- | --------------------------------------- |
+| 00        | Start: three parts       | boards        | [00-three-parts.md](00-three-parts.md)               | storyboard for approval                 |
+| 01        | Anatomy of a stack       | boards        | [01-anatomy-of-a-stack.md](01-anatomy-of-a-stack.md) | published                               |
+| 02        | How it comes to life     | mixed         |                                                      | after the pilot (fn-29r)                |
+| 03        | The SPI boundary         | boards + code |                                                      | after the pilot (fn-29r)                |
+| 04        | The shape of the fork    | mixed         |                                                      | after the claim migration for lesson 04 |
+| 05        | A day in the fork        | mixed         |                                                      | after the claim migration for lesson 05 |
+| 06        | The handshake            | boards        |                                                      | drawn until the fork adopts the lane    |
+| 07        | Things that are not true | boards        |                                                      | after 04 and 05                         |
 
 ## Script shape
 

@@ -14,7 +14,7 @@ That provider is Microsoft's to maintain, and the community plans to remove the 
 
 ## 4. A candidate is tested in a running stack
 
-A change in the fork becomes a candidate image, addressed by digest. A passing build is not evidence that the provider works on Azure. The template includes a workflow for testing a candidate in a running stack: it writes the digest into the environment's image lock, waits until the pod runs that digest, runs the suites the service declares, and writes the captured canonical image back while it still owns the pin; a lost run can leave that work for a person. The partition fork has not adopted it yet, so the lessons illustrate that part of the process.
+A change in the fork becomes a candidate image, addressed by digest. A passing build is not evidence that the provider works on Azure. The template includes a workflow for testing a candidate in a running stack: it writes the digest into the environment's image lock, waits until the pod runs that digest, runs the suites the service declares, and writes the captured canonical image back while it still owns the pin; a lost run can leave that work for a person. The partition fork adopted it in September, and a run on its main branch has passed both of the suites it declares.
 
 ## 5. The stack, and what you can then do
 
