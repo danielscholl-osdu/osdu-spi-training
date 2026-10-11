@@ -11,12 +11,14 @@ import { creationMoments } from '../src/content/creation-moments.js';
 import { sources } from '../src/content/sources.js';
 import { myths } from '../src/content/myths.js';
 import { suppliedPosters, nativeGuides } from '../src/content/posters.js';
+import { episodes, deepDives, defaultEpisode } from '../src/content/audio.js';
 import {
-  episodes,
-  deepDives,
-  defaultEpisode,
-  frameVideo,
-} from '../src/content/audio.js';
+  fieldnotes,
+  fieldnoteById,
+  fieldnoteFor,
+  videoBase,
+  videoUrl,
+} from '../src/content/videos.js';
 import { diagramRenderers } from '../src/components/diagrams.js';
 import {
   architectureMap,
@@ -38,8 +40,14 @@ import {
   claimStrip,
   detailSourceLinks,
   exampleStrip,
-  frameVideoPlayer,
+  fieldnoteChapterTitle,
+  fieldnoteChapters,
+  fieldnoteClaimAt,
+  fieldnotePlayer,
   guideFigure,
+  lessonWatch,
+  parseVtt,
+  transcriptMarkup,
   guidePreviewTitles,
   hasClaims,
   isLifecycleLesson,
@@ -85,6 +93,7 @@ import {
   spiNamesFigure,
 } from '../src/components/infographics.js';
 import { multipleVariantTryIt, singleVariantTryIt } from './fixtures/try-it.js';
+import { lessonFieldnote } from './fixtures/fieldnote.js';
 import { tryItShells } from '../src/try-it-shell.js';
 
 const mapChapters = Object.entries(chapters).filter(
@@ -874,6 +883,8 @@ test('deep links recover chapter, lifecycle moment, and component without module
     hop: null,
     guide: null,
     episode: null,
+    video: null,
+    watch: null,
     time: null,
   };
   for (const moment of creationMoments) {
@@ -1306,22 +1317,27 @@ test('audio markers are ordered, inside the recording, and point at real views',
     !home.includes('<video') && !home.includes('data-play-frame-video'),
     'the video is not embedded in the page',
   );
-  const player = frameVideoPlayer();
+  const startVideo = fieldnoteFor('start');
   assert.ok(
-    player.includes('data-frame-video') &&
-      player.includes(`src="${frameVideo.captions}"`) &&
-      frameVideo.notes.every((note) => player.includes(escapeHtml(note))),
+    home.includes(`data-video-open="${startVideo.id}"`) &&
+      home.includes(`Watch · ${Math.round(startVideo.duration / 60)} min`) &&
+      home.includes(escapeHtml(startVideo.card)),
+    'Start reads its Watch card from Fieldnote 00',
+  );
+  const player = fieldnotePlayer(startVideo);
+  assert.ok(
+    player.includes('data-fieldnote="00"') &&
+      player.includes(`src="${startVideo.files.captions}"`) &&
+      startVideo.notes.every((note) => player.includes(escapeHtml(note))),
     'the video dialog carries captions and the source-check notes',
   );
-  for (const file of [
-    frameVideo.file,
-    frameVideo.poster,
-    frameVideo.captions,
-  ]) {
-    const publicFile = new URL(`../public/${file}`, import.meta.url);
-    assert.ok(existsSync(publicFile), `missing ${fileURLToPath(publicFile)}`);
-  }
-  assert.ok(frameVideo.duration > 0 && frameVideo.notes.length);
+  assert.ok(
+    !player.includes('video-timeline') &&
+      !player.includes('data-video-map') &&
+      !player.includes('video-chapters'),
+    'the Start video has no chapters, so its dialog looks as it did',
+  );
+  assert.ok(startVideo.duration > 0 && startVideo.notes.length);
   assert.ok(home.includes('data-listen-now'), 'home cue has a live note line');
   assert.ok(
     !home.includes('href="#listen"') && !home.includes('All episodes'),
@@ -1426,7 +1442,7 @@ test('audio markers are ordered, inside the recording, and point at real views',
   assert.ok(!masthead.includes('Explore'), 'the masthead has no Explore link');
   assert.equal(
     masthead.split('class="masthead-label"').length,
-    3,
+    4,
     'each masthead link labels its icon',
   );
   const intro = html.slice(
@@ -1445,15 +1461,19 @@ test('audio markers are ordered, inside the recording, and point at real views',
   );
   assert.ok(
     !masthead.includes('<details') &&
-      masthead.includes('class="masthead-link" href="#listen"') &&
-      masthead.includes('class="masthead-link" href="#field-guides"') &&
-      masthead.split('class="masthead-icon"').length === 3,
-    'Audio deep dives and Visual field guides are two icon links',
+      masthead.indexOf('class="masthead-link" href="#watch"') <
+        masthead.indexOf('class="masthead-link" href="#listen"') &&
+      masthead.indexOf('class="masthead-link" href="#listen"') <
+        masthead.indexOf('class="masthead-link" href="#field-guides"') &&
+      masthead.split('class="masthead-icon"').length === 4,
+    'Fieldnotes, Audio deep dives, and Visual field guides are three icon links',
   );
   assert.match(html, /<dialog\s+id="video-dialog"/);
   const nav = chapterNavigation('running-stack');
   assert.ok(
-    !nav.includes('href="#listen"') && !nav.includes('href="#field-guides"'),
+    !nav.includes('href="#watch"') &&
+      !nav.includes('href="#listen"') &&
+      !nav.includes('href="#field-guides"'),
     'the rail carries chapters, not resources',
   );
   const base = readFileSync(
@@ -1467,7 +1487,7 @@ test('audio markers are ordered, inside the recording, and point at real views',
   );
   assert.match(
     base,
-    /body\[data-page='listen'\] \.rail,\s*body\[data-page='guides'\] \.rail \{\s*display: none;/,
+    /body\[data-page='watch'\] \.rail,\s*body\[data-page='listen'\] \.rail,\s*body\[data-page='guides'\] \.rail \{\s*display: none;/,
     'the supplement pages have no rail',
   );
   assert.ok(
@@ -4621,4 +4641,384 @@ test('history memory restores open shelf rows before the full-hash offset', () =
     main,
     /const freshNavigation = routeChanged && !historyPop[\s\S]*if \(freshNavigation && chapterChanged\) closeShelfRows\(\)/,
   );
+});
+
+const learnKeys = Object.keys(chapters).filter(
+  (key) => chapters[key].group === 'learn',
+);
+
+function lessonMistakes(chapter) {
+  const value = chapter.mistakes;
+  if (!value) return [];
+  if (typeof value === 'string') return [value];
+  return Array.isArray(value) ? value : Object.values(value).flat();
+}
+
+// A cut records the lesson as it stood. Any difference names the episode and
+// the field, so the fix is a re-cut or a source-check note on that chapter.
+function cutFromDifferences(video) {
+  const lesson = chapters[video.chapter];
+  const id = `Fieldnote ${video.id}`;
+  if (lesson.group !== 'learn')
+    return video.cutFrom ? [`${id}: cutFrom belongs to lesson episodes`] : [];
+  const cut = video.cutFrom;
+  if (!cut) return [`${id}: cutFrom is missing`];
+  const differs = (field, from = `chapters['${video.chapter}']`) =>
+    `${id}: cutFrom.${field} differs from ${from}`;
+  const differences = [];
+  const outcomes = lesson.outcomes || [];
+  if (cut.claims.length !== outcomes.length)
+    differences.push(differs('claims.length'));
+  cut.claims.forEach((claim, index) => {
+    const now = outcomes[index];
+    if (typeof claim === 'string' || typeof now === 'string') {
+      if (claim !== now) differences.push(differs(`claims[${index}]`));
+      return;
+    }
+    for (const field of ['headline', 'text'])
+      if (claim[field] !== now?.[field])
+        differences.push(differs(`claims[${index}].${field}`));
+  });
+  if ((cut.example ?? null) !== (lesson.example?.title ?? null))
+    differences.push(differs('example'));
+  if (cut.mistake) {
+    if (!lessonMistakes(lesson).includes(cut.mistake.id))
+      differences.push(differs('mistake.id'));
+    const myth = myths.find((item) => item.id === cut.mistake.id);
+    if (myth?.claim !== cut.mistake.claim)
+      differences.push(
+        differs('mistake.claim', `myths.js '${cut.mistake.id}'`),
+      );
+  }
+  const next = learnKeys[learnKeys.indexOf(video.chapter) + 1];
+  if ((cut.next ?? null) !== (next ? chapters[next].question : null))
+    differences.push(differs('next', `chapters['${next}'].question`));
+  return differences;
+}
+
+function verifyFieldnote(video) {
+  const id = `Fieldnote ${video.id}`;
+  assert.match(video.id, /^\d{2}$/, `${id}: id`);
+  assert.ok(Object.hasOwn(chapters, video.chapter), `${id}: chapter`);
+  const lesson = chapters[video.chapter];
+  assert.ok(video.title?.trim(), `${id}: title`);
+  assert.ok(video.duration > 0, `${id}: duration`);
+  for (const field of ['width', 'height'])
+    assert.ok(
+      Number.isInteger(video[field]) && video[field] > 0,
+      `${id}: ${field}`,
+    );
+  for (const field of ['video', 'captions'])
+    assert.ok(video.files?.[field], `${id}: files.${field}`);
+  assert.ok(Array.isArray(video.chapters), `${id}: chapters`);
+  assert.ok(Array.isArray(video.notes), `${id}: notes`);
+  if (video.chapters.length)
+    assert.ok(video.files.chapters, `${id}: files.chapters names the track`);
+  for (const [field, path] of Object.entries(video.files)) {
+    if (!path) continue;
+    if (path.startsWith('video/')) {
+      const publicFile = new URL(`../public/${path}`, import.meta.url);
+      assert.ok(
+        existsSync(publicFile),
+        `${id}: missing ${fileURLToPath(publicFile)}`,
+      );
+    } else
+      assert.ok(
+        videoUrl(path).startsWith(videoBase),
+        `${id}: files.${field} resolves outside the media repository`,
+      );
+  }
+  let previous = -1;
+  video.chapters.forEach((entry, index) => {
+    const at = `${id}: chapters[${index}]`;
+    assert.ok(
+      entry.time > previous && entry.time < video.duration,
+      `${at} is out of order or outside the video`,
+    );
+    previous = entry.time;
+    const kinds = ['claim', 'example', 'mistake'].filter(
+      (kind) => entry[kind] !== undefined,
+    );
+    assert.equal(kinds.length, 1, `${at} names one claim, example, or myth`);
+    if (entry.claim !== undefined)
+      assert.ok(
+        Number.isInteger(entry.claim) && lesson.outcomes?.[entry.claim],
+        `${at} names claim ${entry.claim}, which ${video.chapter} does not have`,
+      );
+    if (entry.example !== undefined)
+      assert.ok(
+        entry.example === true && lesson.example,
+        `${at}: ${video.chapter} has no example`,
+      );
+    if (entry.mistake !== undefined)
+      assert.ok(
+        myths.some((myth) => myth.id === entry.mistake) &&
+          lessonMistakes(lesson).includes(entry.mistake),
+        `${at} names myth ${entry.mistake}, which is not an easy mistake of ${video.chapter}`,
+      );
+  });
+  for (const note of video.notes)
+    assert.ok(
+      typeof note === 'string'
+        ? note.trim()
+        : note.text?.trim() && video.chapters[note.chapter],
+      `${id}: a note is empty or keyed by an unknown chapter`,
+    );
+  assert.deepEqual(cutFromDifferences(video), []);
+}
+
+test('the Fieldnotes manifest names real lessons, claims, myths, and files', () => {
+  assert.equal(
+    videoBase,
+    'https://danielscholl-osdu.github.io/osdu-spi-training-media/',
+  );
+  assert.equal(
+    new Set(fieldnotes.map((video) => video.id)).size,
+    fieldnotes.length,
+  );
+  assert.equal(
+    new Set(fieldnotes.map((video) => video.chapter)).size,
+    fieldnotes.length,
+    'one episode per lesson',
+  );
+  const start = fieldnoteById('00');
+  assert.equal(start.chapter, 'start');
+  assert.equal(start.chapters.length, 0, 'Fieldnote 00 has no chapters');
+  assert.ok(start.notes.length, 'the Start video keeps its source checks');
+  for (const video of [...fieldnotes, lessonFieldnote()])
+    verifyFieldnote(video);
+  assert.equal(
+    videoUrl('fieldnote-01/video.mp4'),
+    `${videoBase}fieldnote-01/video.mp4`,
+  );
+  assert.equal(videoUrl('video/start.mp4'), 'video/start.mp4');
+  assert.equal(
+    videoUrl('https://example.org/a.mp4'),
+    'https://example.org/a.mp4',
+  );
+});
+
+test('a Fieldnote cut that drifts from its lesson names the episode and field', () => {
+  const cases = [
+    [
+      (cut) => (cut.claims[1].headline = 'Partitions and shared things.'),
+      "Fieldnote 01: cutFrom.claims[1].headline differs from chapters['running-stack']",
+    ],
+    [
+      (cut) => (cut.claims[2].text = 'An older sentence.'),
+      "Fieldnote 01: cutFrom.claims[2].text differs from chapters['running-stack']",
+    ],
+    [
+      (cut) => (cut.example = 'a record lookup'),
+      "Fieldnote 01: cutFrom.example differs from chapters['running-stack']",
+    ],
+    [
+      (cut) => (cut.mistake.claim = 'The stack is AKS.'),
+      "Fieldnote 01: cutFrom.mistake.claim differs from myths.js 'stack-is-only-aks'",
+    ],
+    [
+      (cut) => (cut.next = 'How is the stack made?'),
+      "Fieldnote 01: cutFrom.next differs from chapters['bring-up'].question",
+    ],
+  ];
+  for (const [change, message] of cases) {
+    const video = lessonFieldnote();
+    change(video.cutFrom);
+    assert.deepEqual(cutFromDifferences(video), [message]);
+  }
+  const moved = lessonFieldnote();
+  moved.cutFrom.mistake = {
+    id: 'profiles-save-money',
+    claim: 'Profiles save money.',
+  };
+  assert.deepEqual(cutFromDifferences(moved), [
+    "Fieldnote 01: cutFrom.mistake.id differs from chapters['running-stack']",
+  ]);
+  const uncut = { ...lessonFieldnote(), cutFrom: null };
+  assert.deepEqual(cutFromDifferences(uncut), [
+    'Fieldnote 01: cutFrom is missing',
+  ]);
+});
+
+test('Fieldnote routes parse and keep the published keys', () => {
+  assert.deepEqual(
+    [parseRoute('#watch').chapter, parseRoute('#watch').video],
+    ['watch', null],
+  );
+  const episode = parseRoute('#watch/00?t=30');
+  assert.deepEqual(
+    [episode.chapter, episode.video, episode.time],
+    ['watch', '00', 30],
+  );
+  assert.equal(parseRoute('#watch/99').video, null, 'unknown episode');
+  assert.equal(parseRoute('#watch/99').chapter, 'watch');
+  assert.equal(parseRoute('#running-stack/00').video, null);
+  const lesson = parseRoute('#running-stack?watch=55');
+  assert.deepEqual(
+    [lesson.chapter, lesson.step, lesson.watch],
+    ['running-stack', 'developer', 55],
+  );
+  const evidence = parseRoute('#running-stack/request?detail=events&watch=88');
+  assert.deepEqual(
+    [evidence.step, evidence.detail, evidence.watch],
+    ['request', 'events', 88],
+  );
+  for (const bad of ['-1', 'soon'])
+    assert.equal(parseRoute(`#running-stack?watch=${bad}`).watch, null);
+  assert.equal(parseRoute('#running-stack').watch, null);
+});
+
+test('a lesson Fieldnote shows its chip, claim cues, and dialog chapters', () => {
+  const video = lessonFieldnote();
+  const chip = lessonWatch('running-stack', video);
+  assert.match(chip, /data-video-open="01" data-video-at="0"/);
+  assert.match(chip, /<b>Watch this lesson<\/b>.*· 2:50/);
+  assert.match(chip, /aria-haspopup="dialog"/);
+  assert.equal(lessonWatch('running-stack'), '', 'no lesson has a cut yet');
+  assert.equal(lessonWatch('start', fieldnoteFor('start')), '');
+
+  const strip = claimStrip('running-stack', video);
+  const cues = [
+    ...strip.matchAll(
+      /class="claim-watch" data-video-open="01" data-video-at="(\d+)"/g,
+    ),
+  ];
+  assert.deepEqual(
+    cues.map((cue) => Number(cue[1])),
+    [22, 55, 88],
+    'one cue per claim chapter, at its time',
+  );
+  for (const [index, time] of [
+    [0, '0:22'],
+    [1, '0:55'],
+    [2, '1:28'],
+  ])
+    assert.match(
+      strip,
+      new RegExp(
+        `data-claim="${index}"[^]*?</button><button type="button" class="claim-watch"[^>]*>[^]*?${time}</button>`,
+      ),
+      `claim ${index} carries its cue beside the selector, not inside it`,
+    );
+  assert.ok(!claimStrip('running-stack').includes('claim-watch'));
+  assert.equal(
+    claimStrip('fork-shape', { ...video, chapter: 'fork-shape' }),
+    '',
+    'plain-sentence claims have no selectors and no cues',
+  );
+
+  const dialog = fieldnotePlayer(video);
+  assert.equal(dialog.split('class="video-tick"').length - 1, 5);
+  for (const title of [
+    ...chapters['running-stack'].outcomes.map((claim) => claim.headline),
+    'Example: a partition lookup',
+    'Easy mistake: the stack is just AKS',
+  ])
+    assert.ok(dialog.includes(`<b>${escapeHtml(title)}</b>`), title);
+  assert.deepEqual(
+    fieldnoteChapters(video).map((mark) => [mark.time, mark.end]),
+    [
+      [22, 55],
+      [55, 88],
+      [88, 118],
+      [118, 140],
+      [140, 170],
+    ],
+  );
+  assert.match(
+    dialog,
+    /<button type="button" class="video-map-jump" data-map-jump data-video-map>Show it on the map ↓<\/button>/,
+  );
+  assert.ok(dialog.includes(`src="${videoBase}fieldnote-01/captions.vtt"`));
+  assert.ok(!dialog.includes('autoplay'), 'nothing autoplays');
+  assert.equal(
+    fieldnoteChapterTitle({ ...video, chapter: 'fork-shape' }, { claim: 0 }),
+    chapters['fork-shape'].outcomes[0],
+    'a plain-sentence claim names its chapter with the sentence',
+  );
+  assert.deepEqual(
+    [0, 30, 60, 100, 125, 160].map((time) => fieldnoteClaimAt(video, time)),
+    [0, 0, 1, 2, 2, 2],
+    'the map shows the claim whose chapter is playing',
+  );
+  assert.equal(fieldnoteClaimAt(fieldnoteFor('start'), 10), null);
+
+  const main = readFileSync(new URL('../src/main.js', import.meta.url), 'utf8');
+  assert.match(
+    main,
+    /const watch = lessonWatch\(key\);[^]*?querySelector\('#introduction > p'\)[^]*?insertAdjacentHTML\('afterend', watch\)/,
+    'the chip follows the lead and precedes the optional paragraph',
+  );
+  const close = main.slice(
+    main.indexOf('function closeVideo'),
+    main.indexOf('// Show it on the map'),
+  );
+  assert.match(close, /querySelector\('video'\)\.pause\(\)/);
+  assert.match(close, /target\.opener\.focus\(\{ preventScroll: true \}\)/);
+  assert.match(
+    main,
+    /function openVideo[^]*?player\.element\.pause\(\)[^]*?showModal\(\)/,
+    'the audio dock pauses while the dialog is open',
+  );
+  assert.match(
+    main,
+    /openVideo\(video, route\.watch, \{ opener, play: false \}\)/,
+    'a route opens the dialog paused',
+  );
+});
+
+test('the Fieldnotes page lists episodes by book with one player and a transcript', () => {
+  const page = pageRenderers.watch(parseRoute('#watch'));
+  for (const video of fieldnotes)
+    assert.ok(page.includes(`href="#watch/${video.id}"`), video.id);
+  assert.match(page, /<section class="fieldnote-book"><h2>Start<\/h2>/);
+  assert.equal(page.split('<video').length - 1, 1, 'one player');
+  assert.match(
+    page,
+    /id="video-transcript" data-captions="video\/how-microsoft-engineers-azure-osdu\.vtt"/,
+  );
+  assert.match(
+    pageRenderers.watch(parseRoute('#watch/00')),
+    /href="#watch\/00" aria-current="page"/,
+  );
+  const captions = fieldnoteFor('start').files.captions;
+  const cues = parseVtt(
+    readFileSync(new URL(`../public/${captions}`, import.meta.url), 'utf8'),
+  );
+  assert.ok(cues.length > 5);
+  assert.equal(cues[0].start, 0);
+  assert.ok(cues.every((cue, i) => i === 0 || cue.start >= cues[i - 1].start));
+  assert.ok(cues.at(-1).end <= fieldnoteFor('start').duration + 1);
+  const transcript = transcriptMarkup(cues);
+  assert.ok(
+    transcript.startsWith(
+      '<p data-start="0"><button type="button" data-video-seek="0"',
+    ),
+  );
+  assert.ok(
+    cues.every((cue) => transcript.includes(escapeHtml(cue.text))),
+    'every caption reaches the transcript',
+  );
+  assert.deepEqual(
+    parseVtt(
+      'WEBVTT\n\n1\n00:01:02.500 --> 00:01:04.000 align:start\n<v Harper>Hello</v> there\n',
+    ),
+    [{ start: 62.5, end: 64, text: 'Hello there' }],
+  );
+  assert.equal(chapters.watch.group, 'supplement');
+  assert.ok(
+    existsSync(
+      new URL(`../public/${chapters.watch.hero.image}`, import.meta.url),
+    ),
+  );
+  const css = readFileSync(
+    new URL('../src/styles/pages.css', import.meta.url),
+    'utf8',
+  );
+  assert.match(
+    css,
+    /\.video-frame \{\s*width: min\(100%, calc\(\(96dvh - 150px\) \* var\(--video-ratio\)\)\);/,
+    'a portrait video keeps its dialog size',
+  );
+  assert.match(css, /\.video-dialog\.is-wide \{\s*width: min\(960px, 94vw\);/);
 });

@@ -189,8 +189,8 @@ export function createPlayer(element, dock) {
       for (const rate of byRole('rate')) rate.value = control.value;
     }
   });
-  // A video on a page (the start page's one-minute overview) and the audio
-  // dock never play at once: whichever starts pauses the other.
+  // A Fieldnote video and the audio dock never play at once: whichever starts
+  // pauses the other.
   document.addEventListener(
     'play',
     (event) => {

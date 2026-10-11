@@ -628,28 +628,6 @@ export const episodes = [
   },
 ];
 
-// The one-minute video overview shown on the start page. It is not an episode:
-// it has no markers, plays in its own element, and pauses the audio dock.
-export const frameVideo = {
-  title: 'How Microsoft engineers Azure OSDU',
-  card: 'How the machinery is engineered',
-  file: 'video/how-microsoft-engineers-azure-osdu.mp4',
-  poster: 'video/how-microsoft-engineers-azure-osdu.jpg',
-  captions: 'video/how-microsoft-engineers-azure-osdu.vtt',
-  duration: 71,
-  width: 720,
-  height: 1280,
-  origin:
-    'Generated with NotebookLM as a video overview from the introduction source, Azure SPI: An Introduction',
-  summary:
-    'Provider ownership moving to Microsoft, the service forks, the candidate image, and a temporary test deployment in a live stack, drawn in one minute.',
-  notes: [
-    'The narration calls the Azure logic proprietary. The service forks are public repositories under the Apache 2.0 license; what changed is ownership, not visibility.',
-    'The narration says the community stripped out all cloud-specific code. Upstream plans that removal (community ADR 61); as of September 2026 the Azure directory is still there.',
-    'Restore is conditional: the run puts the environment back only while it still owns its pin, and a lost runner can leave work for a person.',
-  ],
-};
-
 // The two long recordings are the ones the Audio deep dives page offers. The
 // orientation and the brief stay here for cues and their published routes.
 export const deepDives = episodes.filter((episode) => episode.deepDive);
