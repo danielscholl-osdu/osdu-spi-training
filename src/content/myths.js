@@ -272,7 +272,7 @@ export const myths = [
     claim:
       'Template sync will deliver .spi/service.yaml along with the workflows.',
     reality:
-      'It is excluded by name. The service repository writes its own descriptor, and changes to it are reviewed with the code. Workflows, actions, rulesets, and the Dockerfile arrive from osdu-spi; the descriptor never does. osdu-spi-partition has not written one yet; once it adopts the lane, the gate will say so after it says not onboarded.',
+      'It is excluded by name. The service repository writes its own descriptor, and changes to it are reviewed with the code. Workflows, actions, rulesets, and the Dockerfile arrive from osdu-spi; the descriptor never does. osdu-spi-partition wrote its own in September 2026.',
     correction:
       '.spi/service.yaml is excluded from template sync and belongs to the service repository.',
     check: 'jq .exclusions .github/sync-config.json   # in osdu-spi',

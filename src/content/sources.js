@@ -56,6 +56,12 @@ export const sources = {
     path: 'README.md',
     href: 'https://github.com/Azure/osdu-spi-partition',
   },
+  partitionDescriptor: {
+    label: 'Partition service descriptor',
+    repo: 'osdu-spi-partition',
+    path: '.spi/service.yaml',
+    href: 'https://github.com/Azure/osdu-spi-partition/blob/main/.spi/service.yaml',
+  },
   partitionPom: {
     label: 'Partition Azure provider POM',
     repo: 'osdu-spi-partition',

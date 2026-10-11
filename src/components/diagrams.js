@@ -135,7 +135,7 @@ const treeRows = [
         'descriptor-file',
         '.spi/service.yaml',
         'service-owned · excluded from template sync',
-        ['—', '—', '◇', '◇'],
+        ['—', '—', '◆', '◆'],
       ],
     ],
   },
@@ -144,20 +144,17 @@ const cellNames = {
   '●': 'present',
   '—': 'absent',
   '◆': 'fork-owned',
-  '◇': 'fork-owned, not yet written',
   '● +': 'present, injected',
   '⚠ to be deleted': 'present, scheduled for removal',
 };
 const cellClass = (cell) =>
   cell === '◆'
     ? 'fork'
-    : cell === '◇'
-      ? 'fork-planned'
-      : cell === '—'
-        ? 'absent'
-        : cell.startsWith('⚠')
-          ? 'doomed'
-          : 'kept';
+    : cell === '—'
+      ? 'absent'
+      : cell.startsWith('⚠')
+        ? 'doomed'
+        : 'kept';
 
 const cellName = (cell) => cellNames[cell] || cell.replace(/^— /, 'absent, ');
 
@@ -213,7 +210,7 @@ function forkShapeDiagram() {
       ${whatIfStrip()}
       <p class="what-if-result" aria-live="polite">Upstream’s copy is gone. fork_upstream never had it, so tonight’s generation is identical there, and the cascade merges nothing about it. fork_integration and main keep the fork’s provider, cache fallback included. The deletion has nothing to delete on the fork side.</p>
     </div>
-    <div class="tree-legend"><span><i class="cell-kept">●</i> present, from upstream</span><span><i class="cell-fork">◆</i> fork-owned</span><span><i class="cell-fork-planned">◇</i> fork-owned, not yet written</span><span><i class="cell-absent">—</i> absent by construction</span><span><i class="cell-kept">+</i> profile injected by the filter</span></div>
+    <div class="tree-legend"><span><i class="cell-kept">●</i> present, from upstream</span><span><i class="cell-fork">◆</i> fork-owned</span><span><i class="cell-absent">—</i> absent by construction</span><span><i class="cell-kept">+</i> profile injected by the filter</span></div>
   </div>
   <section class="tree-around" aria-label="Around the repository"><span class="group-label">Around the repository</span><div class="tree-around-nodes">${node('filter', 'The filter', 'upstream-filter.yml · keep, strip, fork, inject')}${node('engineering', 'osdu-spi, the template', 'Workflows and Dockerfile arrive as PRs')}${node('mirror', 'A customer mirror fork', 'Second tier · copies main verbatim')}${node('image', 'The image, by digest', 'ghcr.io/azure/osdu-spi-partition')}</div></section>`;
 }

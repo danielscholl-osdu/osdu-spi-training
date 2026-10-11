@@ -14,7 +14,7 @@ The training site owns what is said. The video library at `~/workspace/videos` (
 | 03        | The SPI boundary         | boards + code |                                                      | after the pilot (fn-29r)                |
 | 04        | The shape of the fork    | mixed         |                                                      | after the claim migration for lesson 04 |
 | 05        | A day in the fork        | mixed         |                                                      | after the claim migration for lesson 05 |
-| 06        | The handshake            | boards        |                                                      | drawn until the fork adopts the lane    |
+| 06        | The handshake            | boards        |                                                      | drawn; the run stays illustrative       |
 | 07        | Things that are not true | boards        |                                                      | after 04 and 05                         |
 
 ## Script shape

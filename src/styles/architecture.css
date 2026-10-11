@@ -981,14 +981,6 @@
 .example-strip .journey {
   grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
 }
-.cell-fork-planned {
-  color: var(--fork);
-  border: 1px dashed var(--fork);
-  background: #fff;
-}
-.tree-legend .cell-fork-planned {
-  border: 0;
-}
 .what-if {
   display: grid;
   gap: 8px;
