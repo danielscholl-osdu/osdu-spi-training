@@ -1,6 +1,6 @@
 # Fieldnotes: the video series
 
-One short narrated video per lesson, scripted from the lesson's own content and drawn with the site's own map renderer. The design is the proposal page _Fieldnotes Video Series_; this folder is the part production reads: the series map, the shape every script follows, the spoken forms, and one storyboard per episode.
+One short narrated video per lesson, scripted from the lesson's own content, built in motion for each idea, and anchored on the site's own maps. The design is the proposal page _Fieldnotes Video Series_; this folder is the part production reads: the series map, the shape every script follows, the spoken forms, and one storyboard per episode.
 
 The training site owns what is said. The video library at `~/workspace/videos` (folder `fieldnotes/`) owns how it is made: voice, boards, compose, QA, and publish. A storyboard here is approved before the library voices a line of it, and every cut is watched in full before it is published.
 
@@ -23,14 +23,14 @@ Every lesson episode follows the lesson's content model in this order. Each beat
 
 | Beat           | Taken from                   | On screen                                                              |
 | -------------- | ---------------------------- | ---------------------------------------------------------------------- |
-| Sting          | episode number and title     | the machinery gears draw on the sheet; tag `FIELDNOTE NN`              |
+| Prequel        | episode number and title     | the notebook push-in; the gears turn as the tag `FIELDNOTE NN` sets    |
 | Question       | `question`                   | a blank map sheet                                                      |
 | Standfirst     | `subhead`                    | the scene's outline draws                                              |
 | Claim, chapter | `outcomes[n]`                | the claim's `focus` at full weight and its `scopes` lit, as on the map |
 | Example        | `example.hops`               | a dot traces the hops                                                  |
 | Easy mistake   | `mistakes` into `myths.js`   | the quoted claim with its owner chip, then what is true and the check  |
 | Recall         | `outcomes[].headline`        | the headlines stack up                                                 |
-| Next           | the next lesson's `question` | end card                                                               |
+| Next           | the next lesson's `question` | postquel                                                               |
 
 Each claim, the example, and the easy mistake is one chapter. Chapter titles are the claim headlines, "Example: …" with the example's title, and "Easy mistake: …" with the myth's claim. The player names its chapter marks with them, so a learner who selects a claim on the map and a learner who scrubs the video see the same words.
 
@@ -39,8 +39,10 @@ Each claim, the example, and the easy mistake is one chapter. Chapter titles are
 - **Voice:** Harper, `en-US-Harper:MAI-Voice-2.1`, one narrator.
 - **Frame:** 1920 by 1080. The site's maps are wide; Fieldnote 00 is the one exception to the current portrait Start video.
 - **Sheet:** the site's paper (`--paper #f4f7fa`) with a faint field-notes rule, ink `#102b43`, owner colors from `src/styles/base.css`, orange only for fork-owned source. DM Sans and Manrope.
-- **Sting:** the machinery gears from `docs/reference/start/machinery.png` drawing themselves onto the sheet, about 3 seconds, carrying the tag line "Fieldnote one. Anatomy of a stack."
-- **End card:** "Next" and the next lesson's question, with the series name. Nothing advances on its own.
+- **Prequel:** an open field notebook on the desk, the camera pushing into the page until its gears register on the series emblem, the machinery gears from `docs/reference/start/machinery.png` cut into layers that turn one tooth as the tag `FIELDNOTE NN · TITLE` sets. About 5 seconds, carrying the line "Fieldnote one. Anatomy of a stack."
+- **Postquel:** "Next" and the next lesson's question on the notebook's empty left page, then the camera pulls back to the spread with the series name. Nothing advances on its own.
+- **Motion:** each idea is a concept scene built in vector motion, never a held screenshot. Each claim ends on the lesson's own map with that claim selected, for about two seconds.
+- **Generated art:** illustrations made with Gemini image models, and the notebook still behind the bookends, kept with their prompts in the video library. They set mood, metaphor, and summary; they assert nothing the lesson does not state, carry no generated text, and use owner colors only where the lesson assigns an owner.
 - **Captions:** a VTT track from the narration's word times, not burned in. A second VTT carries the chapters.
 - **No music** under narration in the first two episodes; decide after review.
 
