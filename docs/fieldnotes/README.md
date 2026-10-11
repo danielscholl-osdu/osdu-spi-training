@@ -9,7 +9,7 @@ The training site owns what is said. The video library at `~/workspace/videos` (
 | Fieldnote | Lesson                   | Form          | Storyboard                                           | Status                                      |
 | --------- | ------------------------ | ------------- | ---------------------------------------------------- | ------------------------------------------- |
 | 00        | Start: three parts       | boards        | [00-three-parts.md](00-three-parts.md)               | storyboard; narration from the Start script |
-| 01        | Anatomy of a stack       | boards        | [01-anatomy-of-a-stack.md](01-anatomy-of-a-stack.md) | storyboard                                  |
+| 01        | Anatomy of a stack       | boards        | [01-anatomy-of-a-stack.md](01-anatomy-of-a-stack.md) | published                                   |
 | 02        | How it comes to life     | mixed         |                                                      | after the pilot (fn-29r)                    |
 | 03        | The SPI boundary         | boards + code |                                                      | after the pilot (fn-29r)                    |
 | 04        | The shape of the fork    | mixed         |                                                      | after the claim migration for lesson 04     |

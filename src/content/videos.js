@@ -39,6 +39,53 @@ export const fieldnotes = [
       'Restore is conditional: the run puts the environment back only while it still owns its pin, and a lost runner can leave work for a person.',
     ],
   },
+  {
+    id: '01',
+    chapter: 'running-stack',
+    title: 'Anatomy of a stack',
+    duration: 138,
+    width: 1920,
+    height: 1080,
+    files: {
+      video: 'fieldnote-01/video.mp4',
+      poster: 'fieldnote-01/poster.jpg',
+      captions: 'fieldnote-01/captions.vtt',
+      chapters: 'fieldnote-01/chapters.vtt',
+    },
+    chapters: [
+      { time: 20.8, claim: 0 },
+      { time: 35.3, claim: 1 },
+      { time: 58.5, claim: 2 },
+      { time: 72.4, example: true },
+      { time: 97.1, mistake: 'stack-is-only-aks' },
+    ],
+    cutFrom: {
+      claims: [
+        {
+          headline: 'The stack is AKS plus Azure data services.',
+          text: 'A stack is a resource group: AKS plus the Azure data services around it, not the cluster alone.',
+        },
+        {
+          headline: 'Partition resources and shared resources.',
+          text: 'My partition’s records, blobs, and events each have their own Azure resource; entitlements, identities, and Key Vault are shared by the environment.',
+        },
+        {
+          headline:
+            'The OSDU services run in one namespace behind one gateway.',
+          text: 'The OSDU services run in the osdu namespace, one image each, and every request reaches them through the Istio gateway.',
+        },
+      ],
+      example: 'a partition lookup',
+      mistake: {
+        id: 'stack-is-only-aks',
+        claim: 'The stack is just AKS.',
+      },
+      next: 'How is the stack created, and when is it usable?',
+    },
+    origin:
+      'Scripted from lesson 01 and narrated with an Azure AI Speech voice; illustrations generated with Gemini image models',
+    notes: [],
+  },
 ];
 
 export function isLocalVideoFile(path) {

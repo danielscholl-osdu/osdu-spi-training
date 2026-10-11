@@ -1,6 +1,6 @@
 # Fieldnote 01 · Anatomy of a stack
 
-**Status: storyboard for approval, revised for motion after the pilot cut.** Cut from lesson 01 (`chapters['running-stack']`) as it stands on `main`. Narration is about 390 words, about 2 minutes 40 seconds at 150 words a minute.
+**Status: approved and published.** Cut from lesson 01 (`chapters['running-stack']`); the cut runs 2 minutes 18 seconds, and its cut-from record is in `src/content/videos.js`.
 
 **Who is watching:** an engineer who knows OSDU and has just opened lesson 01. **What they should believe after it:** the stack is a resource group, not a cluster; some of its resources belong to a partition and some are shared; the services sit in one namespace behind one gateway.
 
