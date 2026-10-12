@@ -1,6 +1,6 @@
 # Fieldnote 06 · The handshake
 
-**Status: in production.** Cut from lesson 06 (`chapters['handshake']`). Aim for about 2 minutes 45 seconds.
+**Status: published.** Cut from lesson 06 (`chapters['handshake']`); the cut runs 3 minutes, and its cut-from record is in `src/content/videos.js`.
 
 **Who is watching:** an engineer who has followed a provider change to a candidate image digest in lesson 05. **What they should believe after it:** one run borrows one service slot, and writing the lock is what deploys; a test result counts only after the pod is checked; a restore speaks for its own run; and the stack and the fork meet through published facts and a declared descriptor, not shared code.
 
