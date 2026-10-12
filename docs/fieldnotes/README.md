@@ -14,7 +14,7 @@ The training site owns what is said. The video library at `~/workspace/videos` (
 | 03        | The SPI boundary         | boards + code | [03-the-spi-boundary.md](03-the-spi-boundary.md)                 | published                     |
 | 04        | The shape of the fork    | mixed         | [04-the-shape-of-the-fork.md](04-the-shape-of-the-fork.md)       | in production                 |
 | 05        | A day in the fork        | mixed         | [05-a-day-in-the-fork.md](05-a-day-in-the-fork.md)               | in production                 |
-| 06        | The handshake            | boards        | [06-the-handshake.md](06-the-handshake.md)                       | in production                 |
+| 06        | The handshake            | boards        | [06-the-handshake.md](06-the-handshake.md)                       | published                     |
 | 07        | Things that are not true | boards        | [07-things-that-are-not-true.md](07-things-that-are-not-true.md) | in production                 |
 
 ## Script shape

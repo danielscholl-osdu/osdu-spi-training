@@ -129,6 +129,68 @@ export const fieldnotes = [
       'Scripted from lesson 03 and narrated with an Azure AI Speech voice; source excerpts from the partition fork’s main branch; illustrations generated with Gemini image models',
     notes: [],
   },
+  {
+    id: '06',
+    chapter: 'handshake',
+    title: 'The handshake',
+    duration: 180,
+    width: 1920,
+    height: 1080,
+    files: {
+      video: 'fieldnote-06/video.mp4',
+      poster: 'fieldnote-06/poster.jpg',
+      captions: 'fieldnote-06/captions.vtt',
+      chapters: 'fieldnote-06/chapters.vtt',
+    },
+    chapters: [
+      {
+        time: 32.5,
+        claim: 0,
+      },
+      {
+        time: 57.1,
+        claim: 1,
+      },
+      {
+        time: 80.3,
+        claim: 2,
+      },
+      {
+        time: 102.6,
+        example: true,
+      },
+      {
+        time: 131.5,
+        mistake: 'validation-summary-means-deployed',
+      },
+    ],
+    cutFrom: {
+      claims: [
+        {
+          headline: 'Writing the lock starts the deploy.',
+          text: 'Writing the lock starts the deploy: Flux reconciles osdu-image-lock and the pod restarts on the pinned digest, and the run checks the pod before trusting any test result. Between runs the lock holds the canonical image.',
+        },
+        {
+          headline: 'A green restore is a claim about this run.',
+          text: 'The run only restores what it still owns, so a green restore is a claim about this run, not about the environment.',
+        },
+        {
+          headline: 'The stack publishes facts; the fork declares needs.',
+          text: 'The stack publishes facts and the fork declares needs in its descriptor. Five repository settings, plus trust onboarding on the stack side, are all that connect them.',
+        },
+      ],
+      example: 'Candidate B borrows the partition slot in the stack',
+      mistake: {
+        id: 'validation-summary-means-deployed',
+        claim:
+          'Validation Summary is green, so the change ran in a real environment.',
+      },
+      next: 'Which reasonable assumptions will cost me an afternoon?',
+    },
+    origin:
+      'Scripted from lesson 06 and narrated with an Azure AI Speech voice; the run is illustrative; illustrations generated with Gemini image models',
+    notes: [],
+  },
 ];
 
 export function isLocalVideoFile(path) {
