@@ -1028,56 +1028,62 @@ function listenPage(route) {
 
 function watchPage(route) {
   const video = fieldnoteById(route?.video) || fieldnotes[0];
+  const learn = Object.keys(chapters).filter(
+    (key) => chapters[key].group === 'learn',
+  );
+  const bookOf = (entry) => {
+    const lesson = chapters[entry.chapter];
+    return lesson.group === 'learn' ? lesson.book : 'Start';
+  };
+  const minutes = (entry) =>
+    `${Math.max(1, Math.round(entry.duration / 60))} min`;
   const books = [];
   for (const entry of fieldnotes) {
-    const lesson = chapters[entry.chapter];
-    const book = lesson.group === 'learn' ? lesson.book : 'Start';
-    let group = books.find((item) => item.book === book);
-    if (!group) books.push((group = { book, entries: [] }));
+    let group = books.find((item) => item.book === bookOf(entry));
+    if (!group) books.push((group = { book: bookOf(entry), entries: [] }));
     group.entries.push(entry);
   }
   const card = (entry) => {
     const poster = videoUrl(entry.files.poster);
-    return `<a class="episode-card fieldnote-card" href="#watch/${entry.id}" ${entry === video ? 'aria-current="page"' : ''}>${poster ? `<img src="${poster}" alt="" width="88" height="88" loading="lazy" />` : ''}<span class="episode-card-body"><span class="episode-kicker">Fieldnote ${entry.id} · ${Math.max(1, Math.round(entry.duration / 60))} min</span><b>${escapeHtml(entry.title)}</b><small>${escapeHtml(entry.summary || chapters[entry.chapter].subhead || '')}</small></span></a>`;
+    const current = entry === video;
+    return `<a class="fieldnote-card" href="#watch/${entry.id}"${current ? ' aria-current="page"' : ''} data-watch-play><span class="fieldnote-thumb">${poster ? `<img src="${poster}" alt="" width="${entry.width}" height="${entry.height}" loading="lazy" />` : ''}${current ? '<span class="fieldnote-now">Now playing</span>' : ''}<span class="fieldnote-duration">${minutes(entry)}</span></span><span class="episode-kicker">Fieldnote ${entry.id}</span><b>${escapeHtml(entry.title)}</b><small>${escapeHtml(entry.summary || chapters[entry.chapter].subhead || '')}</small></a>`;
   };
   const lesson = chapters[video.chapter];
-  const learn = Object.keys(chapters).filter(
-    (key) => chapters[key].group === 'learn',
-  );
   const lessonLink =
     lesson.group === 'learn'
-      ? ` <a href="${routeHref(video.chapter)}">Lesson ${String(learn.indexOf(video.chapter) + 1).padStart(2, '0')} · ${escapeHtml(lesson.title)} →</a>`
+      ? `<a href="${routeHref(video.chapter)}">Lesson ${String(learn.indexOf(video.chapter) + 1).padStart(2, '0')} · ${escapeHtml(lesson.title)} →</a>`
       : '';
-  const origin = [
-    video.origin ? `${escapeHtml(video.origin)}.` : '',
-    lessonLink,
-  ]
-    .join('')
-    .trim();
+  const index = fieldnotes.indexOf(video);
+  const step = (entry, label) =>
+    entry
+      ? `<a href="#watch/${entry.id}" data-watch-play>${label}</a>`
+      : `<span aria-hidden="true"></span>`;
   const chaptered = video.chapters.length > 0;
-  return `<nav class="fieldnote-books" aria-label="Fieldnotes">${books
-    .map(
-      (group) =>
-        `<section class="fieldnote-book"><h2>${escapeHtml(group.book)}</h2><div class="episode-cards">${group.entries.map(card).join('')}</div></section>`,
-    )
-    .join('')}</nav>
-    <div class="watch-player" data-fieldnote-player="${video.id}">
-      <section class="watch-hero">
+  return `<div class="watch-player" data-fieldnote-player="${video.id}">
+      <section class="watch-stage" aria-label="Now playing">
         ${videoFrame(video)}
-        ${origin ? `<p class="listen-origin">${origin}</p>` : ''}
+        <div class="watch-now">
+          <p class="watch-kicker">Now playing · Fieldnote ${video.id} · ${minutes(video)}</p>
+          <h2>${escapeHtml(video.title)}</h2>
+          <p class="watch-book">${escapeHtml(bookOf(video))}${lessonLink ? ` · ${lessonLink}` : ''}</p>
+          ${video.summary ? `<p class="watch-summary">${escapeHtml(video.summary)}</p>` : ''}
+          ${chaptered ? videoChapterList(video, 'watch-chapters') : ''}
+          <nav class="watch-steps" aria-label="Previous and next Fieldnote">${step(fieldnotes[index - 1], `← Fieldnote ${fieldnotes[index - 1]?.id}`)}${step(fieldnotes[index + 1], `Fieldnote ${fieldnotes[index + 1]?.id} →`)}</nav>
+        </div>
+      </section>
+      <div class="watch-about">
+        ${video.origin ? `<p class="listen-origin">${escapeHtml(video.origin)}.</p>` : ''}
         ${videoNotes(video)}
-      </section>
-      ${
-        chaptered
-          ? `<section class="listen-markers" aria-label="Chapters"><div class="section-heading"><h2>Chapters</h2></div>${videoChapterList(video, 'marker-list video-chapter-list')}</section>`
-          : ''
-      }
-      <section class="listen-transcript" aria-label="Transcript">
-        <div class="section-heading"><h2>Transcript</h2></div>
-        <details class="transcript-details"><summary>Show the transcript <span class="summary-marker" aria-hidden="true">+</span></summary>
+        <details class="transcript-details"><summary>Transcript <span class="summary-marker" aria-hidden="true">+</span></summary>
         <div class="transcript" id="video-transcript" data-captions="${videoUrl(video.files.captions)}"></div></details>
-      </section>
-    </div>`;
+      </div>
+    </div>
+    <nav class="fieldnote-books" aria-label="Fieldnotes">${books
+      .map(
+        (group) =>
+          `<section class="fieldnote-book" style="--cards: ${group.entries.length}"><h2>${escapeHtml(group.book)}</h2><div class="fieldnote-cards">${group.entries.map(card).join('')}</div></section>`,
+      )
+      .join('')}</nav>`;
 }
 
 // Short cues into the recordings, beside a map. Playing one never leaves the
