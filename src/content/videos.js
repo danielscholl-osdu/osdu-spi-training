@@ -191,6 +191,111 @@ export const fieldnotes = [
       'Scripted from lesson 06 and narrated with an Azure AI Speech voice; the run is illustrative; illustrations generated with Gemini image models',
     notes: [],
   },
+  {
+    id: '07',
+    chapter: 'not-true',
+    title: 'Things that are not true',
+    duration: 205,
+    width: 1920,
+    height: 1080,
+    files: {
+      video: 'fieldnote-07/video.mp4',
+      poster: 'fieldnote-07/poster.jpg',
+      captions: 'fieldnote-07/captions.vtt',
+      chapters: 'fieldnote-07/chapters.vtt',
+    },
+    chapters: [
+      {
+        time: 25.9,
+        theme: 'readiness',
+      },
+      {
+        time: 49.6,
+        theme: 'gitops',
+      },
+      {
+        time: 70,
+        theme: 'identity',
+      },
+      {
+        time: 91.1,
+        theme: 'network',
+      },
+      {
+        time: 112.6,
+        theme: 'estate',
+      },
+      {
+        time: 129.9,
+        theme: 'fork',
+      },
+      {
+        time: 152.8,
+        theme: 'seam',
+      },
+    ],
+    cutFrom: {
+      claims: [
+        'When something looks wrong, I know which owner to ask and which command shows its view of the world.',
+        'Provisioning, convergence, readiness, and proof are different signals, and I check the one I actually need.',
+      ],
+      themes: [
+        {
+          theme: 'readiness',
+          mistake: {
+            id: 'smoke-proves-api',
+            claim: 'The smoke test passed, so the API works.',
+          },
+        },
+        {
+          theme: 'gitops',
+          mistake: {
+            id: 'reapply-retries',
+            claim: 'Re-applying the manifest will retry it.',
+          },
+        },
+        {
+          theme: 'identity',
+          mistake: {
+            id: 'role-assignment-missing',
+            claim: 'The role assignment is missing.',
+          },
+        },
+        {
+          theme: 'network',
+          mistake: {
+            id: 'certificate-means-encrypted',
+            claim: 'There is a certificate, so the connection is encrypted.',
+          },
+        },
+        {
+          theme: 'estate',
+          mistake: {
+            id: 'teardown-green-means-deleted',
+            claim: 'The teardown job was green, so it was deleted.',
+          },
+        },
+        {
+          theme: 'fork',
+          mistake: {
+            id: 'template-sync-overwrites',
+            claim:
+              'Template sync will overwrite the workflow change I made in my fork.',
+          },
+        },
+        {
+          theme: 'seam',
+          mistake: {
+            id: 'restore-always-restores',
+            claim: 'The restore step puts the previous image back.',
+          },
+        },
+      ],
+    },
+    origin:
+      'Scripted from lesson 07 and narrated with an Azure AI Speech voice; illustrations generated with Gemini image models',
+    notes: [],
+  },
 ];
 
 export function isLocalVideoFile(path) {

@@ -1,6 +1,6 @@
 # Fieldnote 07 · Things that are not true
 
-**Status: in production.** Cut from lesson 07 (`chapters['not-true']`) and `src/content/myths.js`. Aim for about 2 minutes 50 seconds.
+**Status: published.** Cut from lesson 07 (`chapters['not-true']`) and `src/content/myths.js`; the cut runs 3 minutes 25 seconds, and its cut-from record is in `src/content/videos.js`.
 
 **Who is watching:** an engineer who has been through the path, or one who is stuck right now. **What they should believe after it:** each of these assumptions is reasonable and wrong; every one has an owner to ask and a command that shows that owner's view; and provisioning, convergence, readiness, and proof are different signals.
 
