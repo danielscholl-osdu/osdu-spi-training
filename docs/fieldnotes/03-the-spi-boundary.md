@@ -1,6 +1,6 @@
 # Fieldnote 03 · The SPI boundary
 
-**Status: draft for approval.** Cut from lesson 03 (`chapters['spi-boundary']`). Aim for about 2 minutes 20 seconds, the length of Fieldnote 01.
+**Status: approved and published.** Cut from lesson 03 (`chapters['spi-boundary']`); the cut runs 3 minutes 14 seconds, and its cut-from record is in `src/content/videos.js`.
 
 **Who is watching:** an engineer who knows OSDU and has just opened lesson 03. **What they should believe after it:** the Azure code is a provider behind a Java interface inside the partition service, not a separate service; shared code and provider ship in one image, so crossing the interface is a method call; and the fork keeps that provider apart from the shared code it regenerates.
 

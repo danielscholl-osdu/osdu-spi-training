@@ -1,6 +1,6 @@
 # Fieldnote 02 · How it comes to life
 
-**Status: draft for approval.** Cut from lesson 02 (`chapters['bring-up']`). Aim for about 2 minutes 40 seconds.
+**Status: approved; the take is being recorded.** Cut from lesson 02 (`chapters['bring-up']`). Aim for about 2 minutes 40 seconds.
 
 **Who is watching:** an engineer who has seen lesson 01 and is about to create an environment. **What they should believe after it:** `spi up` hands off to Flux rather than finishing the job; a returned command is not a usable API; and `spi down` keeps the names and identities while the data goes.
 
