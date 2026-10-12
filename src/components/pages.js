@@ -498,6 +498,8 @@ export function fieldnoteChapterTitle(video, entry) {
     return typeof claim === 'string' ? claim : claim.headline;
   }
   if (entry.example) return `Example: ${lesson.example.title}`;
+  if (entry.theme)
+    return mythThemes.find((theme) => theme.id === entry.theme).title;
   const myth = myths.find((item) => item.id === entry.mistake);
   return `Easy mistake: ${sentenceAsTitle(myth.claim)}`;
 }
