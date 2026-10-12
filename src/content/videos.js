@@ -4,9 +4,10 @@
 // Fieldnotes: one short narrated video per lesson. A file path with no scheme
 // resolves against videoBase, the media repository on Pages; a path under
 // video/ is served from this site's public/ directory. A chapter names a claim
-// index, the example, or a myth id. `cutFrom` records the lesson as it stood
-// when the episode was cut ({ claims: [{ headline, text }] or the plain
-// sentences, example, mistake: { id, claim }, next }); the content tests
+// index, the example, a myth id, or (lesson 07) a theme id. `cutFrom` records
+// the lesson as it stood when the episode was cut ({ claims: [{ headline, text
+// }] or the plain sentences, example, mistake: { id, claim }, themes: [{ theme,
+// mistake }], next }); the content tests
 // compare it with chapters.js and myths.js. A note is a string for the whole
 // video or { chapter, text } for one chapter.
 export const videoBase =

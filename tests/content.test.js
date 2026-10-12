@@ -4690,6 +4690,18 @@ function cutFromDifferences(video) {
         differs('mistake.claim', `myths.js '${cut.mistake.id}'`),
       );
   }
+  for (const [index, beat] of (cut.themes || []).entries()) {
+    const myth = myths.find((item) => item.id === beat.mistake?.id);
+    if (myth?.theme !== beat.theme)
+      differences.push(differs(`themes[${index}].theme`, 'myths.js'));
+    if (myth?.claim !== beat.mistake?.claim)
+      differences.push(
+        differs(
+          `themes[${index}].mistake.claim`,
+          `myths.js '${beat.mistake?.id}'`,
+        ),
+      );
+  }
   const next = learnKeys[learnKeys.indexOf(video.chapter) + 1];
   if ((cut.next ?? null) !== (next ? chapters[next].question : null))
     differences.push(differs('next', `chapters['${next}'].question`));
@@ -4736,10 +4748,20 @@ function verifyFieldnote(video) {
       `${at} is out of order or outside the video`,
     );
     previous = entry.time;
-    const kinds = ['claim', 'example', 'mistake'].filter(
+    const kinds = ['claim', 'example', 'mistake', 'theme'].filter(
       (kind) => entry[kind] !== undefined,
     );
-    assert.equal(kinds.length, 1, `${at} names one claim, example, or myth`);
+    assert.equal(
+      kinds.length,
+      1,
+      `${at} names one claim, example, myth, or theme`,
+    );
+    if (entry.theme !== undefined)
+      assert.ok(
+        lesson.page === 'myths' &&
+          mythThemes.some((theme) => theme.id === entry.theme),
+        `${at} names theme ${entry.theme}, which ${video.chapter} does not list`,
+      );
     if (entry.claim !== undefined)
       assert.ok(
         Number.isInteger(entry.claim) && lesson.outcomes?.[entry.claim],
@@ -4958,6 +4980,27 @@ test('a lesson Fieldnote shows its chip, claim cues, and dialog chapters', () =>
     'Easy mistake: Validation Summary is green, so the change ran in a real environment',
     'a name that opens the claim keeps its capitals',
   );
+  assert.equal(
+    fieldnoteChapterTitle({ ...video, chapter: 'not-true' }, { theme: 'seam' }),
+    'The seam',
+    'a theme chapter takes the theme title from myths.js',
+  );
+  const seam = myths.find((myth) => myth.id === 'restore-always-restores');
+  const fieldCheck = {
+    ...video,
+    id: '07',
+    chapter: 'not-true',
+    chapters: [{ time: 30, theme: 'seam' }],
+    cutFrom: {
+      claims: chapters['not-true'].outcomes,
+      themes: [{ theme: 'seam', mistake: { id: seam.id, claim: seam.claim } }],
+    },
+  };
+  assert.doesNotThrow(() => verifyFieldnote(fieldCheck));
+  fieldCheck.cutFrom.themes[0].mistake.claim = 'An older claim.';
+  assert.deepEqual(cutFromDifferences(fieldCheck), [
+    "Fieldnote 07: cutFrom.themes[0].mistake.claim differs from myths.js 'restore-always-restores'",
+  ]);
   assert.deepEqual(
     [0, 30, 60, 100, 125, 160].map((time) => fieldnoteClaimAt(video, time)),
     [0, 0, 1, 2, 2, 2],
