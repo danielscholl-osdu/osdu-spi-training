@@ -4901,7 +4901,7 @@ test('a lesson Fieldnote shows its chip, claim cues, and dialog chapters', () =>
   assert.match(chip, /<b>Watch this lesson<\/b>.*· 2:50/);
   assert.match(chip, /aria-haspopup="dialog"/);
   assert.match(lessonWatch('running-stack'), /data-video-open="01"/);
-  assert.equal(lessonWatch('bring-up'), '', 'a lesson with no cut');
+  assert.equal(lessonWatch('fork-shape'), '', 'a lesson with no cut');
   assert.equal(lessonWatch('start', fieldnoteFor('start')), '');
 
   const strip = claimStrip('running-stack', video);

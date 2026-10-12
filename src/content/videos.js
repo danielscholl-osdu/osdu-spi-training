@@ -84,6 +84,53 @@ export const fieldnotes = [
     notes: [],
   },
   {
+    id: '02',
+    chapter: 'bring-up',
+    title: 'How it comes to life',
+    duration: 170,
+    width: 1920,
+    height: 1080,
+    files: {
+      video: 'fieldnote-02/video.mp4',
+      poster: 'fieldnote-02/poster.jpg',
+      captions: 'fieldnote-02/captions.vtt',
+      chapters: 'fieldnote-02/chapters.vtt',
+    },
+    chapters: [
+      { time: 29.6, claim: 0 },
+      { time: 46.3, claim: 1 },
+      { time: 71.6, claim: 2 },
+      { time: 84.1, example: true },
+      { time: 116.8, mistake: 'suspended-means-frozen' },
+    ],
+    cutFrom: {
+      claims: [
+        {
+          headline:
+            'CLI creates; Flux assembles; controllers keep workloads healthy.',
+          text: 'The CLI and Bicep create Azure and seed the cluster; Flux assembles the workloads; controllers keep them healthy. Flux and Kubernetes controllers continue after the CLI returns.',
+        },
+        {
+          headline: 'CLI success is not API readiness.',
+          text: 'A successful spi up does not establish API readiness. I follow workload health and initialization with spi status --watch, then verify the API path I need with an authenticated request.',
+        },
+        {
+          headline: 'Teardown removes data but preserves identities and names.',
+          text: 'spi down removes compute and data but keeps identities and the resource group, so a rebuild reuses the same names.',
+        },
+      ],
+      example: 'Before the lookup can answer',
+      mistake: {
+        id: 'suspended-means-frozen',
+        claim: 'GitOps is suspended, so nothing changes.',
+      },
+      next: 'Where does shared code hand the lookup to the Azure provider?',
+    },
+    origin:
+      'Scripted from lesson 02 and narrated with an Azure AI Speech voice; terminal footage from one recorded spi up and spi down on 12 October 2026; illustrations generated with Gemini image models',
+    notes: [],
+  },
+  {
     id: '03',
     chapter: 'spi-boundary',
     title: 'The SPI boundary',

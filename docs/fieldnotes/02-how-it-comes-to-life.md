@@ -1,6 +1,6 @@
 # Fieldnote 02 · How it comes to life
 
-**Status: in production; the take is recorded.** Cut from lesson 02 (`chapters['bring-up']`). Aim for about 2 minutes 40 seconds.
+**Status: published.** Cut from lesson 02 (`chapters['bring-up']`) and the take recorded on 12 October 2026; the cut runs 2 minutes 50 seconds, and its cut-from record is in `src/content/videos.js`.
 
 **Who is watching:** an engineer who has seen lesson 01 and is about to create an environment. **What they should believe after it:** `spi up` hands off to Flux rather than finishing the job; a returned command is not a usable API; and `spi down` keeps the names and identities while the data goes.
 
