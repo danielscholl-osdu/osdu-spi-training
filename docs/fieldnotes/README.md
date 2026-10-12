@@ -6,16 +6,16 @@ The training site owns what is said. The video library at `~/workspace/videos` (
 
 ## The series
 
-| Fieldnote | Lesson                   | Form          | Storyboard                                                       | Status                                  |
-| --------- | ------------------------ | ------------- | ---------------------------------------------------------------- | --------------------------------------- |
-| 00        | Start: three parts       | boards        | [00-three-parts.md](00-three-parts.md)                           | published                               |
-| 01        | Anatomy of a stack       | boards        | [01-anatomy-of-a-stack.md](01-anatomy-of-a-stack.md)             | published                               |
-| 02        | How it comes to life     | mixed         | [02-how-it-comes-to-life.md](02-how-it-comes-to-life.md)         | approved; take being recorded           |
-| 03        | The SPI boundary         | boards + code | [03-the-spi-boundary.md](03-the-spi-boundary.md)                 | published                               |
-| 04        | The shape of the fork    | mixed         |                                                                  | after the claim migration for lesson 04 |
-| 05        | A day in the fork        | mixed         |                                                                  | after the claim migration for lesson 05 |
-| 06        | The handshake            | boards        | [06-the-handshake.md](06-the-handshake.md)                       | in production                           |
-| 07        | Things that are not true | boards        | [07-things-that-are-not-true.md](07-things-that-are-not-true.md) | storyboarded; cut after 06              |
+| Fieldnote | Lesson                   | Form          | Storyboard                                                       | Status                        |
+| --------- | ------------------------ | ------------- | ---------------------------------------------------------------- | ----------------------------- |
+| 00        | Start: three parts       | boards        | [00-three-parts.md](00-three-parts.md)                           | published                     |
+| 01        | Anatomy of a stack       | boards        | [01-anatomy-of-a-stack.md](01-anatomy-of-a-stack.md)             | published                     |
+| 02        | How it comes to life     | mixed         | [02-how-it-comes-to-life.md](02-how-it-comes-to-life.md)         | approved; take being recorded |
+| 03        | The SPI boundary         | boards + code | [03-the-spi-boundary.md](03-the-spi-boundary.md)                 | published                     |
+| 04        | The shape of the fork    | mixed         | [04-the-shape-of-the-fork.md](04-the-shape-of-the-fork.md)       | in production                 |
+| 05        | A day in the fork        | mixed         | [05-a-day-in-the-fork.md](05-a-day-in-the-fork.md)               | in production                 |
+| 06        | The handshake            | boards        | [06-the-handshake.md](06-the-handshake.md)                       | in production                 |
+| 07        | Things that are not true | boards        | [07-things-that-are-not-true.md](07-things-that-are-not-true.md) | in production                 |
 
 ## Script shape
 
