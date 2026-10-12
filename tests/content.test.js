@@ -4942,6 +4942,14 @@ test('a lesson Fieldnote shows its chip, claim cues, and dialog chapters', () =>
     chapters['fork-shape'].outcomes[0],
     'a plain-sentence claim names its chapter with the sentence',
   );
+  assert.equal(
+    fieldnoteChapterTitle(
+      { ...video, chapter: 'bring-up' },
+      { mistake: 'suspended-means-frozen' },
+    ),
+    'Easy mistake: GitOps is suspended, so nothing changes',
+    'a mixed-case first word keeps its capitals',
+  );
   assert.deepEqual(
     [0, 30, 60, 100, 125, 160].map((time) => fieldnoteClaimAt(video, time)),
     [0, 0, 1, 2, 2, 2],

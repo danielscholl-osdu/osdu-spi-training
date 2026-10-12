@@ -484,7 +484,7 @@ export function fieldnoteLabel(video) {
 
 function sentenceAsTitle(text) {
   const title = text.replace(/\.$/, '');
-  return /^[A-Z][a-z]/.test(title)
+  return /^[A-Z][a-z]+\b/.test(title)
     ? `${title[0].toLowerCase()}${title.slice(1)}`
     : title;
 }
