@@ -4950,6 +4950,14 @@ test('a lesson Fieldnote shows its chip, claim cues, and dialog chapters', () =>
     'Easy mistake: GitOps is suspended, so nothing changes',
     'a mixed-case first word keeps its capitals',
   );
+  assert.equal(
+    fieldnoteChapterTitle(
+      { ...video, chapter: 'handshake' },
+      { mistake: 'validation-summary-means-deployed' },
+    ),
+    'Easy mistake: Validation Summary is green, so the change ran in a real environment',
+    'a name that opens the claim keeps its capitals',
+  );
   assert.deepEqual(
     [0, 30, 60, 100, 125, 160].map((time) => fieldnoteClaimAt(video, time)),
     [0, 0, 1, 2, 2, 2],
