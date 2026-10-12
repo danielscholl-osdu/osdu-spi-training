@@ -787,6 +787,8 @@ function render() {
       settleChapterScroll();
     }
     if (chapterChanged && previousRoute) focusChapter();
+    if (scene.page === 'watch' && watchPlayRequested) playOnStage();
+    watchPlayRequested = false;
     historyPop = false;
     watchListenPlayer();
     openRouteVideo(route, chapterChanged);
@@ -1255,6 +1257,28 @@ document.addEventListener('click', (event) => {
     opener,
     play: true,
   });
+});
+
+// Choosing a Fieldnote on its page brings the stage into view and plays it;
+// a shared #watch link opens paused.
+let watchPlayRequested = false;
+function playOnStage() {
+  const stage = document.querySelector('#page .watch-player');
+  const video = stage?.querySelector('video');
+  if (!video) return;
+  stage.scrollIntoView({ block: 'start', behavior: 'instant' });
+  video.focus({ preventScroll: true });
+  video.play().catch(() => {});
+}
+document.addEventListener('click', (event) => {
+  const link = event.target.closest('a[data-watch-play]');
+  if (!link || event.metaKey || event.ctrlKey || event.shiftKey) return;
+  if (link.getAttribute('href') === location.hash.split('?')[0]) {
+    event.preventDefault();
+    playOnStage();
+    return;
+  }
+  watchPlayRequested = true;
 });
 
 // A lesson route with ?watch= opens its Fieldnote at that moment, paused.

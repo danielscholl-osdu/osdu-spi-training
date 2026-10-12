@@ -2976,64 +2976,248 @@ body:has(.audio-dock:not([hidden])) main {
 #exploration {
   scroll-margin-top: calc(var(--masthead-height, 68px) + 12px);
 }
-/* Fieldnotes page: cards by book, one player, chapters, transcript. */
-.fieldnote-books {
+/* Fieldnotes page: the player on a stage at the top, then cards by book. */
+.watch-player {
   display: grid;
   gap: 14px;
-  margin-bottom: 16px;
+  margin-bottom: 36px;
+  scroll-margin-top: calc(var(--masthead-height, 68px) + 12px);
+}
+.watch-stage {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 300px;
+  gap: 20px;
+  padding: 18px;
+  border-radius: 12px;
+  background: var(--navy);
+  color: #fff;
+}
+.watch-stage .video-frame {
+  width: 100%;
+}
+.watch-stage .video-progress {
+  background: #ffffff33;
+}
+.watch-stage .video-progress span,
+.watch-stage .video-tick:hover,
+.watch-stage .video-tick:focus-visible,
+.watch-stage .video-tick.is-current {
+  background: #59cced;
+}
+.watch-stage .video-tick {
+  background: #8fb3cf;
+}
+.watch-now {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  min-width: 0;
+}
+.watch-kicker {
+  margin: 0;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: #59cced;
+}
+.watch-now h2 {
+  margin: 0;
+  font-family: Manrope, var(--font);
+  font-size: 24px;
+  font-weight: 800;
+  letter-spacing: -0.02em;
+  line-height: 1.2;
+}
+.watch-book,
+.watch-summary {
+  margin: 0;
+  font-size: 14px;
+  line-height: 1.5;
+  color: #b9cfe0;
+}
+.watch-book a,
+.watch-steps a {
+  color: #59cced;
+}
+.watch-chapters {
+  list-style: none;
+  margin: 4px 0 0;
+  padding: 10px 0 0;
+  border-top: 1px solid #ffffff26;
+  display: grid;
+  gap: 2px;
+}
+.watch-chapters li {
+  padding: 5px 8px;
+  border-left: 3px solid transparent;
+  border-radius: 4px;
+}
+.watch-chapters li.is-current {
+  border-left-color: #59cced;
+  background: #ffffff14;
+}
+.watch-chapters button {
+  display: flex;
+  align-items: baseline;
+  gap: 10px;
+  padding: 0;
+  border: 0;
+  background: none;
+  color: #e6eef5;
+  font: inherit;
+  text-align: left;
+  cursor: pointer;
+}
+.watch-chapters .marker-time {
+  color: #59cced;
+}
+.watch-chapters b {
+  font-size: 13.5px;
+  font-weight: 600;
+  line-height: 1.35;
+}
+.watch-chapters button:hover b {
+  color: #fff;
+  text-decoration: underline;
+}
+.watch-chapters .marker-note {
+  margin: 4px 0 0;
+  font-size: 12.5px;
+}
+.watch-steps {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+  margin-top: auto;
+  padding-top: 10px;
+  border-top: 1px solid #ffffff26;
+  font-size: 14px;
+  font-weight: 600;
+}
+.watch-about {
+  display: grid;
+  gap: 10px;
+}
+.watch-about .listen-origin {
+  margin: 0;
+  color: var(--muted);
+}
+.fieldnote-books {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 28px 18px;
+}
+.fieldnote-book {
+  grid-column: span var(--cards);
 }
 .fieldnote-book h2 {
-  margin: 0 0 8px;
+  margin: 0 0 10px;
   font-size: 12px;
   font-weight: 700;
   letter-spacing: 0.06em;
   text-transform: uppercase;
   color: var(--muted);
 }
-.fieldnote-book .episode-cards {
-  margin-bottom: 0;
+.fieldnote-cards {
+  display: grid;
+  grid-template-columns: repeat(var(--cards), minmax(0, 1fr));
+  gap: 18px;
 }
 .fieldnote-card {
-  --owner: var(--blue);
-}
-.fieldnote-card img {
-  object-fit: cover;
-  border-radius: 6px;
-}
-.watch-player {
   display: grid;
-  gap: 44px;
+  align-content: start;
+  gap: 4px;
+  padding: 8px 8px 12px;
+  border: 2px solid transparent;
+  border-radius: 10px;
+  color: var(--ink);
+  text-decoration: none;
 }
-.watch-hero {
-  padding: 18px 20px 20px;
-  border-radius: 12px;
-  background: var(--navy);
+.fieldnote-card:hover {
+  border-color: var(--line);
+  background: #fff;
+}
+.fieldnote-card[aria-current] {
+  border-color: var(--navy);
+  background: #fff;
+}
+.fieldnote-thumb {
+  position: relative;
+  display: block;
+  margin-bottom: 6px;
+  border: 1px solid var(--line);
+  border-radius: 6px;
+  overflow: hidden;
+  background: #000;
+}
+.fieldnote-thumb img {
+  display: block;
+  width: 100%;
+  height: auto;
+  aspect-ratio: 16 / 9;
+  object-fit: cover;
+}
+.fieldnote-card[aria-current] .fieldnote-thumb img {
+  opacity: 0.55;
+}
+.fieldnote-now,
+.fieldnote-duration {
+  position: absolute;
+  bottom: 8px;
+  padding: 3px 7px;
+  border-radius: 4px;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.04em;
   color: #fff;
+  background: var(--navy);
 }
-.watch-hero .video-frame {
-  width: min(100%, calc(70vh * var(--video-ratio)));
+.fieldnote-now {
+  left: 8px;
+  text-transform: uppercase;
+  background: var(--blue);
 }
-.watch-hero .video-progress {
-  background: #ffffff33;
+.fieldnote-now::before {
+  content: '▶ ';
 }
-.watch-hero .video-progress span,
-.watch-hero .video-tick:hover,
-.watch-hero .video-tick:focus-visible,
-.watch-hero .video-tick.is-current {
-  background: #59cced;
+.fieldnote-duration {
+  right: 8px;
 }
-.watch-hero .video-tick {
-  background: #8fb3cf;
+.fieldnote-card .episode-kicker {
+  color: var(--blue);
 }
-.watch-hero .listen-origin a,
-.watch-hero .frame-notes summary {
-  color: #59cced;
+.fieldnote-card b {
+  font-family: Manrope, var(--font);
+  font-size: 17px;
+  font-weight: 800;
+  letter-spacing: -0.02em;
+  line-height: 1.25;
 }
-.watch-hero .frame-notes {
-  color: #b9cfe0;
+.fieldnote-card small {
+  font-size: 13.5px;
+  line-height: 1.5;
+  color: #3e596e;
 }
-.video-chapter-list b {
-  font-size: 15px;
+@media (max-width: 1020px) {
+  .watch-stage {
+    grid-template-columns: minmax(0, 1fr);
+  }
+  .fieldnote-books {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+@media (max-width: 560px) {
+  .watch-stage {
+    padding: 12px;
+  }
+  .fieldnote-books,
+  .fieldnote-cards {
+    grid-template-columns: minmax(0, 1fr);
+  }
+  .fieldnote-book {
+    grid-column: auto;
+  }
 }
 /* Skip link, chapter focus */
 .skip-link {

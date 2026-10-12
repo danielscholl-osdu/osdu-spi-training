@@ -5036,8 +5036,37 @@ test('the Fieldnotes page lists episodes by book with one player and a transcrip
   const page = pageRenderers.watch(parseRoute('#watch'));
   for (const video of fieldnotes)
     assert.ok(page.includes(`href="#watch/${video.id}"`), video.id);
-  assert.match(page, /<section class="fieldnote-book"><h2>Start<\/h2>/);
+  assert.match(
+    page,
+    /<section class="fieldnote-book" style="--cards: 1"><h2>Start<\/h2>/,
+  );
   assert.equal(page.split('<video').length - 1, 1, 'one player');
+  assert.ok(
+    page.indexOf('<video') < page.indexOf('class="fieldnote-books"'),
+    'the player comes before the cards',
+  );
+  const second = pageRenderers.watch(parseRoute(`#watch/${fieldnotes[1].id}`));
+  assert.match(
+    second,
+    new RegExp(`Now playing · Fieldnote ${fieldnotes[1].id}`),
+  );
+  assert.equal(
+    second.split('class="fieldnote-now"').length - 1,
+    1,
+    'one card is marked as playing',
+  );
+  assert.match(
+    second,
+    new RegExp(
+      `href="#watch/${fieldnotes[0].id}" data-watch-play>[^<]*</a><a href="#watch/${fieldnotes[2].id}" data-watch-play>`,
+    ),
+    'previous and next',
+  );
+  assert.match(
+    readFileSync(new URL('../src/main.js', import.meta.url), 'utf8'),
+    /watchPlayRequested\) playOnStage\(\)/,
+    'a card click plays on the stage',
+  );
   assert.match(
     page,
     /id="video-transcript" data-captions="https:\/\/danielscholl-osdu\.github\.io\/osdu-spi-training-media\/fieldnote-00\/captions\.vtt"/,
