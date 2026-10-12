@@ -10,8 +10,8 @@ The training site owns what is said. The video library at `~/workspace/videos` (
 | --------- | ------------------------ | ------------- | -------------------------------------------------------- | --------------------------------------- |
 | 00        | Start: three parts       | boards        | [00-three-parts.md](00-three-parts.md)                   | published                               |
 | 01        | Anatomy of a stack       | boards        | [01-anatomy-of-a-stack.md](01-anatomy-of-a-stack.md)     | published                               |
-| 02        | How it comes to life     | mixed         | [02-how-it-comes-to-life.md](02-how-it-comes-to-life.md) | storyboard for approval                 |
-| 03        | The SPI boundary         | boards + code | [03-the-spi-boundary.md](03-the-spi-boundary.md)         | storyboard for approval                 |
+| 02        | How it comes to life     | mixed         | [02-how-it-comes-to-life.md](02-how-it-comes-to-life.md) | approved; take being recorded           |
+| 03        | The SPI boundary         | boards + code | [03-the-spi-boundary.md](03-the-spi-boundary.md)         | published                               |
 | 04        | The shape of the fork    | mixed         |                                                          | after the claim migration for lesson 04 |
 | 05        | A day in the fork        | mixed         |                                                          | after the claim migration for lesson 05 |
 | 06        | The handshake            | boards        |                                                          | drawn; the run stays illustrative       |
