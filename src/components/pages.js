@@ -1072,7 +1072,6 @@ function watchPage(route) {
         </div>
       </section>
       <div class="watch-about">
-        ${video.origin ? `<p class="listen-origin">${escapeHtml(video.origin)}.</p>` : ''}
         ${videoNotes(video)}
         <details class="transcript-details"><summary>Transcript <span class="summary-marker" aria-hidden="true">+</span></summary>
         <div class="transcript" id="video-transcript" data-captions="${videoUrl(video.files.captions)}"></div></details>
