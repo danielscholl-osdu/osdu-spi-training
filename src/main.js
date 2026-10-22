@@ -419,6 +419,7 @@ export function selectDetail(id, chapterKey, element = null) {
 function nextChapter(key) {
   const scene = chapters[key];
   if (key === 'start') return learnOrder[0];
+  if (key === 'not-true') return 'start';
   if (scene.group === 'learn') {
     const n = learnOrder.indexOf(key);
     return n === learnOrder.length - 1 ? 'start' : learnOrder[n + 1];

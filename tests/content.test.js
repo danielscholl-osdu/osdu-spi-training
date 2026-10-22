@@ -1487,7 +1487,12 @@ test('audio markers are ordered, inside the recording, and point at real views',
   );
   assert.deepEqual(
     chapters.start.index.map((group) => group.label),
-    ['The stack', 'Provider code and engineering'],
+    [
+      'The stack',
+      'Provider code and engineering',
+      'Across the path',
+      'Working the stack',
+    ],
   );
   assert.deepEqual(
     chapters.start.index.flatMap((group) => Object.keys(group.lessons)),
@@ -2493,7 +2498,7 @@ test('field check remains lesson 07 after the round trip', () => {
   );
 
   assert.equal(route.chapter, 'not-true');
-  assert.deepEqual(learnKeys.slice(-2), ['handshake', 'not-true']);
+  assert.deepEqual(learnKeys.slice(-3), ['handshake', 'not-true', 'core-dags']);
   assert.equal(indexedKeys.filter((key) => key === 'not-true').length, 1);
   assert.equal(learnKeys.indexOf('not-true') + 1, 7);
   assert.equal(chapters['not-true'].title, 'Things that are not true');
@@ -2519,6 +2524,47 @@ test('field check remains lesson 07 after the round trip', () => {
       'href="#not-true">07 · Things that are not true →</a>',
     ),
   );
+});
+
+test('Working the stack navigation keeps lesson numbering derived from order', () => {
+  const learn = Object.keys(chapters).filter(
+    (key) => chapters[key].group === 'learn',
+  );
+  assert.deepEqual(learn, [
+    'running-stack',
+    'bring-up',
+    'spi-boundary',
+    'fork-shape',
+    'fork-day',
+    'handshake',
+    'not-true',
+    'core-dags',
+  ]);
+  assert.deepEqual(
+    chapters.start.index.flatMap(({ lessons }) => Object.keys(lessons)),
+    learn,
+  );
+  for (const key of learn) assert.equal(chapters[key].number, undefined);
+  const home = pageRenderers.home();
+  assert.match(
+    home,
+    /href="#core-dags"><span class="lesson-number">08<\/span><b>On behalf of you<\/b>/,
+  );
+  const rail = chapterNavigation('core-dags');
+  assert.match(
+    rail,
+    /href="#core-dags" class="chapter-link" aria-current="page"><span class="number">08<\/span>/,
+  );
+  assert.ok(
+    rail.indexOf('Across the path') < rail.indexOf('Working the stack'),
+  );
+  assert.match(
+    zoomLadder(),
+    /href="#core-dags" title="Open 08 · On behalf of you">08<\/a>/,
+  );
+  const main = readFileSync(new URL('../src/main.js', import.meta.url), 'utf8');
+  assert.match(main, /if \(key === 'not-true'\) return 'start';/);
+  assert.match(main, /of \$\{learnOrder.length\}/);
 });
 
 test('the familiar-things guide links every row to a component on the map', () => {

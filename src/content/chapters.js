@@ -62,7 +62,18 @@ export const chapters = {
           'fork-shape': 'Who owns which paths in a service fork?',
           'fork-day': 'How does an upstream update become a candidate image?',
           handshake: 'How is a candidate image tested in a running stack?',
+        },
+      },
+      {
+        label: 'Across the path',
+        lessons: {
           'not-true': 'Which common assumptions cause problems?',
+        },
+      },
+      {
+        label: 'Working the stack',
+        lessons: {
+          'core-dags': 'On behalf of you',
         },
       },
     ],
