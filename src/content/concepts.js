@@ -42,7 +42,7 @@ export const zoomLevels = [
     detail:
       'foundation, platform, and osdu, assembled by Flux in dependency order.',
     example: 'foundation · platform · osdu',
-    chapters: ['running-stack', 'bring-up'],
+    chapters: ['running-stack', 'bring-up', 'core-dags'],
     href: '#bring-up/reconcile',
   },
   {

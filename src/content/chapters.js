@@ -1375,6 +1375,106 @@ export const chapters = {
       'Provisioning, convergence, readiness, and proof are different signals, and I check the one I actually need.',
     ],
   },
+  'core-dags': {
+    kind: 'map',
+    group: 'learn',
+    book: 'Working the stack',
+    title: 'On behalf of you',
+    subtitle: 'Core DAGs and caller provenance',
+    subhead:
+      'The stack decides which files load, registers them with Workflow, and runs each task on behalf of whoever started it.',
+    intro:
+      '<p>In a core environment, Airflow runs the community’s manifest ingestion DAGs alongside the stack’s smoke DAGs.</p><p>Builds on the environment from lesson 02 and caller access granted through spi users. This view works at the namespaces-and-workloads level: Airflow and its registration Job in platform, Workflow and Storage APIs in osdu. To run ingestion as yourself, you need editor, admin, or ops access in the partition; viewer is not enough.</p>',
+    figure: 'From reviewed files to a stored record',
+    selected: 'dag-catalog',
+    diagram: 'coreDags',
+    guides: [],
+    listen: [],
+    mistakes: ['run-succeeded-means-stored'],
+    scope:
+      'Core-profile workloads and their reviewed inputs. Storage means the OSDU API, not an Azure Storage account. This map is illustrative, executes nothing, and reports no live state.',
+    sources: ['coreDagsDecision', 'coreDagInputs', 'coreDagRegistration'],
+    question:
+      'How does a DAG reach the stack, who does each task act as, and how do you know it stored anything?',
+    builds:
+      'Builds on the core environment from lesson 02 and caller access granted through spi users.',
+    where:
+      'Namespaces and workloads: Airflow and a registration Job in platform, and Workflow and Storage APIs in osdu.',
+    goal: 'You can explain how reviewed DAGs arrive, why registration is separate from Deployable, and how Storage proves a write on behalf of the caller.',
+    outcomes: [
+      {
+        headline:
+          'A DAG reaches Airflow from a reviewed catalog, hash by hash.',
+        text: 'A reviewed catalog selects two DAG families and four IDs; init containers verify full commits and per-file SHA-256 hashes before the scheduler and processor receive their files.',
+        why: 'Only spi-smoke (Echo_DAG, airflow_monitoring) and core-ingestion (Osdu_ingest, manifest_ingestion) load. Python libraries are hash-locked too. A failed fetch, hash, or install blocks the new pod; retaining an old pod during a rolling update is not a guarantee after node loss.',
+        focus: ['dag-catalog', 'dag-loader', 'dag-processor', 'dag-task'],
+        scopes: ['dag-delivery'],
+        crossing: 'Reviewed source → init containers → Airflow files',
+        evidence: 'dag-loader',
+      },
+      {
+        headline: 'Registration comes later, and it does not gate Deployable.',
+        text: 'After Airflow and initialization, the separate layer-6 Job registers system workflows and unpauses declared DAGs, but its success does not gate Deployable.',
+        why: 'spi-osdu-dag-registration requires the exact declared set, fresh parses, and zero import errors. It pauses removed DAGs and never deletes DAGs or Workflow records. Deployable is neither registration readiness nor proof of ingestion.',
+        focus: ['dag-registration', 'dag-airflow-api', 'dag-workflow'],
+        scopes: ['dag-registration'],
+        crossing: 'Airflow + init → non-gating registration → Workflow',
+        evidence: 'dag-registration',
+      },
+      {
+        headline: 'Each task writes on behalf of the caller.',
+        text: 'Workflow derives the caller from their token; a LocalExecutor task inside the scheduler calls Storage with the OSDU identity plus on-behalf-of, and read-back must show that caller as createUser.',
+        why: 'Workflow rejects a supplied user ID. Its Airflow login grants no OSDU authority. The identity needs users.datalake.delegation and the caller needs users.datalake.impersonation; spi users editor, admin, and ops grant impersonation, viewer does not. Tasks are scheduler processes, not task pods.',
+        focus: [
+          'dag-caller',
+          'dag-caller-token',
+          'dag-workflow',
+          'dag-airflow-login',
+          'dag-airflow-api',
+          'dag-task',
+          'dag-osdu-identity',
+          'dag-storage',
+        ],
+        scopes: ['dag-provenance'],
+        crossing: 'Your token → Airflow login → OSDU identity + caller',
+        evidence: 'dag-osdu-identity',
+      },
+    ],
+    example: {
+      title: 'Proof: spi test dags, as me',
+      code: 'spi test dags --as me',
+      scopes: ['dag-provenance'],
+      crossing: 'Caller → Workflow → Airflow API → scheduler task → Storage',
+      hops: [
+        {
+          detail: 'dag-caller',
+          label: 'Caller',
+          copy: 'Preflight checks impersonation, both Workflow registrations, schemas, the legal tag when Legal permits validation, and ACL domains. It rejects invalid legal tags and mismatched domains. If Legal refuses validation, the result is “not checked” and the smoke continues. Domain comparison is not group-membership testing; the check grants no roles and creates no schemas or legal tags.',
+        },
+        {
+          detail: 'dag-workflow',
+          label: 'Workflow',
+          copy: 'Your token identifies the submitter. Echo runs first through Workflow; only after it succeeds does the smoke submit Osdu_ingest with a one-record Manifest. The payload supplies no userId, token, on-behalf-of, or createUser.',
+        },
+        {
+          detail: 'dag-airflow-api',
+          label: 'Airflow API',
+          copy: 'Workflow authenticates with the osdu-workflow Airflow login, role User. This is not an OSDU credential. The API server has no OSDU Workload Identity.',
+        },
+        {
+          detail: 'dag-task',
+          label: 'Scheduler task',
+          copy: 'LocalExecutor runs the task in the scheduler pod, using platform/workload-identity-sa. The task calls Storage with the OSDU identity and on-behalf-of naming the caller, subject to delegation and impersonation memberships.',
+        },
+        {
+          detail: 'dag-storage',
+          label: 'Storage read-back',
+          copy: 'The smoke reads the record from the OSDU Storage API, requiring the submitted data and createUser equal to the caller. A successful run alone is insufficient. --report puts the submitted and stored records on one page.',
+        },
+      ],
+      note: 'Both Workflow runs and the new record are retained; repeated checks create new evidence. To check an existing run, read its record from Storage instead. This site executes nothing. CI does not run this smoke against a live cluster.',
+    },
+  },
   watch: {
     kind: 'page',
     page: 'watch',

@@ -791,6 +791,67 @@ test('core DAG diagram separates delivery, registration, and credential authorit
     assert.ok(ids.indexOf(actors[index - 1]) < ids.indexOf(actors[index]));
 });
 
+test('core DAG lesson connects three claims and five ingestion hops at the workloads rung', () => {
+  const chapter = chapters['core-dags'];
+  assert.equal(chapter.title, 'On behalf of you');
+  assert.equal(chapter.book, 'Working the stack');
+  assert.equal(chapter.selected, 'dag-catalog');
+  assert.equal(chapter.diagram, 'coreDags');
+  assert.equal(chapter.outcomes.length, 3);
+  assert.deepEqual(
+    chapter.outcomes.map(({ headline }) => headline),
+    [
+      'A DAG reaches Airflow from a reviewed catalog, hash by hash.',
+      'Registration comes later, and it does not gate Deployable.',
+      'Each task writes on behalf of the caller.',
+    ],
+  );
+  assert.equal(chapter.example.title, 'Proof: spi test dags, as me');
+  assert.equal(chapter.example.code, 'spi test dags --as me');
+  assert.deepEqual(
+    chapter.example.hops.map(({ detail }) => detail),
+    [
+      'dag-caller',
+      'dag-workflow',
+      'dag-airflow-api',
+      'dag-task',
+      'dag-storage',
+    ],
+  );
+  assert.ok(
+    zoomLevels
+      .find(({ id }) => id === 'workloads')
+      .chapters.includes('core-dags'),
+  );
+  assert.equal(chapter.lesson, undefined);
+  assert.equal(chapter.tryIt, undefined);
+  assert.equal(lessonWatch('core-dags'), '');
+  for (const [index, claim] of chapter.outcomes.entries()) {
+    assert.ok(
+      claimContext('core-dags', index).includes(escapeHtml(claim.text)),
+    );
+    verifyRoute(
+      `#core-dags?detail=${claim.evidence}&claim=${index}`,
+      'core DAG claim',
+    );
+  }
+});
+
+test('core DAG misconception stays local and uses operator and derived spi chips', () => {
+  const myth = myths.find(({ id }) => id === 'run-succeeded-means-stored');
+  assert.equal(myth.owner, 'you');
+  assert.equal(myth.theme, 'readiness');
+  assert.equal(myth.source, 'coreDagInputs');
+  assert.equal(mythTool(myth.check), 'spi');
+  verifyRoute(myth.route, 'core DAG misconception');
+  const callout = mythCallout(myth.id, 'core-dags');
+  assert.match(callout, /data-map-jump/);
+  assert.ok(callout.includes(myth.route));
+  assert.ok(callout.includes(mythChips(myth)));
+  assert.match(myth.reality, /creates and retains new proof/);
+  assert.match(myth.reality, /existing run/);
+});
+
 test('Go deeper links put primary evidence before deduplicated depth', () => {
   const ordered = detailSourceLinks(componentDetails.azureimpl);
   const expected = [
