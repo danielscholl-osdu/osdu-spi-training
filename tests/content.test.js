@@ -1778,6 +1778,24 @@ test('source links use readable documentation and match a sibling checkout when 
     verifySourceRecord(key, source);
 });
 
+test('core DAG sources name the reviewed files on the default branch', () => {
+  const paths = {
+    coreDagsDecision: 'docs/decisions/044-core-profile-dags.md',
+    coreDagInputs: 'software/stacks/osdu/dags/README.md',
+    coreDagRegistration: 'software/stacks/osdu/dag-registration/README.md',
+  };
+  for (const [key, path] of Object.entries(paths)) {
+    const source = sources[key];
+    assert.equal(source.repo, 'osdu-spi-stack');
+    assert.equal(source.path, path);
+    assert.equal(
+      source.href,
+      `https://github.com/Azure/osdu-spi-stack/blob/main/${path}`,
+    );
+    verifySourceRecord(key, source);
+  }
+});
+
 test('tryIt fixtures and authored recipes satisfy the content contract', () => {
   verifyTryIt(singleVariantTryIt, 'single variant fixture');
   verifyTryIt(multipleVariantTryIt, 'multiple variant fixture');
