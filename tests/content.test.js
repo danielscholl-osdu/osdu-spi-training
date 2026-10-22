@@ -713,6 +713,41 @@ test('readiness drawer distinguishes observed state from API proof', () => {
     assert.doesNotMatch(drawerCopy, new RegExp(phrase, 'i'));
 });
 
+test('core DAG evidence isolates actors, credentials, and inspectable artifacts', () => {
+  const expected = {
+    'dag-catalog': ['coreDagInputs', /catalog\.yaml/],
+    'dag-loader': ['coreDagInputs', /load-osdu-dags/],
+    'dag-processor': ['coreDagsDecision', /--require-hashes/],
+    'dag-registration': ['coreDagRegistration', /spi-osdu-dag-registration/],
+    'dag-caller': ['coreDagInputs', /spi test dags --as me --report/],
+    'dag-workflow': ['coreDagsDecision', /submittedBy/],
+    'dag-airflow-api': ['coreDagsDecision', /\/airflow\/auth\/token/],
+    'dag-task': ['coreDagsDecision', /LocalExecutor/],
+    'dag-storage': ['coreDagInputs', /createUser/],
+    'dag-caller-token': ['coreDagInputs', /--as me/],
+    'dag-airflow-login': ['coreDagRegistration', /osdu-workflow/],
+    'dag-osdu-identity': ['coreDagsDecision', /on-behalf-of: <you>/],
+  };
+  for (const [id, [source, artifact]] of Object.entries(expected)) {
+    const detail = componentDetails[id];
+    assert.equal(detail.source, source, id);
+    assert.match(detail.artifact.code, artifact, id);
+    assert.ok(detail.body.length > 100, id);
+    verifySourceRecord(source, sources[source]);
+  }
+  assert.match(componentDetails['dag-loader'].body, /node loss.*no old pod/);
+  assert.match(componentDetails['dag-task'].body, /not separate task pods/);
+  assert.match(componentDetails['dag-airflow-login'].body, /role User/);
+  assert.match(
+    componentDetails['dag-osdu-identity'].body,
+    /users\.datalake\.delegation/,
+  );
+  assert.match(
+    componentDetails['dag-osdu-identity'].body,
+    /users\.datalake\.impersonation/,
+  );
+});
+
 test('Go deeper links put primary evidence before deduplicated depth', () => {
   const ordered = detailSourceLinks(componentDetails.azureimpl);
   const expected = [

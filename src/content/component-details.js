@@ -2,6 +2,132 @@
 // Licensed under the MIT License.
 
 export const componentDetails = {
+  'dag-catalog': {
+    label: 'Reviewed stack inputs',
+    title: 'The catalog approves the code Airflow may run.',
+    body: 'catalog.yaml declares spi-smoke (Echo_DAG, airflow_monitoring) and core-ingestion (Osdu_ingest, manifest_ingestion). Only selected files load. Stack reviewers approve full upstream commits and per-file SHA-256 hashes; hashes make inputs immutable, not authentic.',
+    artifact: {
+      label: 'Review the executable inputs',
+      code: 'software/stacks/osdu/dags/catalog.yaml',
+    },
+    source: 'coreDagInputs',
+  },
+  'dag-loader': {
+    label: 'platform / scheduler and DAG processor init',
+    title: 'An unverified file holds the new pod in init.',
+    body: 'load-osdu-dags fetches the reviewed commit, verifies each selected file against its SHA-256, and stages only cataloged files into dags/<family>/. A failed fetch or hash check exits 1. During a rolling update the old pod can keep serving until its replacement is ready; node loss or rescheduling has no old pod to retain.',
+    artifact: {
+      label: 'Read loader evidence',
+      code: 'kubectl logs -n platform deployment/airflow-scheduler -c load-osdu-dags',
+    },
+    source: 'coreDagInputs',
+    goDeeper: ['coreDagsDecision'],
+  },
+  'dag-processor': {
+    label: 'platform / Airflow',
+    title: 'The processor parses the staged catalog without OSDU authority.',
+    body: 'The DAG processor uses a chart-created ServiceAccount without OSDU Workload Identity. Its init loader stages the selected files, then hash-locked Python libraries must install before parsing starts. A failed install never starts the parser; running pip alone must not mark the processor Ready.',
+    artifact: {
+      label: 'Locked startup libraries',
+      code: '-r /opt/spi/osdu/requirements.txt --require-hashes --only-binary :all:',
+    },
+    source: 'coreDagsDecision',
+    goDeeper: ['coreDagInputs'],
+  },
+  'dag-registration': {
+    label: 'platform / separate registration Job',
+    owner: 'Flux',
+    title:
+      'Layer 6 registers the exact fresh catalog without gating Deployable.',
+    body: 'spi-osdu-dag-registration follows spi-airflow and spi-osdu-init. Its identity-using Job requires the exact declared non-stale DAG set, fresh parses since the Job started, and zero import errors. It registers system workflows and unpauses declared IDs; removed IDs are paused, never deleted. Failure leaves Deployable unchanged.',
+    artifact: {
+      label: 'Inspect the non-gating layer',
+      code: 'kubectl get kustomization spi-osdu-dag-registration -n osdu-flux -o yaml',
+    },
+    source: 'coreDagRegistration',
+  },
+  'dag-caller': {
+    label: 'Your workstation / signed-in person',
+    title: 'The smoke creates proof without creating its prerequisites.',
+    body: 'spi test dags --as me checks caller impersonation, registrations, schemas, legal validity when available, and ACL domains. It grants no role and creates no schema or legal tag. Echo runs before ingestion; both runs and the new record remain as evidence. --report presents the submitted and stored records together.',
+    artifact: {
+      label: 'Create and retain new ingestion evidence',
+      code: 'spi test dags --as me --report',
+    },
+    source: 'coreDagInputs',
+  },
+  'dag-workflow': {
+    label: 'osdu / Workflow API',
+    title: 'Workflow derives the submitter from the caller token.',
+    body: 'Workflow records the authenticated caller as submittedBy and derives the run userId; a supplied user ID is rejected. It triggers Airflow through the osdu-workflow login. The smoke supplies neither userId nor createUser, so Workflow and Storage must establish caller provenance rather than trust the manifest.',
+    artifact: {
+      label: 'Read the Workflow result',
+      code: 'submittedBy · execution_context.userId',
+    },
+    source: 'coreDagsDecision',
+    goDeeper: ['coreDagInputs'],
+  },
+  'dag-airflow-api': {
+    label: 'platform / Airflow API server',
+    title: 'The Airflow API accepts a login, not an OSDU credential.',
+    body: 'Workflow reaches Airflow as osdu-workflow. The API server retains a chart-created ServiceAccount without OSDU Workload Identity; accepting a DAG run does not authorize an OSDU Storage write. The scheduler runs the task with separate OSDU authority.',
+    artifact: {
+      label: 'Airflow authentication endpoint',
+      code: '/airflow/auth/token',
+    },
+    source: 'coreDagsDecision',
+    goDeeper: ['coreDagRegistration'],
+  },
+  'dag-task': {
+    label: 'platform / inside the scheduler pod',
+    title: 'LocalExecutor runs task processes inside the scheduler.',
+    body: 'Core uses LocalExecutor with parallelism 2 and allowPodLaunching: false, not separate task pods. The scheduler uses platform/workload-identity-sa; tasks share its CPU, memory, and OSDU identity. A scheduler restart stops its remaining tasks, and task logs are not durable.',
+    artifact: {
+      label: 'Scheduler execution contract',
+      code: 'LocalExecutor · parallelism: 2 · allowPodLaunching: false',
+    },
+    source: 'coreDagsDecision',
+  },
+  'dag-storage': {
+    label: 'osdu / Storage API',
+    title: 'Only record read-back establishes the ingestion result.',
+    body: 'The smoke reads the new record from the OSDU Storage API and requires matching data and createUser equal to the caller. Osdu_ingest can succeed while Storage skips a record because of a rejected legal tag or a mismatched ACL domain. To inspect an existing run, read that run’s record; rerunning the smoke creates different evidence.',
+    artifact: {
+      label: 'Required read-back evidence',
+      code: 'stored.data = submitted.data\nstored.createUser = authenticated caller',
+    },
+    source: 'coreDagInputs',
+  },
+  'dag-caller-token': {
+    label: 'Caller → Workflow',
+    title: 'Your token authenticates the first API call.',
+    body: '--as me uses the signed-in person’s Azure CLI token, as spi token --me does. The token identifies the caller to Workflow; it is not the osdu-workflow Airflow login and is not embedded in the one-record manifest.',
+    artifact: {
+      label: 'Caller selection',
+      code: 'spi test dags --as me',
+    },
+    source: 'coreDagInputs',
+  },
+  'dag-airflow-login': {
+    label: 'Workflow → Airflow API',
+    title: 'The Airflow User role grants no OSDU authority.',
+    body: 'The osdu-workflow login authenticates to Airflow with role User. Registration reads its password from platform/airflow-api-credentials#workflow-password. This login permits the Airflow interaction, not a Storage write; the scheduler’s OSDU identity is a different credential.',
+    artifact: {
+      label: 'Airflow login reference, not a secret value',
+      code: 'osdu-workflow · platform/airflow-api-credentials#workflow-password',
+    },
+    source: 'coreDagRegistration',
+  },
+  'dag-osdu-identity': {
+    label: 'Scheduler task → Storage',
+    title: 'Delegation requires two separate memberships.',
+    body: 'The task sends the OSDU identity’s token plus on-behalf-of naming the run’s caller. The identity needs users.datalake.delegation; the caller needs users.datalake.impersonation. spi users editor, admin, and ops grant caller impersonation, but viewer does not. Existing people may need their intended preset reapplied; spi up enrolls no operator.',
+    artifact: {
+      label: 'Illustrative provenance header',
+      code: 'on-behalf-of: <you>\nidentity: users.datalake.delegation\ncaller: users.datalake.impersonation',
+    },
+    source: 'coreDagsDecision',
+  },
   environment: {
     label: 'The stack boundary',
     title: 'AKS is one part of the environment.',
