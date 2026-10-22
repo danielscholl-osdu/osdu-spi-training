@@ -93,7 +93,7 @@ import {
   spiNamesFigure,
 } from '../src/components/infographics.js';
 import { multipleVariantTryIt, singleVariantTryIt } from './fixtures/try-it.js';
-import { lessonFieldnote } from './fixtures/fieldnote.js';
+import { coreDagsFieldnote, lessonFieldnote } from './fixtures/fieldnote.js';
 import { tryItShells } from '../src/try-it-shell.js';
 
 const mapChapters = Object.entries(chapters).filter(
@@ -4905,7 +4905,11 @@ function cutFromDifferences(video) {
         ),
       );
   }
-  const next = learnKeys[learnKeys.indexOf(video.chapter) + 1];
+  // Field check keeps its Back to the start exit after the book expands.
+  const next =
+    video.chapter === 'not-true'
+      ? null
+      : learnKeys[learnKeys.indexOf(video.chapter) + 1];
   if ((cut.next ?? null) !== (next ? chapters[next].question : null))
     differences.push(differs('next', `chapters['${next}'].question`));
   return differences;
@@ -5067,6 +5071,73 @@ test('a Fieldnote cut that drifts from its lesson names the episode and field', 
   assert.deepEqual(cutFromDifferences(uncut), [
     'Fieldnote 01: cutFrom is missing',
   ]);
+});
+
+test('core DAG video contract uses a frozen test-only Fieldnote 11 cut', () => {
+  const video = coreDagsFieldnote();
+  verifyFieldnote(video);
+  assert.equal(fieldnoteFor('core-dags'), null);
+  assert.equal(fieldnoteById('11'), null);
+  assert.equal(lessonWatch('core-dags'), '');
+  assert.equal(video.nextChapter, undefined);
+  assert.match(claimStrip('core-dags', video), /data-video-open="11"/);
+  const marks = fieldnoteChapters(video);
+  assert.deepEqual(
+    marks.slice(0, 3).map(({ title }) => title),
+    chapters['core-dags'].outcomes.map(({ headline }) => headline),
+  );
+  assert.equal(marks[3].title, 'Example: Proof: spi test dags, as me');
+  assert.equal(
+    marks[4].title,
+    'Easy mistake: the run succeeded, so the record is stored',
+  );
+  for (const [field, mutate] of [
+    [
+      'claims[0].headline',
+      (cut) => {
+        cut.claims[0].headline = 'Older headline.';
+      },
+    ],
+    [
+      'claims[2].text',
+      (cut) => {
+        cut.claims[2].text = 'Older outcome.';
+      },
+    ],
+    [
+      'example',
+      (cut) => {
+        cut.example = 'Older example';
+      },
+    ],
+    [
+      'mistake.claim',
+      (cut) => {
+        cut.mistake.claim = 'Older assumption.';
+      },
+    ],
+  ]) {
+    const changed = coreDagsFieldnote();
+    mutate(changed.cutFrom);
+    const from =
+      field === 'mistake.claim'
+        ? "myths.js 'run-succeeded-means-stored'"
+        : "chapters['core-dags']";
+    assert.deepEqual(cutFromDifferences(changed), [
+      `Fieldnote 11: cutFrom.${field} differs from ${from}`,
+    ]);
+    assert.throws(() => verifyFieldnote(changed), /Fieldnote 11: cutFrom/);
+  }
+  const seam = fieldnoteById('06');
+  assert.equal(seam.cutFrom.next, chapters['not-true'].question);
+  assert.equal(seam.nextChapter, undefined);
+  verifyFieldnote(seam);
+  const fieldCheck = fieldnoteById('07');
+  verifyFieldnote(fieldCheck);
+  assert.deepEqual(
+    fieldCheck.chapters.map(({ theme }) => theme),
+    mythThemes.map(({ id }) => id),
+  );
 });
 
 test('Fieldnote routes parse and keep the published keys', () => {
