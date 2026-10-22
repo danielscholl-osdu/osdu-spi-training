@@ -748,6 +748,49 @@ test('core DAG evidence isolates actors, credentials, and inspectable artifacts'
   );
 });
 
+test('core DAG diagram separates delivery, registration, and credential authority', () => {
+  const html = diagramRenderers.coreDags();
+  const ids = [...html.matchAll(/data-detail="([^"]+)"/g)].map(
+    (match) => match[1],
+  );
+  const expected = Object.keys(componentDetails).filter((id) =>
+    id.startsWith('dag-'),
+  );
+  assert.equal(ids.length, 12);
+  assert.equal(new Set(ids).size, ids.length);
+  assert.deepEqual([...ids].sort(), expected.sort());
+  for (const id of ids) assert.ok(componentDetails[id], id);
+  for (const scope of ['dag-delivery', 'dag-registration', 'dag-provenance'])
+    assert.match(html, new RegExp(`data-scope="${scope}"`));
+  for (const label of [
+    'Your token',
+    'osdu-workflow login',
+    'OSDU identity + on-behalf-of',
+    'LocalExecutor',
+    'platform/workload-identity-sa',
+    'OSDU Workflow API',
+    'OSDU Storage API',
+    'Airflow role User · no OSDU authority',
+    'not an Azure Storage account',
+  ])
+    assert.ok(html.includes(label), label);
+  assert.match(html, /separate Job/);
+  assert.match(html, /not a task pod/);
+  assert.equal(html.match(/no OSDU Workload Identity/g)?.length, 2);
+  assert.match(html, /osdu namespace/);
+  assert.match(html, /platform namespace/);
+  assert.doesNotMatch(html, /fork-code|task-pod|blob Storage account/);
+  const actors = [
+    'dag-caller',
+    'dag-workflow',
+    'dag-airflow-api',
+    'dag-task',
+    'dag-storage',
+  ];
+  for (let index = 1; index < actors.length; index++)
+    assert.ok(ids.indexOf(actors[index - 1]) < ids.indexOf(actors[index]));
+});
+
 test('Go deeper links put primary evidence before deduplicated depth', () => {
   const ordered = detailSourceLinks(componentDetails.azureimpl);
   const expected = [

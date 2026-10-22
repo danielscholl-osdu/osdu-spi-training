@@ -5,6 +5,7 @@ import { node } from './node.js';
 import { architectureOverview, creationWalkthrough } from './architecture.js';
 import { forkMoments, meanwhile } from '../content/fork-moments.js';
 import { routeHref } from '../router.js';
+import { coreDagsDiagram } from './core-dags.js';
 
 function spiBoundaryDiagram() {
   return `<div class="zoom-crumb" aria-label="Zoomed in from the map"><a href="#running-stack">The stack</a><span>›</span><a href="#running-stack/developer?detail=aks">AKS</a><span>›</span><a href="#running-stack/developer?detail=service">osdu namespace</a><span>›</span><b>one service · partition</b></div>
@@ -404,4 +405,5 @@ export const diagramRenderers = {
   fork: forkShapeDiagram,
   forkDay: forkDayDiagram,
   seam: seamDiagram,
+  coreDags: coreDagsDiagram,
 };
