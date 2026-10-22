@@ -6,16 +6,30 @@ The training site owns what is said. The video library at `~/workspace/videos` (
 
 ## The series
 
-| Fieldnote | Lesson                   | Form          | Storyboard                                                       | Status        |
-| --------- | ------------------------ | ------------- | ---------------------------------------------------------------- | ------------- |
-| 00        | Start: three parts       | boards        | [00-three-parts.md](00-three-parts.md)                           | published     |
-| 01        | Anatomy of a stack       | boards        | [01-anatomy-of-a-stack.md](01-anatomy-of-a-stack.md)             | published     |
-| 02        | How it comes to life     | mixed         | [02-how-it-comes-to-life.md](02-how-it-comes-to-life.md)         | published     |
-| 03        | The SPI boundary         | boards + code | [03-the-spi-boundary.md](03-the-spi-boundary.md)                 | published     |
-| 04        | The shape of the fork    | mixed         | [04-the-shape-of-the-fork.md](04-the-shape-of-the-fork.md)       | in production |
-| 05        | A day in the fork        | mixed         | [05-a-day-in-the-fork.md](05-a-day-in-the-fork.md)               | in production |
-| 06        | The handshake            | boards        | [06-the-handshake.md](06-the-handshake.md)                       | published     |
-| 07        | Things that are not true | boards        | [07-things-that-are-not-true.md](07-things-that-are-not-true.md) | published     |
+| Fieldnote | Lesson                   | Form          | Storyboard                                                       | Status                        |
+| --------- | ------------------------ | ------------- | ---------------------------------------------------------------- | ----------------------------- |
+| 00        | Start: three parts       | boards        | [00-three-parts.md](00-three-parts.md)                           | published                     |
+| 01        | Anatomy of a stack       | boards        | [01-anatomy-of-a-stack.md](01-anatomy-of-a-stack.md)             | published                     |
+| 02        | How it comes to life     | mixed         | [02-how-it-comes-to-life.md](02-how-it-comes-to-life.md)         | published; re-take on 0.32    |
+| 03        | The SPI boundary         | boards + code | [03-the-spi-boundary.md](03-the-spi-boundary.md)                 | published                     |
+| 04        | The shape of the fork    | mixed         | [04-the-shape-of-the-fork.md](04-the-shape-of-the-fork.md)       | revise for 13 forks, then cut |
+| 05        | A day in the fork        | mixed         | [05-a-day-in-the-fork.md](05-a-day-in-the-fork.md)               | revise for 13 forks, then cut |
+| 06        | The handshake            | boards        | [06-the-handshake.md](06-the-handshake.md)                       | published                     |
+| 07        | Things that are not true | boards        | [07-things-that-are-not-true.md](07-things-that-are-not-true.md) | published                     |
+
+### Season 2: Working the stack
+
+Season 1 ends at one authenticated partition lookup by the deploy identity. Season 2 covers what an engineer does with a running core environment on spi 0.32: whose images it runs, who may call it, what data it holds, how ingestion runs, and how to prove a service from a workstation. Each episode is cut from the stack's own decision records and docs until its lesson exists in a _Working the stack_ book.
+
+| Fieldnote | Episode                 | Covers (osdu-spi-stack)                                                                    | Form        | Storyboard                                       | Status  |
+| --------- | ----------------------- | ------------------------------------------------------------------------------------------ | ----------- | ------------------------------------------------ | ------- |
+| 08        | Whose image is running? | canonical source per service, fork `main` on GHCR, weekday refresh, 21-day age (ADR-033)   | mixed       | planned                                          | planned |
+| 09        | Who is asking           | `spi users` roles, `spi token --me`, entitlements groups (ADR-039)                         | mixed       | planned                                          | planned |
+| 10        | Ready is not loaded     | `spi load` and its registry; ready, deployable, loaded, ingesting (ADR-040, ADR-030)       | mixed       | planned                                          | planned |
+| 11        | On behalf of you        | core DAGs, registration, `on-behalf-of`, `spi test dags --report` (ADR-044)                | mixed       | [11-on-behalf-of-you.md](11-on-behalf-of-you.md) | draft   |
+| 12        | Prove it from your desk | `spi test <service>`, `--report`, `--review`, `spi build`, `pin --source` (ADR-036 to 038) | footage-led | planned                                          | planned |
+
+Fieldnote 11 is produced first. The season shares one take day: a throwaway core environment on 0.32, which also re-records Fieldnote 02 through Ready and a successful lookup (its 12 October take stalled at 20 of 29 on an image lineage the stack has since retired).
 
 ## Script shape
 
@@ -45,7 +59,8 @@ Each claim, the example, and the easy mistake is one chapter. Chapter titles are
 - **Independent of the site's look:** no episode shows the site's interface or its map drawings. The series shares the site's palette and fonts, and the site may later take visual ideas from the videos, so a cut must not tie the two together.
 - **Generated art:** illustrations made with Gemini image models, and the notebook still behind the bookends, kept with their prompts in the video library. They set mood, metaphor, and summary; they assert nothing the lesson does not state, carry no generated text, and use owner colors only where the lesson assigns an owner.
 - **Captions:** a VTT track from the narration's word times, not burned in. A second VTT carries the chapters.
-- **Sound:** one series audio bed under the prequel, with the episode line spoken over it, and a matching bed under the postquel. No music under narration.
+- **Sound:** one series audio bed under the prequel, with the episode line spoken over it, and a matching bed under the postquel. Under narration, only the series' under-narration bed (`kit/generated/audio/under/` in the video library), and only beneath a traced example, a recall, a season 2 cold open, or footage of a proof: ducked 10 dB under every line, cut at 2 kHz, and at least 7 dB under the voice in 1 to 4 kHz by `film aqa`. Never under code or a log the viewer has to read.
+- **Production line:** Keelson's `film` (the `film-cut` workflow, `film compose`, `film review`) from the series' `series.yaml` in the video library. Every cut keeps a cut record, so `film_status` flags a cut whose storyboard, takes, or boards changed after it.
 
 ## Spoken forms
 
