@@ -852,6 +852,133 @@ test('core DAG misconception stays local and uses operator and derived spi chips
   assert.match(myth.reality, /existing run/);
 });
 
+test('core DAG routes distinguish claim evidence from the optional trace', () => {
+  const chapter = chapters['core-dags'];
+  const initial = parseRoute('#core-dags');
+  assert.equal(initial.chapter, 'core-dags');
+  assert.equal(initial.step, '');
+  assert.equal(initial.detail, null);
+  assert.deepEqual(resolveLessonSelection(chapter, initial), {
+    claim: 0,
+    hop: -1,
+    exampleOpen: false,
+  });
+  for (const [claim, { evidence }] of chapter.outcomes.entries()) {
+    const href = routeHref('core-dags', '', evidence, { claim });
+    verifyRoute(href, 'DAG evidence');
+    assert.deepEqual(resolveLessonSelection(chapter, parseRoute(href)), {
+      claim,
+      hop: -1,
+      exampleOpen: false,
+    });
+  }
+  for (const [hop, { detail }] of chapter.example.hops.entries()) {
+    const href = routeHref('core-dags', '', detail, { hop });
+    verifyRoute(href, 'DAG hop');
+    const selection = resolveLessonSelection(chapter, parseRoute(href));
+    assert.equal(selection.hop, hop);
+    assert.equal(selection.exampleOpen, true);
+  }
+  const legacyHop = resolveLessonSelection(
+    chapter,
+    parseRoute('#core-dags?detail=dag-workflow'),
+  );
+  assert.deepEqual(legacyHop, { claim: 0, hop: 1, exampleOpen: true });
+  const overlapping = structuredClone(chapter);
+  overlapping.outcomes[2].evidence = 'dag-storage';
+  assert.deepEqual(
+    resolveLessonSelection(
+      overlapping,
+      parseRoute('#core-dags?detail=dag-storage'),
+    ),
+    {
+      claim: 2,
+      hop: -1,
+      exampleOpen: false,
+    },
+  );
+  assert.deepEqual(
+    resolveLessonSelection(
+      overlapping,
+      parseRoute('#core-dags?detail=dag-storage&hop=4'),
+    ),
+    {
+      claim: 2,
+      hop: 4,
+      exampleOpen: true,
+    },
+  );
+  // The Storage myth carries explicit claim intent despite naming a trace hop.
+  const myth = myths.find(({ id }) => id === 'run-succeeded-means-stored');
+  assert.deepEqual(resolveLessonSelection(chapter, parseRoute(myth.route)), {
+    claim: 2,
+    hop: -1,
+    exampleOpen: false,
+  });
+  const evidence = resolveLessonSelection(
+    chapter,
+    parseRoute('#core-dags?detail=dag-osdu-identity'),
+  );
+  assert.deepEqual(evidence, { claim: 2, hop: -1, exampleOpen: false });
+  const shelf = exampleStrip('core-dags', initial, undefined, { shelf: true });
+  assert.match(shelf, /data-shelf-row="example"/);
+  assert.match(shelf, /Five hops · Proof: spi test dags, as me/);
+  assert.doesNotMatch(shelf, /<details[^>]*\bopen\b|data-seek|View poster/);
+  const fieldCheck = pageRenderers.myths();
+  assert.equal(fieldCheck.split(`id="myth-${myth.id}"`).length - 1, 1);
+  const readiness = fieldCheck.slice(
+    fieldCheck.indexOf('aria-label="Readiness and proof"'),
+    fieldCheck.indexOf('</section>'),
+  );
+  assert.ok(readiness.includes(`id="myth-${myth.id}"`));
+});
+
+test('core DAG lesson preserves storyboard claims and Keep it true qualifications', () => {
+  const storyboard = readFileSync(
+    new URL('../docs/fieldnotes/11-on-behalf-of-you.md', import.meta.url),
+    'utf8',
+  );
+  const chapter = chapters['core-dags'];
+  for (const claim of chapter.outcomes)
+    assert.ok(storyboard.includes(`**${claim.headline}**`));
+  assert.ok(storyboard.includes(`**${chapter.example.title}**`));
+  const copy = [
+    chapter.intro,
+    chapter.scope,
+    chapter.example.note,
+    ...chapter.outcomes.flatMap(({ text, why }) => [text, why]),
+    ...chapter.example.hops.map(({ copy }) => copy),
+    diagramRenderers.coreDags(),
+  ].join(' ');
+  for (const pattern of [
+    /spi-smoke.*Echo_DAG.*airflow_monitoring/,
+    /core-ingestion.*Osdu_ingest.*manifest_ingestion/,
+    /full commits.*per-file SHA-256/,
+    /hash-locked/,
+    /No git-sync, blob delivery, or custom Airflow image/,
+    /layer-6 Job.*does not gate Deployable/,
+    /fresh parses.*zero import errors/,
+    /never deletes DAGs or Workflow records/,
+    /rejects a supplied user ID/,
+    /Airflow role User · no OSDU authority/,
+    /LocalExecutor.*inside the scheduler/,
+    /not task pods/,
+    /users\.datalake\.delegation.*users\.datalake\.impersonation/,
+    /editor, admin, and ops.*viewer does not/,
+    /Legal refuses validation.*not checked.*smoke continues/,
+    /Domain comparison is not group-membership testing/,
+    /grants no roles and creates no schemas or legal tags/,
+    /read-back.*createUser/,
+    /CI does not run this smoke against a live cluster/,
+    /not a guarantee after node loss/,
+  ])
+    assert.match(copy, pattern);
+  assert.doesNotMatch(
+    copy,
+    /takes \d+ (?:seconds|minutes)|pipeline proves ingestion/,
+  );
+});
+
 test('Go deeper links put primary evidence before deduplicated depth', () => {
   const ordered = detailSourceLinks(componentDetails.azureimpl);
   const expected = [
@@ -3844,7 +3971,14 @@ test('map lesson examples other than the step lesson use one closed disclosure a
   );
   assert.deepEqual(
     exampleLessons.map(([key]) => key),
-    ['running-stack', 'bring-up', 'spi-boundary', 'fork-shape', 'fork-day'],
+    [
+      'running-stack',
+      'bring-up',
+      'spi-boundary',
+      'fork-shape',
+      'fork-day',
+      'core-dags',
+    ],
   );
   for (const [key, chapter] of exampleLessons) {
     const steps = chapterSteps(key).length ? chapterSteps(key) : [''];
