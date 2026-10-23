@@ -204,6 +204,41 @@ export const fieldnotes = [
     notes: [],
   },
   {
+    id: '05',
+    chapter: 'fork-day',
+    title: 'A day in the fork',
+    duration: 195,
+    width: 1920,
+    height: 1080,
+    files: {
+      video: 'fieldnote-05/video.mp4',
+      poster: 'fieldnote-05/poster.jpg',
+      captions: 'fieldnote-05/captions.vtt',
+      chapters: 'fieldnote-05/chapters.vtt',
+    },
+    chapters: [
+      { time: 35.6, claim: 0 },
+      { time: 67.2, claim: 1 },
+      { time: 86.5, claim: 2 },
+      { time: 113.2, example: true },
+      { time: 140.1, mistake: 'release-rebuilds-image' },
+    ],
+    cutFrom: {
+      claims: [
+        'A sync is a generated tree plus one PR and one tracking issue; upstream is never merged in as text, and the generated commit lands through a reviewed sync PR. The cascade merges main first, then fork_upstream, into the workspace.',
+        'The labels on the tracking issue are the state: cascade-active, cascade-blocked, cascade-failed, validated. A blocked cascade is run again after a provider change on fork_integration; removing human-required is how a failed one retries.',
+        'The integration PR and the version PR are different PRs. Validation runs on PRs and on pushes to main and fork_integration, pushes a digest for every eligible commit, and the stack is borrowed for it before any release exists.',
+      ],
+      example: 'The cache fallback fix meets the upstream change',
+      mistake: {
+        id: 'release-rebuilds-image',
+        claim: 'A release builds a fresh image for the version tag.',
+      },
+      next: 'How does a candidate image reach a running stack, what proves it, and how is the temporary test deployment restored?',
+    },
+    notes: [],
+  },
+  {
     id: '06',
     chapter: 'handshake',
     title: 'The handshake',

@@ -285,7 +285,7 @@ export const myths = [
     correction:
       'A release tags the immutable image already built for the release commit.',
     check:
-      'gh api /orgs/Azure/packages/container/osdu-spi-partition/versions --jq ".[0].metadata.container.tags"',
+      'gh api /orgs/Azure/packages/container/osdu-spi-partition/versions --jq \'.[].metadata.container.tags | select(any(test("^[0-9]")))\'',
     source: 'release',
     route: '#fork-day/release?detail=release-tag',
     routeLabel: 'The release moment',
