@@ -32,8 +32,8 @@ export const retiredDetails = {
     running: ['handshake', null, 'running'],
     proof: ['handshake', null, 'proof'],
   },
-  // Lesson 01 draws the service closed and holds the source nodes for the
-  // lifecycle; their published routes land where each is drawn now.
+  // The running-stack map draws the service closed and holds the source nodes
+  // for the lifecycle; their published routes land where each is drawn now.
   'running-stack': {
     provider: ['spi-boundary', null, 'azureimpl'],
     'config-source': ['bring-up', 'reconcile', 'config-source'],

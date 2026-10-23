@@ -6,6 +6,7 @@ import { architectureOverview, creationWalkthrough } from './architecture.js';
 import { forkMoments, meanwhile } from '../content/fork-moments.js';
 import { routeHref } from '../router.js';
 import { coreDagsDiagram } from './core-dags.js';
+import { theLineDiagram, twoKindsDiagram } from './foundations.js';
 import {
   whoseImageDiagram,
   whoIsAskingDiagram,
@@ -46,7 +47,7 @@ function spiBoundaryDiagram() {
     ${node('azureclients', 'Partition table in common Storage', 'The durable configuration for opendes')}
     <div class="spi-trace-status" data-trace-status="azureclients" hidden></div>
     <div class="spi-step" aria-hidden="true">↓ the row for opendes</div>
-    <a class="spi-terminal" href="#running-stack/developer?detail=shared-data"><small>Back on the map · shared by the environment</small><b>Stored configuration for opendes · common Storage tables</b><span>The answer names the partition’s Cosmos, Storage, and Service Bus. See them in 01 →</span></a>
+    <a class="spi-terminal" href="#running-stack/developer?detail=shared-data"><small>Back on the map · shared by the environment</small><b>Stored configuration for opendes · common Storage tables</b><span>The answer names the partition’s Cosmos, Storage, and Service Bus. See them in 102 →</span></a>
     </div>
     </div>
     <section class="spi-source-boundary" data-scope="spi-sources">
@@ -99,7 +100,7 @@ const treeRows = [
       [
         'provider-azure',
         'provider/partition-azure/',
-        'the provider from 03, with the cache fallback',
+        'the provider from 103, with the cache fallback',
         ['—', '—', '◆', '◆'],
       ],
       [
@@ -371,6 +372,8 @@ export const diagramRenderers = {
   overview: architectureOverview,
   creation: creationWalkthrough,
   spi: spiBoundaryDiagram,
+  theLine: theLineDiagram,
+  twoKinds: twoKindsDiagram,
   fork: forkShapeDiagram,
   forkDay: forkDayDiagram,
   seam: seamDiagram,

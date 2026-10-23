@@ -600,7 +600,7 @@ export const episodes = [
     id: 'stack',
     title: 'Engineering the OSDU SPI Stack on Azure',
     short: 'The stack',
-    book: 'Lessons 01 to 03',
+    book: 'Lessons 102, 103, and 02',
     deepDive: true,
     owner: 'cli',
     art: 'listen/stack.webp',

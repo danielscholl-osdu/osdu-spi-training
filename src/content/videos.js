@@ -81,6 +81,131 @@ export const fieldnotes = [
     notes: [],
   },
   {
+    id: '103',
+    chapter: 'spi-boundary',
+    title: 'The provider inside',
+    duration: 102,
+    width: 1920,
+    height: 1080,
+    files: {
+      video: 'fieldnote-103/video.mp4',
+      poster: 'fieldnote-103/poster.jpg',
+      captions: 'fieldnote-103/captions.vtt',
+      chapters: 'fieldnote-103/chapters.vtt',
+    },
+    chapters: [
+      { time: 12.6, claim: 0 },
+      { time: 31.2, claim: 1 },
+      { time: 51.1, claim: 2 },
+      { time: 60.0, example: true },
+    ],
+    cutFrom: {
+      claims: [
+        {
+          headline: 'Common code calls Azure through a provider interface.',
+          text: 'Common service code calls a provider interface, and the Azure implementation behind it connects that interface to Azure services.',
+        },
+        {
+          headline: 'The interface and implementation ship in one image.',
+          text: 'The interface and its implementation ship in one image. There is no network hop between them.',
+        },
+        {
+          headline: 'The Azure code lives in the service’s fork.',
+          text: 'The Azure implementation is source in the service’s fork, in its own provider folder beside the shared code.',
+        },
+      ],
+      example: 'Follow the same lookup through the provider',
+      next: 'How does a change reach a running service?',
+    },
+    notes: [],
+  },
+  {
+    id: '104',
+    chapter: 'the-line',
+    title: 'The line',
+    duration: 142,
+    width: 1920,
+    height: 1080,
+    files: {
+      video: 'fieldnote-104/video.mp4',
+      poster: 'fieldnote-104/poster.jpg',
+      captions: 'fieldnote-104/captions.vtt',
+      chapters: 'fieldnote-104/chapters.vtt',
+    },
+    chapters: [
+      { time: 12.5, claim: 0 },
+      { time: 34.9, claim: 1 },
+      { time: 72.2, claim: 2 },
+      { time: 92.4, example: true },
+    ],
+    cutFrom: {
+      claims: [
+        {
+          headline: 'A fork owns only a few of its paths.',
+          text: 'A service fork owns its Azure provider, its Azure tests, and the files that describe it; its workflows come from the template, and the community’s code is regenerated from upstream every day.',
+        },
+        {
+          headline: 'Every fork has the same six stations.',
+          text: 'A change reaches a running service through upstream, sync, cascade, main, and release, with the lane beside them, and every fork has the same six because every fork comes from one template.',
+        },
+        {
+          headline: 'Every eligible commit is proved before any release.',
+          text: 'Every eligible commit gets an image and a turn in a running stack before any release exists, so a release only tags an image that is already there.',
+        },
+      ],
+      example: 'Follow one upstream change along the line',
+      next: 'Who does what, and which path is mine?',
+    },
+    notes: [
+      {
+        chapter: 2,
+        text: 'A release commit’s own image is the exception: the release tags it as soon as it is pushed, and its turn in the lane follows.',
+      },
+    ],
+  },
+  {
+    id: '105',
+    chapter: 'two-kinds-of-work',
+    title: 'Two kinds of work',
+    duration: 130,
+    width: 1920,
+    height: 1080,
+    files: {
+      video: 'fieldnote-105/video.mp4',
+      poster: 'fieldnote-105/poster.jpg',
+      captions: 'fieldnote-105/captions.vtt',
+      chapters: 'fieldnote-105/chapters.vtt',
+    },
+    chapters: [
+      { time: 12.8, claim: 0 },
+      { time: 33.6, claim: 1 },
+      { time: 60.1, claim: 2 },
+      { time: 83.8, example: true },
+    ],
+    cutFrom: {
+      claims: [
+        {
+          headline: 'The line carries the product.',
+          text: 'The line is the template and its workflows, the shared stack, and the automation that runs them; the product is each service’s code, its Azure provider, its tests, and what the service promises its callers.',
+        },
+        {
+          headline: 'A person approves what reaches main.',
+          text: 'Automation opens the sync, cascade, release, dependency, and template pull requests, and nothing reaches main until a code owner approves it after its last push with the required checks green; when the line cannot go on alone, it opens an issue for a person.',
+        },
+        {
+          headline: 'Your work picks your path.',
+          text: 'Changing what a service does is service work and takes the service path; changing what carries every service is platform work and takes the platform path; one person can do both.',
+        },
+      ],
+      example: 'Find the person on one upstream change',
+      next: [
+        { code: 'S201', title: 'Your own environment' },
+        { code: 'P201', title: 'How it comes to life' },
+      ],
+    },
+    notes: [],
+  },
+  {
     id: '02',
     chapter: 'bring-up',
     title: 'How it comes to life',
@@ -124,47 +249,8 @@ export const fieldnotes = [
       next: 'Where does shared code hand the lookup to the Azure provider?',
     },
     notes: [
-      'The end card asks where shared code hands the lookup to the Azure provider; lesson 03 asks “Where does the Azure code live in a service?”',
+      'The end card asks where shared code hands the lookup to the Azure provider, which Fieldnote 103 answers before this lesson; the next lesson, 04, asks “Who owns that provider code, and how does it survive upstream deleting it?”',
     ],
-  },
-  {
-    id: '103',
-    chapter: 'spi-boundary',
-    title: 'The provider inside',
-    duration: 102,
-    width: 1920,
-    height: 1080,
-    files: {
-      video: 'fieldnote-103/video.mp4',
-      poster: 'fieldnote-103/poster.jpg',
-      captions: 'fieldnote-103/captions.vtt',
-      chapters: 'fieldnote-103/chapters.vtt',
-    },
-    chapters: [
-      { time: 12.6, claim: 0 },
-      { time: 31.2, claim: 1 },
-      { time: 51.1, claim: 2 },
-      { time: 60.0, example: true },
-    ],
-    cutFrom: {
-      claims: [
-        {
-          headline: 'Common code calls Azure through a provider interface.',
-          text: 'Common service code calls a provider interface, and the Azure implementation behind it connects that interface to Azure services.',
-        },
-        {
-          headline: 'The interface and implementation ship in one image.',
-          text: 'The interface and its implementation ship in one image. There is no network hop between them.',
-        },
-        {
-          headline: 'The Azure code lives in the service’s fork.',
-          text: 'The Azure implementation is source in the service’s fork, in its own provider folder beside the shared code.',
-        },
-      ],
-      example: 'Follow the same lookup through the provider',
-      next: 'How does a change reach a running service?',
-    },
-    notes: [],
   },
   {
     id: '04',

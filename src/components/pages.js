@@ -22,6 +22,12 @@ import {
   partitionLookupFigure,
 } from './infographics.js';
 import { routeHref, parseRoute } from '../router.js';
+import {
+  chapterNumber,
+  foundationPlace,
+  learnOrder,
+  placeLabel,
+} from '../content/course.js';
 import { badge, glyph } from './badges.js';
 import { tryItShells } from '../try-it-shell.js';
 
@@ -645,9 +651,6 @@ function briefChip() {
 }
 
 function lessonIndex() {
-  const learnOrder = Object.keys(chapters).filter(
-    (key) => chapters[key].group === 'learn',
-  );
   return chapters.start.index
     .map(
       (group, groupIndex) =>
@@ -655,9 +658,8 @@ function lessonIndex() {
           group.lessons,
         )
           .map(([key, title]) => {
-            const number = learnOrder.indexOf(key) + 1;
-            const first = number === 1;
-            return `<li${first ? ' class="is-first"' : ''}><a href="${routeHref(key)}"><span class="lesson-number">${String(number).padStart(2, '0')}</span><b>${escapeHtml(title)}</b>${first ? '<span class="lesson-begin">Start here →</span>' : ''}</a></li>`;
+            const first = key === learnOrder[0];
+            return `<li${first ? ' class="is-first"' : ''}><a href="${routeHref(key)}"><span class="lesson-number">${chapterNumber(key)}</span><b>${escapeHtml(title)}</b>${first ? '<span class="lesson-begin">Start here →</span>' : ''}</a></li>`;
           })
           .join('')}</ol></section>`,
     )
@@ -1029,13 +1031,10 @@ function listenPage(route) {
 
 function watchPage(route) {
   const video = fieldnoteById(route?.video) || fieldnotes[0];
-  const learn = Object.keys(chapters).filter(
-    (key) => chapters[key].group === 'learn',
-  );
-  const bookOf = (entry) => {
-    const lesson = chapters[entry.chapter];
-    return lesson.group === 'learn' ? lesson.book : 'Start';
-  };
+  const bookOf = (entry) =>
+    foundationPlace(entry.chapter)
+      ? 'Level 100 · Foundations'
+      : chapters[entry.chapter].book;
   const minutes = (entry) =>
     `${Math.max(1, Math.round(entry.duration / 60))} min`;
   const books = [];
@@ -1050,10 +1049,8 @@ function watchPage(route) {
     return `<a class="fieldnote-card" href="#watch/${entry.id}"${current ? ' aria-current="page"' : ''} data-watch-play><span class="fieldnote-thumb">${poster ? `<img src="${poster}" alt="" width="${entry.width}" height="${entry.height}" loading="lazy" />` : ''}${current ? '<span class="fieldnote-now">Now playing</span>' : ''}<span class="fieldnote-duration">${minutes(entry)}</span></span><span class="episode-kicker">Fieldnote ${entry.id}</span><b>${escapeHtml(entry.title)}</b><small>${escapeHtml(entry.summary || chapters[entry.chapter].subhead || '')}</small></a>`;
   };
   const lesson = chapters[video.chapter];
-  const lessonLink =
-    lesson.group === 'learn'
-      ? `<a href="${routeHref(video.chapter)}">Lesson ${String(learn.indexOf(video.chapter) + 1).padStart(2, '0')} · ${escapeHtml(lesson.title)} →</a>`
-      : '';
+  const place = foundationPlace(video.chapter);
+  const lessonLink = `<a href="${routeHref(video.chapter)}">${place ? placeLabel(video.chapter) : `Lesson ${chapterNumber(video.chapter)}`} · ${escapeHtml(lesson.title)} →</a>`;
   const index = fieldnotes.indexOf(video);
   const step = (entry, label) =>
     entry
@@ -1066,7 +1063,7 @@ function watchPage(route) {
         <div class="watch-now">
           <p class="watch-kicker">Now playing · Fieldnote ${video.id} · ${minutes(video)}</p>
           <h2>${escapeHtml(video.title)}</h2>
-          <p class="watch-book">${escapeHtml(bookOf(video))}${lessonLink ? ` · ${lessonLink}` : ''}</p>
+          <p class="watch-book">${place ? lessonLink : `${escapeHtml(bookOf(video))} · ${lessonLink}`}</p>
           ${video.summary ? `<p class="watch-summary">${escapeHtml(video.summary)}</p>` : ''}
           ${chaptered ? videoChapterList(video, 'watch-chapters') : ''}
           <nav class="watch-steps" aria-label="Previous and next Fieldnote">${step(fieldnotes[index - 1], `← Fieldnote ${fieldnotes[index - 1]?.id}`)}${step(fieldnotes[index + 1], `Fieldnote ${fieldnotes[index + 1]?.id} →`)}</nav>
@@ -1081,7 +1078,7 @@ function watchPage(route) {
     <nav class="fieldnote-books" aria-label="Fieldnotes">${books
       .map(
         (group) =>
-          `<section class="fieldnote-book" style="--cards: ${group.entries.length}"><h2>${escapeHtml(group.book)}</h2><div class="fieldnote-cards">${group.entries.map(card).join('')}</div></section>`,
+          `<section class="fieldnote-book" style="--in-three: ${Math.min(group.entries.length, 3)}; --in-two: ${Math.min(group.entries.length, 2)}"><h2>${escapeHtml(group.book)}</h2><div class="fieldnote-cards">${group.entries.map(card).join('')}</div></section>`,
       )
       .join('')}</nav>`;
 }
@@ -1156,7 +1153,7 @@ export const guideSections = [
   {
     title: 'The stack',
     owner: 'cli',
-    lessons: 'Lessons 01 and 02',
+    lessons: 'Lessons 102 and 02',
     ids: [
       'familiar',
       'owners',
@@ -1170,13 +1167,13 @@ export const guideSections = [
   {
     title: 'One service',
     owner: 'fork',
-    lessons: 'Lesson 03',
+    lessons: 'Lesson 103',
     ids: ['identity', 'one-request'],
   },
   {
     title: 'The fork',
     owner: 'fork',
-    lessons: 'Lessons 04 and 05',
+    lessons: 'Lessons 104, 105, 04, and 05',
     ids: ['contribution-chain', 'clocks', 'labels'],
   },
   {
@@ -1251,7 +1248,7 @@ export function sheetPreview(ids) {
 // The lesson numbers a group sits beside, drawn as the chips the six-place
 // ladder uses, so the row and the map inside it read the same way.
 function lessonChips(lessons) {
-  const numbers = lessons?.match(/\d\d/g);
+  const numbers = lessons?.match(/\d{2,3}/g);
   if (!numbers) return '';
   return `<span class="zoom-tags"><small>${numbers.length > 1 ? 'Lessons' : 'Lesson'}</small>${numbers.map((n) => `<b>${n}</b>`).join('')}</span> · `;
 }
@@ -1294,18 +1291,16 @@ export function chapterNavigation(current) {
   const groups = chapterGroups
     .filter((group) => group.numbered)
     .map((group) => {
-      let number = 0;
       let book = null;
       const links = Object.entries(chapters)
         .filter(([, chapter]) => chapter.group === group.id)
         .map(([key, chapter]) => {
-          number += 1;
           const kicker =
             group.numbered && chapter.book && chapter.book !== book
               ? `<span class="rail-book">${chapter.book}</span>`
               : '';
           book = chapter.book ?? book;
-          return `${kicker}<a href="${routeHref(key)}" class="chapter-link" ${key === current ? 'aria-current="page"' : ''}>${group.numbered ? `<span class="number">${String(number).padStart(2, '0')}</span>` : '<span class="number" aria-hidden="true">·</span>'}<span>${chapter.title}<small>${chapter.subtitle}</small></span></a>`;
+          return `${kicker}<a href="${routeHref(key)}" class="chapter-link" ${key === current ? 'aria-current="page"' : ''}>${group.numbered ? `<span class="number">${chapterNumber(key)}</span>` : '<span class="number" aria-hidden="true">·</span>'}<span>${chapter.title}<small>${chapter.subtitle}</small></span></a>`;
         })
         .join('');
       return `<div class="rail-group"><span class="rail-group-label">${group.label}</span>${links}</div>`;
