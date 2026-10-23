@@ -95,9 +95,9 @@ export const fieldnotes = [
     chapters: [
       { time: 29.6, claim: 0 },
       { time: 46.3, claim: 1 },
-      { time: 71.6, claim: 2 },
-      { time: 84.1, example: true },
-      { time: 116.8, mistake: 'suspended-means-frozen' },
+      { time: 71.4, claim: 2 },
+      { time: 83.9, example: true },
+      { time: 116.6, mistake: 'suspended-means-frozen' },
     ],
     cutFrom: {
       claims: [
