@@ -91,3 +91,5 @@ Subscription and tenant ids, a real environment name (written `<name>`), persona
 ## Keeping a cut true
 
 When a cut is published, its entry in `src/content/videos.js` records the claim headlines and sentences, the myth id, and the next lesson's question as they stood. `npm test` fails when the lesson changes after the cut, naming the episode and field. The fix is a re-cut from a revised storyboard, or a source-check note on that chapter.
+
+Narrate settled change as the end state, in the present tense, so a cut doesn't date itself. Upstream doesn't carry the Azure provider; the fork does. Never "plans to" or "has begun", and no dates or per-service lists on screen. The dated evidence goes in the storyboard's take notes and the cut's `NOTES.md`.
