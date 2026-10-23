@@ -80,7 +80,7 @@ export function coreDagsFieldnote() {
       example: 'Proof: spi test dags, as me',
       mistake: {
         id: 'run-succeeded-means-stored',
-        claim: 'The run succeeded, so the record is stored.',
+        claim: 'The run finished, so every record is stored.',
       },
       next: null,
     },

@@ -5223,7 +5223,7 @@ test('core DAG video contract uses a frozen test-only Fieldnote 11 cut', () => {
   assert.equal(marks[3].title, 'Example: Proof: spi test dags, as me');
   assert.equal(
     marks[4].title,
-    'Easy mistake: the run succeeded, so the record is stored',
+    'Easy mistake: the run finished, so every record is stored',
   );
   for (const [field, mutate] of [
     [

@@ -91,7 +91,7 @@ export const componentDetails = {
   'dag-storage': {
     label: 'osdu / Storage API',
     title: 'Only record read-back establishes the ingestion result.',
-    body: 'The smoke reads the new record from the OSDU Storage API and requires matching data and createUser equal to the caller. Osdu_ingest can succeed while Storage skips a record because of a rejected legal tag or a mismatched ACL domain. To inspect an existing run, read that run’s record; rerunning the smoke creates different evidence.',
+    body: 'The smoke reads the new record from the OSDU Storage API and requires matching data and createUser equal to the caller. Osdu_ingest fails when Storage refuses every record, but finishes when it refuses only some, for example a rejected legal tag or an ACL in another domain. To inspect an existing run, read back each of its records; rerunning the smoke creates different evidence.',
     artifact: {
       label: 'Required read-back evidence',
       code: 'stored.data = submitted.data\nstored.createUser = authenticated caller',

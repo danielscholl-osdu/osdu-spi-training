@@ -6,11 +6,11 @@ export const myths = [
     id: 'run-succeeded-means-stored',
     owner: 'you',
     theme: 'readiness',
-    claim: 'The run succeeded, so the record is stored.',
+    claim: 'The run finished, so every record is stored.',
     reality:
-      'Osdu_ingest can succeed while Storage skips a record because of a rejected legal tag or an ACL domain mismatch. Read the existing run’s record from the OSDU Storage API and check its data and createUser. The command below creates and retains new proof instead: two Workflow runs and a new record. Its preflight rejects invalid legal tags when Legal allows validation; otherwise Legal is “not checked” and the smoke continues.',
+      'When Storage refuses every record in a manifest, Osdu_ingest fails the run. When it refuses only some, because of a rejected legal tag or an ACL in another domain, the run still finishes and the skipped records appear only in the task log. For an existing run, read each record it sent back from the OSDU Storage API and check its data and createUser. The command below creates and retains new proof instead: two Workflow runs and a new record. Its preflight rejects invalid legal tags when Legal allows validation; otherwise Legal is “not checked” and the smoke continues.',
     correction:
-      'A successful ingestion run does not prove that Storage wrote the record.',
+      'A finished ingestion run does not prove that Storage wrote every record.',
     check: 'spi test dags --as me --report',
     source: 'coreDagInputs',
     route: '#core-dags?detail=dag-storage&claim=2',
