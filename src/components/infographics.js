@@ -4,6 +4,7 @@
 import { escapeHtml } from './node.js';
 import { zoomLevels, spiMeanings } from '../content/concepts.js';
 import { chapters } from '../content/chapters.js';
+import { chapterNumber } from '../content/course.js';
 import { componentDetails } from '../content/component-details.js';
 import { sources } from '../content/sources.js';
 
@@ -379,13 +380,6 @@ function familiarGuide() {
   </div>
   <p class="guide-thesis">Nothing about the OSDU contract changed. What changed is where each familiar thing lives and who keeps it running.</p>`;
 }
-
-const chapterNumber = (key) =>
-  String(
-    Object.keys(chapters)
-      .filter((id) => chapters[id].group === 'learn')
-      .indexOf(key) + 1,
-  ).padStart(2, '0');
 
 function levelTags(level) {
   return `<span class="zoom-tags"><small>${level.chapters.length > 1 ? 'Lessons' : 'Lesson'}</small>${level.chapters

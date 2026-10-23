@@ -49,16 +49,23 @@ export const chapters = {
     },
     index: [
       {
-        label: 'The stack',
+        label: 'Level 100 · Foundations',
         lessons: {
           'running-stack': 'What runs in the stack?',
+          'spi-boundary': 'Where does the Azure code live in a service?',
+          'the-line': 'How does a change reach a running service?',
+          'two-kinds-of-work': 'Who does what, and which path is mine?',
+        },
+      },
+      {
+        label: 'The stack',
+        lessons: {
           'bring-up': 'How is the stack created and made usable?',
         },
       },
       {
         label: 'Provider code and engineering',
         lessons: {
-          'spi-boundary': 'Where does the Azure code live in a service?',
           'fork-shape': 'Who owns which paths in a service fork?',
           'fork-day': 'How does an upstream update become a candidate image?',
           handshake: 'How is a candidate image tested in a running stack?',
@@ -145,7 +152,7 @@ export const chapters = {
   'running-stack': {
     kind: 'map',
     group: 'learn',
-    book: 'The stack',
+    book: 'Foundations',
     title: 'Anatomy of a stack',
     subtitle: 'Place familiar OSDU concepts',
     subhead: 'AKS is one part of the stack.',
@@ -383,348 +390,10 @@ export const chapters = {
       },
     ],
   },
-  'bring-up': {
-    kind: 'map',
-    lesson: 'lifecycle',
-    group: 'learn',
-    book: 'The stack',
-    title: 'How it comes to life',
-    subtitle: 'Create, use, and remove',
-    subhead: 'spi up creates the environment. Flux continues the rollout.',
-    intro:
-      'Build on lesson 01’s wide map: follow your environment from your workstation into the resource group, AKS cluster, and namespaces, then remove it.',
-    figure: 'Follow the environment',
-    selected: 'workstation',
-    diagram: 'creation',
-    listen: [
-      {
-        episode: 'stack',
-        time: 915,
-        label: 'The CLI leaves; Flux keeps working',
-      },
-      { episode: 'stack', time: 2661, label: 'Making an empty OSDU useful' },
-      {
-        episode: 'orientation',
-        time: 1014.5,
-        label: 'Declared state, observed state',
-      },
-    ],
-    guides: {
-      start: ['profiles'],
-      provision: ['owners', 'profiles'],
-      bootstrap: ['owners'],
-      reconcile: ['timeline', 'inside-the-cluster'],
-      inspect: ['milestones'],
-      remove: ['credentials'],
-    },
-    tryIt: {
-      activity: 'bring up an environment',
-      summary: 'Try it: bring up an environment · Azure charges apply',
-      outcome:
-        'Set up an environment, monitor the deployment, and test an API request.',
-      badge: 'workstation-cloud',
-      variants: [
-        {
-          label: 'Run it in your subscription',
-          result:
-            'Create an environment in your Azure subscription, read what the lifecycle document says about readiness while it provisions, monitor progress with spi status --watch, and test the partition API with an authenticated request. Then decide whether to keep the environment for lesson 06 or remove it.',
-          access: 'Azure resources billed separately',
-          accessNote:
-            'Use your own Azure subscription. You pay for the resources you create until you remove them.',
-          prerequisites: [
-            {
-              kind: 'lesson',
-              chapter: 'running-stack',
-              label: 'The CLI from lesson 01',
-              text: 'Keep it current rather than reinstalling an older release; spi --version prints a version.',
-              sources: ['install'],
-            },
-            {
-              kind: 'tool',
-              label: 'curl',
-              text: 'curl.exe in Windows PowerShell.',
-              sources: ['install'],
-            },
-            {
-              kind: 'access',
-              label: 'An Azure role that can create',
-              text: 'Contributor plus a conditioned Role Based Access Control Administrator at subscription scope. spi check names any permission that is missing.',
-              sources: ['install'],
-            },
-          ],
-          time: {
-            active:
-              'About 30 minutes at the keyboard across the steps, most of it after provisioning, plus about 10 minutes of reading that fits inside the provisioning wait.',
-            wait: 'Fresh provisioning was observed at roughly 45 to 50 minutes in centralus, and application readiness can take longer; these are planning estimates from prior runs, not guarantees for the current release or another region.',
-            cleanup:
-              'A few minutes of effort; spi down itself waits up to 45 minutes.',
-            minutes: { active: 30, wait: 50, cleanup: 5 },
-          },
-          footprint: [
-            {
-              place: 'workstation',
-              state: 'changes',
-              note: 'az login keeps your sign-in here; the CLI runs from here.',
-            },
-            {
-              place: 'github',
-              state: 'reads',
-              note: 'Flux follows the stack’s main branch; nothing is written.',
-            },
-            {
-              place: 'azure',
-              state: 'bills',
-              note: 'Resource group spi-stack-<name>: AKS, Cosmos DB, Storage, Service Bus, Key Vault, identities.',
-            },
-          ],
-          effects:
-            'spi up creates a resource group named spi-stack-<name> containing an AKS Automatic cluster, Cosmos DB, Storage, Service Bus, Key Vault, and managed identities. It then configures the cluster and starts Flux. Even --dry-run creates or updates the resource group and its naming tag.',
-          steps: [
-            {
-              command: 'az login\naz account show',
-              touch: { kind: 'local', note: 'signs in; creates nothing' },
-              expect:
-                'Check the subscription name and ID: this is where Azure will bill the deployment. If it is wrong, use az account set to select your subscription before continuing.',
-            },
-            {
-              command: 'spi up --env <name> --dry-run',
-              touch: {
-                kind: 'creates',
-                note: 'creates the resource group, even as a dry run',
-              },
-              expect:
-                'Check the proposed AKS and data-service changes and the final “Dry-run complete” message. The resource group now exists, even though the stack has not been deployed; use the cleanup steps below if you stop here. Resources that depend on the AKS OIDC issuer are not included in this preview.',
-              sources: ['lifecycle', 'cli'],
-            },
-            {
-              command: 'spi up --env <name>',
-              touch: {
-                kind: 'creates',
-                note: 'creates and starts billing the environment',
-              },
-              expect:
-                'This deploys the core profile in westus3, and Flux follows the main branch of the stack repository. The Bicep templates come from the installed CLI, which carries them inside its wheel, while the Kubernetes manifests come from that branch; keeping the CLI current keeps the two together. To choose another region, add --location <region> to both spi up commands; the pinned CLI help notes capacity constraints in eastus2 and centralus. A successful exit confirms the requested Git revision, not API readiness: Flux continues the rollout in the background.',
-              sources: ['lifecycle', 'cli', 'packaging'],
-            },
-            {
-              click:
-                'While provisioning runs, open the deployment lifecycle document and read “From invocation to CLI exit”, then “Timing and readiness”.',
-              touch: { kind: 'reads', note: 'reading while you wait' },
-              expect:
-                'Follow the stage table to Git-source finalization: before returning, the CLI verifies the requested revision, suspends Git fetching, and writes the deploy record, while Flux is already reconciling. Then compare the five readiness signals: CLI exit, a Git-source artifact, Ready Kustomizations and HelmReleases, Complete initialization Jobs, and a successful authenticated API request. Each confirms something different, and none guarantees the next.',
-              sources: ['lifecycle'],
-            },
-            {
-              command: 'spi status --watch',
-              touch: { kind: 'reads', note: 'reads rollout progress' },
-              expect:
-                'Watch for Kustomizations and HelmReleases to become Ready and initialization Jobs to become Complete. A Running pod alone does not mean it is ready. This command checks rollout progress, not API responses; add --json in a separate run when you want the same status as structured output.',
-              sources: ['lifecycle'],
-            },
-            {
-              command: 'spi info --show-apis',
-              touch: { kind: 'reads', note: 'reads the API URLs' },
-              expect:
-                'Find the partition API URL ending in /api/partition/v1/. Copy its hostname and replace <host> in the next command with it.',
-              sources: ['cli'],
-            },
-            {
-              command: {
-                posix:
-                  'curl -sS -H "Authorization: Bearer $(spi token)" \\\n  "https://<host>/api/partition/v1/partitions/opendes"',
-                powershell:
-                  'curl.exe -sS -H "Authorization: Bearer $(spi token)" "https://<host>/api/partition/v1/partitions/opendes"',
-              },
-              touch: { kind: 'reads', note: 'one authenticated lookup' },
-              expect:
-                'The response should contain the stored configuration for opendes as JSON. The command uses spi token to get a ten-minute bearer token for the deploy identity and include it in the Authorization header. A successful response confirms this authenticated partition lookup works; it does not test search, storage, or ingestion.',
-              sources: ['workloadIdentity', 'cli'],
-            },
-            {
-              click:
-                'Decide: keep the environment for lesson 06, or remove it now.',
-              touch: {
-                kind: 'reads',
-                note: 'a decision; billing continues until you remove it',
-              },
-              expect:
-                'Keep it to avoid provisioning again for lesson 06; Azure charges continue while you keep the resources. To remove it now, follow the cleanup steps below, and read “Steady state and teardown” to compare what each removal option leaves behind.',
-              sources: ['lifecycle'],
-            },
-          ],
-          alternate: {
-            observation:
-              'spi up fails in the AKS or PaaS stage with a regional capacity or quota error.',
-            next: 'Choose another region with --location <region> and retry with the same --env, partition list, and ingress settings. A failed run can leave resources behind. Follow the cleanup steps when you are done, even if provisioning did not finish.',
-          },
-          cleanup: {
-            steps: [
-              {
-                command: 'spi down --env <name>',
-                touch: {
-                  kind: 'removes',
-                  note: 'deletes the cluster and data; keeps the names',
-                },
-                expect:
-                  'This deletes the cluster, data services, and their data, but keeps the resource group, managed identities, and naming tags for reuse. It asks you to type y to confirm. The command waits up to 45 minutes; that is a timeout, not an expected duration. If it exits with an error, inspect the listed remaining resources and retry.',
-                sources: ['lifecycle'],
-              },
-              {
-                command: 'spi down --env <name> --purge',
-                touch: {
-                  kind: 'removes',
-                  note: 'deletes the resource group and identities',
-                },
-                expect:
-                  'Use --purge when you no longer need the environment. It asks you to type y to confirm, then removes the identities’ external grants and deletes the resource group, including the identities, with a 45-minute timeout. Confirm removal with az group exists --name spi-stack-<name>; it should print false.',
-                sources: ['lifecycle'],
-              },
-            ],
-            ledger: {
-              columns: ['spi down', 'spi down --purge'],
-              rows: [
-                { item: 'AKS cluster', after: ['removed', 'removed'] },
-                {
-                  item: 'Cosmos DB, Storage, Service Bus, Key Vault, and their data',
-                  after: ['removed', 'removed'],
-                },
-                {
-                  item: 'Resource group spi-stack-<name>',
-                  after: ['kept', 'removed'],
-                },
-                { item: 'Managed identities', after: ['kept', 'removed'] },
-                {
-                  item: 'The identities’ external grants',
-                  after: ['kept', 'removed'],
-                },
-                { item: 'Naming tags', after: ['kept', 'removed'] },
-              ],
-            },
-            remains:
-              'After ordinary spi down: the resource group spi-stack-<name>, its managed identities, and its naming tags, so a later spi up reuses the same names. After --purge: nothing of the environment.',
-          },
-          sources: [
-            'lifecycle',
-            'cli',
-            'architecture',
-            'ciSetup',
-            'workloadIdentity',
-          ],
-          tested: {
-            cli: 'spi 0.16.0; commands quoted from cli.py at dc2c956',
-            stack: 'osdu-spi-stack dc2c956 (release 0.16.0)',
-            template: 'Not applicable: no fork is used.',
-            shell: 'zsh',
-            os: 'macOS 26.6.2 on Apple silicon',
-            date: '2026-09-13',
-          },
-        },
-      ],
-      connection: {
-        text: 'Already have a stack that someone else created? You can connect to it instead of provisioning your own: spi connect --resource-group <resource-group> --cluster <cluster-name> sets your kubectl context. You need Azure sign-in and access to that cluster; then start at spi status --watch.',
-        sources: ['forkDeploy'],
-      },
-    },
-    mistakes: {
-      start: 'profiles-save-money',
-      provision: 'profiles-save-money',
-      bootstrap: 'delete-secret-rotates',
-      reconcile: 'suspended-means-frozen',
-      inspect: 'finished-means-ready',
-      remove: 'teardown-green-means-deleted',
-    },
-    scope:
-      'Illustrated core profile · your environment / opendes. Running spi up creates billable resources; spi down deletes compute and data. The ≈45–50 min provisioning observations were from centralus; the CLI defaults to westus3. Times vary, and overlapping phases must not be added.',
-    sources: ['install', 'lifecycle', 'flux', 'identity'],
-    question: 'How is the stack created, and when is it usable?',
-    builds:
-      'Uses the boundaries from 01: the stack, AKS, and the resources outside it.',
-    where:
-      'The same wide picture through time: Azure resources, then the cluster, then the namespaces Flux assembles inside it.',
-    example: {
-      title: 'Before the lookup can answer',
-      code: 'spi up --env <name>',
-      scopes: ['environment', 'aks', 'resources'],
-      crossing: 'Provision the environment, then look up opendes',
-      hops: [
-        {
-          detail: 'aks',
-          label: 'AKS',
-          step: 'provision',
-          copy: 'Created first, in spi-stack-<name>',
-        },
-        {
-          detail: 'shared-data',
-          label: 'Common Storage',
-          step: 'provision',
-          copy: 'Holds the partition table',
-        },
-        {
-          detail: 'bootstrap',
-          label: 'Bootstrap inputs',
-          step: 'bootstrap',
-          copy: 'Namespaces, configuration, identity',
-        },
-        {
-          detail: 'service',
-          label: 'Partition service',
-          step: 'reconcile',
-          copy: 'Flux rolls it out',
-        },
-        {
-          detail: 'caller',
-          label: 'An API caller',
-          step: 'inspect',
-          copy: 'Then the lookup works',
-        },
-      ],
-      note: 'Each hop is a different lifecycle moment. Once the Partition service is running, the opendes lookup checks its cache, falls back to Azure Table Storage in common Storage, and returns stored configuration. It does not visit the partition’s Cosmos DB, blob Storage, or Service Bus.',
-    },
-    goal: 'You can explain how spi up divides work among the CLI, Flux, and controllers; distinguish CLI exit from API readiness; and say what spi down retains.',
-    outcomes: [
-      {
-        headline:
-          'CLI creates; Flux assembles; controllers keep workloads healthy.',
-        text: 'The CLI and Bicep create Azure and seed the cluster; Flux assembles the workloads; controllers keep them healthy. Flux and Kubernetes controllers continue after the CLI returns.',
-        why: 'spi up runs Bicep and the bootstrap. Flux starts reconciling before the CLI exits and keeps working after it returns.',
-        step: 'provision',
-        steps: ['start', 'provision', 'bootstrap', 'reconcile'],
-        evidenceStep: 'reconcile',
-        focus: ['workstation', 'aks', 'bootstrap', 'flux'],
-        scopes: ['environment', 'aks', 'resources'],
-        evidence: 'flux',
-        crossing: 'CLI provisions Azure and prepares AKS',
-      },
-      {
-        headline: 'CLI success is not API readiness.',
-        text: 'A successful spi up does not establish API readiness. I follow workload health and initialization with spi status --watch, then verify the API path I need with an authenticated request.',
-        why: 'Flux and initialization can continue after spi up returns. Watch spi status --watch, then verify the API operation you need.',
-        step: 'inspect',
-        steps: ['inspect'],
-        evidenceStep: 'inspect',
-        focus: ['readiness', 'initialization', 'caller'],
-        scopes: ['environment', 'aks'],
-        evidence: 'readiness',
-        crossing: 'Observe readiness, then exercise an API',
-      },
-      {
-        headline: 'Teardown removes data but preserves identities and names.',
-        text: 'spi down removes compute and data but keeps identities and the resource group, so a rebuild reuses the same names.',
-        why: 'Ordinary spi down deletes the cluster and its data but keeps the managed identities and the resource group. A rebuild reuses those names, not the deleted data.',
-        step: 'remove',
-        steps: ['remove'],
-        evidenceStep: 'remove',
-        focus: ['retained'],
-        scopes: ['environment', 'resources'],
-        evidence: 'retained',
-        crossing: 'Delete compute and data; retain identity',
-      },
-    ],
-  },
   'spi-boundary': {
     kind: 'map',
     group: 'learn',
-    book: 'One service',
+    book: 'Foundations',
     title: 'The SPI boundary',
     subtitle: 'Find where the Azure code sits',
     subhead: 'The provider lives inside the service.',
@@ -1098,6 +767,344 @@ export const chapters = {
         scopes: ['spi-provider', 'spi-sources'],
         evidence: 'upstream',
         crossing: 'Azure source in the service’s fork',
+      },
+    ],
+  },
+  'bring-up': {
+    kind: 'map',
+    lesson: 'lifecycle',
+    group: 'learn',
+    book: 'The stack',
+    title: 'How it comes to life',
+    subtitle: 'Create, use, and remove',
+    subhead: 'spi up creates the environment. Flux continues the rollout.',
+    intro:
+      'Build on lesson 01’s wide map: follow your environment from your workstation into the resource group, AKS cluster, and namespaces, then remove it.',
+    figure: 'Follow the environment',
+    selected: 'workstation',
+    diagram: 'creation',
+    listen: [
+      {
+        episode: 'stack',
+        time: 915,
+        label: 'The CLI leaves; Flux keeps working',
+      },
+      { episode: 'stack', time: 2661, label: 'Making an empty OSDU useful' },
+      {
+        episode: 'orientation',
+        time: 1014.5,
+        label: 'Declared state, observed state',
+      },
+    ],
+    guides: {
+      start: ['profiles'],
+      provision: ['owners', 'profiles'],
+      bootstrap: ['owners'],
+      reconcile: ['timeline', 'inside-the-cluster'],
+      inspect: ['milestones'],
+      remove: ['credentials'],
+    },
+    tryIt: {
+      activity: 'bring up an environment',
+      summary: 'Try it: bring up an environment · Azure charges apply',
+      outcome:
+        'Set up an environment, monitor the deployment, and test an API request.',
+      badge: 'workstation-cloud',
+      variants: [
+        {
+          label: 'Run it in your subscription',
+          result:
+            'Create an environment in your Azure subscription, read what the lifecycle document says about readiness while it provisions, monitor progress with spi status --watch, and test the partition API with an authenticated request. Then decide whether to keep the environment for lesson 06 or remove it.',
+          access: 'Azure resources billed separately',
+          accessNote:
+            'Use your own Azure subscription. You pay for the resources you create until you remove them.',
+          prerequisites: [
+            {
+              kind: 'lesson',
+              chapter: 'running-stack',
+              label: 'The CLI from lesson 01',
+              text: 'Keep it current rather than reinstalling an older release; spi --version prints a version.',
+              sources: ['install'],
+            },
+            {
+              kind: 'tool',
+              label: 'curl',
+              text: 'curl.exe in Windows PowerShell.',
+              sources: ['install'],
+            },
+            {
+              kind: 'access',
+              label: 'An Azure role that can create',
+              text: 'Contributor plus a conditioned Role Based Access Control Administrator at subscription scope. spi check names any permission that is missing.',
+              sources: ['install'],
+            },
+          ],
+          time: {
+            active:
+              'About 30 minutes at the keyboard across the steps, most of it after provisioning, plus about 10 minutes of reading that fits inside the provisioning wait.',
+            wait: 'Fresh provisioning was observed at roughly 45 to 50 minutes in centralus, and application readiness can take longer; these are planning estimates from prior runs, not guarantees for the current release or another region.',
+            cleanup:
+              'A few minutes of effort; spi down itself waits up to 45 minutes.',
+            minutes: { active: 30, wait: 50, cleanup: 5 },
+          },
+          footprint: [
+            {
+              place: 'workstation',
+              state: 'changes',
+              note: 'az login keeps your sign-in here; the CLI runs from here.',
+            },
+            {
+              place: 'github',
+              state: 'reads',
+              note: 'Flux follows the stack’s main branch; nothing is written.',
+            },
+            {
+              place: 'azure',
+              state: 'bills',
+              note: 'Resource group spi-stack-<name>: AKS, Cosmos DB, Storage, Service Bus, Key Vault, identities.',
+            },
+          ],
+          effects:
+            'spi up creates a resource group named spi-stack-<name> containing an AKS Automatic cluster, Cosmos DB, Storage, Service Bus, Key Vault, and managed identities. It then configures the cluster and starts Flux. Even --dry-run creates or updates the resource group and its naming tag.',
+          steps: [
+            {
+              command: 'az login\naz account show',
+              touch: { kind: 'local', note: 'signs in; creates nothing' },
+              expect:
+                'Check the subscription name and ID: this is where Azure will bill the deployment. If it is wrong, use az account set to select your subscription before continuing.',
+            },
+            {
+              command: 'spi up --env <name> --dry-run',
+              touch: {
+                kind: 'creates',
+                note: 'creates the resource group, even as a dry run',
+              },
+              expect:
+                'Check the proposed AKS and data-service changes and the final “Dry-run complete” message. The resource group now exists, even though the stack has not been deployed; use the cleanup steps below if you stop here. Resources that depend on the AKS OIDC issuer are not included in this preview.',
+              sources: ['lifecycle', 'cli'],
+            },
+            {
+              command: 'spi up --env <name>',
+              touch: {
+                kind: 'creates',
+                note: 'creates and starts billing the environment',
+              },
+              expect:
+                'This deploys the core profile in westus3, and Flux follows the main branch of the stack repository. The Bicep templates come from the installed CLI, which carries them inside its wheel, while the Kubernetes manifests come from that branch; keeping the CLI current keeps the two together. To choose another region, add --location <region> to both spi up commands; the pinned CLI help notes capacity constraints in eastus2 and centralus. A successful exit confirms the requested Git revision, not API readiness: Flux continues the rollout in the background.',
+              sources: ['lifecycle', 'cli', 'packaging'],
+            },
+            {
+              click:
+                'While provisioning runs, open the deployment lifecycle document and read “From invocation to CLI exit”, then “Timing and readiness”.',
+              touch: { kind: 'reads', note: 'reading while you wait' },
+              expect:
+                'Follow the stage table to Git-source finalization: before returning, the CLI verifies the requested revision, suspends Git fetching, and writes the deploy record, while Flux is already reconciling. Then compare the five readiness signals: CLI exit, a Git-source artifact, Ready Kustomizations and HelmReleases, Complete initialization Jobs, and a successful authenticated API request. Each confirms something different, and none guarantees the next.',
+              sources: ['lifecycle'],
+            },
+            {
+              command: 'spi status --watch',
+              touch: { kind: 'reads', note: 'reads rollout progress' },
+              expect:
+                'Watch for Kustomizations and HelmReleases to become Ready and initialization Jobs to become Complete. A Running pod alone does not mean it is ready. This command checks rollout progress, not API responses; add --json in a separate run when you want the same status as structured output.',
+              sources: ['lifecycle'],
+            },
+            {
+              command: 'spi info --show-apis',
+              touch: { kind: 'reads', note: 'reads the API URLs' },
+              expect:
+                'Find the partition API URL ending in /api/partition/v1/. Copy its hostname and replace <host> in the next command with it.',
+              sources: ['cli'],
+            },
+            {
+              command: {
+                posix:
+                  'curl -sS -H "Authorization: Bearer $(spi token)" \\\n  "https://<host>/api/partition/v1/partitions/opendes"',
+                powershell:
+                  'curl.exe -sS -H "Authorization: Bearer $(spi token)" "https://<host>/api/partition/v1/partitions/opendes"',
+              },
+              touch: { kind: 'reads', note: 'one authenticated lookup' },
+              expect:
+                'The response should contain the stored configuration for opendes as JSON. The command uses spi token to get a ten-minute bearer token for the deploy identity and include it in the Authorization header. A successful response confirms this authenticated partition lookup works; it does not test search, storage, or ingestion.',
+              sources: ['workloadIdentity', 'cli'],
+            },
+            {
+              click:
+                'Decide: keep the environment for lesson 06, or remove it now.',
+              touch: {
+                kind: 'reads',
+                note: 'a decision; billing continues until you remove it',
+              },
+              expect:
+                'Keep it to avoid provisioning again for lesson 06; Azure charges continue while you keep the resources. To remove it now, follow the cleanup steps below, and read “Steady state and teardown” to compare what each removal option leaves behind.',
+              sources: ['lifecycle'],
+            },
+          ],
+          alternate: {
+            observation:
+              'spi up fails in the AKS or PaaS stage with a regional capacity or quota error.',
+            next: 'Choose another region with --location <region> and retry with the same --env, partition list, and ingress settings. A failed run can leave resources behind. Follow the cleanup steps when you are done, even if provisioning did not finish.',
+          },
+          cleanup: {
+            steps: [
+              {
+                command: 'spi down --env <name>',
+                touch: {
+                  kind: 'removes',
+                  note: 'deletes the cluster and data; keeps the names',
+                },
+                expect:
+                  'This deletes the cluster, data services, and their data, but keeps the resource group, managed identities, and naming tags for reuse. It asks you to type y to confirm. The command waits up to 45 minutes; that is a timeout, not an expected duration. If it exits with an error, inspect the listed remaining resources and retry.',
+                sources: ['lifecycle'],
+              },
+              {
+                command: 'spi down --env <name> --purge',
+                touch: {
+                  kind: 'removes',
+                  note: 'deletes the resource group and identities',
+                },
+                expect:
+                  'Use --purge when you no longer need the environment. It asks you to type y to confirm, then removes the identities’ external grants and deletes the resource group, including the identities, with a 45-minute timeout. Confirm removal with az group exists --name spi-stack-<name>; it should print false.',
+                sources: ['lifecycle'],
+              },
+            ],
+            ledger: {
+              columns: ['spi down', 'spi down --purge'],
+              rows: [
+                { item: 'AKS cluster', after: ['removed', 'removed'] },
+                {
+                  item: 'Cosmos DB, Storage, Service Bus, Key Vault, and their data',
+                  after: ['removed', 'removed'],
+                },
+                {
+                  item: 'Resource group spi-stack-<name>',
+                  after: ['kept', 'removed'],
+                },
+                { item: 'Managed identities', after: ['kept', 'removed'] },
+                {
+                  item: 'The identities’ external grants',
+                  after: ['kept', 'removed'],
+                },
+                { item: 'Naming tags', after: ['kept', 'removed'] },
+              ],
+            },
+            remains:
+              'After ordinary spi down: the resource group spi-stack-<name>, its managed identities, and its naming tags, so a later spi up reuses the same names. After --purge: nothing of the environment.',
+          },
+          sources: [
+            'lifecycle',
+            'cli',
+            'architecture',
+            'ciSetup',
+            'workloadIdentity',
+          ],
+          tested: {
+            cli: 'spi 0.16.0; commands quoted from cli.py at dc2c956',
+            stack: 'osdu-spi-stack dc2c956 (release 0.16.0)',
+            template: 'Not applicable: no fork is used.',
+            shell: 'zsh',
+            os: 'macOS 26.6.2 on Apple silicon',
+            date: '2026-09-13',
+          },
+        },
+      ],
+      connection: {
+        text: 'Already have a stack that someone else created? You can connect to it instead of provisioning your own: spi connect --resource-group <resource-group> --cluster <cluster-name> sets your kubectl context. You need Azure sign-in and access to that cluster; then start at spi status --watch.',
+        sources: ['forkDeploy'],
+      },
+    },
+    mistakes: {
+      start: 'profiles-save-money',
+      provision: 'profiles-save-money',
+      bootstrap: 'delete-secret-rotates',
+      reconcile: 'suspended-means-frozen',
+      inspect: 'finished-means-ready',
+      remove: 'teardown-green-means-deleted',
+    },
+    scope:
+      'Illustrated core profile · your environment / opendes. Running spi up creates billable resources; spi down deletes compute and data. The ≈45–50 min provisioning observations were from centralus; the CLI defaults to westus3. Times vary, and overlapping phases must not be added.',
+    sources: ['install', 'lifecycle', 'flux', 'identity'],
+    question: 'How is the stack created, and when is it usable?',
+    builds:
+      'Uses the boundaries from 01: the stack, AKS, and the resources outside it.',
+    where:
+      'The same wide picture through time: Azure resources, then the cluster, then the namespaces Flux assembles inside it.',
+    example: {
+      title: 'Before the lookup can answer',
+      code: 'spi up --env <name>',
+      scopes: ['environment', 'aks', 'resources'],
+      crossing: 'Provision the environment, then look up opendes',
+      hops: [
+        {
+          detail: 'aks',
+          label: 'AKS',
+          step: 'provision',
+          copy: 'Created first, in spi-stack-<name>',
+        },
+        {
+          detail: 'shared-data',
+          label: 'Common Storage',
+          step: 'provision',
+          copy: 'Holds the partition table',
+        },
+        {
+          detail: 'bootstrap',
+          label: 'Bootstrap inputs',
+          step: 'bootstrap',
+          copy: 'Namespaces, configuration, identity',
+        },
+        {
+          detail: 'service',
+          label: 'Partition service',
+          step: 'reconcile',
+          copy: 'Flux rolls it out',
+        },
+        {
+          detail: 'caller',
+          label: 'An API caller',
+          step: 'inspect',
+          copy: 'Then the lookup works',
+        },
+      ],
+      note: 'Each hop is a different lifecycle moment. Once the Partition service is running, the opendes lookup checks its cache, falls back to Azure Table Storage in common Storage, and returns stored configuration. It does not visit the partition’s Cosmos DB, blob Storage, or Service Bus.',
+    },
+    goal: 'You can explain how spi up divides work among the CLI, Flux, and controllers; distinguish CLI exit from API readiness; and say what spi down retains.',
+    outcomes: [
+      {
+        headline:
+          'CLI creates; Flux assembles; controllers keep workloads healthy.',
+        text: 'The CLI and Bicep create Azure and seed the cluster; Flux assembles the workloads; controllers keep them healthy. Flux and Kubernetes controllers continue after the CLI returns.',
+        why: 'spi up runs Bicep and the bootstrap. Flux starts reconciling before the CLI exits and keeps working after it returns.',
+        step: 'provision',
+        steps: ['start', 'provision', 'bootstrap', 'reconcile'],
+        evidenceStep: 'reconcile',
+        focus: ['workstation', 'aks', 'bootstrap', 'flux'],
+        scopes: ['environment', 'aks', 'resources'],
+        evidence: 'flux',
+        crossing: 'CLI provisions Azure and prepares AKS',
+      },
+      {
+        headline: 'CLI success is not API readiness.',
+        text: 'A successful spi up does not establish API readiness. I follow workload health and initialization with spi status --watch, then verify the API path I need with an authenticated request.',
+        why: 'Flux and initialization can continue after spi up returns. Watch spi status --watch, then verify the API operation you need.',
+        step: 'inspect',
+        steps: ['inspect'],
+        evidenceStep: 'inspect',
+        focus: ['readiness', 'initialization', 'caller'],
+        scopes: ['environment', 'aks'],
+        evidence: 'readiness',
+        crossing: 'Observe readiness, then exercise an API',
+      },
+      {
+        headline: 'Teardown removes data but preserves identities and names.',
+        text: 'spi down removes compute and data but keeps identities and the resource group, so a rebuild reuses the same names.',
+        why: 'Ordinary spi down deletes the cluster and its data but keeps the managed identities and the resource group. A rebuild reuses those names, not the deleted data.',
+        step: 'remove',
+        steps: ['remove'],
+        evidenceStep: 'remove',
+        focus: ['retained'],
+        scopes: ['environment', 'resources'],
+        evidence: 'retained',
+        crossing: 'Delete compute and data; retain identity',
       },
     ],
   },

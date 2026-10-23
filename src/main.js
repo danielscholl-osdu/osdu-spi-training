@@ -41,6 +41,14 @@ import {
   sourcesPreview,
 } from './components/pages.js';
 import { fieldnoteById, fieldnoteFor } from './content/videos.js';
+import {
+  chapterNumber,
+  foundationPlace,
+  learnOrder,
+  lessonCount,
+  lessonNumber,
+  placeLabel,
+} from './content/course.js';
 import { badge } from './components/badges.js';
 import { escapeHtml } from './components/node.js';
 import { createPlayer } from './components/player.js';
@@ -51,8 +59,6 @@ import { applyTryItShell, detectTryItShell } from './try-it-shell.js';
 // Kept only in memory for this page visit, across lesson navigation.
 let tryItShell = detectTryItShell(navigator);
 
-const order = Object.keys(chapters);
-const learnOrder = order.filter((key) => chapters[key].group === 'learn');
 let previousRoute = null;
 let previousHash = null;
 let lastSelectedElement = null;
@@ -429,8 +435,7 @@ function nextChapter(key) {
 
 function positionLabel(key) {
   const scene = chapters[key];
-  if (scene.group === 'learn')
-    return `${learnOrder.indexOf(key) + 1} of ${learnOrder.length} · ${scene.book}`;
+  if (scene.group === 'learn') return placeLabel(key);
   return scene.group === 'supplement'
     ? 'Supplement'
     : 'OSDU Azure SPI Fieldnotes';
@@ -503,10 +508,14 @@ function renderChapterFrame(route, scene) {
     chapterNavigation(key);
   const kicker =
     scene.group === 'learn'
-      ? `${String(learnOrder.indexOf(key) + 1).padStart(2, '0')} · ${scene.title}`
+      ? `${chapterNumber(key)} · ${scene.title}`
       : scene.title;
   document.getElementById('chapter-kicker').textContent =
-    scene.group === 'learn' ? `Lesson ${positionLabel(key)}` : kicker;
+    scene.group !== 'learn'
+      ? kicker
+      : foundationPlace(key)
+        ? positionLabel(key)
+        : `Lesson ${positionLabel(key)}`;
   document.getElementById('chapter-kicker').hidden =
     scene.page === 'home' || scene.group === 'supplement';
   const hero = document.getElementById('hero-image');
@@ -577,12 +586,14 @@ function renderChapterFrame(route, scene) {
   const next = nextChapter(key);
   const link = document.getElementById('next-link');
   link.href = routeHref(next);
-  const nextIndex = learnOrder.indexOf(next);
+  const nextKicker = foundationPlace(next)
+    ? `Next · ${placeLabel(next)}`
+    : `Next lesson · ${lessonNumber(next)} of ${lessonCount}`;
   link.innerHTML =
     next === 'start'
       ? '<b>Back to the start ↺</b>'
-      : nextIndex >= 0
-        ? `<small class="pager-kicker">Next lesson · ${nextIndex + 1} of ${learnOrder.length}</small><b>${escapeHtml(chapters[next].title)} →</b><span class="pager-question">${escapeHtml(chapters[next].question)}</span>`
+      : learnOrder.includes(next)
+        ? `<small class="pager-kicker">${nextKicker}</small><b>${escapeHtml(chapters[next].title)} →</b><span class="pager-question">${escapeHtml(chapters[next].question)}</span>`
         : `<b>Next: ${escapeHtml(chapters[next].title)} →</b>`;
   const prev = document.getElementById('prev-link');
   const learnIndex = learnOrder.indexOf(key);
