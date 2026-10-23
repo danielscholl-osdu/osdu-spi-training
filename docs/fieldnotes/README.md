@@ -21,13 +21,13 @@ The training site owns what is said. The video library at `~/workspace/videos` (
 
 Season 1 ends at one authenticated partition lookup by the deploy identity. Season 2 covers what an engineer does with a running core environment on spi 0.32: whose images it runs, who may call it, what data it holds, how ingestion runs, and how to prove a service from a workstation. Each episode is cut from the stack's own decision records and docs until its lesson exists in a _Working the stack_ book.
 
-| Fieldnote | Episode                 | Covers (osdu-spi-stack)                                                                    | Form        | Storyboard                                       | Status    |
-| --------- | ----------------------- | ------------------------------------------------------------------------------------------ | ----------- | ------------------------------------------------ | --------- |
-| 08        | Whose image is running? | canonical source per service, fork `main` on GHCR, weekday refresh, 21-day age (ADR-033)   | mixed       | planned                                          | planned   |
-| 09        | Who is asking           | `spi users` roles, `spi token --me`, entitlements groups (ADR-039)                         | mixed       | planned                                          | planned   |
-| 10        | Ready is not loaded     | `spi load` and its registry; ready, deployable, loaded, ingesting (ADR-040, ADR-030)       | mixed       | planned                                          | planned   |
-| 11        | On behalf of you        | core DAGs, registration, `on-behalf-of`, `spi test dags --report` (ADR-044)                | mixed       | [11-on-behalf-of-you.md](11-on-behalf-of-you.md) | published |
-| 12        | Prove it from your desk | `spi test <service>`, `--report`, `--review`, `spi build`, `pin --source` (ADR-036 to 038) | footage-led | planned                                          | planned   |
+| Fieldnote | Episode                 | Covers (osdu-spi-stack)                                                                    | Form        | Storyboard                                                     | Status    |
+| --------- | ----------------------- | ------------------------------------------------------------------------------------------ | ----------- | -------------------------------------------------------------- | --------- |
+| 08        | Whose image is running? | canonical source per service, fork `main` on GHCR, weekday refresh, 21-day age (ADR-033)   | mixed       | [08-whose-image-is-running.md](08-whose-image-is-running.md)   | draft     |
+| 09        | Who is asking           | `spi users` roles, `spi token --me`, entitlements groups (ADR-039)                         | mixed       | [09-who-is-asking.md](09-who-is-asking.md)                     | draft     |
+| 10        | Ready is not loaded     | `spi load` and its registry; ready, deployable, loaded, ingesting (ADR-040, ADR-030)       | mixed       | [10-ready-is-not-loaded.md](10-ready-is-not-loaded.md)         | draft     |
+| 11        | On behalf of you        | core DAGs, registration, `on-behalf-of`, `spi test dags --report` (ADR-044)                | mixed       | [11-on-behalf-of-you.md](11-on-behalf-of-you.md)               | published |
+| 12        | Prove it from your desk | `spi test <service>`, `--report`, `--review`, `spi build`, `pin --source` (ADR-036 to 038) | footage-led | [12-prove-it-from-your-desk.md](12-prove-it-from-your-desk.md) | draft     |
 
 Fieldnote 11 is produced first. The season shares one take day: a throwaway core environment on 0.32, which also re-records Fieldnote 02 through Ready and a successful lookup (its 12 October take stalled at 20 of 29 on an image lineage the stack has since retired).
 
