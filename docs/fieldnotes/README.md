@@ -12,7 +12,7 @@ Codes name the level and the path: 103 is the third foundation episode, S203 the
 
 | Code | Episode                                         | Question                                                | From                                          | Status    |
 | ---- | ----------------------------------------------- | ------------------------------------------------------- | --------------------------------------------- | --------- |
-| 101  | Three parts                                     | What is the Azure SPI machinery made of?                | Fieldnote 00, re-cut to the three parts       | planned   |
+| 101  | [Three parts](101-three-parts.md)               | What is the Azure SPI machinery made of?                | Fieldnote 00, re-cut to the three parts       | published |
 | 102  | [Anatomy of a stack](102-anatomy-of-a-stack.md) | What is actually running when someone says "the stack"? | Fieldnote 01's body with new bookends         | published |
 | 103  | The provider inside                             | Where does the Azure code live in a service?            | Fieldnote 03's boards, without the code panes | planned   |
 | 104  | The line                                        | How does a change reach a running service?              | new, from boards in Fieldnotes 04 and 05      | planned   |
@@ -26,7 +26,7 @@ The thirteen cuts made one per lesson stay published, with their routes, until t
 
 | Fieldnote | Lesson                   | Form          | Storyboard                                                       | Status                     |
 | --------- | ------------------------ | ------------- | ---------------------------------------------------------------- | -------------------------- |
-| 00        | Start: three parts       | boards        | [00-three-parts.md](00-three-parts.md)                           | published                  |
+| 00        | Start: three parts       | boards        | [00-three-parts.md](00-three-parts.md)                           | replaced by 101            |
 | 01        | Anatomy of a stack       | boards        | [01-anatomy-of-a-stack.md](01-anatomy-of-a-stack.md)             | replaced by 102            |
 | 02        | How it comes to life     | mixed         | [02-how-it-comes-to-life.md](02-how-it-comes-to-life.md)         | published; re-take on 0.32 |
 | 03        | The SPI boundary         | boards + code | [03-the-spi-boundary.md](03-the-spi-boundary.md)                 | published                  |

@@ -16,23 +16,23 @@ export const videoBase =
 
 export const fieldnotes = [
   {
-    id: '00',
+    id: '101',
     chapter: 'start',
     title: 'Three parts',
     card: 'How the machinery is engineered',
-    duration: 185,
+    duration: 94,
     width: 1920,
     height: 1080,
     files: {
-      video: 'fieldnote-00/video.mp4',
-      poster: 'fieldnote-00/poster.jpg',
-      captions: 'fieldnote-00/captions.vtt',
+      video: 'fieldnote-101/video.mp4',
+      poster: 'fieldnote-101/poster.jpg',
+      captions: 'fieldnote-101/captions.vtt',
       chapters: null,
     },
     chapters: [],
     cutFrom: null,
     summary:
-      'The stack, the Azure provider inside each service, and the workflows that keep it current: one service, its fork, a candidate tested in a running stack, and what the lessons let you do.',
+      'The Azure stack, the service interface with the Azure provider behind it, and the engineering system that keeps every service fork current: where each one lives, and how a change moves between them.',
     notes: [],
   },
   {
@@ -641,7 +641,7 @@ export function videoUrl(path) {
 }
 
 // A lesson cut replaced by a curriculum episode keeps its published id.
-export const retiredFieldnotes = { '01': '102' };
+export const retiredFieldnotes = { '00': '101', '01': '102' };
 
 export const fieldnoteById = (id) => {
   const current = Object.hasOwn(retiredFieldnotes, id)

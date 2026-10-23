@@ -62,6 +62,7 @@ export const episodes = [
     teaches: ['three-parts'],
     uses: [],
     mistakes: [],
+    video: '101',
   },
   {
     code: '102',

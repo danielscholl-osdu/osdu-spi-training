@@ -1858,11 +1858,11 @@ test('audio markers are ordered, inside the recording, and point at real views',
     home.includes(`data-video-open="${startVideo.id}"`) &&
       home.includes(`Watch · ${Math.round(startVideo.duration / 60)} min`) &&
       home.includes(escapeHtml(startVideo.card)),
-    'Start reads its Watch card from Fieldnote 00',
+    'Start reads its Watch card from Fieldnote 101',
   );
   const player = fieldnotePlayer(startVideo);
   assert.ok(
-    player.includes('data-fieldnote="00"') &&
+    player.includes('data-fieldnote="101"') &&
       player.includes(`src="${videoUrl(startVideo.files.captions)}"`) &&
       !player.includes('Source checks'),
     'the video dialog carries captions and no source checks',
@@ -5466,8 +5466,9 @@ test('the Fieldnotes manifest names real lessons, claims, myths, and files', () 
     'one episode per lesson',
   );
   const start = fieldnoteById('00');
+  assert.equal(start.id, '101', 'Fieldnote 101 replaced the Start cut');
   assert.equal(start.chapter, 'start');
-  assert.equal(start.chapters.length, 0, 'Fieldnote 00 has no chapters');
+  assert.equal(start.chapters.length, 0, 'Fieldnote 101 has no chapters');
   assert.equal(
     start.notes.length,
     0,
@@ -5605,12 +5606,13 @@ test('Fieldnote routes parse and keep the published keys', () => {
     [parseRoute('#watch').chapter, parseRoute('#watch').video],
     ['watch', null],
   );
-  const episode = parseRoute('#watch/00?t=30');
+  const episode = parseRoute('#watch/101?t=30');
   assert.deepEqual(
     [episode.chapter, episode.video, episode.time],
-    ['watch', '00', 30],
+    ['watch', '101', 30],
   );
   assert.equal(parseRoute('#watch/99').video, null, 'unknown episode');
+  assert.equal(parseRoute('#watch/00').video, '101', 'a replaced cut');
   assert.equal(parseRoute('#watch/01').video, '102', 'a replaced cut');
   for (const [retired, current] of Object.entries(retiredFieldnotes)) {
     assert.ok(!fieldnotes.some(({ id }) => id === retired), retired);
@@ -5808,17 +5810,17 @@ test('the Fieldnotes page lists episodes by book with one player and a transcrip
   );
   assert.match(
     page,
-    /id="video-transcript" data-captions="https:\/\/danielscholl-osdu\.github\.io\/osdu-spi-training-media\/fieldnote-00\/captions\.vtt"/,
+    /id="video-transcript" data-captions="https:\/\/danielscholl-osdu\.github\.io\/osdu-spi-training-media\/fieldnote-101\/captions\.vtt"/,
   );
   assert.match(
     pageRenderers.watch(parseRoute('#watch/00')),
-    /href="#watch\/00" aria-current="page"/,
+    /href="#watch\/101" aria-current="page"/,
   );
   // The published captions live in the media repository; docs/reference keeps the copy.
   const cues = parseVtt(
     readFileSync(
       new URL(
-        '../docs/reference/fieldnote-00-three-parts.vtt',
+        '../docs/reference/fieldnote-101-three-parts.vtt',
         import.meta.url,
       ),
       'utf8',
