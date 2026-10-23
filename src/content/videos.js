@@ -491,6 +491,52 @@ export const fieldnotes = [
     notes: [],
   },
   {
+    id: '10',
+    chapter: 'ready-not-loaded',
+    title: 'Ready is not loaded',
+    duration: 227,
+    width: 1920,
+    height: 1080,
+    files: {
+      video: 'fieldnote-10/video.mp4',
+      poster: 'fieldnote-10/poster.jpg',
+      captions: 'fieldnote-10/captions.vtt',
+      chapters: 'fieldnote-10/chapters.vtt',
+    },
+    chapters: [
+      { time: 47.9, claim: 0 },
+      { time: 85.6, claim: 1 },
+      { time: 114.4, claim: 2 },
+      { time: 142.0, example: true },
+      { time: 173.3, mistake: 'deployable-means-loaded' },
+    ],
+    cutFrom: {
+      claims: [
+        {
+          headline:
+            'Deployable is Ready, with maintenance off and bootstrap finished.',
+          text: 'spi status answers two questions: Ready means every gating Flux layer has converged, and Deployable adds maintenance off, a deploy record present, and the members Job finished in every partition.',
+        },
+        {
+          headline: 'A Deployable environment holds schemas and no records.',
+          text: 'Bring-up registers the schemas through a Flux Job behind a gating layer and writes no records; reference data is loaded by nothing until you run spi load.',
+        },
+        {
+          headline:
+            'Loaded means Storage accepted the records, not that search finds them.',
+          text: 'spi load creates one Job per partition that checks every kind against Schema and writes in batches of 500, skipping duplicates; complete means Storage accepted the records, and the indexer may still be working.',
+        },
+      ],
+      example: 'From Ready to 80,103 records',
+      mistake: {
+        id: 'deployable-means-loaded',
+        claim: "It's Deployable, so the data is there.",
+      },
+      next: 'How does a DAG reach the stack, who does each task act as, and how do you know it stored anything?',
+    },
+    notes: [],
+  },
+  {
     id: '11',
     chapter: 'core-dags',
     title: 'On behalf of you',
