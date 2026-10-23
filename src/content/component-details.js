@@ -893,7 +893,7 @@ export const componentDetails = {
     here: {
       'spi-boundary': {
         summary:
-          'The engineering system regenerates shared source separately from fork-owned Azure source. provider/partition-azure stays outside that generated tree on the fork, so the fork’s provider does not depend on upstream carrying one.',
+          'In the service’s fork, partition-core/, the shared code, sits beside provider/partition-azure/, the Azure implementation. The community repository carries partition-core and IPartitionService and no Azure provider, so the Azure source lives only in the fork.',
         source: 'ownership',
         goDeeper: ['synchronization'],
       },

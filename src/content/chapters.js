@@ -58,7 +58,7 @@ export const chapters = {
       {
         label: 'Provider code and engineering',
         lessons: {
-          'spi-boundary': 'Where does shared code call the Azure provider?',
+          'spi-boundary': 'Where does the Azure code live in a service?',
           'fork-shape': 'Who owns which paths in a service fork?',
           'fork-day': 'How does an upstream update become a candidate image?',
           handshake: 'How is a candidate image tested in a running stack?',
@@ -879,9 +879,9 @@ export const chapters = {
         },
       ],
     },
-    mistakes: ['token-accepted-means-authorized'],
+    mistakes: [],
     scope:
-      'Upstream does not carry the Azure provider (community ADR 61; osdu-spi ADR-038). The fork keeps it outside the generated shared-code branch. The cache fallback is real: commit fc2dfbf in osdu-spi-partition, 30 July 2026, with regression tests. It reached the fork from upstream on 25 August, before the filter existed; from 04 on, the example follows a fix like it made in the fork today.',
+      'Upstream does not carry the Azure provider (community ADR 61; osdu-spi ADR-038); it is source in each service’s fork. The provider treats a cache read that throws as a miss, and that fallback is real: commit fc2dfbf in osdu-spi-partition, with regression tests. From 04 on, the example follows a fix like it made in the fork today.',
     sources: [
       'architecture',
       'ownership',
@@ -901,7 +901,7 @@ export const chapters = {
       'cimplArchitecture',
       'cimplPartitionSecrets',
     ],
-    question: 'Where does shared code hand the lookup to the Azure provider?',
+    question: 'Where does the Azure code live in a service?',
     builds:
       'Zooms into the partition service from 01 and follows the same lookup through its provider.',
     where:
@@ -949,7 +949,7 @@ export const chapters = {
         normal: {
           label: 'Normal',
           crossing: 'Healthy cache miss reaches common Table Storage',
-          note: 'Normal shows a healthy cache miss, so hop six is required. Common Table Storage is reachable and contains opendes; a cache hit would stop before it.',
+          note: 'This trace shows a healthy cache miss, so hop six is required. Common Table Storage is reachable and contains opendes; a cache hit would stop before it.',
           overrides: {
             redis: {
               copy: 'Healthy cache miss, inside AKS',
@@ -960,23 +960,6 @@ export const chapters = {
               copy: 'Stored configuration for opendes, outside AKS',
               mapStatus: 'Table Storage returns opendes',
               state: 'normal',
-            },
-          },
-        },
-        'cache-down': {
-          label: 'Cache down',
-          crossing: 'Cache exception is handled as a miss',
-          note: 'Cache down assumes common Table Storage is reachable and contains opendes. It does not promise to swallow Table Storage failures or missing-partition errors.',
-          overrides: {
-            redis: {
-              copy: 'Cache read throws inside AKS; treated as a miss',
-              mapStatus: 'Cache read throws; treated as a miss',
-              state: 'handled-failure',
-            },
-            azureclients: {
-              copy: 'Table Storage answers anyway, with Workload Identity',
-              mapStatus: 'Table Storage answers anyway',
-              state: 'fallback',
             },
           },
         },
@@ -1087,11 +1070,11 @@ export const chapters = {
         'Returned properties can differ. Hosting and registry origin do not identify the implementation, and source snapshots do not prove a deployed image digest or acceptance-test result.',
       ],
     },
-    goal: 'Trace the lookup from shared code into the Azure provider, and explain what happens when the cache fails.',
+    goal: 'Say where the Azure code lives in a service: behind a provider interface, in the same image as the shared code that calls it, and as source in the service’s fork.',
     outcomes: [
       {
         headline: 'Common code calls Azure through a provider interface.',
-        text: 'Common service code calls a provider interface. The Azure implementation behind it checks Redis inside AKS with middleware credentials, then reads common Table Storage outside AKS with Workload Identity on a miss. The table read still happens when the cache throws.',
+        text: 'Common service code calls a provider interface, and the Azure implementation behind it connects that interface to Azure services.',
         why: 'partition-core calls IPartitionService.getPartition. partition-core-plus checks its configured VmCache, then reads PostgreSQL on a miss. provider/partition-azure checks Redis inside AKS with middleware credentials, then uses Workload Identity for the common Table Storage read after a miss or handled cache exception.',
         focus: ['core', 'contract', 'azureimpl', 'redis', 'azureclients'],
         scopes: ['spi-shared', 'spi-provider', 'spi-cache', 'spi-tables'],
@@ -1108,13 +1091,13 @@ export const chapters = {
         crossing: 'One process, no network hop',
       },
       {
-        headline: 'The fork keeps Azure source outside the generated tree.',
-        text: 'The fork maintains the Azure provider separately from generated shared code.',
-        why: 'Shared code is regenerated from the community repository, while provider/partition-azure stays fork-owned, so removal of upstream’s Azure copy does not delete the fork’s provider.',
+        headline: 'The Azure code lives in the service’s fork.',
+        text: 'The Azure implementation is source in the service’s fork, in its own provider folder beside the shared code.',
+        why: 'The fork’s source tree holds partition-core/, the shared code, and provider/partition-azure/, the Azure implementation. Lesson 04 shows who owns which of those paths.',
         focus: ['upstream', 'azureimpl', 'engineering'],
         scopes: ['spi-provider', 'spi-sources'],
         evidence: 'upstream',
-        crossing: 'Generated source beside fork-owned source',
+        crossing: 'Azure source in the service’s fork',
       },
     ],
   },

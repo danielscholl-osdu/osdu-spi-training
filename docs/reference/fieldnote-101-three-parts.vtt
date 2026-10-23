@@ -1,0 +1,112 @@
+WEBVTT
+
+1
+00:00:05.940 --> 00:00:08.390
+Foundations. Three parts.
+
+2
+00:00:09.330 --> 00:00:12.420
+What is the Azure SPI machinery made of?
+
+3
+00:00:14.010 --> 00:00:19.460
+Three parts. The Azure stack, an
+environment that runs the OSDU services.
+
+4
+00:00:19.610 --> 00:00:22.090
+The service interface inside each service,
+
+5
+00:00:22.090 --> 00:00:24.100
+with the Azure provider behind it.
+
+6
+00:00:24.730 --> 00:00:26.250
+And the engineering system:
+
+7
+00:00:26.250 --> 00:00:29.940
+the shared workflows that keep
+every service fork current.
+
+8
+00:00:32.006 --> 00:00:33.936
+SPI means all three.
+
+9
+00:00:34.406 --> 00:00:37.376
+The Azure stack lives
+in your subscription,
+
+10
+00:00:37.406 --> 00:00:40.016
+and osdu-spi-stack builds it.
+
+11
+00:00:40.566 --> 00:00:43.536
+The service interface
+lives in each service:
+
+12
+00:00:43.606 --> 00:00:47.296
+shared OSDU code calls a
+cloud provider through it,
+
+13
+00:00:47.526 --> 00:00:50.166
+and the Azure implementation
+sits behind it,
+
+14
+00:00:50.166 --> 00:00:51.616
+in the service's fork.
+
+15
+00:00:51.846 --> 00:00:56.086
+The engineering system lives
+in GitHub, in osdu-spi,
+
+16
+00:00:56.086 --> 00:00:58.976
+the template every fork
+takes its workflows from.
+
+17
+00:01:01.076 --> 00:01:02.206
+They turn together.
+
+18
+00:01:02.516 --> 00:01:05.646
+A change to a provider is
+made in its service's fork.
+
+19
+00:01:05.956 --> 00:01:08.686
+The engineering system
+builds it into an image.
+
+20
+00:01:08.756 --> 00:01:13.516
+And the stack runs that image, with the
+provider inside it reaching the Azure
+
+21
+00:01:13.516 --> 00:01:14.846
+services around it.
+
+22
+00:01:17.312 --> 00:01:20.112
+So now you can ask
+which SPI someone means:
+
+23
+00:01:20.112 --> 00:01:25.002
+the Azure stack, the service
+interface, or the engineering system.
+
+24
+00:01:27.368 --> 00:01:30.898
+Next: what is actually running
+when someone says “the stack”?
+

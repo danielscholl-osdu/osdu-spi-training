@@ -16,9 +16,14 @@ import {
   fieldnotes,
   fieldnoteById,
   fieldnoteFor,
+  retiredFieldnotes,
   videoBase,
   videoUrl,
 } from '../src/content/videos.js';
+import {
+  ideas,
+  episodes as curriculumEpisodes,
+} from '../src/content/curriculum.js';
 import { diagramRenderers } from '../src/components/diagrams.js';
 import {
   architectureMap,
@@ -382,6 +387,15 @@ function verifyRoute(href, context) {
     );
 }
 
+// A curriculum episode that carries no myth leaves its lesson without one.
+function mythlessCurriculumLesson(key) {
+  const video = fieldnoteFor(key);
+  return curriculumEpisodes.some(
+    (episode) =>
+      video && episode.video === video.id && !episode.mistakes.length,
+  );
+}
+
 test('chapters connect to renderers, explanations, and named sources', () => {
   for (const [id, chapter] of Object.entries(chapters)) {
     for (const field of ['title', 'subtitle'])
@@ -444,13 +458,28 @@ test('chapters connect to renderers, explanations, and named sources', () => {
       );
     }
     const mistakes = flatten(chapter.mistakes, 'mistakes');
-    assert.ok(mistakes.length, `${id}: no easy mistake beside the map`);
+    assert.ok(
+      mistakes.length || mythlessCurriculumLesson(id),
+      `${id}: no easy mistake beside the map`,
+    );
     for (const mistake of mistakes)
       assert.ok(
         myths.some((myth) => myth.id === mistake),
         `${id}: unknown easy mistake ${mistake}`,
       );
   }
+  assert.ok(
+    mythlessCurriculumLesson('spi-boundary'),
+    'Fieldnote 103 carries no myth',
+  );
+  assert.ok(
+    !mythlessCurriculumLesson('running-stack'),
+    'Fieldnote 102 carries a myth',
+  );
+  assert.ok(
+    !mythlessCurriculumLesson('bring-up'),
+    'Fieldnote 02 is a lesson cut',
+  );
   for (const [id, chapter] of pageChapters)
     assert.ok(chapter.page, `${id}: page chapter names no renderer`);
 });
@@ -634,9 +663,10 @@ test('lesson 03 claim evidence resolves all three claims and cache-hop proof', (
   assert.match(details[1].summary, /one process, not across a network/);
   assert.match(
     details[2].summary,
-    /regenerates shared source separately from fork-owned Azure source/,
+    /partition-core\/, the shared code, sits beside provider\/partition-azure\//,
   );
-  assert.match(details[2].summary, /does not depend on upstream carrying one/);
+  assert.match(details[2].summary, /no Azure provider/);
+  assert.doesNotMatch(details[2].summary, /\bremov|\bdelet|\bgenerated\b/i);
 
   for (const id of ['redis', 'azureclients']) {
     const detail = resolveDetail(id, 'spi-boundary');
@@ -1853,11 +1883,11 @@ test('audio markers are ordered, inside the recording, and point at real views',
     home.includes(`data-video-open="${startVideo.id}"`) &&
       home.includes(`Watch · ${Math.round(startVideo.duration / 60)} min`) &&
       home.includes(escapeHtml(startVideo.card)),
-    'Start reads its Watch card from Fieldnote 00',
+    'Start reads its Watch card from Fieldnote 101',
   );
   const player = fieldnotePlayer(startVideo);
   assert.ok(
-    player.includes('data-fieldnote="00"') &&
+    player.includes('data-fieldnote="101"') &&
       player.includes(`src="${videoUrl(startVideo.files.captions)}"`) &&
       !player.includes('Source checks'),
     'the video dialog carries captions and no source checks',
@@ -3881,7 +3911,7 @@ test('lesson 03 claims keep the provider seam understandable without evidence', 
         scopes: ['spi-image'],
       },
       {
-        headline: 'The fork keeps Azure source outside the generated tree.',
+        headline: 'The Azure code lives in the service’s fork.',
         focus: ['upstream', 'azureimpl', 'engineering'],
         evidence: 'upstream',
         scopes: ['spi-provider', 'spi-sources'],
@@ -3906,7 +3936,7 @@ test('lesson 03 claims keep the provider seam understandable without evidence', 
     'Workload Identity for the common Table Storage read',
     'same service process',
     'not a network hop',
-    'provider/partition-azure stays fork-owned',
+    'partition-core/, the shared code, and provider/partition-azure/, the Azure implementation',
   ])
     assert.ok(contexts.includes(fact), `claim context includes ${fact}`);
   assert.doesNotMatch(claims, /<small>/);
@@ -3977,32 +4007,48 @@ test('lesson 03 states its prerequisite and place in its lead', () => {
 
 test('lesson 03 editorial copy stays at the provider boundary', () => {
   const chapter = chapters['spi-boundary'];
-  const requiredCopy = [
-    chapter.question,
-    chapter.goal,
-    ...chapter.outcomes.flatMap(({ headline, text, why }) => [
-      headline,
-      text,
-      why,
-    ]),
-    diagramRenderers.spi(),
-  ].join(' ');
+  const strings = (value) =>
+    typeof value === 'string'
+      ? [value]
+      : Array.isArray(value)
+        ? value.flatMap(strings)
+        : value && typeof value === 'object'
+          ? Object.values(value).flatMap(strings)
+          : [];
+  // Try it's clean-up removes what the learner made; every other field is lesson copy.
+  const { tryIt: _tryIt, ...copy } = chapter;
+  const requiredCopy = [...strings(copy), diagramRenderers.spi()].join(' ');
 
   assert.equal(
     chapter.question,
-    'Where does shared code hand the lookup to the Azure provider?',
+    'Where does the Azure code live in a service?',
+  );
+  assert.equal(
+    chapters.start.index[1].lessons['spi-boundary'],
+    chapter.question,
   );
   assert.equal(
     chapter.goal,
-    'Trace the lookup from shared code into the Azure provider, and explain what happens when the cache fails.',
+    'Say where the Azure code lives in a service: behind a provider interface, in the same image as the shared code that calls it, and as source in the service’s fork.',
   );
   assert.equal(
     chapter.outcomes[2].text,
-    'The fork maintains the Azure provider separately from generated shared code.',
+    'The Azure implementation is source in the service’s fork, in its own provider folder beside the shared code.',
   );
   assert.equal(
     chapter.outcomes[2].why,
-    'Shared code is regenerated from the community repository, while provider/partition-azure stays fork-owned, so removal of upstream’s Azure copy does not delete the fork’s provider.',
+    'The fork’s source tree holds partition-core/, the shared code, and provider/partition-azure/, the Azure implementation. Lesson 04 shows who owns which of those paths.',
+  );
+  assert.deepEqual(chapter.mistakes, []);
+  assert.doesNotMatch(
+    requiredCopy,
+    /\bremov|\bdelet/i,
+    'the provider lives in the fork; no removal is narrated',
+  );
+  assert.doesNotMatch(
+    requiredCopy,
+    /\b(?:January|February|March|April|May|June|July|August|September|October|November|December)\b|\b20\d\d\b/,
+    'lesson copy carries no dates',
   );
   assert.match(requiredCopy, /come from the community repository/);
   assert.doesNotMatch(
@@ -4115,50 +4161,109 @@ test('partition comparison record renders one closed, bounded two-lane disclosur
   );
 });
 
-test('example variants present two states of one canonical six-hop trace', () => {
-  const example = chapters['spi-boundary'].example;
-  const canonical = structuredClone(example.hops);
-  const normal = resolveExamplePresentation(example);
-  const cacheDown = resolveExamplePresentation(example, 'cache-down');
+// Lesson 03 authors one trace condition; a second, made here, keeps the
+// switch and its overrides under test.
+function twoVariantExample() {
+  const example = structuredClone(chapters['spi-boundary'].example);
+  example.variants.failing = {
+    label: 'Failing',
+    crossing: 'Fixture crossing',
+    note: 'Fixture note.',
+    overrides: {
+      redis: {
+        copy: 'Fixture read throws inside AKS',
+        mapStatus: 'Fixture read throws',
+        state: 'handled-failure',
+      },
+      azureclients: {
+        copy: 'Fixture table answers outside AKS',
+        mapStatus: 'Fixture table answers',
+        state: 'fallback',
+      },
+    },
+  };
+  return example;
+}
 
+// exampleStrip reads the lesson by key, so a fixture stands in for one render.
+function stripWithExample(example, route, variant) {
+  const lesson = chapters['spi-boundary'];
+  const authored = lesson.example;
+  lesson.example = example;
+  try {
+    return exampleStrip('spi-boundary', route, variant);
+  } finally {
+    lesson.example = authored;
+  }
+}
+
+test('example variants present states of one canonical six-hop trace', () => {
+  const authored = chapters['spi-boundary'].example;
+  assert.deepEqual(Object.keys(authored.variants), ['normal']);
+  const normal = resolveExamplePresentation(authored);
   assert.equal(normal.selectedVariant, 'normal');
   assert.deepEqual(
     normal.hops.map(({ detail }) => detail),
     ['client', 'core', 'contract', 'azureimpl', 'redis', 'azureclients'],
   );
-  assert.deepEqual(
-    cacheDown.hops.map(({ detail }) => detail),
-    normal.hops.map(({ detail }) => detail),
-  );
-  for (const presentation of [normal, cacheDown]) {
-    const hops = Object.fromEntries(
-      presentation.hops.map((hop) => [hop.detail, hop]),
-    );
-    assert.match(hops.redis.copy, /inside AKS/i);
-    assert.match(hops.azureclients.copy, /outside AKS|Workload Identity/i);
-  }
-  assert.equal(normal.hops[4].state, 'normal');
-  assert.equal(normal.hops[5].state, 'normal');
-  assert.equal(cacheDown.hops[4].state, 'handled-failure');
-  assert.equal(cacheDown.hops[5].state, 'fallback');
-  assert.deepEqual(example.hops, canonical);
+  const hops = Object.fromEntries(normal.hops.map((hop) => [hop.detail, hop]));
+  assert.match(hops.redis.copy, /inside AKS/i);
+  assert.match(hops.azureclients.copy, /outside AKS/i);
+  assert.equal(hops.redis.state, 'normal');
+  assert.equal(hops.azureclients.state, 'normal');
 
   const route = parseRoute('#spi-boundary');
-  const normalMarkup = exampleStrip('spi-boundary', route);
-  const cacheDownMarkup = exampleStrip('spi-boundary', route, 'cache-down');
-  for (const markup of [normalMarkup, cacheDownMarkup]) {
+  const single = exampleStrip('spi-boundary', route);
+  assert.doesNotMatch(
+    single,
+    /data-example-variant|Trace condition/,
+    'one trace condition shows no switch',
+  );
+  assert.match(single, /healthy cache miss/i);
+  assert.ok(single.includes(escapeHtml(normal.crossing)));
+
+  const example = twoVariantExample();
+  const canonical = structuredClone(example.hops);
+  const failing = resolveExamplePresentation(example, 'failing');
+  assert.equal(resolveExamplePresentation(example).selectedVariant, 'normal');
+  assert.equal(
+    resolveExamplePresentation(example, 'unknown').selectedVariant,
+    'normal',
+  );
+  assert.equal(failing.selectedVariant, 'failing');
+  assert.deepEqual(
+    failing.hops.map(({ detail }) => detail),
+    normal.hops.map(({ detail }) => detail),
+  );
+  assert.equal(failing.hops[4].state, 'handled-failure');
+  assert.equal(failing.hops[5].state, 'fallback');
+  assert.equal(failing.crossing, 'Fixture crossing');
+  assert.equal(failing.note, 'Fixture note.');
+  assert.deepEqual(example.hops, canonical);
+
+  const normalMarkup = stripWithExample(example, route);
+  const failingMarkup = stripWithExample(example, route, 'failing');
+  assert.equal(chapters['spi-boundary'].example, authored);
+  for (const [markup, selected] of [
+    [normalMarkup, 'normal'],
+    [failingMarkup, 'failing'],
+  ]) {
     assert.equal((markup.match(/<ol class="journey"/g) || []).length, 1);
     assert.equal((markup.match(/data-hop="/g) || []).length, 6);
     assert.equal((markup.match(/data-example-variant=/g) || []).length, 2);
+    assert.ok(
+      markup.includes(`data-example-variant="${selected}" aria-pressed="true"`),
+      selected,
+    );
   }
   const links = (markup) =>
     [...markup.matchAll(/<a href="([^"]+)" data-map-jump data-hop/g)].map(
       (match) => match[1],
     );
-  assert.deepEqual(links(cacheDownMarkup), links(normalMarkup));
+  assert.deepEqual(links(failingMarkup), links(normalMarkup));
   assert.match(normalMarkup, /healthy cache miss/i);
-  assert.match(cacheDownMarkup, /read throws.*treated as a miss/i);
-  assert.match(cacheDownMarkup, /Table Storage answers anyway/i);
+  assert.match(failingMarkup, /Fixture read throws inside AKS/);
+  assert.match(failingMarkup, /Fixture table answers outside AKS/);
 });
 
 test('example compatibility keeps provider paths in content and controls optional', () => {
@@ -4181,7 +4286,7 @@ test('example compatibility keeps provider paths in content and controls optiona
 });
 
 test('lesson trace state keeps variants local and preserves an active hop', () => {
-  const example = chapters['spi-boundary'].example;
+  const example = twoVariantExample();
   const hopCount = example.hops.length;
   const redisHop = example.hops.findIndex(({ detail }) => detail === 'redis');
   const tableHop = example.hops.findIndex(
@@ -4193,14 +4298,14 @@ test('lesson trace state keeps variants local and preserves an active hop', () =
     exampleOpen: false,
     variant: 'normal',
   };
-  const cacheDown = selectExampleVariant(initial, 'cache-down', hopCount);
-  assert.deepEqual(cacheDown, {
+  const failing = selectExampleVariant(initial, 'failing', hopCount);
+  assert.deepEqual(failing, {
     ...initial,
     hop: tableHop,
     exampleOpen: true,
-    variant: 'cache-down',
+    variant: 'failing',
   });
-  const atRedis = { ...cacheDown, hop: redisHop };
+  const atRedis = { ...failing, hop: redisHop };
   assert.deepEqual(selectExampleVariant(atRedis, 'normal', hopCount), {
     ...atRedis,
     variant: 'normal',
@@ -4333,9 +4438,10 @@ test('map lesson examples other than the step lesson use one closed disclosure a
       assert.ok(markup.includes(escapeHtml(presentation.note)), href);
     }
     const markup = exampleStrip(key, parseRoute(routeHref(key)));
+    const variants = Object.keys(chapter.example.variants || {}).length;
     assert.equal(
       (markup.match(/data-example-variant=/g) || []).length,
-      key === 'spi-boundary' ? 2 : 0,
+      variants > 1 ? variants : 0,
       key,
     );
   }
@@ -5284,6 +5390,15 @@ function lessonMistakes(chapter) {
   return Array.isArray(value) ? value : Object.values(value).flat();
 }
 
+// The next episode at the same level of the same path; 105 closes on the
+// choice of path instead.
+function curriculumNext(episode) {
+  const track = curriculumEpisodes.filter(
+    ({ level, path }) => level === episode.level && path === episode.path,
+  );
+  return track[track.indexOf(episode) + 1] ?? null;
+}
+
 // A cut records the lesson as it stood. Any difference names the episode and
 // the field, so the fix is a re-cut or a source-check note on that chapter.
 function cutFromDifferences(video) {
@@ -5332,19 +5447,42 @@ function cutFromDifferences(video) {
         ),
       );
   }
+  // A whole-video note that quotes the question asked now stands in for a
+  // re-cut end card.
+  const nextDiffers = (question) =>
+    (cut.next ?? null) !== question &&
+    !(video.notes || []).some(
+      (note) =>
+        typeof note === 'string' &&
+        question !== null &&
+        note.includes(question),
+    );
+  const episode = curriculumEpisodes.find(({ code }) => code === video.id);
+  if (episode) {
+    if (nextDiffers(curriculumNext(episode)?.question ?? null))
+      differences.push(
+        differs('next', `the episode after ${episode.code} in curriculum.js`),
+      );
+    return differences;
+  }
   // Field check keeps its Back to the start exit after the book expands.
   const next =
     video.chapter === 'not-true'
       ? null
       : learnKeys[learnKeys.indexOf(video.chapter) + 1];
-  if ((cut.next ?? null) !== (next ? chapters[next].question : null))
+  if (nextDiffers(next ? chapters[next].question : null))
     differences.push(differs('next', `chapters['${next}'].question`));
   return differences;
 }
 
 function verifyFieldnote(video) {
   const id = `Fieldnote ${video.id}`;
-  assert.match(video.id, /^\d{2}$/, `${id}: id`);
+  assert.ok(
+    /^\d{2}$/.test(video.id) ||
+      curriculumEpisodes.find(({ code }) => code === video.id)?.video ===
+        video.id,
+    `${id}: id is a lesson cut or a curriculum episode that records it`,
+  );
   assert.ok(Object.hasOwn(chapters, video.chapter), `${id}: chapter`);
   const lesson = chapters[video.chapter];
   assert.ok(video.title?.trim(), `${id}: title`);
@@ -5438,8 +5576,9 @@ test('the Fieldnotes manifest names real lessons, claims, myths, and files', () 
     'one episode per lesson',
   );
   const start = fieldnoteById('00');
+  assert.equal(start.id, '101', 'Fieldnote 101 replaced the Start cut');
   assert.equal(start.chapter, 'start');
-  assert.equal(start.chapters.length, 0, 'Fieldnote 00 has no chapters');
+  assert.equal(start.chapters.length, 0, 'Fieldnote 101 has no chapters');
   assert.equal(
     start.notes.length,
     0,
@@ -5498,6 +5637,32 @@ test('a Fieldnote cut that drifts from its lesson names the episode and field', 
   assert.deepEqual(cutFromDifferences(uncut), [
     'Fieldnote 01: cutFrom is missing',
   ]);
+  const curriculumCut = structuredClone(fieldnoteById('102'));
+  curriculumCut.cutFrom.next = chapters['bring-up'].question;
+  assert.deepEqual(cutFromDifferences(curriculumCut), [
+    'Fieldnote 102: cutFrom.next differs from the episode after 102 in curriculum.js',
+  ]);
+  const after102 = curriculumEpisodes.find(({ code }) => code === '103');
+  curriculumCut.notes = [`Fieldnote 103 asks: “${after102.question}”`];
+  assert.deepEqual(cutFromDifferences(curriculumCut), []);
+
+  const asked = chapters['bring-up'].question;
+  const unnoted = lessonFieldnote();
+  unnoted.cutFrom.next = 'How was the stack made?';
+  const nextMoved = [
+    "Fieldnote 01: cutFrom.next differs from chapters['bring-up'].question",
+  ];
+  assert.deepEqual(cutFromDifferences(unnoted), nextMoved);
+  for (const [notes, expected] of [
+    [[`Lesson 02 now asks: “${asked}”`], []],
+    [['Lesson 02 now asks how the stack is created.'], nextMoved],
+    [[{ chapter: 0, text: `Lesson 02 now asks: “${asked}”` }], nextMoved],
+  ])
+    assert.deepEqual(
+      cutFromDifferences({ ...unnoted, notes }),
+      expected,
+      JSON.stringify(notes),
+    );
 });
 
 test('core DAG video contract holds for the fixture and the published Fieldnote 11', () => {
@@ -5572,12 +5737,24 @@ test('Fieldnote routes parse and keep the published keys', () => {
     [parseRoute('#watch').chapter, parseRoute('#watch').video],
     ['watch', null],
   );
-  const episode = parseRoute('#watch/00?t=30');
+  const episode = parseRoute('#watch/101?t=30');
   assert.deepEqual(
     [episode.chapter, episode.video, episode.time],
-    ['watch', '00', 30],
+    ['watch', '101', 30],
   );
   assert.equal(parseRoute('#watch/99').video, null, 'unknown episode');
+  assert.equal(parseRoute('#watch/00').video, '101', 'a replaced cut');
+  assert.equal(parseRoute('#watch/01').video, '102', 'a replaced cut');
+  assert.equal(parseRoute('#watch/03').video, '103', 'a replaced cut');
+  assert.equal(
+    parseRoute('#watch/03?t=150').time,
+    null,
+    'a moment in a replaced cut opens its episode at the start',
+  );
+  for (const [retired, current] of Object.entries(retiredFieldnotes)) {
+    assert.ok(!fieldnotes.some(({ id }) => id === retired), retired);
+    assert.equal(fieldnoteById(retired)?.id, current, retired);
+  }
   assert.equal(parseRoute('#watch/99').chapter, 'watch');
   assert.equal(parseRoute('#running-stack/00').video, null);
   const lesson = parseRoute('#running-stack?watch=55');
@@ -5601,7 +5778,8 @@ test('a lesson Fieldnote shows its chip, claim cues, and dialog chapters', () =>
   assert.match(chip, /data-video-open="01" data-video-at="0"/);
   assert.match(chip, /<b>Watch this lesson<\/b>.*· 2:50/);
   assert.match(chip, /aria-haspopup="dialog"/);
-  assert.match(lessonWatch('running-stack'), /data-video-open="01"/);
+  assert.match(lessonWatch('running-stack'), /data-video-open="102"/);
+  assert.match(lessonWatch('spi-boundary'), /data-video-open="103"/);
   assert.equal(lessonWatch('whose-image', null), '', 'a lesson with no cut');
   assert.equal(lessonWatch('start', fieldnoteFor('start')), '');
 
@@ -5770,17 +5948,17 @@ test('the Fieldnotes page lists episodes by book with one player and a transcrip
   );
   assert.match(
     page,
-    /id="video-transcript" data-captions="https:\/\/danielscholl-osdu\.github\.io\/osdu-spi-training-media\/fieldnote-00\/captions\.vtt"/,
+    /id="video-transcript" data-captions="https:\/\/danielscholl-osdu\.github\.io\/osdu-spi-training-media\/fieldnote-101\/captions\.vtt"/,
   );
   assert.match(
     pageRenderers.watch(parseRoute('#watch/00')),
-    /href="#watch\/00" aria-current="page"/,
+    /href="#watch\/101" aria-current="page"/,
   );
   // The published captions live in the media repository; docs/reference keeps the copy.
   const cues = parseVtt(
     readFileSync(
       new URL(
-        '../docs/reference/fieldnote-00-three-parts.vtt',
+        '../docs/reference/fieldnote-101-three-parts.vtt',
         import.meta.url,
       ),
       'utf8',
@@ -5821,4 +5999,271 @@ test('the Fieldnotes page lists episodes by book with one player and a transcrip
     'a portrait video keeps its dialog size',
   );
   assert.match(css, /\.video-dialog\.is-wide \{\s*width: min\(960px, 94vw\);/);
+});
+
+const curriculum = () =>
+  structuredClone({ ideas, episodes: curriculumEpisodes });
+const episodeIn = (map, code) =>
+  map.episodes.find((episode) => episode.code === code);
+const codes = (list) => list.map(({ code }) => code).join(', ');
+const homesOf = (map, field, id) =>
+  map.episodes.filter((episode) => episode[field].includes(id));
+
+function curriculumReferenceErrors(map) {
+  const errors = [];
+  const known = new Set(map.episodes.map(({ code }) => code));
+  for (const code of known) {
+    const same = map.episodes.filter((episode) => episode.code === code);
+    if (same.length > 1)
+      errors.push(`${code}: code is used by ${same.length} episodes`);
+  }
+  const isIdea = (id) => Object.hasOwn(map.ideas, id);
+  const isFieldnote = (id) => Boolean(fieldnoteById(id));
+  const references = [
+    ['after', 'episode', (code) => known.has(code)],
+    ['teaches', 'idea', isIdea],
+    ['uses', 'idea', isIdea],
+    ['mistakes', 'myth', (id) => myths.some((myth) => myth.id === id)],
+    ['from', 'Fieldnote', isFieldnote],
+    ['video', 'Fieldnote', isFieldnote],
+  ];
+  for (const episode of map.episodes)
+    for (const [field, kind, exists] of references)
+      for (const value of [episode[field] ?? []].flat())
+        if (!exists(value))
+          errors.push(
+            `${episode.code}: unknown ${kind} '${value}' in ${field}`,
+          );
+  return errors;
+}
+
+// Level 100 is home everywhere; otherwise one home per path.
+function homeErrors(subject, homes) {
+  if (!homes.length) return [`${subject}: no home`];
+  if (homes.length > 1 && homes.some(({ level }) => level === 100))
+    return [`${subject}: homed at level 100 and again (${codes(homes)})`];
+  return ['service', 'platform'].flatMap((path) => {
+    const inPath = homes.filter((home) => home.path === path);
+    return inPath.length > 1
+      ? [
+          `${subject}: more than one home in the ${path} path (${codes(inPath)})`,
+        ]
+      : [];
+  });
+}
+
+function ideaHomeErrors(map) {
+  return Object.keys(map.ideas).flatMap((id) =>
+    homeErrors(`idea '${id}'`, homesOf(map, 'teaches', id)),
+  );
+}
+
+function buildsOn(episode, home) {
+  if (episode.after.includes(home.code)) return true;
+  if (home.level === 100 && episode.level > 100) return true;
+  if (home.path !== episode.path) return false;
+  return (
+    home.level < episode.level ||
+    (home.level === episode.level && home.code < episode.code)
+  );
+}
+
+function ideaUseErrors(map) {
+  return map.episodes.flatMap((episode) =>
+    episode.uses.flatMap((id) => {
+      const homes = homesOf(map, 'teaches', id);
+      if (!homes.length)
+        return [`${episode.code}: uses '${id}', which no episode teaches`];
+      if (homes.some((home) => buildsOn(episode, home))) return [];
+      const names = homes.map(({ code }) => code).join(' or ');
+      return [`${episode.code}: uses '${id}' without building on ${names}`];
+    }),
+  );
+}
+
+function mythHomeErrors(map) {
+  const homes = myths.flatMap(({ id }) =>
+    homeErrors(`myth '${id}'`, homesOf(map, 'mistakes', id)),
+  );
+  const crowded = map.episodes
+    .filter(({ level, mistakes }) => level < 300 && mistakes.length > 1)
+    .map(
+      ({ code, mistakes }) =>
+        `${code}: carries more than one myth (${mistakes.join(', ')})`,
+    );
+  return [...homes, ...crowded];
+}
+
+function libraryAfterErrors(map) {
+  return map.episodes
+    .filter(({ level, after }) => level === 300 && !after.length)
+    .map(({ code }) => `${code}: names no episode it builds on`);
+}
+
+function assertCurriculumCases(check, cases) {
+  for (const [change, message] of cases) {
+    const map = curriculum();
+    change(map);
+    assert.deepEqual(check(map), [message]);
+  }
+}
+
+test('the curriculum map names real episodes, ideas, myths, and Fieldnotes', () => {
+  const codePattern = {
+    100: /^1\d\d$/,
+    200: /^[SP]2\d\d$/,
+    300: /^[SP]3\d\d$/,
+  };
+  const pathOf = { S: 'service', P: 'platform' };
+  for (const episode of curriculumEpisodes) {
+    const at = episode.code;
+    assert.match(at, codePattern[episode.level], `${at}: code names its level`);
+    assert.equal(
+      episode.path,
+      episode.level === 100 ? 'everyone' : pathOf[at[0]],
+      `${at}: code names its path`,
+    );
+    assert.ok(episode.title?.trim(), `${at}: title`);
+    for (const field of ['from', 'after', 'teaches', 'uses', 'mistakes'])
+      assert.ok(Array.isArray(episode[field]), `${at}: ${field}`);
+    if (episode.level === 300)
+      assert.ok(
+        episode.covers?.trim() && !episode.question,
+        `${at}: a deep dive states what it covers`,
+      );
+    else
+      assert.ok(episode.question?.trim() && !episode.covers, `${at}: question`);
+    if (episode.waits)
+      assert.ok(
+        !episode.teaches.length && !episode.mistakes.length && !episode.video,
+        `${at}: an episode that waits teaches nothing yet`,
+      );
+  }
+  assert.deepEqual(curriculumReferenceErrors(curriculum()), []);
+  assertCurriculumCases(curriculumReferenceErrors, [
+    [
+      (map) => map.episodes.push(structuredClone(map.episodes.at(-1))),
+      'P306: code is used by 2 episodes',
+    ],
+    [
+      (map) => (episodeIn(map, 'S203').after = ['S299']),
+      "S203: unknown episode 'S299' in after",
+    ],
+    [
+      (map) => episodeIn(map, 'P206').teaches.push('agents-act'),
+      "P206: unknown idea 'agents-act' in teaches",
+    ],
+    [
+      (map) => episodeIn(map, 'S201').uses.push('agents-act'),
+      "S201: unknown idea 'agents-act' in uses",
+    ],
+    [
+      (map) => episodeIn(map, 'P201').mistakes.push('profiles-are-free'),
+      "P201: unknown myth 'profiles-are-free' in mistakes",
+    ],
+    [
+      (map) => episodeIn(map, 'S203').from.push('13'),
+      "S203: unknown Fieldnote '13' in from",
+    ],
+    [
+      (map) => (episodeIn(map, 'S202').video = '99'),
+      "S202: unknown Fieldnote '99' in video",
+    ],
+  ]);
+  const published = curriculum();
+  episodeIn(published, 'S202').video = '09';
+  assert.deepEqual(curriculumReferenceErrors(published), []);
+});
+
+test('a curriculum idea has one home in each path that teaches it', () => {
+  assert.deepEqual(ideaHomeErrors(curriculum()), []);
+  assertCurriculumCases(ideaHomeErrors, [
+    [
+      (map) => episodeIn(map, 'S203').teaches.push('wait-for-deployable'),
+      "idea 'wait-for-deployable': more than one home in the service path (S201, S203)",
+    ],
+    [
+      (map) => episodeIn(map, 'P201').teaches.push('stack-is-a-resource-group'),
+      "idea 'stack-is-a-resource-group': homed at level 100 and again (102, P201)",
+    ],
+    [
+      (map) => (map.ideas['agents-act'] = 'An agent acts within its charter'),
+      "idea 'agents-act': no home",
+    ],
+  ]);
+});
+
+test('a curriculum episode uses only ideas taught before it or in what it builds on', () => {
+  assert.deepEqual(ideaUseErrors(curriculum()), []);
+  assertCurriculumCases(ideaUseErrors, [
+    [
+      (map) => episodeIn(map, '102').uses.push('line-and-product'),
+      "102: uses 'line-and-product' without building on 105",
+    ],
+    [
+      (map) => episodeIn(map, 'S201').uses.push('maintenance-closes-deploys'),
+      "S201: uses 'maintenance-closes-deploys' without building on P202",
+    ],
+    [
+      (map) => episodeIn(map, 'P202').uses.push('onboard-trusts-fork'),
+      "P202: uses 'onboard-trusts-fork' without building on P206",
+    ],
+    [
+      (map) => (episodeIn(map, 'S305').after = ['S206']),
+      "S305: uses 'borrow-prove-restore' without building on P205",
+    ],
+    [
+      (map) => {
+        map.ideas['verdict-counts-tests'] = 'The verdict counts tests';
+        episodeIn(map, 'S302').teaches.push('verdict-counts-tests');
+        episodeIn(map, 'S301').uses.push('verdict-counts-tests');
+      },
+      "S301: uses 'verdict-counts-tests' without building on S302",
+    ],
+    [
+      (map) => episodeIn(map, 'S201').uses.push('agents-act'),
+      "S201: uses 'agents-act', which no episode teaches",
+    ],
+  ]);
+});
+
+test('every myth has a curriculum home, at most one per path, and a level 100 or 200 episode carries one at most', () => {
+  assert.deepEqual(mythHomeErrors(curriculum()), []);
+  const move = (map, id, from, to) => {
+    const home = episodeIn(map, from);
+    home.mistakes = home.mistakes.filter((mistake) => mistake !== id);
+    episodeIn(map, to).mistakes.push(id);
+  };
+  assertCurriculumCases(mythHomeErrors, [
+    [
+      (map) => (episodeIn(map, 'P201').mistakes = []),
+      "myth 'profiles-save-money': no home",
+    ],
+    [
+      (map) => episodeIn(map, 'P306').mistakes.push('stack-is-only-aks'),
+      "myth 'stack-is-only-aks': homed at level 100 and again (102, P306)",
+    ],
+    [
+      (map) => episodeIn(map, 'S305').mistakes.push('refresh-is-automatic'),
+      "myth 'refresh-is-automatic': more than one home in the service path (S204, S305)",
+    ],
+    [
+      (map) => move(map, 'teardown-green-means-deleted', 'P302', 'P207'),
+      'P207: carries more than one myth (smoke-proves-api, teardown-green-means-deleted)',
+    ],
+    [
+      (map) => move(map, 'profiles-save-money', 'P201', '102'),
+      '102: carries more than one myth (stack-is-only-aks, profiles-save-money)',
+    ],
+  ]);
+});
+
+test('every curriculum deep dive names an episode it builds on', () => {
+  assert.deepEqual(libraryAfterErrors(curriculum()), []);
+  assertCurriculumCases(libraryAfterErrors, [
+    [
+      (map) => (episodeIn(map, 'S304').after = []),
+      'S304: names no episode it builds on',
+    ],
+  ]);
 });

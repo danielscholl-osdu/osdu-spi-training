@@ -50,10 +50,10 @@ function spiBoundaryDiagram() {
     </div>
     </div>
     <section class="spi-source-boundary" data-scope="spi-sources">
-      <header><h3>Source ownership outside the running image</h3><p>The generated upstream tree and the fork-owned provider stay separate.</p></header>
+      <header><h3>Source ownership outside the running image</h3><p>The service’s fork holds the shared code and the Azure provider side by side.</p></header>
       <div class="spi-source-columns">
         ${node('upstream', 'Upstream source', 'partition-core and IPartitionService come from the community repository')}
-        ${node('engineering', 'osdu-spi engineering system', 'Preserves provider/&lt;svc&gt;-azure outside the generated tree')}
+        ${node('engineering', 'osdu-spi engineering system', 'Delivers the workflows and Dockerfile the fork builds with')}
       </div>
       <p>Upstream carries no Azure provider; <code>provider/partition-azure</code> is fork-owned.</p>
     </section>

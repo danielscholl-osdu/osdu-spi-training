@@ -915,16 +915,17 @@ export function exampleStrip(key, route, variant, { shelf = false } = {}) {
   const presentation = resolveExamplePresentation(example, variant);
   const structured = hasClaims(chapters[key]);
   const current = hopIndexForRoute(chapters[key], route);
-  const variantControls = example.variants
-    ? `<div class="example-variant-row"><span>Trace condition</span><div class="example-variants" role="group" aria-label="Trace condition">${Object.entries(
-        example.variants,
-      )
-        .map(
-          ([id, option]) =>
-            `<button type="button" data-example-variant="${id}" aria-pressed="${presentation.selectedVariant === id}">${escapeHtml(option.label)}</button>`,
+  const variantControls =
+    Object.keys(example.variants || {}).length > 1
+      ? `<div class="example-variant-row"><span>Trace condition</span><div class="example-variants" role="group" aria-label="Trace condition">${Object.entries(
+          example.variants,
         )
-        .join('')}</div></div>`
-    : '';
+          .map(
+            ([id, option]) =>
+              `<button type="button" data-example-variant="${id}" aria-pressed="${presentation.selectedVariant === id}">${escapeHtml(option.label)}</button>`,
+          )
+          .join('')}</div></div>`
+      : '';
   const body = `<div class="example-head"><code>${escapeHtml(example.code)}</code></div>
     ${variantControls}
     <p class="example-crossing" data-example-crossing>${escapeHtml(presentation.crossing)}</p>

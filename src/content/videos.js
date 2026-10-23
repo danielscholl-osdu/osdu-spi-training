@@ -1,7 +1,8 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT License.
 
-// Fieldnotes: one short narrated video per lesson. A file path with no scheme
+// Fieldnotes: one short narrated video per lesson, its id a lesson cut's two
+// digits or a curriculum code from curriculum.js. A file path with no scheme
 // resolves against videoBase, the media repository on Pages; a path under
 // video/ is served from this site's public/ directory. A chapter names a claim
 // index, the example, a myth id, or (lesson 07) a theme id. `cutFrom` records
@@ -15,44 +16,44 @@ export const videoBase =
 
 export const fieldnotes = [
   {
-    id: '00',
+    id: '101',
     chapter: 'start',
     title: 'Three parts',
     card: 'How the machinery is engineered',
-    duration: 185,
+    duration: 94,
     width: 1920,
     height: 1080,
     files: {
-      video: 'fieldnote-00/video.mp4',
-      poster: 'fieldnote-00/poster.jpg',
-      captions: 'fieldnote-00/captions.vtt',
+      video: 'fieldnote-101/video.mp4',
+      poster: 'fieldnote-101/poster.jpg',
+      captions: 'fieldnote-101/captions.vtt',
       chapters: null,
     },
     chapters: [],
     cutFrom: null,
     summary:
-      'The stack, the Azure provider inside each service, and the workflows that keep it current: one service, its fork, a candidate tested in a running stack, and what the lessons let you do.',
+      'The Azure stack, the service interface with the Azure provider behind it, and the engineering system that keeps every service fork current: where each one lives, and how a change moves between them.',
     notes: [],
   },
   {
-    id: '01',
+    id: '102',
     chapter: 'running-stack',
     title: 'Anatomy of a stack',
-    duration: 138,
+    duration: 126,
     width: 1920,
     height: 1080,
     files: {
-      video: 'fieldnote-01/video.mp4',
-      poster: 'fieldnote-01/poster.jpg',
-      captions: 'fieldnote-01/captions.vtt',
-      chapters: 'fieldnote-01/chapters.vtt',
+      video: 'fieldnote-102/video.mp4',
+      poster: 'fieldnote-102/poster.jpg',
+      captions: 'fieldnote-102/captions.vtt',
+      chapters: 'fieldnote-102/chapters.vtt',
     },
     chapters: [
-      { time: 20.8, claim: 0 },
-      { time: 35.3, claim: 1 },
-      { time: 58.5, claim: 2 },
-      { time: 72.4, example: true },
-      { time: 97.1, mistake: 'stack-is-only-aks' },
+      { time: 13.2, claim: 0 },
+      { time: 27.7, claim: 1 },
+      { time: 51.0, claim: 2 },
+      { time: 64.9, example: true },
+      { time: 89.6, mistake: 'stack-is-only-aks' },
     ],
     cutFrom: {
       claims: [
@@ -75,7 +76,7 @@ export const fieldnotes = [
         id: 'stack-is-only-aks',
         claim: 'The stack is just AKS.',
       },
-      next: 'How is the stack created, and when is it usable?',
+      next: 'Where does the Azure code live in a service?',
     },
     notes: [],
   },
@@ -122,49 +123,46 @@ export const fieldnotes = [
       },
       next: 'Where does shared code hand the lookup to the Azure provider?',
     },
-    notes: [],
+    notes: [
+      'The end card asks where shared code hands the lookup to the Azure provider; lesson 03 asks “Where does the Azure code live in a service?”',
+    ],
   },
   {
-    id: '03',
+    id: '103',
     chapter: 'spi-boundary',
-    title: 'The SPI boundary',
-    duration: 194,
+    title: 'The provider inside',
+    duration: 102,
     width: 1920,
     height: 1080,
     files: {
-      video: 'fieldnote-03/video.mp4',
-      poster: 'fieldnote-03/poster.jpg',
-      captions: 'fieldnote-03/captions.vtt',
-      chapters: 'fieldnote-03/chapters.vtt',
+      video: 'fieldnote-103/video.mp4',
+      poster: 'fieldnote-103/poster.jpg',
+      captions: 'fieldnote-103/captions.vtt',
+      chapters: 'fieldnote-103/chapters.vtt',
     },
     chapters: [
-      { time: 33.5, claim: 0 },
-      { time: 57.4, claim: 1 },
-      { time: 79.9, claim: 2 },
-      { time: 100.9, example: true },
-      { time: 137.9, mistake: 'token-accepted-means-authorized' },
+      { time: 12.6, claim: 0 },
+      { time: 31.2, claim: 1 },
+      { time: 51.1, claim: 2 },
+      { time: 60.0, example: true },
     ],
     cutFrom: {
       claims: [
         {
           headline: 'Common code calls Azure through a provider interface.',
-          text: 'Common service code calls a provider interface. The Azure implementation behind it checks Redis inside AKS with middleware credentials, then reads common Table Storage outside AKS with Workload Identity on a miss. The table read still happens when the cache throws.',
+          text: 'Common service code calls a provider interface, and the Azure implementation behind it connects that interface to Azure services.',
         },
         {
           headline: 'The interface and implementation ship in one image.',
           text: 'The interface and its implementation ship in one image. There is no network hop between them.',
         },
         {
-          headline: 'The fork keeps Azure source outside the generated tree.',
-          text: 'The fork maintains the Azure provider separately from generated shared code.',
+          headline: 'The Azure code lives in the service’s fork.',
+          text: 'The Azure implementation is source in the service’s fork, in its own provider folder beside the shared code.',
         },
       ],
       example: 'Follow the same lookup through the provider',
-      mistake: {
-        id: 'token-accepted-means-authorized',
-        claim: 'The token was accepted, so the call is authorized.',
-      },
-      next: 'Who owns that provider code, and how does it survive upstream deleting it?',
+      next: 'How does a change reach a running service?',
     },
     notes: [],
   },
@@ -639,8 +637,15 @@ export function videoUrl(path) {
   return new URL(path.replace(/^\/+/, ''), videoBase).href;
 }
 
-export const fieldnoteById = (id) =>
-  fieldnotes.find((entry) => entry.id === id) || null;
+// A lesson cut replaced by a curriculum episode keeps its published id.
+export const retiredFieldnotes = { '00': '101', '01': '102', '03': '103' };
+
+export const fieldnoteById = (id) => {
+  const current = Object.hasOwn(retiredFieldnotes, id)
+    ? retiredFieldnotes[id]
+    : id;
+  return fieldnotes.find((entry) => entry.id === current) || null;
+};
 
 export const fieldnoteFor = (chapter) =>
   fieldnotes.find((entry) => entry.chapter === chapter) || null;
