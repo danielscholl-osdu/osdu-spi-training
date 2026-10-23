@@ -10,6 +10,7 @@ Install the pinned tools with `npm ci`, then start `npm run dev`. Work in `src/`
 | Optional Try it activity data                                                                         | `src/content/chapters.js`          |
 | Episodes, their markers, and source-check notes                                                       | `src/content/audio.js`             |
 | Fieldnotes (lesson videos), their chapters, cut-from records, and notes                               | `src/content/videos.js`            |
+| The Fieldnotes curriculum: each episode's ideas, myths, and what it builds on                         | `src/content/curriculum.js`        |
 | Things that are not true (each entry names its `owner` to ask; the tool chip is derived from `check`) | `src/content/myths.js`             |
 | Poster captions, takeaways, and field-guide summaries                                                 | `src/content/posters.js`           |
 | A native field guide or specialized comparison drawing                                                | `src/components/infographics.js`   |

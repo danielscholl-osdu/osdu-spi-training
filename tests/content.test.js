@@ -19,6 +19,10 @@ import {
   videoBase,
   videoUrl,
 } from '../src/content/videos.js';
+import {
+  ideas,
+  episodes as curriculumEpisodes,
+} from '../src/content/curriculum.js';
 import { diagramRenderers } from '../src/components/diagrams.js';
 import {
   architectureMap,
@@ -5821,4 +5825,266 @@ test('the Fieldnotes page lists episodes by book with one player and a transcrip
     'a portrait video keeps its dialog size',
   );
   assert.match(css, /\.video-dialog\.is-wide \{\s*width: min\(960px, 94vw\);/);
+});
+
+const curriculum = () =>
+  structuredClone({ ideas, episodes: curriculumEpisodes });
+const episodeIn = (map, code) =>
+  map.episodes.find((episode) => episode.code === code);
+const codes = (list) => list.map(({ code }) => code).join(', ');
+const homesOf = (map, field, id) =>
+  map.episodes.filter((episode) => episode[field].includes(id));
+
+function curriculumReferenceErrors(map) {
+  const errors = [];
+  const known = new Set(map.episodes.map(({ code }) => code));
+  for (const code of known) {
+    const same = map.episodes.filter((episode) => episode.code === code);
+    if (same.length > 1)
+      errors.push(`${code}: code is used by ${same.length} episodes`);
+  }
+  const isIdea = (id) => Object.hasOwn(map.ideas, id);
+  const isFieldnote = (id) => Boolean(fieldnoteById(id));
+  const references = [
+    ['after', 'episode', (code) => known.has(code)],
+    ['teaches', 'idea', isIdea],
+    ['uses', 'idea', isIdea],
+    ['mistakes', 'myth', (id) => myths.some((myth) => myth.id === id)],
+    ['from', 'Fieldnote', isFieldnote],
+    ['video', 'Fieldnote', isFieldnote],
+  ];
+  for (const episode of map.episodes)
+    for (const [field, kind, exists] of references)
+      for (const value of [episode[field] ?? []].flat())
+        if (!exists(value))
+          errors.push(
+            `${episode.code}: unknown ${kind} '${value}' in ${field}`,
+          );
+  return errors;
+}
+
+// Level 100 is home everywhere; otherwise one home per path.
+function homeErrors(subject, homes) {
+  if (!homes.length) return [`${subject}: no home`];
+  if (homes.length > 1 && homes.some(({ level }) => level === 100))
+    return [`${subject}: homed at level 100 and again (${codes(homes)})`];
+  return ['service', 'platform'].flatMap((path) => {
+    const inPath = homes.filter((home) => home.path === path);
+    return inPath.length > 1
+      ? [
+          `${subject}: more than one home in the ${path} path (${codes(inPath)})`,
+        ]
+      : [];
+  });
+}
+
+function ideaHomeErrors(map) {
+  return Object.keys(map.ideas).flatMap((id) =>
+    homeErrors(`idea '${id}'`, homesOf(map, 'teaches', id)),
+  );
+}
+
+function buildsOn(episode, home) {
+  if (home.level === 100 || episode.after.includes(home.code)) return true;
+  if (home.path !== episode.path) return false;
+  return (
+    home.level < episode.level ||
+    (home.level === episode.level && home.code < episode.code)
+  );
+}
+
+function ideaUseErrors(map) {
+  return map.episodes.flatMap((episode) =>
+    episode.uses.flatMap((id) => {
+      const homes = homesOf(map, 'teaches', id);
+      if (!homes.length)
+        return [`${episode.code}: uses '${id}', which no episode teaches`];
+      if (homes.some((home) => buildsOn(episode, home))) return [];
+      const names = homes.map(({ code }) => code).join(' or ');
+      return [`${episode.code}: uses '${id}' without building on ${names}`];
+    }),
+  );
+}
+
+function mythHomeErrors(map) {
+  const homes = myths.flatMap(({ id }) =>
+    homeErrors(`myth '${id}'`, homesOf(map, 'mistakes', id)),
+  );
+  const crowded = map.episodes
+    .filter(({ level, mistakes }) => level < 300 && mistakes.length > 1)
+    .map(
+      ({ code, mistakes }) =>
+        `${code}: carries more than one myth (${mistakes.join(', ')})`,
+    );
+  return [...homes, ...crowded];
+}
+
+function libraryAfterErrors(map) {
+  return map.episodes
+    .filter(({ level, after }) => level === 300 && !after.length)
+    .map(({ code }) => `${code}: names no episode it builds on`);
+}
+
+function assertCurriculumCases(check, cases) {
+  for (const [change, message] of cases) {
+    const map = curriculum();
+    change(map);
+    assert.deepEqual(check(map), [message]);
+  }
+}
+
+test('the curriculum map names real episodes, ideas, myths, and Fieldnotes', () => {
+  const codePattern = {
+    100: /^1\d\d$/,
+    200: /^[SP]2\d\d$/,
+    300: /^[SP]3\d\d$/,
+  };
+  const pathOf = { S: 'service', P: 'platform' };
+  for (const episode of curriculumEpisodes) {
+    const at = episode.code;
+    assert.match(at, codePattern[episode.level], `${at}: code names its level`);
+    assert.equal(
+      episode.path,
+      episode.level === 100 ? 'everyone' : pathOf[at[0]],
+      `${at}: code names its path`,
+    );
+    assert.ok(episode.title?.trim(), `${at}: title`);
+    for (const field of ['from', 'after', 'teaches', 'uses', 'mistakes'])
+      assert.ok(Array.isArray(episode[field]), `${at}: ${field}`);
+    if (episode.level === 300)
+      assert.ok(
+        episode.covers?.trim() && !episode.question,
+        `${at}: a deep dive states what it covers`,
+      );
+    else
+      assert.ok(episode.question?.trim() && !episode.covers, `${at}: question`);
+    if (episode.waits)
+      assert.ok(
+        !episode.teaches.length && !episode.mistakes.length && !episode.video,
+        `${at}: an episode that waits teaches nothing yet`,
+      );
+  }
+  assert.deepEqual(curriculumReferenceErrors(curriculum()), []);
+  assertCurriculumCases(curriculumReferenceErrors, [
+    [
+      (map) => map.episodes.push(structuredClone(map.episodes.at(-1))),
+      'P306: code is used by 2 episodes',
+    ],
+    [
+      (map) => (episodeIn(map, 'S203').after = ['S299']),
+      "S203: unknown episode 'S299' in after",
+    ],
+    [
+      (map) => episodeIn(map, 'P206').teaches.push('agents-act'),
+      "P206: unknown idea 'agents-act' in teaches",
+    ],
+    [
+      (map) => episodeIn(map, 'S201').uses.push('agents-act'),
+      "S201: unknown idea 'agents-act' in uses",
+    ],
+    [
+      (map) => episodeIn(map, 'P201').mistakes.push('profiles-are-free'),
+      "P201: unknown myth 'profiles-are-free' in mistakes",
+    ],
+    [
+      (map) => episodeIn(map, 'S203').from.push('13'),
+      "S203: unknown Fieldnote '13' in from",
+    ],
+    [
+      (map) => (episodeIn(map, 'S202').video = '99'),
+      "S202: unknown Fieldnote '99' in video",
+    ],
+  ]);
+  const published = curriculum();
+  episodeIn(published, 'S202').video = '09';
+  assert.deepEqual(curriculumReferenceErrors(published), []);
+});
+
+test('a curriculum idea has one home in each path that teaches it', () => {
+  assert.deepEqual(ideaHomeErrors(curriculum()), []);
+  assertCurriculumCases(ideaHomeErrors, [
+    [
+      (map) => episodeIn(map, 'S203').teaches.push('wait-for-deployable'),
+      "idea 'wait-for-deployable': more than one home in the service path (S201, S203)",
+    ],
+    [
+      (map) => episodeIn(map, 'P201').teaches.push('stack-is-a-resource-group'),
+      "idea 'stack-is-a-resource-group': homed at level 100 and again (102, P201)",
+    ],
+    [
+      (map) => (map.ideas['agents-act'] = 'An agent acts within its charter'),
+      "idea 'agents-act': no home",
+    ],
+  ]);
+});
+
+test('a curriculum episode uses only ideas taught before it or in what it builds on', () => {
+  assert.deepEqual(ideaUseErrors(curriculum()), []);
+  assertCurriculumCases(ideaUseErrors, [
+    [
+      (map) => episodeIn(map, 'S201').uses.push('maintenance-closes-deploys'),
+      "S201: uses 'maintenance-closes-deploys' without building on P202",
+    ],
+    [
+      (map) => episodeIn(map, 'P202').uses.push('onboard-trusts-fork'),
+      "P202: uses 'onboard-trusts-fork' without building on P206",
+    ],
+    [
+      (map) => (episodeIn(map, 'S305').after = ['S206']),
+      "S305: uses 'borrow-prove-restore' without building on P205",
+    ],
+    [
+      (map) => {
+        map.ideas['verdict-counts-tests'] = 'The verdict counts tests';
+        episodeIn(map, 'S302').teaches.push('verdict-counts-tests');
+        episodeIn(map, 'S301').uses.push('verdict-counts-tests');
+      },
+      "S301: uses 'verdict-counts-tests' without building on S302",
+    ],
+    [
+      (map) => episodeIn(map, 'S201').uses.push('agents-act'),
+      "S201: uses 'agents-act', which no episode teaches",
+    ],
+  ]);
+});
+
+test('every myth has a curriculum home, at most one per path, and a level 100 or 200 episode carries one at most', () => {
+  assert.deepEqual(mythHomeErrors(curriculum()), []);
+  const move = (map, id, from, to) => {
+    const home = episodeIn(map, from);
+    home.mistakes = home.mistakes.filter((mistake) => mistake !== id);
+    episodeIn(map, to).mistakes.push(id);
+  };
+  assertCurriculumCases(mythHomeErrors, [
+    [
+      (map) => (episodeIn(map, 'P201').mistakes = []),
+      "myth 'profiles-save-money': no home",
+    ],
+    [
+      (map) => episodeIn(map, 'P306').mistakes.push('stack-is-only-aks'),
+      "myth 'stack-is-only-aks': homed at level 100 and again (102, P306)",
+    ],
+    [
+      (map) => episodeIn(map, 'S305').mistakes.push('refresh-is-automatic'),
+      "myth 'refresh-is-automatic': more than one home in the service path (S204, S305)",
+    ],
+    [
+      (map) => move(map, 'teardown-green-means-deleted', 'P302', 'P207'),
+      'P207: carries more than one myth (smoke-proves-api, teardown-green-means-deleted)',
+    ],
+    [
+      (map) => move(map, 'profiles-save-money', 'P201', '102'),
+      '102: carries more than one myth (stack-is-only-aks, profiles-save-money)',
+    ],
+  ]);
+});
+
+test('every curriculum deep dive names an episode it builds on', () => {
+  assert.deepEqual(libraryAfterErrors(curriculum()), []);
+  assertCurriculumCases(libraryAfterErrors, [
+    [
+      (map) => (episodeIn(map, 'S304').after = []),
+      'S304: names no episode it builds on',
+    ],
+  ]);
 });
