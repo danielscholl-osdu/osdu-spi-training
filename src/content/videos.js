@@ -169,6 +169,41 @@ export const fieldnotes = [
     notes: [],
   },
   {
+    id: '04',
+    chapter: 'fork-shape',
+    title: 'The shape of the fork',
+    duration: 176,
+    width: 1920,
+    height: 1080,
+    files: {
+      video: 'fieldnote-04/video.mp4',
+      poster: 'fieldnote-04/poster.jpg',
+      captions: 'fieldnote-04/captions.vtt',
+      chapters: 'fieldnote-04/chapters.vtt',
+    },
+    chapters: [
+      { time: 26.9, claim: 0 },
+      { time: 48.1, claim: 1 },
+      { time: 68.4, claim: 2 },
+      { time: 90.4, example: true },
+      { time: 122.6, mistake: 'fork-is-a-snapshot' },
+    ],
+    cutFrom: {
+      claims: [
+        'The fork owns provider/partition-azure, its Azure tests, its descriptor, and the engineering files the template delivers. Everything else is upstream’s, regenerated daily.',
+        'The fork has three branches with three jobs: fork_upstream is generated input, fork_integration is the workspace, main is the protected result. Upstream is outside all three.',
+        'fork_upstream is generated with the Azure paths absent by construction, so an upstream deletion has nothing to delete on the fork side.',
+      ],
+      example: 'The cache fallback fix, at rest',
+      mistake: {
+        id: 'fork-is-a-snapshot',
+        claim: 'A fork is a copy we took once and patch as we go.',
+      },
+      next: 'What happens to a provider change, and to upstream’s change, between midnight and an image digest?',
+    },
+    notes: [],
+  },
+  {
     id: '06',
     chapter: 'handshake',
     title: 'The handshake',

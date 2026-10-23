@@ -1,6 +1,6 @@
 # Fieldnote 04 · The shape of the fork
 
-**Status: revised; in production.** Cut from lesson 04 (`chapters['fork-shape']`). Aim for about 3 minutes. The revision follows two changes since the first draft: upstream no longer carries the Azure provider, and every service the stack runs now has a fork of the reference fork's shape, whose `main` image the stack runs by default. The dated evidence is in the word list below. The three outcome sentences, the example, and the myth are unchanged.
+**Status: published.** Cut on 23 October 2026, 2 minutes 56 seconds. Cut from lesson 04 (`chapters['fork-shape']`). Aim for about 3 minutes. The revision follows two changes since the first draft: upstream no longer carries the Azure provider, and every service the stack runs now has a fork of the reference fork's shape, whose `main` image the stack runs by default. The dated evidence is in the word list below. The three outcome sentences, the example, and the myth are unchanged.
 
 **Who is watching:** an engineer who has just seen the Azure provider inside the partition service in Fieldnote 03. **What they should believe after it:** the fork owns a short list of paths and everything else is regenerated from upstream every day; three branches have three jobs; and the generated branch never carries the Azure paths, so an upstream deletion has nothing to delete, as the real one showed.
 
