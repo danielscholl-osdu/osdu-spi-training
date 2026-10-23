@@ -36,7 +36,7 @@ A vanilla ES module single-page app. Vite's `root` is `src/`, `publicDir` is `pu
 
 **Chapters drive everything.** Each entry in `src/content/chapters.js` has a `group` (`start`, `learn`, `supplement`), a `book` for learn views, and a `kind`:
 
-Learn navigation order supplies lesson numbers and the **Lesson N of M** labels. **Working the stack** follows **Across the path**; `core-dags` is currently lesson 08, while the field check remains 07 with its Back to the start exit. Fieldnote IDs are independent: the draft Fieldnote 11 maps to `core-dags`. A lesson can ship without a produced video; keep synthetic episode fixtures in tests and publish no media entry or Watch chip until a cut exists.
+Learn navigation order supplies lesson numbers and the **Lesson N of M** labels. **Working the stack** follows **Across the path**; `core-dags` is currently lesson 08, while the field check remains 07 with its Back to the start exit. Fieldnote IDs are independent: Fieldnote 11 maps to `core-dags`. A lesson can ship without a produced video; keep synthetic episode fixtures in tests and publish no media entry or Watch chip until a cut exists.
 
 - `kind: 'map'` names a `diagram` key in `diagramRenderers` (`src/components/diagrams.js`). The `overview` and `creation` renderers both come from `architecture.js`, which is the single architecture renderer shared by the overview and the lifecycle. A map chapter also names its `guides`, `listen` cues, and outcomes.
 - `kind: 'page'` names a `page` key in `pageRenderers` (`src/components/pages.js`).

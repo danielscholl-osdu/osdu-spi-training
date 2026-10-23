@@ -825,7 +825,7 @@ test('core DAG lesson connects three claims and five ingestion hops at the workl
   );
   assert.equal(chapter.lesson, undefined);
   assert.equal(chapter.tryIt, undefined);
-  assert.equal(lessonWatch('core-dags'), '');
+  assert.match(lessonWatch('core-dags'), /data-video-open="11"/);
   for (const [index, claim] of chapter.outcomes.entries()) {
     assert.ok(
       claimContext('core-dags', index).includes(escapeHtml(claim.text)),
@@ -5207,12 +5207,12 @@ test('a Fieldnote cut that drifts from its lesson names the episode and field', 
   ]);
 });
 
-test('core DAG video contract uses a frozen test-only Fieldnote 11 cut', () => {
+test('core DAG video contract holds for the fixture and the published Fieldnote 11', () => {
   const video = coreDagsFieldnote();
   verifyFieldnote(video);
-  assert.equal(fieldnoteFor('core-dags'), null);
-  assert.equal(fieldnoteById('11'), null);
-  assert.equal(lessonWatch('core-dags'), '');
+  verifyFieldnote(fieldnoteFor('core-dags'));
+  assert.equal(fieldnoteById('11').chapter, 'core-dags');
+  assert.match(lessonWatch('core-dags'), /data-video-open="11"/);
   assert.equal(video.nextChapter, undefined);
   assert.match(claimStrip('core-dags', video), /data-video-open="11"/);
   const marks = fieldnoteChapters(video);

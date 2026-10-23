@@ -1,6 +1,6 @@
 # Fieldnote 11 · On behalf of you
 
-**Status: storyboard, revised after the take.** Season 2, _Working the stack_. Cut from osdu-spi-stack ADR-044 (`docs/decisions/044-core-profile-dags.md`), `software/stacks/osdu/dags/README.md`, and PRs #397, #401 and #402, read at `main` 3d3106d (release 0.32.0), and checked live on the take day's 0.32.0 environment. The lesson is `core-dags` in the _Working the stack_ book; the cut-from record goes into `src/content/videos.js` like season 1's.
+**Status: published.** Cut from the 22 October take, 4 minutes 5 seconds. Season 2, _Working the stack_. Cut from osdu-spi-stack ADR-044 (`docs/decisions/044-core-profile-dags.md`), `software/stacks/osdu/dags/README.md`, and PRs #397, #401 and #402, read at `main` 3d3106d (release 0.32.0), and checked live on the take day's 0.32.0 environment. The lesson is `core-dags` in the _Working the stack_ book; the cut-from record goes into `src/content/videos.js` like season 1's.
 
 **Who is watching:** an engineer who has brought up a core environment (Fieldnote 02) and has added themselves with `spi users` (Fieldnote 09). **What they should believe after it:** the stack decides which DAG files Airflow runs and refuses anything it can't verify; a Deployable environment is not yet proof that ingestion works; and every task writes on behalf of the person who started the run, which `spi test dags --as me` proves end to end.
 
