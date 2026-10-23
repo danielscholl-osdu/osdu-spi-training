@@ -17,7 +17,7 @@ export function theLineDiagram() {
     )}
     ${zone(
       'line-stations',
-      'Six stations · the same in every fork',
+      'The stations · the same in every fork',
       `${node('line-upstream', 'Upstream', 'The community’s repository, where shared code changes')}
       ${arrow('↓ every day at 00:00 UTC')}
       ${node('line-sync', 'Sync', 'Proposes upstream’s changes to the fork')}
@@ -31,9 +31,9 @@ export function theLineDiagram() {
     )}
     ${zone(
       'line-lane',
-      'The lane · beside Cascade and Main',
+      'The lane · the sixth station, beside Cascade and Main',
       `${node('line-image', 'An image per eligible commit', 'Pushed to GHCR under the commit’s sha tag')}
-      ${arrow('↓ before any release exists')}
+      ${arrow('↓ the same image, not a rebuild')}
       ${node('line-lane', 'The lane', 'The image takes a turn in a running stack, and the service’s tests check it')}
       ${node('line-stack', 'A running stack', 'Runs main’s image by default')}`,
     )}

@@ -39,7 +39,7 @@ export const componentDetails = {
   'line-upstream': {
     label: 'OSDU community / upstream',
     title: 'Upstream is where the community changes shared code.',
-    body: 'The community’s partition repository is the first station. Sync reads the tip of its default branch, and a change there reaches the fork only through sync. Upstream carries no Azure provider; that lives in the fork.',
+    body: 'The community’s partition repository is the first station. Sync reads the tip of its default branch, and a change there reaches the fork through sync, or sooner when a fix is ported by hand. Upstream carries no Azure provider; that lives in the fork.',
     artifact: {
       label: 'The upstream repository',
       code: 'https://community.opengroup.org/osdu/platform/system/partition',
@@ -94,7 +94,7 @@ export const componentDetails = {
   'line-image': {
     label: 'GHCR / ghcr.io/azure/osdu-spi-partition',
     title: 'Every eligible commit gets an image.',
-    body: 'When the Java build passes on the fork’s own pull request or on a push to the integration workspace or main, the validation workflow builds the service image and pushes it to GHCR under the commit’s sha tag. That image, not a rebuild, is what the lane runs and what a release later tags.',
+    body: 'When the Java build passes on the fork’s own pull request or on a push to the integration workspace or main, the validation workflow builds the service image and pushes it to GHCR under the commit’s sha tag. That image, not a rebuild, is what the lane runs, and a release adds its version tag to the release commit’s image the same way.',
     artifact: {
       label: 'The tag a commit’s image carries',
       code: 'ghcr.io/azure/osdu-spi-partition:sha-<12>',
@@ -105,7 +105,7 @@ export const componentDetails = {
   'line-lane': {
     label: 'Azure/osdu-spi-partition / the lane',
     title: 'In the lane, a new image takes a turn in a running stack.',
-    body: 'Deploy and Test runs on the fork’s own pull requests and on pushes to the integration workspace and to main, all before any release. It runs the new image in a stack and checks it with the service’s own tests. The run after a merge to main proves the image a stack runs by default.',
+    body: 'Deploy and Test runs on the fork’s own pull requests and on pushes to the integration workspace and to main. It runs the new image in a stack and checks it with the service’s own tests. The run after a merge to main proves the image a stack runs by default. Only a release commit’s image is tagged before its turn: the release tags it as soon as it is pushed, and its turn follows.',
     artifact: {
       label: 'The lane’s jobs',
       code: '.github/workflows/validate.yml\nDeploy Gate · Deploy and Test',
@@ -159,7 +159,7 @@ export const componentDetails = {
   'kinds-platform-work': {
     label: 'The line / platform work',
     title: 'Platform work changes what carries every service.',
-    body: 'Changing the stack, the template’s workflows, or the shared environment changes the line under every service at once. That work lands in Azure/osdu-spi and Azure/osdu-spi-stack and reaches the forks through template sync and stack releases. It is the platform path’s work.',
+    body: 'Changing the stack, the template’s workflows, or the shared environment changes the line under every service. That work lands in Azure/osdu-spi and Azure/osdu-spi-stack and reaches the forks through template sync and stack releases. It is the platform path’s work.',
     artifact: {
       label: 'Where platform work lands',
       code: 'Azure/osdu-spi · Azure/osdu-spi-stack',
@@ -1239,7 +1239,7 @@ export const componentDetails = {
   'provider-azure': {
     label: 'The Azure provider',
     title: 'Upstream does not carry this directory. The fork holds it.',
-    body: 'provider/partition-azure implements the interface from view 03. It exists on main and fork_integration and is absent from fork_upstream by construction, so nothing upstream does to that path reaches the fork. It was brought across once by a scripted cutover and has been fork-owned since.',
+    body: 'provider/partition-azure implements the interface from 103. It exists on main and fork_integration and is absent from fork_upstream by construction, so nothing upstream does to that path reaches the fork. It was brought across once by a scripted cutover and has been fork-owned since.',
     artifact: {
       label: 'Where it is and is not',
       code: 'upstream tip:      absent\nfork_upstream:     absent (never enters the merge base)\nmain:              provider/partition-azure/  fork-owned',

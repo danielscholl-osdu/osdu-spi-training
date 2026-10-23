@@ -868,7 +868,7 @@ export const chapters = {
           alternate: {
             observation:
               'The run you opened skipped Deploy and Test, or a file no longer matches the description.',
-            next: 'A push whose changes are all on the workflow’s ignored paths skips the build and the lane; open an earlier run from a merged pull request. Files on main change as template updates arrive; search the file for the job or key the step names.',
+            next: 'The run’s summary gives the reason Deploy and Test skipped; open an earlier run from a merged pull request. Files on main change as template updates arrive; search the file for the job or key the step names.',
           },
           cleanup: {
             steps: [
@@ -965,7 +965,7 @@ export const chapters = {
       {
         headline: 'A fork owns only a few of its paths.',
         text: 'A service fork owns its Azure provider, its Azure tests, and the files that describe it; its workflows come from the template, and the community’s code is regenerated from upstream every day.',
-        why: 'Partition’s CONTRIBUTING.md names three owners: the fork’s own paths, the template’s .github/, build/, and release configuration, and the community’s shared code. Template sync overwrites the template’s files and sync regenerates the community’s, so the fork changes only its own.',
+        why: 'Partition’s CONTRIBUTING.md names three owners: the fork’s own paths, the template’s .github/, build/, and release configuration, and the community’s shared code. Template sync overwrites the template’s files and sync regenerates the community’s, so a change to either belongs in the template or upstream.',
         focus: ['line-own', 'line-template', 'line-community'],
         scopes: ['line-fork'],
         evidence: 'line-own',
@@ -984,14 +984,14 @@ export const chapters = {
           'line-release',
           'line-lane',
         ],
-        scopes: ['line-stations'],
+        scopes: ['line-stations', 'line-lane'],
         evidence: 'line-template',
         crossing: 'One template, six stations',
       },
       {
         headline: 'Every eligible commit is proved before any release.',
         text: 'Every eligible commit gets an image and a turn in a running stack before any release exists, so a release only tags an image that is already there.',
-        why: 'The lane runs on the fork’s own pull requests and on pushes to the integration workspace and to main. A release waits for the release commit’s image, then adds its version tag without rebuilding.',
+        why: 'The lane runs on the fork’s own pull requests and on pushes to the integration workspace and to main. A release waits for the release commit’s image, then adds its version tag without rebuilding; that image takes its own turn in the lane just after.',
         focus: ['line-image', 'line-lane', 'line-stack', 'line-release'],
         scopes: ['line-lane'],
         evidence: 'line-lane',
@@ -1185,7 +1185,7 @@ export const chapters = {
       {
         headline: 'The line carries the product.',
         text: 'The line is the template and its workflows, the shared stack, and the automation that runs them; the product is each service’s code, its Azure provider, its tests, and what the service promises its callers.',
-        why: 'Every fork is created from one template and runs its workflows, and every fork’s new images take their turn in the shared stack. A service’s code, provider, and tests change in its own fork; the line changes in the template’s and the stack’s repositories.',
+        why: 'Every fork is created from one template and runs its workflows, and every fork’s new images take their turn in the shared stack. A service’s Azure provider and Azure tests change in its own fork and its shared code changes upstream; the line changes in the template’s and the stack’s repositories.',
         focus: [
           'kinds-template',
           'kinds-stack',

@@ -38,7 +38,7 @@ A new page, `two-kinds-of-work`, made from this storyboard:
 - Claim 2, "A person approves what reaches main.": "Automation opens the sync, cascade, release, dependency, and template pull requests, and nothing reaches main until a code owner approves it after its last push with the required checks green; when the line cannot go on alone, it opens an issue for a person."
 - Claim 3, "Your work picks your path.": "Changing what a service does is service work and takes the service path; changing what carries every service is platform work and takes the platform path; one person can do both."
 - Example: the three gates above, with the same labels.
-- Next: both paths by title only, "S201 · Your own environment" and "P201 · How it comes to life", because P201's question names a command.
+- Next: the end card names both paths by title only, "S201 · Your own environment" and "P201 · How it comes to life", because P201's question names a command. Until the paths ship, the page's pager continues to lesson 02.
 - No easy mistake. `human-required-is-a-note` is S305's.
 
 ## Word list the narration must keep

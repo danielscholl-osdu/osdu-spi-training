@@ -156,7 +156,12 @@ export const fieldnotes = [
       example: 'Follow one upstream change along the line',
       next: 'Who does what, and which path is mine?',
     },
-    notes: [],
+    notes: [
+      {
+        chapter: 2,
+        text: 'A release commit’s own image is the exception: the release tags it as soon as it is pushed, and its turn in the lane follows.',
+      },
+    ],
   },
   {
     id: '105',

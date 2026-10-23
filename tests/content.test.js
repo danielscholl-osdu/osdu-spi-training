@@ -2,7 +2,7 @@
 // Licensed under the MIT License.
 
 import assert from 'node:assert/strict';
-import { existsSync, readFileSync } from 'node:fs';
+import { existsSync, readdirSync, readFileSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
 import test from 'node:test';
 import { chapters, chapterGroups } from '../src/content/chapters.js';
@@ -1326,11 +1326,18 @@ test('the new level 100 pages keep their storyboard words and word lists', () =>
       storyboard.includes(`**Example: ${chapter.example.title}**`),
       `${page.key}: example title`,
     );
-    for (const hop of chapter.example.hops)
-      assert.ok(
-        straight(storyboard).includes(straight(`${hop.label} ("${hop.copy}")`)),
-        `${page.key}: hop ${hop.label}`,
-      );
+    const exampleRow = storyboard
+      .split('\n')
+      .find((line) => line.includes(`**Example: ${chapter.example.title}**`));
+    assert.deepEqual(
+      [...straight(exampleRow).matchAll(/([A-Z][\w' ]*?) \("([^"]+)"\)/g)].map(
+        ([, label, copy]) => `${label}: ${copy}`,
+      ),
+      chapter.example.hops.map(({ label, copy }) =>
+        straight(`${label}: ${copy}`),
+      ),
+      `${page.key}: the storyboard's hops, in order`,
+    );
     assert.ok(chapter.tryIt, `${page.key}: Try it`);
     for (const variant of chapter.tryIt.variants)
       assert.equal(variant.access, 'browser only', page.key);
@@ -1349,17 +1356,27 @@ test('the new level 100 pages keep their storyboard words and word lists', () =>
     );
     const orange = [
       ...html.matchAll(
-        /class="node fork-code[^"]*"[^>]*data-detail="([^"]+)"/g,
+        /class="node\b[^"]*\bfork-code\b[^"]*"[^>]*data-detail="([^"]+)"/g,
       ),
     ].map((match) => match[1]);
     assert.deepEqual(orange, page.forkOwned, `${page.key}: orange`);
 
+    // Cleanup's "Nothing to remove" is about the learner's own footprint.
+    const tryItText = (value, key) =>
+      ['tested', 'sources', 'cleanup'].includes(key)
+        ? []
+        : typeof value === 'string'
+          ? [value]
+          : Object.entries(value ?? {}).flatMap(([k, v]) => tryItText(v, k));
     const copy = [
       chapter.intro,
       chapter.subhead,
       chapter.scope,
       chapter.goal,
+      chapter.figure,
       chapter.example.note,
+      chapter.example.crossing,
+      ...tryItText(chapter.tryIt),
       ...chapter.outcomes.flatMap(({ headline, text, why }) => [
         headline,
         text,
@@ -1370,6 +1387,8 @@ test('the new level 100 pages keep their storyboard words and word lists', () =>
       ...ids.flatMap((id) => [
         componentDetails[id].title,
         componentDetails[id].body,
+        componentDetails[id].artifact?.label,
+        componentDetails[id].artifact?.code,
       ]),
     ].join(' ');
     for (const pattern of [
@@ -1383,6 +1402,23 @@ test('the new level 100 pages keep their storyboard words and word lists', () =>
       /\bremov|\bdelet|still (?:carries|holds|ships)|plans to|has begun/i,
     ])
       assert.doesNotMatch(copy, pattern, `${page.key}: avoids ${pattern}`);
+  }
+});
+
+test('no copy names lesson 01 or 03, which became pages 102 and 103', () => {
+  const folders = ['../src/', '../src/content/', '../src/components/'];
+  for (const folder of folders) {
+    const url = new URL(folder, import.meta.url);
+    for (const file of readdirSync(url).filter((name) =>
+      name.endsWith('.js'),
+    )) {
+      const text = readFileSync(new URL(file, url), 'utf8');
+      assert.doesNotMatch(
+        text,
+        /\b(?:lessons?|views?) 0[13]\b|\(0[13]\)/i,
+        `${folder}${file}`,
+      );
+    }
   }
 });
 
@@ -1405,7 +1441,7 @@ test('Working the stack maps draw fork-owned source in orange and nothing else',
     const html = diagramRenderers[diagram]();
     const orange = [
       ...html.matchAll(
-        /class="node fork-code[^"]*"[^>]*data-detail="([^"]+)"/g,
+        /class="node\b[^"]*\bfork-code\b[^"]*"[^>]*data-detail="([^"]+)"/g,
       ),
     ].map((match) => match[1]);
     assert.deepEqual(orange, expected, diagram);
