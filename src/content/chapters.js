@@ -73,7 +73,11 @@ export const chapters = {
       {
         label: 'Working the stack',
         lessons: {
+          'whose-image': 'Whose image is running',
+          'who-is-asking': 'Who is asking',
+          'ready-not-loaded': 'Ready is not loaded',
           'core-dags': 'On behalf of you',
+          'prove-from-desk': 'Prove it from your desk',
         },
       },
     ],
@@ -1385,6 +1389,298 @@ export const chapters = {
       'Provisioning, convergence, readiness, and proof are different signals, and I check the one I actually need.',
     ],
   },
+  'whose-image': {
+    kind: 'map',
+    group: 'learn',
+    book: 'Working the stack',
+    title: 'Whose image is running',
+    subtitle: 'Canonical images and their age',
+    subhead:
+      "Every service runs an image its Azure fork's main branch built, chosen once at spi up and kept until a refresh moves it.",
+    intro:
+      '<p>Thirteen services and schema’s loader each run a build of an Azure service fork’s main branch, pulled from GHCR and pinned by digest.</p><p>Builds on the environment from lesson 02 and the fork’s day from lesson 05. This view works where the code comes from: the fork on GitHub and its GHCR packages, and the image lock and pods in your environment.</p>',
+    figure: 'From a fork commit to a running pod',
+    selected: 'img-resolve',
+    diagram: 'whoseImage',
+    guides: [],
+    listen: [],
+    mistakes: ['refresh-is-automatic'],
+    scope:
+      'Canonical images only; pins are lesson 06’s subject. The tag, commit, and digest in the example are the values one environment showed. This map is illustrative, executes nothing, and reports no live state.',
+    sources: ['images', 'imageLock', 'imagePins', 'envRefresh'],
+    question:
+      'Which build does each service run, where did it come from, and how long can it stay?',
+    builds:
+      'Builds on the environment from lesson 02 and the fork’s day from lesson 05.',
+    where:
+      'Where the code comes from: the service fork on GitHub, its GHCR packages, and the image lock and pods in your environment.',
+    goal: 'You can say which commit each service runs, how the lock ties that commit to the digest the pods run, and when an image needs a refresh.',
+    outcomes: [
+      {
+        headline: "Each service runs its Azure fork's main image from GHCR.",
+        text: 'At spi up the CLI asks GHCR which digest main-snapshot names for each of thirteen forks and records it under the sha tag of the commit that built it; schema’s loader comes from the same commit as schema.',
+        why: 'The community registry is not a source: its images don’t carry the Azure provider, and a missing or private package fails resolution rather than falling back. It is the build main last published, not a release. An environment can record a trusted mirror for one service at a time with spi onboard --canonical-source fork.',
+        focus: ['img-fork', 'img-ghcr', 'img-resolve'],
+        scopes: ['img-source'],
+        crossing: 'Fork main → GHCR → spi up',
+        evidence: 'img-resolve',
+      },
+      {
+        headline: 'The lock ties each tag to one fork commit and one digest.',
+        text: 'osdu-image-lock records each service’s repository, sha tag, digest, and build date; the tag names a commit on the fork’s main, and the pods run the digest.',
+        why: 'A sha tag can move; the digest cannot, and Flux renders each service from it. spi info prints the tag cut to 12 characters. Its Source column is the policy the next refresh resolves; its Image column is what runs now.',
+        focus: ['img-lock', 'img-ghcr', 'img-fork', 'img-pods', 'img-info'],
+        scopes: ['img-environment'],
+        crossing: 'Tag → fork commit · digest → pods',
+        evidence: 'img-lock',
+      },
+      {
+        headline:
+          'A canonical image ages toward retention until a refresh moves it.',
+        text: 'Nothing moves a canonical on its own: spi info and spi status mark one built more than 21 days ago, and the fork’s weekly retention can delete a sha image over 30 days old once main has built past it.',
+        why: 'spi up keeps an existing lock unless asked to refresh. Only the shared environment refreshes on a schedule, every weekday at 04:00 UTC. On a personal environment the refresh is yours: spi service refresh with a service name, or --forks for every service. Pinned services are not marked.',
+        focus: ['img-info', 'img-refresh', 'img-retention'],
+        scopes: ['img-workstation'],
+        crossing: 'Build date → 21-day mark → refresh',
+        evidence: 'img-refresh',
+      },
+    ],
+    example: {
+      title: "Follow partition's tag home",
+      code: 'spi info',
+      scopes: ['img-environment'],
+      crossing: 'spi info → lock → GHCR → fork commit → pods',
+      hops: [
+        {
+          detail: 'img-info',
+          label: 'spi info',
+          copy: 'spi info reads the lock. Partition’s row shows sha-8aa26ca0, the tag cut to 12 characters, its build date, and source azure.',
+        },
+        {
+          detail: 'img-lock',
+          label: 'osdu-image-lock',
+          copy: 'The lock holds partition’s repository, ghcr.io/azure/osdu-spi-partition, the full tag sha-8aa26ca007ad, the digest sha256:ace8c625…, and the build date.',
+        },
+        {
+          detail: 'img-ghcr',
+          label: 'GHCR tag',
+          copy: 'On GHCR, sha-8aa26ca007ad points at the same digest the lock recorded.',
+        },
+        {
+          detail: 'img-fork',
+          label: 'Fork commit',
+          copy: 'The tag names commit 8aa26ca007ad on Azure/osdu-spi-partition’s main, a merged upstream integration.',
+        },
+        {
+          detail: 'img-pods',
+          label: 'Running pods',
+          copy: 'spi status shows both partition pods running osdu-spi-partition@sha256:ace8c625…. Whose image? The fork’s, from one commit you can read.',
+        },
+      ],
+      note: 'The values are the ones one environment showed; yours name other commits and digests. This site executes nothing and reports no live state.',
+    },
+  },
+  'who-is-asking': {
+    kind: 'map',
+    group: 'learn',
+    book: 'Working the stack',
+    title: 'Who is asking',
+    subtitle: 'People, tokens, and roles',
+    subhead:
+      'Your own token passes the mesh, spi users puts you in entitlements groups, and the role you choose decides what you may do.',
+    intro:
+      '<p>Calls made with plain spi token act as the platform’s deploy identity. To call as yourself, you need a member record in entitlements.</p><p>Builds on the environment from lesson 02 and the token check from lesson 07’s identity theme. This view works at the namespaces-and-workloads level: the mesh’s identity filter and the Entitlements and Workflow services in osdu, and the CLI on your workstation.</p>',
+    figure: 'From your token to an entitlements answer',
+    selected: 'ask-mesh',
+    diagram: 'whoIsAsking',
+    guides: [],
+    listen: [],
+    mistakes: ['users-add-accumulates'],
+    scope:
+      'People calling a running stack; the deployer’s Azure roles belong to bringing an environment up. This map is illustrative, executes nothing, and reports no live state.',
+    sources: ['peopleAccess', 'userRoles', 'jwt'],
+    question: 'Who does the stack think you are, and what may you do?',
+    builds:
+      'Builds on the environment from lesson 02 and the token check from lesson 07’s identity theme.',
+    where:
+      'Namespaces and workloads: the mesh’s identity filter and the Entitlements and Workflow services in osdu, with the CLI on your workstation.',
+    goal: 'You can explain why your own token is refused until you are a member, what spi users add stores and proves, and which roles let Workflow act for you.',
+    outcomes: [
+      {
+        headline: 'Your own token passes the mesh, and entitlements decides.',
+        text: 'spi token --me prints your own Azure token; the mesh accepts its issuer and writes your unique_name as x-user-id, and entitlements refuses you with 401 until you are a member.',
+        why: 'Bring-up seeds three identities, the workload, the deploy identity, and the member, and no person. Plain spi token mints the deploy identity, which sits in users.datalake.ops, so every call made with it was the platform’s, never yours.',
+        focus: [
+          'ask-me-token',
+          'ask-mesh',
+          'ask-entitlements',
+          'ask-deploy-token',
+        ],
+        scopes: ['ask-sidecar'],
+        crossing: 'Your token → mesh → Entitlements',
+        evidence: 'ask-mesh',
+      },
+      {
+        headline: 'spi users stores the id the mesh writes, and proves it.',
+        text: 'spi users add --me applies the mesh’s own claim order to your token and stores that id; the deploy identity writes your groups, then the command calls entitlements with your token for up to a minute.',
+        why: 'On a default stack that id is unique_name, not your object id or sign-in name. The check proves entitlements admits you in the first partition written; it says nothing about data ACLs. An id typed for someone else is stored as typed and verified by nothing.',
+        focus: ['ask-users-add', 'ask-groups', 'ask-entitlements'],
+        scopes: ['ask-workstation'],
+        crossing:
+          'spi users add → deploy identity writes → your token verifies',
+        evidence: 'ask-users-add',
+      },
+      {
+        headline: 'Only editor, admin and ops can run ingestion as you.',
+        text: 'A role is one of four presets of groups; editor, admin and ops carry users.datalake.impersonation, which lets the stack’s OSDU identity act for you through Workflow, and viewer does not.',
+        why: 'Viewer is users and users.datalake.viewers; editor adds users.datalake.editors and impersonation; admin and ops each carry users.datalake.ops and impersonation. With no --role, the default is admin. As a viewer, spi test dags --as me stops before any run with impersonation_missing.',
+        focus: ['ask-roles', 'ask-groups', 'ask-workflow'],
+        scopes: ['ask-services'],
+        crossing: 'Role preset → impersonation → Workflow',
+        evidence: 'ask-roles',
+      },
+    ],
+    example: {
+      title: 'From 401 to 200',
+      code: 'spi users add --me --role viewer',
+      scopes: ['ask-sidecar', 'ask-services'],
+      crossing:
+        'Your token → mesh → Entitlements → spi users add → Entitlements',
+      hops: [
+        {
+          detail: 'ask-me-token',
+          label: 'Your token',
+          copy: 'spi token --me prints your own token: a v1 token for the management audience. The call is GET /api/entitlements/v2/groups with data-partition-id: opendes.',
+        },
+        {
+          detail: 'ask-mesh',
+          label: 'Mesh',
+          copy: 'The mesh accepts the v1 issuer and writes x-user-id from your unique_name. It authenticates you; it grants nothing.',
+        },
+        {
+          detail: 'ask-entitlements',
+          label: 'Entitlements: 401',
+          copy: 'Entitlements finds no group for that id and refuses: HTTP 401.',
+        },
+        {
+          detail: 'ask-users-add',
+          label: 'spi users add',
+          copy: 'spi users add --me --role viewer stores the same id, has the deploy identity add you to users and users.datalake.viewers, then checks with your token.',
+        },
+        {
+          detail: 'ask-groups',
+          label: 'Entitlements: 200',
+          copy: 'Same token, same call: entitlements finds you in your groups and answers HTTP 200.',
+        },
+      ],
+      note: 'The first call’s 401 is entitlements’ refusal, as the stack’s decision record describes; a status code alone does not name the boundary that refused. This site executes nothing and reports no live state.',
+    },
+  },
+  'ready-not-loaded': {
+    kind: 'map',
+    group: 'learn',
+    book: 'Working the stack',
+    title: 'Ready is not loaded',
+    subtitle: 'Readiness, deploys, and data',
+    subhead:
+      "Ready is Flux's verdict, Deployable adds the environment's own gates, and loading data is a separate step that changes neither.",
+    intro:
+      '<p>A Deployable environment holds its schemas and no records. Reference data arrives only when you run spi load.</p><p>Builds on the bring-up and spi status --watch from lesson 02, and caller access from lesson 09. This view works at the namespaces-and-workloads level: the Flux layers in osdu-flux, the schema and load Jobs and the Storage API in osdu, and the CLI on your workstation.</p>',
+    figure: 'Two verdicts, then a load',
+    selected: 'load-status',
+    diagram: 'readyNotLoaded',
+    guides: [],
+    listen: [],
+    mistakes: ['deployable-means-loaded'],
+    scope:
+      'Storage means the OSDU API, not an Azure Storage account. Counts are from one load of the reference data. This map is illustrative, executes nothing, and reports no live state.',
+    sources: ['statusContract', 'namedLoads', 'loadRegistry', 'schemaLoad'],
+    question:
+      'When is a new environment ready, open for deploys, and holding data?',
+    builds:
+      'Builds on the bring-up and spi status --watch from lesson 02, and caller access from lesson 09.',
+    where:
+      'Namespaces and workloads: the Flux layers in osdu-flux, the schema and load Jobs and the Storage API in osdu, and the CLI on your workstation.',
+    goal: 'You can tell Ready from Deployable, say what data a new environment holds, and read what a completed load does and does not prove.',
+    outcomes: [
+      {
+        headline:
+          'Deployable is Ready, with maintenance off and bootstrap finished.',
+        text: 'spi status answers two questions: Ready means every gating Flux layer has converged, and Deployable adds maintenance off, a deploy record present, and the members Job finished in every partition.',
+        why: 'Non-gating layers such as legal seeding and DAG registration are shown but never count, so read the boolean, not the count. An environment brought up with --tag starts in maintenance; a branch environment is deployable after convergence. Clearing maintenance is your decision, and spi status exits 0 only when Deployable.',
+        focus: [
+          'load-status',
+          'load-gating',
+          'load-nongating',
+          'load-maintenance',
+        ],
+        scopes: ['load-flux'],
+        crossing:
+          'Flux layers → Ready → maintenance and bootstrap → Deployable',
+        evidence: 'load-status',
+      },
+      {
+        headline: 'A Deployable environment holds schemas and no records.',
+        text: 'Bring-up registers the schemas through a Flux Job behind a gating layer and writes no records; reference data is loaded by nothing until you run spi load.',
+        why: 'The stack version ships a registry of named loads that pins reference data to a data-definitions release and its commit and makes it wait for the schemas. spi load refuses with not_deployable, exit 2, until the environment is Deployable.',
+        focus: ['load-schema-job', 'load-registry', 'load-cli', 'load-loads'],
+        scopes: ['load-osdu'],
+        crossing:
+          'Schema Job at bring-up · reference data only through spi load',
+        evidence: 'load-registry',
+      },
+      {
+        headline:
+          'Loaded means Storage accepted the records, not that search finds them.',
+        text: 'spi load creates one Job per partition that checks every kind against Schema and writes in batches of 500, skipping duplicates; complete means Storage accepted the records, and the indexer may still be working.',
+        why: 'The Job fails when more than 1% of records fail, so complete can include up to 1% failed. A load never changes Ready or Deployable. Deleting a load Job removes the fact, not the records.',
+        focus: ['load-job', 'load-storage', 'load-loads'],
+        scopes: ['load-osdu'],
+        crossing: 'spi load → load Job → Storage',
+        evidence: 'load-storage',
+      },
+    ],
+    example: {
+      title: 'From Ready to 80,103 records',
+      code: 'spi load',
+      scopes: ['load-osdu'],
+      crossing:
+        'spi status → spi maintenance clear → spi load → load Job → Storage → spi load --status',
+      hops: [
+        {
+          detail: 'load-status',
+          label: 'spi status',
+          copy: 'An environment brought up at a release tag reads Ready, with 30 of 30 Kustomizations, and not deployable: the environment is in maintenance.',
+        },
+        {
+          detail: 'load-maintenance',
+          label: 'spi maintenance clear',
+          copy: 'After a partition lookup answers, you clear the flag in spi-deploy-record. The next spi status reads Deployable.',
+        },
+        {
+          detail: 'load-cli',
+          label: 'spi load',
+          copy: 'spi load checks Deployable and that schemas is complete, skips the schema load as already done, and creates the reference-data Job.',
+        },
+        {
+          detail: 'load-job',
+          label: 'Load Job',
+          copy: 'load-reference-data-opendes-99f8fc88 fetches data-definitions at its pinned commit and checks all 584 kinds against Schema before writing.',
+        },
+        {
+          detail: 'load-storage',
+          label: 'Storage',
+          copy: 'Storage accepts 80,103 records in batches of 500, none failed.',
+        },
+        {
+          detail: 'load-loads',
+          label: 'spi load --status',
+          copy: 'reference-data for opendes reads complete, 80103 records. Ready and Deployable did not change.',
+        },
+      ],
+      note: 'The counts are from one load on a core environment. Complete does not say whether search can find the records yet. This site executes nothing and reports no live state.',
+    },
+  },
   'core-dags': {
     kind: 'map',
     group: 'learn',
@@ -1483,6 +1779,101 @@ export const chapters = {
         },
       ],
       note: 'Both Workflow runs and the new record are retained; repeated checks create new evidence. To check an existing run, read its record from Storage instead. This site executes nothing. CI does not run this smoke against a live cluster.',
+    },
+  },
+  'prove-from-desk': {
+    kind: 'map',
+    group: 'learn',
+    book: 'Working the stack',
+    title: 'Prove it from your desk',
+    subtitle: 'spi test, reports, and local pins',
+    subhead:
+      'spi test runs the suite the deployed commit shipped, the report says what its tests prove, and a local build reaches the environment as a pin you can test the same way.',
+    intro:
+      '<p>spi test runs a service’s own suite from your workstation against the commit your environment runs; a local pin proves a change before a pull request.</p><p>Builds on the image lock and the temporary test deployment from lesson 06, and the canonical images from lesson 08. This view works where the code comes from: the service fork at the deployed commit, your workstation, and the lock, registry, and pods in your environment.</p>',
+    figure: 'One commit, from the fork to your desk to the pods',
+    selected: 'desk-run',
+    diagram: 'proveFromDesk',
+    guides: [],
+    listen: [],
+    mistakes: ['passed-means-checked'],
+    scope:
+      'Service acceptance suites run from a workstation; spi test dags is lesson 11’s. The commit and counts in the example are from one run. This map is illustrative, executes nothing, and reports no live state.',
+    sources: ['deployedSuites', 'suiteReport', 'localBuilds', 'imageLock'],
+    question: 'How do you prove a service from your desk?',
+    builds:
+      'Builds on the image lock and the temporary test deployment from lesson 06, and the canonical images from lesson 08.',
+    where:
+      'Where the code comes from: the service fork at the deployed commit, your workstation, and the image lock, registry, and pods in your environment.',
+    goal: 'You can run the suite a deployed commit shipped, read what a pass does and does not prove, and test a local change the same way.',
+    outcomes: [
+      {
+        headline: 'spi test runs the suite the deployed commit shipped.',
+        text: 'When a canonical is resolved, the lock also records the digest of the acceptance image built from the same commit; spi test runs that image by digest with the descriptor, resolver, and verdict script fetched from the fork at that commit.',
+        why: 'The run refuses unless the environment is Deployable and the service is not borrowed, mints the test callers the way spi token does, and discards its result if the target changed during the suite. A pin, a non-canonical entry, or no recorded acceptance digest refuses paired mode.',
+        focus: [
+          'desk-lock',
+          'desk-commit',
+          'desk-acceptance',
+          'desk-guards',
+          'desk-run',
+        ],
+        scopes: ['desk-github'],
+        crossing: 'Lock → fork commit → paired image → your machine',
+        evidence: 'desk-run',
+      },
+      {
+        headline: 'A pass counts tests, and the report shows what they prove.',
+        text: 'The verdict is the commit’s own script: a zero exit, at least one test not skipped, and no failures; --report counts the passing tests with empty bodies, and --review grades what each test proves against the service’s own API docs.',
+        why: 'JUnit reports a test with an empty body as a pass. --report computes its facts on your machine and sends nothing; --review sends the suite’s sources to a reviewer. Neither changes the verdict or the exit code.',
+        focus: ['desk-verdict', 'desk-report'],
+        scopes: ['desk-workstation'],
+        crossing: 'Verdict → --report → --review',
+        evidence: 'desk-report',
+      },
+      {
+        headline: 'A change on your desk reaches the stack as a local pin.',
+        text: 'spi service pin --source builds the JAR on your machine and the image in the environment’s own registry, pins it by digest, and waits for the rollout; spi test --source then runs your checkout’s suite, labeled matched when its commit and a clean tree equal the pin.',
+        why: 'The pin records origin local and refuses while a fork run borrows the service. A dirty or prebuilt build is labeled unmatched. spi service reset puts the canonical back. Checkout mode needs a JDK and Maven; paired mode needs Docker; spi check covers neither.',
+        focus: ['desk-checkout', 'desk-registry', 'desk-lock', 'desk-pods'],
+        scopes: ['desk-environment'],
+        crossing: 'Checkout → environment registry → lock → pods',
+        evidence: 'desk-registry',
+      },
+    ],
+    example: {
+      title: 'spi test partition, paired',
+      code: 'spi test partition --report',
+      scopes: ['desk-workstation'],
+      crossing: 'Guards → lock → GitHub at the commit → paired image → verdict',
+      hops: [
+        {
+          detail: 'desk-guards',
+          label: 'Guards',
+          copy: 'The environment is Deployable and partition is not borrowed. The CLI reads the target: the lock entry, the pods’ digest, and the rollout revision.',
+        },
+        {
+          detail: 'desk-lock',
+          label: 'Image lock',
+          copy: 'The lock gives the commit, sha-8aa26ca007ad, and the acceptance digest recorded beside it, sha256:7fbfeeed….',
+        },
+        {
+          detail: 'desk-commit',
+          label: 'GitHub at the commit',
+          copy: 'At the full commit, Azure/osdu-spi-partition gives .spi/service.yaml, the acceptance resolver, and suite-verdict.py.',
+        },
+        {
+          detail: 'desk-run',
+          label: 'Paired image',
+          copy: 'docker run pulls partition-acceptance by digest as linux/amd64 and runs the acceptance suite against the environment.',
+        },
+        {
+          detail: 'desk-verdict',
+          label: 'Verdict and page',
+          copy: 'The commit’s verdict: pass, 11 tests and 1 skipped. The CLI reads the target again, and --report writes spi-test-partition-acceptance.html.',
+        },
+      ],
+      note: 'The commit and counts are from one run; that run was not reviewed. This site executes nothing and reports no live state.',
     },
   },
   watch: {

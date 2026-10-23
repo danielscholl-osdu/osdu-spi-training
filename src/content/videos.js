@@ -373,7 +373,7 @@ export const fieldnotes = [
         id: 'run-succeeded-means-stored',
         claim: 'The run finished, so every record is stored.',
       },
-      next: null,
+      next: 'How do you prove a service from your desk?',
     },
     notes: [],
   },

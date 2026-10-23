@@ -500,4 +500,58 @@ export const sources = {
     path: 'software/stacks/osdu/services/partition.yaml',
     href: 'https://github.com/Azure/osdu-spi-stack/blob/main/software/stacks/osdu/services/partition.yaml',
   },
+  imagePins: {
+    label: 'The image lock and the 21-day refresh mark',
+    repo: 'osdu-spi-stack',
+    path: 'src/spi/pins.py',
+    href: 'https://github.com/Azure/osdu-spi-stack/blob/main/src/spi/pins.py',
+  },
+  envRefresh: {
+    label: 'Weekday refresh of the shared environment',
+    repo: 'osdu-spi-stack',
+    path: '.github/workflows/env-refresh.yml',
+    href: 'https://github.com/Azure/osdu-spi-stack/blob/main/.github/workflows/env-refresh.yml',
+  },
+  peopleAccess: {
+    label: 'People join entitlements through the CLI',
+    repo: 'osdu-spi-stack',
+    path: 'docs/decisions/039-people-join-entitlements-through-the-cli.md',
+    href: 'https://github.com/Azure/osdu-spi-stack/blob/main/docs/decisions/039-people-join-entitlements-through-the-cli.md',
+  },
+  userRoles: {
+    label: 'spi users role presets and verification',
+    repo: 'osdu-spi-stack',
+    path: 'src/spi/users.py',
+    href: 'https://github.com/Azure/osdu-spi-stack/blob/main/src/spi/users.py',
+  },
+  projectedId: {
+    label: 'The id the mesh writes for a person',
+    repo: 'osdu-spi-stack',
+    path: 'src/spi/identity.py',
+    href: 'https://github.com/Azure/osdu-spi-stack/blob/main/src/spi/identity.py',
+  },
+  namedLoads: {
+    label: 'Named loads run through the CLI',
+    repo: 'osdu-spi-stack',
+    path: 'docs/decisions/040-named-loads.md',
+    href: 'https://github.com/Azure/osdu-spi-stack/blob/main/docs/decisions/040-named-loads.md',
+  },
+  loadRegistry: {
+    label: 'The stack version’s load registry',
+    repo: 'osdu-spi-stack',
+    path: 'software/stacks/osdu/init/load-registry.yaml',
+    href: 'https://github.com/Azure/osdu-spi-stack/blob/main/software/stacks/osdu/init/load-registry.yaml',
+  },
+  deployedSuites: {
+    label: 'spi test runs the deployed commit’s own suites',
+    repo: 'osdu-spi-stack',
+    path: 'docs/decisions/036-spi-test-runs-the-deployed-commit.md',
+    href: 'https://github.com/Azure/osdu-spi-stack/blob/main/docs/decisions/036-spi-test-runs-the-deployed-commit.md',
+  },
+  suiteReport: {
+    label: 'spi test reports what a suite proves',
+    repo: 'osdu-spi-stack',
+    path: 'docs/decisions/037-spi-test-reports-what-a-suite-proves.md',
+    href: 'https://github.com/Azure/osdu-spi-stack/blob/main/docs/decisions/037-spi-test-reports-what-a-suite-proves.md',
+  },
 };
