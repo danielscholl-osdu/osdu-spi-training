@@ -1,6 +1,6 @@
 # Fieldnote 09 · Who is asking
 
-**Status: storyboard draft, written after the take.** Season 2, _Working the stack_. Cut from osdu-spi-stack ADR-039 (`docs/decisions/039-people-join-entitlements-through-the-cli.md`), ADR-032 and ADR-044's impersonation rule, PRs #299 and #302, `src/spi/users.py`, `src/spi/identity.py` and `src/spi/token.py`, read at `main` 870f729 (identical to the v0.32.0 tag 3d3106d outside `ops/`), and the 22 October take on spi 0.32.0. The lesson it proposes is `who-is-asking` in the _Working the stack_ book.
+**Status: published.** Season 2, _Working the stack_. Cut from osdu-spi-stack ADR-039 (`docs/decisions/039-people-join-entitlements-through-the-cli.md`), ADR-032 and ADR-044's impersonation rule, PRs #299 and #302, `src/spi/users.py`, `src/spi/identity.py` and `src/spi/token.py`, read at `main` 870f729 (identical to the v0.32.0 tag 3d3106d outside `ops/`), and the 22 October take on spi 0.32.0. The lesson it proposes is `who-is-asking` in the _Working the stack_ book.
 
 **Who is watching:** an engineer with a Ready core environment (Fieldnote 02) who has so far called the APIs with `spi token`. **What they should believe after it:** their own Azure token gets through the mesh and is then refused by entitlements until they are a member; `spi users add --me` stores the id the mesh writes for them and proves it with their own token; and the role they pick decides whether Workflow may act for them.
 
