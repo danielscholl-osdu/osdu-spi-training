@@ -1141,7 +1141,8 @@ test('Working the stack lessons keep their storyboard words and rungs', () => {
     );
     assert.equal(chapter.lesson, undefined, lesson.key);
     assert.equal(chapter.tryIt, undefined, lesson.key);
-    assert.equal(fieldnoteFor(lesson.key), null, `${lesson.key}: no cut yet`);
+    const cut = fieldnoteFor(lesson.key);
+    if (cut) assert.equal(cut.chapter, lesson.key, `${lesson.key}: its cut`);
     assert.ok(
       zoomLevels
         .find(({ id }) => id === lesson.level)

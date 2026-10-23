@@ -402,6 +402,50 @@ export const fieldnotes = [
     notes: [],
   },
   {
+    id: '09',
+    chapter: 'who-is-asking',
+    title: 'Who is asking',
+    duration: 202,
+    width: 1920,
+    height: 1080,
+    files: {
+      video: 'fieldnote-09/video.mp4',
+      poster: 'fieldnote-09/poster.jpg',
+      captions: 'fieldnote-09/captions.vtt',
+      chapters: 'fieldnote-09/chapters.vtt',
+    },
+    chapters: [
+      { time: 42.5, claim: 0 },
+      { time: 74.4, claim: 1 },
+      { time: 99.2, claim: 2 },
+      { time: 124.1, example: true },
+      { time: 149.6, mistake: 'users-add-accumulates' },
+    ],
+    cutFrom: {
+      claims: [
+        {
+          headline: 'Your own token passes the mesh, and entitlements decides.',
+          text: 'spi token --me prints your own Azure token; the mesh accepts its issuer and writes your unique_name as x-user-id, and entitlements refuses you with 401 until you are a member.',
+        },
+        {
+          headline: 'spi users stores the id the mesh writes, and proves it.',
+          text: 'spi users add --me applies the mesh’s own claim order to your token and stores that id; the deploy identity writes your groups, then the command calls entitlements with your token for up to a minute.',
+        },
+        {
+          headline: 'Only editor, admin and ops can run ingestion as you.',
+          text: 'A role is one of four presets of groups; editor, admin and ops carry users.datalake.impersonation, which lets the stack’s OSDU identity act for you through Workflow, and viewer does not.',
+        },
+      ],
+      example: 'From 401 to 200',
+      mistake: {
+        id: 'users-add-accumulates',
+        claim: 'Running spi users add again adds to the role I hold.',
+      },
+      next: 'When is a new environment ready, open for deploys, and holding data?',
+    },
+    notes: [],
+  },
+  {
     id: '11',
     chapter: 'core-dags',
     title: 'On behalf of you',
