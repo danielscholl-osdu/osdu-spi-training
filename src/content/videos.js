@@ -30,8 +30,6 @@ export const fieldnotes = [
     },
     chapters: [],
     cutFrom: null,
-    origin:
-      'Scripted from the Start narration and narrated with an Azure AI Speech voice; the notebook bookends generated with Gemini image models',
     summary:
       'The stack, the Azure provider inside each service, and the workflows that keep it current: one service, its fork, a candidate tested in a running stack, and what the lessons let you do.',
     notes: [],
@@ -79,8 +77,6 @@ export const fieldnotes = [
       },
       next: 'How is the stack created, and when is it usable?',
     },
-    origin:
-      'Scripted from lesson 01 and narrated with an Azure AI Speech voice; illustrations generated with Gemini image models',
     notes: [],
   },
   {
@@ -126,8 +122,6 @@ export const fieldnotes = [
       },
       next: 'Where does shared code hand the lookup to the Azure provider?',
     },
-    origin:
-      'Scripted from lesson 02 and narrated with an Azure AI Speech voice; terminal footage from one recorded spi up and spi down on 12 October 2026; illustrations generated with Gemini image models',
     notes: [],
   },
   {
@@ -172,8 +166,6 @@ export const fieldnotes = [
       },
       next: 'Who owns that provider code, and how does it survive upstream deleting it?',
     },
-    origin:
-      'Scripted from lesson 03 and narrated with an Azure AI Speech voice; source excerpts from the partition fork’s main branch; illustrations generated with Gemini image models',
     notes: [],
   },
   {
@@ -234,8 +226,6 @@ export const fieldnotes = [
       },
       next: 'Which reasonable assumptions will cost me an afternoon?',
     },
-    origin:
-      'Scripted from lesson 06 and narrated with an Azure AI Speech voice; the run is illustrative; illustrations generated with Gemini image models',
     notes: [],
   },
   {
@@ -339,8 +329,6 @@ export const fieldnotes = [
         },
       ],
     },
-    origin:
-      'Scripted from lesson 07 and narrated with an Azure AI Speech voice; illustrations generated with Gemini image models',
     notes: [],
   },
 ];
