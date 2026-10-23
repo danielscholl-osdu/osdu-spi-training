@@ -402,6 +402,51 @@ export const fieldnotes = [
     notes: [],
   },
   {
+    id: '08',
+    chapter: 'whose-image',
+    title: 'Whose image is running?',
+    duration: 211,
+    width: 1920,
+    height: 1080,
+    files: {
+      video: 'fieldnote-08/video.mp4',
+      poster: 'fieldnote-08/poster.jpg',
+      captions: 'fieldnote-08/captions.vtt',
+      chapters: 'fieldnote-08/chapters.vtt',
+    },
+    chapters: [
+      { time: 46.9, claim: 0 },
+      { time: 76.6, claim: 1 },
+      { time: 99.5, claim: 2 },
+      { time: 131.8, example: true },
+      { time: 160.2, mistake: 'refresh-is-automatic' },
+    ],
+    cutFrom: {
+      claims: [
+        {
+          headline: "Each service runs its Azure fork's main image from GHCR.",
+          text: 'At spi up the CLI asks GHCR which digest main-snapshot names for each of thirteen forks and records it under the sha tag of the commit that built it; schema’s loader comes from the same commit as schema.',
+        },
+        {
+          headline: 'The lock ties each tag to one fork commit and one digest.',
+          text: 'osdu-image-lock records each service’s repository, sha tag, digest, and build date; the tag names a commit on the fork’s main, and the pods run the digest.',
+        },
+        {
+          headline:
+            'A canonical image ages toward retention until a refresh moves it.',
+          text: 'Nothing moves a canonical on its own: spi info and spi status mark one built more than 21 days ago, and the fork’s weekly retention can delete a sha image over 30 days old once main has built past it.',
+        },
+      ],
+      example: "Follow partition's tag home",
+      mistake: {
+        id: 'refresh-is-automatic',
+        claim: "My environment picks up the fork's new main on its own.",
+      },
+      next: 'Who does the stack think you are, and what may you do?',
+    },
+    notes: [],
+  },
+  {
     id: '09',
     chapter: 'who-is-asking',
     title: 'Who is asking',
