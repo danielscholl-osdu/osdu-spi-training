@@ -69,12 +69,12 @@ export const suppliedPosters = [
     id: 'backing-environment',
     title: 'The Backing Environment',
     origin:
-      'Built for this site from the osdu-spi-stack environment lifecycle and fork deployment guides · status reviewed September 2026',
+      'Built for this site from the osdu-spi-stack environment lifecycle and fork deployment guides · status reviewed October 2026',
     image: 'posters/backing-environment.jpg',
     width: 2000,
     height: 1333,
     summary:
-      'One standing stack, pinned to a reviewed release tag, backs every fork’s deploy and test lane. Upgrade and refresh are the built lifecycle; reset, teardown, the pin backstop, and source promotion are drawn in a separate band as unbuilt.',
+      'One standing stack, pinned to a reviewed release tag, backs every fork’s deploy and test lane. Upgrade and refresh, which advances every canonical image, are the built lifecycle; reset, teardown, and the pin backstop are drawn in a separate band as unbuilt.',
     takeaways: [
       'The stack definition moves only by a merged stackVersion bump PR, never a rolling branch; merging the bump is what triggers env-upgrade.',
       'Three version axes: the stack release tag, the canonical images recorded in the image lock, and the ephemeral pins a fork run puts under test.',

@@ -40,7 +40,7 @@ export function architectureMap(stage = null, path = 'developer') {
         ${stage === 4 ? `<div class="join-actions">${node('connect', 'Connect to a shared stack', 'Use the owner’s cluster coordinates')}${node('readiness', 'Observe readiness', 'Health · initialization · API response')}${node('caller', 'Get an API caller', 'spi token · app-only bearer')}</div>` : ''}
         ${!building ? node('client', 'OSDU API client', 'Bearer + data-partition-id', request ? 'path-emphasis' : '') : ''}
       </section>
-      ${building && workloads ? `<section class="external-inputs" aria-label="Sources outside the deployed stack"><span class="group-label">Outside the deployed stack</span>${node('config-source', 'osdu-spi-stack Git', 'Workload configuration → Flux')}${node('image-source', 'GitLab / GHCR', 'Community / fork images')}</section>` : ''}
+      ${building && workloads ? `<section class="external-inputs" aria-label="Sources outside the deployed stack"><span class="group-label">Outside the deployed stack</span>${node('config-source', 'osdu-spi-stack Git', 'Workload configuration → Flux')}${node('image-source', 'GHCR', 'Each service’s Azure fork image')}</section>` : ''}
     </div>
     <div class="boundary-crossing"><span>${moment ? moment.action : request ? 'Authenticated OSDU request' : 'CLI provisions Azure and prepares AKS'}</span><span aria-hidden="true">↓</span></div>
     <section class="azure-boundary" aria-label="Azure cloud boundary">
@@ -54,7 +54,7 @@ export function architectureMap(stage = null, path = 'developer') {
               ${
                 workloads
                   ? `<div class="controllers">${node('flux', 'Flux', 'Reconcile workloads', '', 'flux-system')}${node('operators', 'Operators', 'ECK · CNPG · certificates', '', 'foundation')}</div>
-                ${node('gateway', 'Istio gateway', 'Routes OSDU API requests', request ? 'path-emphasis' : '', 'aks-istio-ingress')}
+                ${node('gateway', 'Istio gateway', 'Routes OSDU API requests', request ? 'path-emphasis' : '', 'platform')}
                 <div class="inside-arrow" aria-hidden="true">↓</div>
                 <section data-scope="service-boundary" class="service-boundary ${request ? 'path-emphasis' : ''}"><div class="group-label">${iconSvg('k8s', { className: 'label-icon' })}osdu · OSDU service workloads</div>${node('service', 'OSDU services', 'Partition · entitlements · storage · one image each')}<small>Lesson 03 opens one of them.</small></section>
                 ${node('middleware', 'Platform middleware', 'Elasticsearch · Redis · PostgreSQL', '', 'platform')}
@@ -81,7 +81,7 @@ export function architectureMap(stage = null, path = 'developer') {
             ${
               created
                 ? `<div class="resource-family partition-family"><span class="group-label">Per partition · opendes</span><div class="partition-resources">${node('cosmos', 'Cosmos DB SQL', 'Records and metadata')}${node('partition-storage', 'Storage', 'Blobs and tables')}${node('events', 'Service Bus', 'Records-changed events')}</div></div>
-              <div class="resource-family shared-family"><span class="group-label">Shared by the environment</span><div class="shared-resources">${node('shared-data', 'Gremlin + common Storage', 'Entitlements graph and shared data')}${node('identity', 'Managed identities', 'Workload and test callers')}${node('vault', 'Key Vault', 'Configuration and credentials')}${node('registry', 'Container Registry', 'Provisioned; not this flow’s image source')}</div></div>`
+              <div class="resource-family shared-family"><span class="group-label">Shared by the environment</span><div class="shared-resources">${node('shared-data', 'Gremlin + common Storage', 'Entitlements graph and shared data')}${node('identity', 'Managed identities', 'Workload and test callers')}${node('vault', 'Key Vault', 'Configuration and credentials')}${node('registry', 'Container Registry', 'Local builds; not the canonical image source')}</div></div>`
                 : removed
                   ? `${node('retained', 'Managed identities + resource group', 'Client IDs · spi-name-suffix · retained tags', 'retained', 'Still exists')}${placeholder('Data resources removed', 'OSDU data must be rebuilt or restored separately.', true)}`
                   : placeholder(

@@ -49,7 +49,7 @@ function spiBoundaryDiagram() {
         ${node('upstream', 'Upstream source', 'partition-core and IPartitionService come from the community repository')}
         ${node('engineering', 'osdu-spi engineering system', 'Preserves provider/&lt;svc&gt;-azure outside the generated tree')}
       </div>
-      <p><code>provider/partition-azure</code> remains fork-owned even when upstream removes its Azure provider.</p>
+      <p>Upstream carries no Azure provider; <code>provider/partition-azure</code> is fork-owned.</p>
     </section>
   </div>
   <div class="ownership-legend"><span><i class="shared-swatch"></i>Shared OSDU source</span><span><i class="fork-swatch"></i>Fork-owned Azure source</span><span>Both backends sit outside the image; only Table Storage sits outside AKS.</span></div>`;
@@ -94,13 +94,13 @@ const treeRows = [
         'provider-azure',
         'provider/partition-azure/',
         'the provider from 03, with the cache fallback',
-        [['⚠ to be deleted', '— gone'], '—', '◆', '◆'],
+        ['—', '—', '◆', '◆'],
       ],
       [
         'test-azure',
         'testing/partition-test-azure/',
         'its integration tests',
-        [['●', '— gone'], '—', '◆', '◆'],
+        ['—', '—', '◆', '◆'],
       ],
     ],
   },
@@ -146,46 +146,14 @@ const cellNames = {
   '—': 'absent',
   '◆': 'fork-owned',
   '● +': 'present, injected',
-  '⚠ to be deleted': 'present, scheduled for removal',
 };
 const cellClass = (cell) =>
-  cell === '◆'
-    ? 'fork'
-    : cell === '—'
-      ? 'absent'
-      : cell.startsWith('⚠')
-        ? 'doomed'
-        : 'kept';
-
-const cellName = (cell) => cellNames[cell] || cell.replace(/^— /, 'absent, ');
+  cell === '◆' ? 'fork' : cell === '—' ? 'absent' : 'kept';
 
 // Every cell names its branch, since the phone layout has no column headings
-// beside the cells. A what-if pair carries both readings as data attributes.
+// beside the cells.
 function treeCell(cell, column) {
-  const [now, after] = Array.isArray(cell) ? cell : [cell, null];
-  const pair = after
-    ? ` data-now="${now}" data-after="${after}" data-now-label="${column[1]}: ${cellName(now)}" data-after-label="${column[1]}: ${cellName(after)}"`
-    : '';
-  return `<span class="tree-cell cell-${cellClass(now)} ${after ? 'has-after' : ''}" role="cell" data-branch="${column[1]}"${pair} aria-label="${column[1]}: ${cellName(now)}"><span>${now}</span></span>`;
-}
-
-// The two rows the what-if changes, repeated beside the switch so the
-// comparison is visible where the reader flips it.
-function whatIfStrip() {
-  const affected = treeRows
-    .flatMap((group) => group.rows)
-    .filter(([, , , cells]) => cells.some(Array.isArray));
-  return `<div class="what-if-strip" aria-label="Before and after, for the affected rows">${affected
-    .map(
-      ([, path, , cells]) =>
-        `<div class="what-if-row"><code>${path}</code>${cells
-          .map((cell, i) => {
-            const [now, after] = Array.isArray(cell) ? cell : [cell, null];
-            return `<span class="what-if-cell cell-${cellClass(now)}" data-branch="${treeColumns[i][1]}">${after ? `<s>${now}</s> <b class="cell-absent">${after}</b>` : `<b>${now}</b>`}</span>`;
-          })
-          .join('')}</div>`,
-    )
-    .join('')}</div>`;
+  return `<span class="tree-cell cell-${cellClass(cell)}" role="cell" data-branch="${column[1]}" aria-label="${column[1]}: ${cellNames[cell]}"><span>${cell}</span></span>`;
 }
 
 function forkShapeDiagram() {
@@ -206,12 +174,7 @@ function forkShapeDiagram() {
             .join('')}</div>`,
       )
       .join('')}
-    <div class="what-if">
-      <label><input type="checkbox" class="what-if-switch" /> <b>What if upstream deletes its Azure directory tomorrow?</b><small>Optional. Toggles the upstream column only.</small></label>
-      ${whatIfStrip()}
-      <p class="what-if-result" aria-live="polite">Upstream’s copy is gone. fork_upstream never had it, so tonight’s generation is identical there, and the cascade merges nothing about it. fork_integration and main keep the fork’s provider, cache fallback included. The deletion has nothing to delete on the fork side.</p>
-    </div>
-    <div class="tree-legend"><span><i class="cell-kept">●</i> present, from upstream</span><span><i class="cell-fork">◆</i> fork-owned</span><span><i class="cell-absent">—</i> absent by construction</span><span><i class="cell-kept">+</i> profile injected by the filter</span></div>
+    <div class="tree-legend"><span><i class="cell-kept">●</i> present, from upstream</span><span><i class="cell-fork">◆</i> fork-owned</span><span><i class="cell-absent">—</i> absent</span><span><i class="cell-kept">+</i> profile injected by the filter</span></div>
   </div>
   <section class="tree-around" aria-label="Around the repository"><span class="group-label">Around the repository</span><div class="tree-around-nodes">${node('filter', 'The filter', 'upstream-filter.yml · keep, strip, fork, inject')}${node('engineering', 'osdu-spi, the template', 'Workflows and Dockerfile arrive as PRs')}${node('mirror', 'A customer mirror fork', 'Second tier · copies main verbatim')}${node('image', 'The image, by digest', 'ghcr.io/azure/osdu-spi-partition')}</div></section>`;
 }
@@ -326,7 +289,7 @@ function forkDayDiagram(route) {
 const seamStates = [
   {
     for: 'image descriptor gate facts trust',
-    lock: ['A', 'canonical · community image'],
+    lock: ['A', 'canonical · main image'],
     pod: ['A', 'running'],
     copy: 'Canonical image A is running. Nothing has been written yet; the gate and the facts are reads.',
   },

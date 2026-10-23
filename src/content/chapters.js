@@ -232,11 +232,11 @@ export const chapters = {
             {
               place: 'azure',
               state: 'untouched',
-              note: 'No sign-in; spi check only reads tool versions.',
+              note: 'No sign-in. spi check reads Azure permissions only when az is signed in, and changes nothing.',
             },
           ],
           effects:
-            'Installs spi locally through uv and makes it available on PATH. Any prerequisite tools you install also stay on your workstation. Nothing is created or changed in Azure or GitHub; spi check only reads tool versions.',
+            'Installs spi locally through uv and makes it available on PATH. Any prerequisite tools you install also stay on your workstation. Nothing is created or changed in Azure or GitHub; without an Azure sign-in, spi check reads only tool versions.',
           steps: [
             {
               command: {
@@ -257,7 +257,7 @@ export const chapters = {
               command: 'spi check',
               touch: { kind: 'reads', note: 'reads tool versions' },
               expect:
-                'Check that az, bicep, kubectl, kubelogin, and flux each show OK and a version, followed by “All 5 tools available.” If a tool is missing, install it and rerun spi check. This confirms the tools are available, not that you have access to an Azure subscription.',
+                'Check that az, bicep, kubectl, kubelogin, and flux each show OK and a version, followed by “All 5 tools available.” Below them, the Azure permissions row reads SKIPPED because you have not signed in; lesson 02 runs the same check after az login. If a tool is missing, install it and rerun spi check. This confirms the tools are available, not that you have access to an Azure subscription.',
             },
             {
               command: 'spi up --help',
@@ -371,7 +371,7 @@ export const chapters = {
       {
         headline: 'The OSDU services run in one namespace behind one gateway.',
         text: 'The OSDU services run in the osdu namespace, one image each, and every request reaches them through the Istio gateway.',
-        why: 'Each service is a Deployment in the osdu namespace; aks-istio-ingress routes the API paths to them.',
+        why: 'Each service is a Deployment in the osdu namespace; the spi-gateway Gateway in platform routes the API paths to them.',
         focus: ['gateway', 'service'],
         scopes: ['aks', 'service-boundary'],
         evidence: 'service',
@@ -444,8 +444,8 @@ export const chapters = {
             {
               kind: 'access',
               label: 'An Azure role that can create',
-              text: 'Resource groups, services, and role assignments. The stack’s CI uses Contributor plus User Access Administrator at subscription scope.',
-              sources: ['ciSetup'],
+              text: 'Contributor plus a conditioned Role Based Access Control Administrator at subscription scope. spi check names any permission that is missing.',
+              sources: ['install'],
             },
           ],
           time: {
@@ -562,7 +562,7 @@ export const chapters = {
                   note: 'deletes the cluster and data; keeps the names',
                 },
                 expect:
-                  'This deletes the cluster, data services, and their data, but keeps the resource group, managed identities, and naming tags for reuse. The command waits up to 45 minutes; that is a timeout, not an expected duration. If it exits with an error, inspect the listed remaining resources and retry.',
+                  'This deletes the cluster, data services, and their data, but keeps the resource group, managed identities, and naming tags for reuse. It asks you to type y to confirm. The command waits up to 45 minutes; that is a timeout, not an expected duration. If it exits with an error, inspect the listed remaining resources and retry.',
                 sources: ['lifecycle'],
               },
               {
@@ -572,7 +572,7 @@ export const chapters = {
                   note: 'deletes the resource group and identities',
                 },
                 expect:
-                  'Use --purge when you no longer need the environment. It removes the identities’ external grants and deletes the resource group, including the identities, with a 45-minute timeout. Confirm removal with az group exists --name spi-stack-<name>; it should print false.',
+                  'Use --purge when you no longer need the environment. It asks you to type y to confirm, then removes the identities’ external grants and deletes the resource group, including the identities, with a 45-minute timeout. Confirm removal with az group exists --name spi-stack-<name>; it should print false.',
                 sources: ['lifecycle'],
               },
             ],
@@ -877,7 +877,7 @@ export const chapters = {
     },
     mistakes: ['token-accepted-means-authorized'],
     scope:
-      'Upstream plans to remove its Azure implementations (community ADR 61; osdu-spi ADR-038). As of September 2026 the upstream directory is still there, and the fork keeps its own copy outside the generated shared-code branch so that removal deletes nothing on the fork side whenever it lands. The cache fallback is real: commit fc2dfbf in osdu-spi-partition, 30 July 2026, with regression tests. It reached the fork from upstream on 25 August, before the filter existed; from 04 on, the example follows a fix like it made in the fork today.',
+      'Upstream does not carry the Azure provider (community ADR 61; osdu-spi ADR-038). The fork keeps it outside the generated shared-code branch. The cache fallback is real: commit fc2dfbf in osdu-spi-partition, 30 July 2026, with regression tests. It reached the fork from upstream on 25 August, before the filter existed; from 04 on, the example follows a fix like it made in the fork today.',
     sources: [
       'architecture',
       'ownership',
@@ -1120,8 +1120,7 @@ export const chapters = {
     book: 'The fork',
     title: 'The shape of the fork',
     subtitle: 'Who owns which paths',
-    subhead:
-      'Upstream plans to remove the Azure code. The fork is where it lives.',
+    subhead: 'Upstream does not carry the Azure provider. The fork does.',
     intro:
       '<p>A service fork is a short list of paths the fork owns, beside a tree regenerated from upstream every day.</p><p>Read the repository by owner: each row is a path, each column is a branch, and the cells say where the path exists.</p>',
     premise:
@@ -1149,7 +1148,7 @@ export const chapters = {
     guides: ['contribution-chain'],
     mistakes: ['fork-is-a-snapshot', 'descriptor-comes-from-template'],
     scope:
-      'osdu-spi-partition is the reference fork and, as of September 2026, the only one; the system is designed for eight, each following the same filter with its own service name. Customer mirror forks form a second tier and copy the service repository, not upstream. The descriptor row is fork-owned by rule; the partition fork wrote its file in September 2026.',
+      'osdu-spi-partition is the reference fork. Every service the stack deploys has its own fork, each following the same filter with its own service name and writing its own descriptor. Customer mirror forks form a second tier and copy the service repository, not upstream. The descriptor row is fork-owned by rule.',
     sources: ['ownership', 'branches', 'forkTiers', 'workflowSystem'],
     question:
       'Who owns that provider code, and how does it survive upstream deleting it?',

@@ -7,7 +7,7 @@ export const creationMoments = [
     name: 'Start locally',
     owner: 'You · workstation',
     title: 'Prepare access before creating resources.',
-    copy: 'Install the CLI and tools, sign in, and confirm the target subscription. spi check validates tools; it does not check login, subscription selection, or role-assignment permissions.',
+    copy: 'Install the CLI and tools, sign in, and confirm the target subscription. spi check validates the tools and, once you are signed in, your create and role-assignment permissions in that subscription; spi up repeats that check before it changes anything.',
     commands: ['spi --version', 'az login', 'az account show', 'spi check'],
     commandLabel: 'After installing the tools',
     action: 'Prepare access',

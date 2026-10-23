@@ -636,7 +636,7 @@ test('lesson 03 claim evidence resolves all three claims and cache-hop proof', (
     details[2].summary,
     /regenerates shared source separately from fork-owned Azure source/,
   );
-  assert.match(details[2].summary, /removing.*upstream does not delete/);
+  assert.match(details[2].summary, /does not depend on upstream carrying one/);
 
   for (const id of ['redis', 'azureclients']) {
     const detail = resolveDetail(id, 'spi-boundary');
@@ -682,7 +682,7 @@ test('every explanation names an artifact and a source', () => {
   }
   assert.equal(
     componentDetails.upstream.title,
-    'The community repository contains shared code and providers for several clouds.',
+    'The community repository holds the shared code, not the Azure provider.',
   );
   assert.equal(componentDetails.upstream.source, 'synchronization');
   assert.match(componentDetails.upstream.artifact.code, /UPSTREAM_REPO_URL/);
@@ -3209,7 +3209,7 @@ test('lesson 01 editorial copy introduces its example and complete command', () 
   );
   assert.equal(
     chapter.outcomes[2].why,
-    'Each service is a Deployment in the osdu namespace; aks-istio-ingress routes the API paths to them.',
+    'Each service is a Deployment in the osdu namespace; the spi-gateway Gateway in platform routes the API paths to them.',
   );
   assert.equal(chapter.example.title, 'a partition lookup');
   assert.match(

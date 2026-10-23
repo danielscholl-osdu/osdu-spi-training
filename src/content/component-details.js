@@ -176,14 +176,15 @@ export const componentDetails = {
     source: 'flux',
   },
   'image-source': {
-    label: 'Image registries',
-    title: 'Community images and fork images have different sources.',
-    body: 'Community service images resolve from the OSDU GitLab registry. A service fork publishes to ghcr.io/<owner>/<SERVICE_NAME, or the repository name when that variable is unset>. The provisioned ACR is a possible future mirror; it is not the source in this flow.',
+    label: 'Image registry',
+    title: 'Each service runs the image its Azure fork publishes.',
+    body: 'Every service follows the main build its fork, Azure/osdu-spi-<service>, publishes to GHCR, recorded in the image lock by digest. An environment can record a trusted mirror instead, one service at a time. Community images are not a source: they do not carry the Azure provider.',
     artifact: {
-      label: 'A fork package',
+      label: 'The canonical partition image',
       code: 'ghcr.io/azure/osdu-spi-partition@sha256:<digest>',
     },
-    source: 'forkDeploy',
+    source: 'images',
+    goDeeper: ['forkDeploy'],
   },
   aks: {
     label: 'Kubernetes boundary',
@@ -226,14 +227,15 @@ export const componentDetails = {
     source: 'architecture',
   },
   gateway: {
-    label: 'aks-istio-ingress',
+    label: 'platform',
     title: 'The gateway routes; the receiving sidecar identifies the caller.',
-    body: 'spi-gateway binds to the AKS managed ingress Service. RequestAuthentication and an EnvoyFilter in osdu validate tokens and project x-app-id and x-user-id. Caller authentication and OSDU authorization remain separate checks.',
+    body: 'spi-gateway is a Gateway in platform; managed Istio deploys its workload and the cluster’s one ingress LoadBalancer, spi-gateway-istio, from it. RequestAuthentication and an EnvoyFilter in osdu validate tokens and project x-app-id and x-user-id. Caller authentication and OSDU authorization remain separate checks.',
     artifact: {
       label: 'Inspect the entry point',
-      code: 'kubectl get gateway spi-gateway -n aks-istio-ingress',
+      code: 'kubectl get gateway spi-gateway -n platform',
     },
     source: 'identity',
+    goDeeper: ['gateway'],
   },
   service: {
     label: 'osdu',
@@ -355,13 +357,14 @@ export const componentDetails = {
   },
   registry: {
     label: 'Provisioned ACR',
-    title: 'This registry is not the source of the shown images.',
-    body: 'The stack provisions a Basic ACR with its admin account disabled. Community images come from GitLab; fork images come from GHCR. ADR-013 describes mirroring into this ACR as a possible follow-up, not the implemented image path.',
+    title: 'This registry holds local builds, not the canonical images.',
+    body: 'The stack provisions a Basic ACR with its admin account disabled, and the cluster’s kubelet identity can pull from it. spi service pin --source builds a checkout into <registry>/local/<service> and pins the resulting digest; every canonical image still comes from GHCR.',
     artifact: {
-      label: 'Provisioned infrastructure',
-      code: 'infra/modules/acr.bicep',
+      label: 'Build a checkout and pin it',
+      code: 'spi service pin <service> --source <checkout>',
     },
-    source: 'images',
+    source: 'localBuilds',
+    goDeeper: ['images'],
   },
   bootstrap: {
     label: 'CLI-owned cluster inputs',
@@ -449,7 +452,7 @@ export const componentDetails = {
   azureimpl: {
     label: 'The Azure implementation',
     title: 'The provider checks its cache, then reads Table Storage.',
-    body: 'PartitionServiceImpl.getPartition asks the cache for opendes. When the cache misses, or when the read throws, it reads the stored configuration from the partition table in common Storage; the cache failure is logged as a warning, and the lookup still answers when that table is reachable and contains opendes. The code lives in provider/partition-azure, which the fork owns: it stays on fork_integration and main, outside the tree regenerated from upstream (osdu-spi ADR-038), so upstream’s planned removal of its Azure implementations deletes nothing here.',
+    body: 'PartitionServiceImpl.getPartition asks the cache for opendes. When the cache misses, or when the read throws, it reads the stored configuration from the partition table in common Storage; the cache failure is logged as a warning, and the lookup still answers when that table is reachable and contains opendes. The code lives in provider/partition-azure, which the fork owns: it stays on fork_integration and main, outside the tree regenerated from upstream (osdu-spi ADR-038), so it does not depend on upstream carrying an Azure provider.',
     artifact: {
       label: 'The fallback, with its tests',
       code: 'PartitionServiceImpl.getPartition(id)\n  safeGet(cache, id)  → null on miss or exception (logged)\n  tableStore.getPartition(id)  when null\nPartitionServiceImplTest.java\n  should_fallBackToTableStore_when_cacheReadThrows_onGetPartition',
@@ -494,8 +497,8 @@ export const componentDetails = {
   upstream: {
     label: 'Upstream tip',
     title:
-      'The community repository contains shared code and providers for several clouds.',
-    body: 'community.opengroup.org publishes the whole partition service: core, acceptance tests, and one provider per cloud, including an Azure one that upstream plans to remove. The fork never checks this tree out as a branch. Sync Upstream reads it with git plumbing and generates fork_upstream from it, so upstream’s Azure directory and the fork’s never share a merge base.',
+      'The community repository holds the shared code, not the Azure provider.',
+    body: 'community.opengroup.org publishes the partition service: core, acceptance tests, and the community implementation, with no Azure provider. The fork never checks this tree out as a branch. Sync Upstream reads it with git plumbing and generates fork_upstream from it, so the fork’s provider never shares a merge base with upstream.',
     artifact: {
       label: 'Where the sync reads from',
       code: 'https://community.opengroup.org/osdu/platform/system/partition\nUPSTREAM_REPO_URL  (repository variable, set at initialization)',
@@ -504,7 +507,7 @@ export const componentDetails = {
     here: {
       'spi-boundary': {
         summary:
-          'The engineering system regenerates shared source separately from fork-owned Azure source. provider/partition-azure remains outside that generated tree on the fork, so removing an Azure implementation upstream does not delete the fork’s provider.',
+          'The engineering system regenerates shared source separately from fork-owned Azure source. provider/partition-azure stays outside that generated tree on the fork, so the fork’s provider does not depend on upstream carrying one.',
         source: 'ownership',
         goDeeper: ['synchronization'],
       },
@@ -559,7 +562,7 @@ export const componentDetails = {
     label: 'osdu-image-lock',
     title:
       'One ConfigMap names every service image. A deploy is an edit to it.',
-    body: 'The lock is a stack object in osdu-flux with one key per service, PARTITION_IMAGE_DIGEST among them, and Flux substitutes the values at apply time. A fork run writes its digest with spi service pin --ephemeral, which also records the run id, the source commit, and the canonical image to restore, in the spi-stack.osdu.dev/pins annotation. The write is a compare-and-set, so a lost write is caught and a later pin takes over. Between runs the lock holds the canonical image, which today comes from the community registry; per-service promotion to a fork (osdu-spi-stack ADR-033) is designed, not built.',
+    body: 'The lock is a stack object in osdu-flux with one key per service, PARTITION_IMAGE_DIGEST among them, and Flux substitutes the values at apply time. A fork run writes its digest with spi service pin --ephemeral, which also records the run id, the source commit, and the canonical image to restore, in the spi-stack.osdu.dev/pins annotation. The write is a compare-and-set, so a lost write is caught and a later pin takes over. Between runs the lock holds the canonical image: the main build of the service’s Azure fork, or of a trusted mirror the environment records (osdu-spi-stack ADR-033).',
     artifact: {
       label: 'The pin',
       code: 'spi service pin partition --image ghcr.io/azure/osdu-spi-partition@sha256:… \\\n  --ephemeral --run-id $GITHUB_RUN_ID --source-repo Azure/osdu-spi-partition --source-sha …',
@@ -600,11 +603,11 @@ export const componentDetails = {
   },
   'provider-azure': {
     label: 'The Azure provider',
-    title: 'Upstream plans to remove this directory. The fork holds it.',
-    body: 'provider/partition-azure implements the interface from view 03. It exists on main and fork_integration and is absent from fork_upstream by construction, so an upstream deletion has nothing to delete on the fork side. It was brought across once by a scripted cutover and has been fork-owned since.',
+    title: 'Upstream does not carry this directory. The fork holds it.',
+    body: 'provider/partition-azure implements the interface from view 03. It exists on main and fork_integration and is absent from fork_upstream by construction, so nothing upstream does to that path reaches the fork. It was brought across once by a scripted cutover and has been fork-owned since.',
     artifact: {
       label: 'Where it is and is not',
-      code: 'upstream tip:      present, scheduled for removal\nfork_upstream:     absent (never enters the merge base)\nmain:              provider/partition-azure/  fork-owned',
+      code: 'upstream tip:      absent\nfork_upstream:     absent (never enters the merge base)\nmain:              provider/partition-azure/  fork-owned',
     },
     source: 'ownership',
   },
@@ -805,10 +808,10 @@ export const componentDetails = {
   'release-tag': {
     label: 'The release tag',
     title: 'The version lands on an image that already exists.',
-    body: 'Merging the version PR makes Release Please tag main and publish the release. The workflow adds <release-tag>-upstream-<upstream-version> which records the upstream version the release carries (on partition it reads upstream-v0.0.0, because the lookup expects an upstream main and partition’s is master), then polls GHCR for the sha-* image validation pushed for that commit and adds the semantic-version tag to it. No new build runs. The digest with the version tag is the merge commit’s build, which may differ from the digest a PR run borrowed the stack for.',
+    body: 'Merging the version PR makes Release Please tag main and publish the release. The workflow adds <release-tag>-upstream-<upstream-version> which records the upstream version the release carries (the nearest tag on upstream’s default branch, or its short commit when no tag is reachable, as on partition), then polls GHCR for the sha-* image validation pushed for that commit and adds the semantic-version tag to it. No new build runs. The digest with the version tag is the merge commit’s build, which may differ from the digest a PR run borrowed the stack for.',
     artifact: {
       label: 'Tags on one digest',
-      code: 'ghcr.io/azure/osdu-spi-partition:sha-<commit>\nghcr.io/azure/osdu-spi-partition:v1.4.0\ngit tag v1.4.0-upstream-0.29.0',
+      code: 'ghcr.io/azure/osdu-spi-partition:sha-<commit>\nghcr.io/azure/osdu-spi-partition:v1.4.0\ngit tag v1.4.0-upstream-<upstream-commit>',
     },
     source: 'release',
   },
