@@ -387,6 +387,15 @@ function verifyRoute(href, context) {
     );
 }
 
+// A curriculum episode that carries no myth leaves its lesson without one.
+function mythlessCurriculumLesson(key) {
+  const video = fieldnoteFor(key);
+  return curriculumEpisodes.some(
+    (episode) =>
+      video && episode.video === video.id && !episode.mistakes.length,
+  );
+}
+
 test('chapters connect to renderers, explanations, and named sources', () => {
   for (const [id, chapter] of Object.entries(chapters)) {
     for (const field of ['title', 'subtitle'])
@@ -449,13 +458,28 @@ test('chapters connect to renderers, explanations, and named sources', () => {
       );
     }
     const mistakes = flatten(chapter.mistakes, 'mistakes');
-    assert.ok(mistakes.length, `${id}: no easy mistake beside the map`);
+    assert.ok(
+      mistakes.length || mythlessCurriculumLesson(id),
+      `${id}: no easy mistake beside the map`,
+    );
     for (const mistake of mistakes)
       assert.ok(
         myths.some((myth) => myth.id === mistake),
         `${id}: unknown easy mistake ${mistake}`,
       );
   }
+  assert.ok(
+    mythlessCurriculumLesson('spi-boundary'),
+    'Fieldnote 103 carries no myth',
+  );
+  assert.ok(
+    !mythlessCurriculumLesson('running-stack'),
+    'Fieldnote 102 carries a myth',
+  );
+  assert.ok(
+    !mythlessCurriculumLesson('bring-up'),
+    'Fieldnote 02 is a lesson cut',
+  );
   for (const [id, chapter] of pageChapters)
     assert.ok(chapter.page, `${id}: page chapter names no renderer`);
 });
@@ -3886,7 +3910,7 @@ test('lesson 03 claims keep the provider seam understandable without evidence', 
         scopes: ['spi-image'],
       },
       {
-        headline: 'The fork keeps Azure source outside the generated tree.',
+        headline: 'The Azure code lives in the service’s fork.',
         focus: ['upstream', 'azureimpl', 'engineering'],
         evidence: 'upstream',
         scopes: ['spi-provider', 'spi-sources'],
@@ -3911,7 +3935,7 @@ test('lesson 03 claims keep the provider seam understandable without evidence', 
     'Workload Identity for the common Table Storage read',
     'same service process',
     'not a network hop',
-    'provider/partition-azure stays fork-owned',
+    'partition-core/, the shared code, and provider/partition-azure/, the Azure implementation',
   ])
     assert.ok(contexts.includes(fact), `claim context includes ${fact}`);
   assert.doesNotMatch(claims, /<small>/);
@@ -3985,6 +4009,7 @@ test('lesson 03 editorial copy stays at the provider boundary', () => {
   const requiredCopy = [
     chapter.question,
     chapter.goal,
+    chapter.scope,
     ...chapter.outcomes.flatMap(({ headline, text, why }) => [
       headline,
       text,
@@ -3995,19 +4020,34 @@ test('lesson 03 editorial copy stays at the provider boundary', () => {
 
   assert.equal(
     chapter.question,
-    'Where does shared code hand the lookup to the Azure provider?',
+    'Where does the Azure code live in a service?',
+  );
+  assert.equal(
+    chapters.start.index[1].lessons['spi-boundary'],
+    chapter.question,
   );
   assert.equal(
     chapter.goal,
-    'Trace the lookup from shared code into the Azure provider, and explain what happens when the cache fails.',
+    'Say where the Azure code lives in a service: behind a provider interface, in the same image as the shared code that calls it, and as source in the service’s fork.',
   );
   assert.equal(
     chapter.outcomes[2].text,
-    'The fork maintains the Azure provider separately from generated shared code.',
+    'The Azure implementation is source in the service’s fork, in its own provider folder beside the shared code.',
   );
   assert.equal(
     chapter.outcomes[2].why,
-    'Shared code is regenerated from the community repository, while provider/partition-azure stays fork-owned, so removal of upstream’s Azure copy does not delete the fork’s provider.',
+    'The fork’s source tree holds partition-core/, the shared code, and provider/partition-azure/, the Azure implementation. Lesson 04 shows who owns which of those paths.',
+  );
+  assert.deepEqual(chapter.mistakes, []);
+  assert.doesNotMatch(
+    requiredCopy,
+    /\bremov|\bdelet/i,
+    'the provider lives in the fork; no removal is narrated',
+  );
+  assert.doesNotMatch(
+    requiredCopy,
+    /\b(?:January|February|March|April|May|June|July|August|September|October|November|December)\b|\b20\d\d\b/,
+    'lesson copy carries no dates',
   );
   assert.match(requiredCopy, /come from the community repository/);
   assert.doesNotMatch(
@@ -4120,50 +4160,109 @@ test('partition comparison record renders one closed, bounded two-lane disclosur
   );
 });
 
-test('example variants present two states of one canonical six-hop trace', () => {
-  const example = chapters['spi-boundary'].example;
-  const canonical = structuredClone(example.hops);
-  const normal = resolveExamplePresentation(example);
-  const cacheDown = resolveExamplePresentation(example, 'cache-down');
+// Lesson 03 authors one trace condition; a second, made here, keeps the
+// switch and its overrides under test.
+function twoVariantExample() {
+  const example = structuredClone(chapters['spi-boundary'].example);
+  example.variants.failing = {
+    label: 'Failing',
+    crossing: 'Fixture crossing',
+    note: 'Fixture note.',
+    overrides: {
+      redis: {
+        copy: 'Fixture read throws inside AKS',
+        mapStatus: 'Fixture read throws',
+        state: 'handled-failure',
+      },
+      azureclients: {
+        copy: 'Fixture table answers outside AKS',
+        mapStatus: 'Fixture table answers',
+        state: 'fallback',
+      },
+    },
+  };
+  return example;
+}
 
+// exampleStrip reads the lesson by key, so a fixture stands in for one render.
+function stripWithExample(example, route, variant) {
+  const lesson = chapters['spi-boundary'];
+  const authored = lesson.example;
+  lesson.example = example;
+  try {
+    return exampleStrip('spi-boundary', route, variant);
+  } finally {
+    lesson.example = authored;
+  }
+}
+
+test('example variants present states of one canonical six-hop trace', () => {
+  const authored = chapters['spi-boundary'].example;
+  assert.deepEqual(Object.keys(authored.variants), ['normal']);
+  const normal = resolveExamplePresentation(authored);
   assert.equal(normal.selectedVariant, 'normal');
   assert.deepEqual(
     normal.hops.map(({ detail }) => detail),
     ['client', 'core', 'contract', 'azureimpl', 'redis', 'azureclients'],
   );
-  assert.deepEqual(
-    cacheDown.hops.map(({ detail }) => detail),
-    normal.hops.map(({ detail }) => detail),
-  );
-  for (const presentation of [normal, cacheDown]) {
-    const hops = Object.fromEntries(
-      presentation.hops.map((hop) => [hop.detail, hop]),
-    );
-    assert.match(hops.redis.copy, /inside AKS/i);
-    assert.match(hops.azureclients.copy, /outside AKS|Workload Identity/i);
-  }
-  assert.equal(normal.hops[4].state, 'normal');
-  assert.equal(normal.hops[5].state, 'normal');
-  assert.equal(cacheDown.hops[4].state, 'handled-failure');
-  assert.equal(cacheDown.hops[5].state, 'fallback');
-  assert.deepEqual(example.hops, canonical);
+  const hops = Object.fromEntries(normal.hops.map((hop) => [hop.detail, hop]));
+  assert.match(hops.redis.copy, /inside AKS/i);
+  assert.match(hops.azureclients.copy, /outside AKS/i);
+  assert.equal(hops.redis.state, 'normal');
+  assert.equal(hops.azureclients.state, 'normal');
 
   const route = parseRoute('#spi-boundary');
-  const normalMarkup = exampleStrip('spi-boundary', route);
-  const cacheDownMarkup = exampleStrip('spi-boundary', route, 'cache-down');
-  for (const markup of [normalMarkup, cacheDownMarkup]) {
+  const single = exampleStrip('spi-boundary', route);
+  assert.doesNotMatch(
+    single,
+    /data-example-variant|Trace condition/,
+    'one trace condition shows no switch',
+  );
+  assert.match(single, /healthy cache miss/i);
+  assert.ok(single.includes(escapeHtml(normal.crossing)));
+
+  const example = twoVariantExample();
+  const canonical = structuredClone(example.hops);
+  const failing = resolveExamplePresentation(example, 'failing');
+  assert.equal(resolveExamplePresentation(example).selectedVariant, 'normal');
+  assert.equal(
+    resolveExamplePresentation(example, 'unknown').selectedVariant,
+    'normal',
+  );
+  assert.equal(failing.selectedVariant, 'failing');
+  assert.deepEqual(
+    failing.hops.map(({ detail }) => detail),
+    normal.hops.map(({ detail }) => detail),
+  );
+  assert.equal(failing.hops[4].state, 'handled-failure');
+  assert.equal(failing.hops[5].state, 'fallback');
+  assert.equal(failing.crossing, 'Fixture crossing');
+  assert.equal(failing.note, 'Fixture note.');
+  assert.deepEqual(example.hops, canonical);
+
+  const normalMarkup = stripWithExample(example, route);
+  const failingMarkup = stripWithExample(example, route, 'failing');
+  assert.equal(chapters['spi-boundary'].example, authored);
+  for (const [markup, selected] of [
+    [normalMarkup, 'normal'],
+    [failingMarkup, 'failing'],
+  ]) {
     assert.equal((markup.match(/<ol class="journey"/g) || []).length, 1);
     assert.equal((markup.match(/data-hop="/g) || []).length, 6);
     assert.equal((markup.match(/data-example-variant=/g) || []).length, 2);
+    assert.ok(
+      markup.includes(`data-example-variant="${selected}" aria-pressed="true"`),
+      selected,
+    );
   }
   const links = (markup) =>
     [...markup.matchAll(/<a href="([^"]+)" data-map-jump data-hop/g)].map(
       (match) => match[1],
     );
-  assert.deepEqual(links(cacheDownMarkup), links(normalMarkup));
+  assert.deepEqual(links(failingMarkup), links(normalMarkup));
   assert.match(normalMarkup, /healthy cache miss/i);
-  assert.match(cacheDownMarkup, /read throws.*treated as a miss/i);
-  assert.match(cacheDownMarkup, /Table Storage answers anyway/i);
+  assert.match(failingMarkup, /Fixture read throws inside AKS/);
+  assert.match(failingMarkup, /Fixture table answers outside AKS/);
 });
 
 test('example compatibility keeps provider paths in content and controls optional', () => {
@@ -4186,7 +4285,7 @@ test('example compatibility keeps provider paths in content and controls optiona
 });
 
 test('lesson trace state keeps variants local and preserves an active hop', () => {
-  const example = chapters['spi-boundary'].example;
+  const example = twoVariantExample();
   const hopCount = example.hops.length;
   const redisHop = example.hops.findIndex(({ detail }) => detail === 'redis');
   const tableHop = example.hops.findIndex(
@@ -4198,14 +4297,14 @@ test('lesson trace state keeps variants local and preserves an active hop', () =
     exampleOpen: false,
     variant: 'normal',
   };
-  const cacheDown = selectExampleVariant(initial, 'cache-down', hopCount);
-  assert.deepEqual(cacheDown, {
+  const failing = selectExampleVariant(initial, 'failing', hopCount);
+  assert.deepEqual(failing, {
     ...initial,
     hop: tableHop,
     exampleOpen: true,
-    variant: 'cache-down',
+    variant: 'failing',
   });
-  const atRedis = { ...cacheDown, hop: redisHop };
+  const atRedis = { ...failing, hop: redisHop };
   assert.deepEqual(selectExampleVariant(atRedis, 'normal', hopCount), {
     ...atRedis,
     variant: 'normal',
@@ -4338,9 +4437,10 @@ test('map lesson examples other than the step lesson use one closed disclosure a
       assert.ok(markup.includes(escapeHtml(presentation.note)), href);
     }
     const markup = exampleStrip(key, parseRoute(routeHref(key)));
+    const variants = Object.keys(chapter.example.variants || {}).length;
     assert.equal(
       (markup.match(/data-example-variant=/g) || []).length,
-      key === 'spi-boundary' ? 2 : 0,
+      variants > 1 ? variants : 0,
       key,
     );
   }
@@ -5346,10 +5446,19 @@ function cutFromDifferences(video) {
         ),
       );
   }
+  // A whole-video note that quotes the question asked now stands in for a
+  // re-cut end card.
+  const nextDiffers = (question) =>
+    (cut.next ?? null) !== question &&
+    !(video.notes || []).some(
+      (note) =>
+        typeof note === 'string' &&
+        question !== null &&
+        note.includes(question),
+    );
   const episode = curriculumEpisodes.find(({ code }) => code === video.id);
   if (episode) {
-    const next = curriculumNext(episode);
-    if ((cut.next ?? null) !== (next?.question ?? null))
+    if (nextDiffers(curriculumNext(episode)?.question ?? null))
       differences.push(
         differs('next', `the episode after ${episode.code} in curriculum.js`),
       );
@@ -5360,7 +5469,7 @@ function cutFromDifferences(video) {
     video.chapter === 'not-true'
       ? null
       : learnKeys[learnKeys.indexOf(video.chapter) + 1];
-  if ((cut.next ?? null) !== (next ? chapters[next].question : null))
+  if (nextDiffers(next ? chapters[next].question : null))
     differences.push(differs('next', `chapters['${next}'].question`));
   return differences;
 }
@@ -5532,6 +5641,27 @@ test('a Fieldnote cut that drifts from its lesson names the episode and field', 
   assert.deepEqual(cutFromDifferences(curriculumCut), [
     'Fieldnote 102: cutFrom.next differs from the episode after 102 in curriculum.js',
   ]);
+  const after102 = curriculumEpisodes.find(({ code }) => code === '103');
+  curriculumCut.notes = [`Fieldnote 103 asks: “${after102.question}”`];
+  assert.deepEqual(cutFromDifferences(curriculumCut), []);
+
+  const asked = chapters['bring-up'].question;
+  const unnoted = lessonFieldnote();
+  unnoted.cutFrom.next = 'How was the stack made?';
+  const nextMoved = [
+    "Fieldnote 01: cutFrom.next differs from chapters['bring-up'].question",
+  ];
+  assert.deepEqual(cutFromDifferences(unnoted), nextMoved);
+  for (const [notes, expected] of [
+    [[`Lesson 02 now asks: “${asked}”`], []],
+    [['Lesson 02 now asks how the stack is created.'], nextMoved],
+    [[{ chapter: 0, text: `Lesson 02 now asks: “${asked}”` }], nextMoved],
+  ])
+    assert.deepEqual(
+      cutFromDifferences({ ...unnoted, notes }),
+      expected,
+      JSON.stringify(notes),
+    );
 });
 
 test('core DAG video contract holds for the fixture and the published Fieldnote 11', () => {
@@ -5614,6 +5744,7 @@ test('Fieldnote routes parse and keep the published keys', () => {
   assert.equal(parseRoute('#watch/99').video, null, 'unknown episode');
   assert.equal(parseRoute('#watch/00').video, '101', 'a replaced cut');
   assert.equal(parseRoute('#watch/01').video, '102', 'a replaced cut');
+  assert.equal(parseRoute('#watch/03').video, '103', 'a replaced cut');
   for (const [retired, current] of Object.entries(retiredFieldnotes)) {
     assert.ok(!fieldnotes.some(({ id }) => id === retired), retired);
     assert.equal(fieldnoteById(retired)?.id, current, retired);
@@ -5642,6 +5773,7 @@ test('a lesson Fieldnote shows its chip, claim cues, and dialog chapters', () =>
   assert.match(chip, /<b>Watch this lesson<\/b>.*· 2:50/);
   assert.match(chip, /aria-haspopup="dialog"/);
   assert.match(lessonWatch('running-stack'), /data-video-open="102"/);
+  assert.match(lessonWatch('spi-boundary'), /data-video-open="103"/);
   assert.equal(lessonWatch('whose-image', null), '', 'a lesson with no cut');
   assert.equal(lessonWatch('start', fieldnoteFor('start')), '');
 

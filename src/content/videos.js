@@ -123,49 +123,46 @@ export const fieldnotes = [
       },
       next: 'Where does shared code hand the lookup to the Azure provider?',
     },
-    notes: [],
+    notes: [
+      'Lesson 03 now asks: “Where does the Azure code live in a service?”',
+    ],
   },
   {
-    id: '03',
+    id: '103',
     chapter: 'spi-boundary',
-    title: 'The SPI boundary',
-    duration: 194,
+    title: 'The provider inside',
+    duration: 102,
     width: 1920,
     height: 1080,
     files: {
-      video: 'fieldnote-03/video.mp4',
-      poster: 'fieldnote-03/poster.jpg',
-      captions: 'fieldnote-03/captions.vtt',
-      chapters: 'fieldnote-03/chapters.vtt',
+      video: 'fieldnote-103/video.mp4',
+      poster: 'fieldnote-103/poster.jpg',
+      captions: 'fieldnote-103/captions.vtt',
+      chapters: 'fieldnote-103/chapters.vtt',
     },
     chapters: [
-      { time: 33.5, claim: 0 },
-      { time: 57.4, claim: 1 },
-      { time: 79.9, claim: 2 },
-      { time: 100.9, example: true },
-      { time: 137.9, mistake: 'token-accepted-means-authorized' },
+      { time: 12.6, claim: 0 },
+      { time: 31.2, claim: 1 },
+      { time: 51.1, claim: 2 },
+      { time: 60.0, example: true },
     ],
     cutFrom: {
       claims: [
         {
           headline: 'Common code calls Azure through a provider interface.',
-          text: 'Common service code calls a provider interface. The Azure implementation behind it checks Redis inside AKS with middleware credentials, then reads common Table Storage outside AKS with Workload Identity on a miss. The table read still happens when the cache throws.',
+          text: 'Common service code calls a provider interface, and the Azure implementation behind it connects that interface to Azure services.',
         },
         {
           headline: 'The interface and implementation ship in one image.',
           text: 'The interface and its implementation ship in one image. There is no network hop between them.',
         },
         {
-          headline: 'The fork keeps Azure source outside the generated tree.',
-          text: 'The fork maintains the Azure provider separately from generated shared code.',
+          headline: 'The Azure code lives in the service’s fork.',
+          text: 'The Azure implementation is source in the service’s fork, in its own provider folder beside the shared code.',
         },
       ],
       example: 'Follow the same lookup through the provider',
-      mistake: {
-        id: 'token-accepted-means-authorized',
-        claim: 'The token was accepted, so the call is authorized.',
-      },
-      next: 'Who owns that provider code, and how does it survive upstream deleting it?',
+      next: 'How does a change reach a running service?',
     },
     notes: [],
   },
@@ -641,7 +638,7 @@ export function videoUrl(path) {
 }
 
 // A lesson cut replaced by a curriculum episode keeps its published id.
-export const retiredFieldnotes = { '00': '101', '01': '102' };
+export const retiredFieldnotes = { '00': '101', '01': '102', '03': '103' };
 
 export const fieldnoteById = (id) => {
   const current = Object.hasOwn(retiredFieldnotes, id)

@@ -95,6 +95,7 @@ export const episodes = [
     teaches: ['provider-behind-interface'],
     uses: ['one-gateway'],
     mistakes: [],
+    video: '103',
   },
   {
     code: '104',

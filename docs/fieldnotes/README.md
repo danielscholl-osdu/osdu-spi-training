@@ -10,13 +10,13 @@ Codes name the level and the path: 103 is the third foundation episode, S203 the
 
 ### Level 100: Foundations
 
-| Code | Episode                                         | Question                                                | From                                          | Status    |
-| ---- | ----------------------------------------------- | ------------------------------------------------------- | --------------------------------------------- | --------- |
-| 101  | [Three parts](101-three-parts.md)               | What is the Azure SPI machinery made of?                | Fieldnote 00, re-cut to the three parts       | published |
-| 102  | [Anatomy of a stack](102-anatomy-of-a-stack.md) | What is actually running when someone says "the stack"? | Fieldnote 01's body with new bookends         | published |
-| 103  | The provider inside                             | Where does the Azure code live in a service?            | Fieldnote 03's boards, without the code panes | planned   |
-| 104  | The line                                        | How does a change reach a running service?              | new, from boards in Fieldnotes 04 and 05      | planned   |
-| 105  | Two kinds of work                               | Who does what, and which path is mine?                  | new                                           | planned   |
+| Code | Episode                                           | Question                                                | From                                          | Status    |
+| ---- | ------------------------------------------------- | ------------------------------------------------------- | --------------------------------------------- | --------- |
+| 101  | [Three parts](101-three-parts.md)                 | What is the Azure SPI machinery made of?                | Fieldnote 00, re-cut to the three parts       | published |
+| 102  | [Anatomy of a stack](102-anatomy-of-a-stack.md)   | What is actually running when someone says "the stack"? | Fieldnote 01's body with new bookends         | published |
+| 103  | [The provider inside](103-the-provider-inside.md) | Where does the Azure code live in a service?            | Fieldnote 03's boards, without the code panes | published |
+| 104  | The line                                          | How does a change reach a running service?              | new, from boards in Fieldnotes 04 and 05      | planned   |
+| 105  | Two kinds of work                                 | Who does what, and which path is mine?                  | new                                           | planned   |
 
 The service path (S201 to S207), the platform path (P201 to P208), and the library get their tables in the rounds that make them.
 
@@ -29,7 +29,7 @@ The thirteen cuts made one per lesson stay published, with their routes, until t
 | 00        | Start: three parts       | boards        | [00-three-parts.md](00-three-parts.md)                           | replaced by 101            |
 | 01        | Anatomy of a stack       | boards        | [01-anatomy-of-a-stack.md](01-anatomy-of-a-stack.md)             | replaced by 102            |
 | 02        | How it comes to life     | mixed         | [02-how-it-comes-to-life.md](02-how-it-comes-to-life.md)         | published; re-take on 0.32 |
-| 03        | The SPI boundary         | boards + code | [03-the-spi-boundary.md](03-the-spi-boundary.md)                 | published                  |
+| 03        | The SPI boundary         | boards + code | [03-the-spi-boundary.md](03-the-spi-boundary.md)                 | replaced by 103            |
 | 04        | The shape of the fork    | mixed         | [04-the-shape-of-the-fork.md](04-the-shape-of-the-fork.md)       | published                  |
 | 05        | A day in the fork        | mixed         | [05-a-day-in-the-fork.md](05-a-day-in-the-fork.md)               | published                  |
 | 06        | The handshake            | boards        | [06-the-handshake.md](06-the-handshake.md)                       | published                  |
@@ -125,6 +125,6 @@ Subscription and tenant ids, a real environment name (written `<name>`), persona
 
 ## Keeping a cut true
 
-When a cut is published, its entry in `src/content/videos.js` records the claim headlines and sentences, the myth id, and the next lesson's question as they stood. `npm test` fails when the lesson changes after the cut, naming the episode and field. The fix is a re-cut from a revised storyboard, or a source-check note on that chapter.
+When a cut is published, its entry in `src/content/videos.js` records the claim headlines and sentences, the myth id, and the next lesson's question as they stood. `npm test` fails when the lesson changes after the cut, naming the episode and field. The fix is a re-cut from a revised storyboard, or a source-check note on that chapter; when the next question changes, the note is on the whole video and quotes the new question verbatim.
 
 The Azure provider used to live upstream and now lives in each service's fork. Say where it lives now, in the present tense, and give the past one clause at most. Never narrate the removal as an event or a process: no "plans to", "has begun", or "survives upstream deleting it", and no dates or per-service lists on screen or in lesson copy. The dated evidence goes in the storyboard's take notes, the cut's `NOTES.md`, a source-check note, or `docs/README.md`.
