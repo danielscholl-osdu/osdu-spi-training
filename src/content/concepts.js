@@ -42,7 +42,13 @@ export const zoomLevels = [
     detail:
       'foundation, platform, and osdu, assembled by Flux in dependency order.',
     example: 'foundation · platform · osdu',
-    chapters: ['running-stack', 'bring-up', 'core-dags'],
+    chapters: [
+      'running-stack',
+      'bring-up',
+      'who-is-asking',
+      'ready-not-loaded',
+      'core-dags',
+    ],
     href: '#bring-up/reconcile',
   },
   {
@@ -61,7 +67,13 @@ export const zoomLevels = [
     detail:
       'Not a place inside the stack: the repositories the service is built from. A service fork owns the provider; osdu-spi supplies the workflows; a run in the fork borrows a stack to prove a digest.',
     example: 'three repositories',
-    chapters: ['fork-shape', 'fork-day', 'handshake'],
+    chapters: [
+      'fork-shape',
+      'fork-day',
+      'handshake',
+      'whose-image',
+      'prove-from-desk',
+    ],
     href: '#fork-shape',
   },
 ];

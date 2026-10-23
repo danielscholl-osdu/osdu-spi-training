@@ -1009,6 +1009,62 @@
   }
 }
 
+/* Working the stack: three places side by side */
+.work-map {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 16px;
+  align-items: start;
+}
+.work-zone {
+  display: grid;
+  gap: 10px;
+  min-width: 0;
+  padding: 12px;
+  border: 1.5px solid var(--line);
+  border-radius: 16px;
+  background: var(--white);
+}
+.work-zone.work-outside {
+  border-style: dashed;
+}
+.work-zone h3 {
+  margin: 0;
+  font-size: 15px;
+}
+.work-zone h4 {
+  margin: 4px 0 0;
+  color: var(--muted);
+  font-size: 12px;
+  font-weight: 600;
+}
+.work-zone p {
+  margin: 0;
+  font-size: 13px;
+}
+.work-zone .node {
+  min-width: 0;
+  overflow-wrap: anywhere;
+}
+.work-arrow {
+  font-size: 12px;
+  color: var(--blue);
+  overflow-wrap: anywhere;
+}
+@media (max-width: 1100px) {
+  .work-map {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+  .work-map > .work-zone:last-child {
+    grid-column: 1 / -1;
+  }
+}
+@media (max-width: 760px) {
+  .work-map {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}
+
 /* Learn view 06: the seam */
 .seam-map {
   display: grid;

@@ -979,6 +979,270 @@ test('core DAG lesson preserves storyboard claims and Keep it true qualification
   );
 });
 
+// The season 2 lessons beside core-dags, each cut from its storyboard.
+const workingStackLessons = [
+  {
+    key: 'whose-image',
+    storyboard: '08-whose-image-is-running.md',
+    diagram: 'whoseImage',
+    prefix: 'img-',
+    level: 'source',
+    myth: ['refresh-is-automatic', 'you', 'seam', 'images'],
+    sources: {
+      imagePins: 'src/spi/pins.py',
+      envRefresh: '.github/workflows/env-refresh.yml',
+    },
+    keep: [
+      /thirteen forks/,
+      /schema’s loader comes from the same commit as schema/,
+      /community registry is not a source/,
+      /never falls back|rather than falling back/,
+      /spi onboard --canonical-source fork/,
+      /Source column is the policy the next refresh resolves/,
+      /more than 21 days ago/,
+      /once main has built past it/,
+      /weekday at 04:00 UTC/,
+      /Pinned services are not marked/,
+    ],
+    never: [
+      /latest image/i,
+      /fourteen forks/i,
+      /Monday/,
+      /no longer pullable|fails to pull/,
+      /v0\.30|#371|PR 371/,
+    ],
+  },
+  {
+    key: 'who-is-asking',
+    storyboard: '09-who-is-asking.md',
+    diagram: 'whoIsAsking',
+    prefix: 'ask-',
+    level: 'workloads',
+    myth: ['users-add-accumulates', 'cli', 'identity', 'peopleAccess'],
+    sources: {
+      peopleAccess:
+        'docs/decisions/039-people-join-entitlements-through-the-cli.md',
+      userRoles: 'src/spi/users.py',
+      projectedId: 'src/spi/identity.py',
+    },
+    keep: [
+      /seeds three identities, the workload, the deploy identity, and the member, and no person/,
+      /writes your unique_name as x-user-id/,
+      /it grants nothing/,
+      /first partition written/,
+      /nothing about data ACLs/,
+      /stored as typed and verified by nothing/,
+      /editor, admin and ops carry users\.datalake\.impersonation.*viewer does not/,
+      /the default is admin/,
+      /impersonation_missing/,
+    ],
+    never: [/looks you up/i, /mesh authorizes/i, /\d+ groups/],
+  },
+  {
+    key: 'ready-not-loaded',
+    storyboard: '10-ready-is-not-loaded.md',
+    diagram: 'readyNotLoaded',
+    prefix: 'load-',
+    level: 'workloads',
+    myth: ['deployable-means-loaded', 'cli', 'readiness', 'namedLoads'],
+    sources: {
+      namedLoads: 'docs/decisions/040-named-loads.md',
+      loadRegistry: 'software/stacks/osdu/init/load-registry.yaml',
+    },
+    keep: [
+      /every gating Flux layer has converged/,
+      /maintenance off, a deploy record present, and the members Job finished in every partition/,
+      /read the boolean/,
+      /brought up with --tag starts in maintenance/,
+      /deployable after convergence/,
+      /not_deployable, exit 2/,
+      /batches of 500, skipping duplicates/,
+      /indexer may still be working/,
+      /up to 1% failed/,
+      /removes the fact, not the records/,
+    ],
+    never: [
+      /every new environment starts in maintenance/i,
+      /search (?:finds|found|returned) the records/i,
+      /six minutes/,
+    ],
+  },
+  {
+    key: 'prove-from-desk',
+    storyboard: '12-prove-it-from-your-desk.md',
+    diagram: 'proveFromDesk',
+    prefix: 'desk-',
+    level: 'source',
+    myth: ['passed-means-checked', 'fork', 'seam', 'suiteReport'],
+    sources: {
+      deployedSuites: 'docs/decisions/036-spi-test-runs-the-deployed-commit.md',
+      suiteReport: 'docs/decisions/037-spi-test-reports-what-a-suite-proves.md',
+    },
+    keep: [
+      /acceptance image built from the same commit/,
+      /descriptor, resolver, and verdict script fetched from the fork at that commit/,
+      /Deployable and the service is not borrowed/,
+      /discards its result if the target changed/,
+      /a zero exit, at least one test not skipped, and no failures/,
+      /sends nothing/,
+      /Neither changes the verdict or the exit code/,
+      /matched when its commit and a clean tree equal the pin/,
+      /spi check covers neither/,
+      /that run was not reviewed/,
+    ],
+    never: [
+      /the CLI decides/i,
+      /revisit this later|Istio is changing|fifteen/i,
+      /spi test dags --as/,
+    ],
+  },
+];
+
+test('Working the stack lessons keep their storyboard words and rungs', () => {
+  for (const lesson of workingStackLessons) {
+    const chapter = chapters[lesson.key];
+    const storyboard = readFileSync(
+      new URL(`../docs/fieldnotes/${lesson.storyboard}`, import.meta.url),
+      'utf8',
+    );
+    const proposal = storyboard.slice(storyboard.indexOf('## Proposed lesson'));
+    assert.equal(chapter.book, 'Working the stack', lesson.key);
+    assert.equal(chapter.diagram, lesson.diagram, lesson.key);
+    assert.ok(proposal.includes(`**Title:** ${chapter.title}`), lesson.key);
+    assert.ok(proposal.includes(`**Subhead:** ${chapter.subhead}`), lesson.key);
+    assert.ok(
+      proposal.includes(`**Question:** ${chapter.question}`),
+      lesson.key,
+    );
+    assert.equal(chapter.outcomes.length, 3, lesson.key);
+    for (const [index, claim] of chapter.outcomes.entries()) {
+      assert.ok(
+        proposal.includes(`${index + 1}. ${claim.headline}`),
+        `${lesson.key}: headline ${index + 1}`,
+      );
+      assert.ok(
+        storyboard.includes(`**${claim.headline}**`),
+        `${lesson.key}: chapter ${index + 1}`,
+      );
+      verifyRoute(
+        `#${lesson.key}?detail=${claim.evidence}&claim=${index}`,
+        `${lesson.key} claim`,
+      );
+    }
+    assert.ok(
+      storyboard.includes(`**Example: ${chapter.example.title}**`),
+      `${lesson.key}: example title`,
+    );
+    assert.ok(
+      proposal.includes(
+        `_${chapter.example.title}_, \`${chapter.example.code}\``,
+      ),
+      `${lesson.key}: example command`,
+    );
+    assert.equal(chapter.lesson, undefined, lesson.key);
+    assert.equal(chapter.tryIt, undefined, lesson.key);
+    assert.equal(fieldnoteFor(lesson.key), null, `${lesson.key}: no cut yet`);
+    assert.ok(
+      zoomLevels
+        .find(({ id }) => id === lesson.level)
+        .chapters.includes(lesson.key),
+      `${lesson.key}: rung`,
+    );
+
+    const [id, owner, theme, source] = lesson.myth;
+    const myth = myths.find((entry) => entry.id === id);
+    assert.deepEqual(chapter.mistakes, [id], lesson.key);
+    assert.equal(myth.owner, owner, id);
+    assert.equal(myth.theme, theme, id);
+    assert.equal(myth.source, source, id);
+    assert.equal(mythTool(myth.check), 'spi', id);
+    assert.ok(storyboard.includes(`Claim: "${myth.claim}"`), `${id}: claim`);
+    assert.ok(
+      storyboard.includes(`**Easy mistake: ${myth.claim}**`),
+      `${id}: chapter title`,
+    );
+    assert.ok(storyboard.includes(`Check: \`${myth.check}\``), `${id}: check`);
+    verifyRoute(myth.route, `${id} route`);
+    assert.ok(myth.route.startsWith(`#${lesson.key}?`), `${id}: local route`);
+    const callout = mythCallout(id, lesson.key);
+    assert.match(callout, /data-map-jump/);
+    assert.ok(callout.includes(mythChips(myth)), `${id}: chips`);
+
+    const html = diagramRenderers[lesson.diagram]();
+    const ids = [...html.matchAll(/data-detail="([^"]+)"/g)].map(
+      (match) => match[1],
+    );
+    assert.equal(new Set(ids).size, ids.length, lesson.key);
+    assert.ok(ids.length <= 12, `${lesson.key}: as small as core-dags`);
+    for (const detailId of ids) {
+      assert.ok(detailId.startsWith(lesson.prefix), detailId);
+      verifySourceRecord(
+        componentDetails[detailId].source,
+        sources[componentDetails[detailId].source],
+      );
+    }
+    assert.deepEqual(
+      [...ids].sort(),
+      Object.keys(componentDetails)
+        .filter((key) => key.startsWith(lesson.prefix))
+        .sort(),
+      `${lesson.key}: every explanation is on the map`,
+    );
+    for (const [key, path] of Object.entries(lesson.sources)) {
+      assert.equal(sources[key].repo, 'osdu-spi-stack', key);
+      assert.equal(
+        sources[key].href,
+        `https://github.com/Azure/osdu-spi-stack/blob/main/${path}`,
+        key,
+      );
+      verifySourceRecord(key, sources[key]);
+    }
+
+    const copy = [
+      chapter.intro,
+      chapter.scope,
+      chapter.example.note,
+      ...chapter.outcomes.flatMap(({ text, why }) => [text, why]),
+      ...chapter.example.hops.map(({ copy: hop }) => hop),
+      myth.reality,
+      myth.correction,
+      html,
+      ...ids.flatMap((detailId) => [
+        componentDetails[detailId].title,
+        componentDetails[detailId].body,
+      ]),
+    ].join(' ');
+    for (const pattern of lesson.keep)
+      assert.match(copy, pattern, `${lesson.key}: keeps ${pattern}`);
+    for (const pattern of [
+      ...lesson.never,
+      /\b20\d\d-\d\d-\d\d\b|\b(?:January|February|March|April|May|June|July|August|September|October|November|December)\b/,
+      /still (?:carries|holds|ships)|plans to|has begun/,
+    ])
+      assert.doesNotMatch(copy, pattern, `${lesson.key}: avoids ${pattern}`);
+  }
+});
+
+test('Working the stack maps draw fork-owned source in orange and nothing else', () => {
+  const forkOwned = {
+    whoseImage: ['img-fork'],
+    whoIsAsking: [],
+    readyNotLoaded: [],
+    proveFromDesk: ['desk-commit', 'desk-checkout'],
+  };
+  for (const [diagram, expected] of Object.entries(forkOwned)) {
+    const html = diagramRenderers[diagram]();
+    const orange = [
+      ...html.matchAll(
+        /class="node fork-code[^"]*"[^>]*data-detail="([^"]+)"/g,
+      ),
+    ].map((match) => match[1]);
+    assert.deepEqual(orange, expected, diagram);
+    assert.equal(html.includes('fork-swatch'), expected.length > 0, diagram);
+  }
+  assert.doesNotMatch(diagramRenderers.whoseImage(), /pinned|ephemeral/i);
+});
+
 test('Go deeper links put primary evidence before deduplicated depth', () => {
   const ordered = detailSourceLinks(componentDetails.azureimpl);
   const expected = [
@@ -2625,7 +2889,11 @@ test('field check remains lesson 07 after the round trip', () => {
   );
 
   assert.equal(route.chapter, 'not-true');
-  assert.deepEqual(learnKeys.slice(-3), ['handshake', 'not-true', 'core-dags']);
+  assert.deepEqual(learnKeys.slice(5, 8), [
+    'handshake',
+    'not-true',
+    'whose-image',
+  ]);
   assert.equal(indexedKeys.filter((key) => key === 'not-true').length, 1);
   assert.equal(learnKeys.indexOf('not-true') + 1, 7);
   assert.equal(chapters['not-true'].title, 'Things that are not true');
@@ -2665,7 +2933,11 @@ test('Working the stack navigation keeps lesson numbering derived from order', (
     'fork-day',
     'handshake',
     'not-true',
+    'whose-image',
+    'who-is-asking',
+    'ready-not-loaded',
     'core-dags',
+    'prove-from-desk',
   ]);
   assert.deepEqual(
     chapters.start.index.flatMap(({ lessons }) => Object.keys(lessons)),
@@ -2673,21 +2945,37 @@ test('Working the stack navigation keeps lesson numbering derived from order', (
   );
   for (const key of learn) assert.equal(chapters[key].number, undefined);
   const home = pageRenderers.home();
-  assert.match(
-    home,
-    /href="#core-dags"><span class="lesson-number">08<\/span><b>On behalf of you<\/b>/,
-  );
+  const ladder = zoomLadder();
+  for (const [key, number] of [
+    ['whose-image', '08'],
+    ['who-is-asking', '09'],
+    ['ready-not-loaded', '10'],
+    ['core-dags', '11'],
+    ['prove-from-desk', '12'],
+  ]) {
+    const title = escapeHtml(chapters[key].title);
+    assert.ok(
+      home.includes(
+        `href="#${key}"><span class="lesson-number">${number}</span><b>${title}</b>`,
+      ),
+      `${key}: start index`,
+    );
+    assert.ok(
+      chapterNavigation(key).includes(
+        `href="#${key}" class="chapter-link" aria-current="page"><span class="number">${number}</span>`,
+      ),
+      `${key}: rail`,
+    );
+    assert.ok(
+      ladder.includes(
+        `href="#${key}" title="Open ${number} · ${title}">${number}</a>`,
+      ),
+      `${key}: ladder`,
+    );
+  }
   const rail = chapterNavigation('core-dags');
-  assert.match(
-    rail,
-    /href="#core-dags" class="chapter-link" aria-current="page"><span class="number">08<\/span>/,
-  );
   assert.ok(
     rail.indexOf('Across the path') < rail.indexOf('Working the stack'),
-  );
-  assert.match(
-    zoomLadder(),
-    /href="#core-dags" title="Open 08 · On behalf of you">08<\/a>/,
   );
   const main = readFileSync(new URL('../src/main.js', import.meta.url), 'utf8');
   assert.match(main, /if \(key === 'not-true'\) return 'start';/);
@@ -3977,7 +4265,11 @@ test('map lesson examples other than the step lesson use one closed disclosure a
       'spi-boundary',
       'fork-shape',
       'fork-day',
+      'whose-image',
+      'who-is-asking',
+      'ready-not-loaded',
       'core-dags',
+      'prove-from-desk',
     ],
   );
   for (const [key, chapter] of exampleLessons) {

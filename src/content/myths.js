@@ -17,6 +17,20 @@ export const myths = [
     routeLabel: 'Storage read-back on the map',
   },
   {
+    id: 'deployable-means-loaded',
+    owner: 'cli',
+    theme: 'readiness',
+    claim: "It's Deployable, so the data is there.",
+    reality:
+      'Bring-up registers the schemas and writes no records. Reference data is loaded by spi load, which runs after the environment is Deployable and never changes ready or deployable, so a search suite on a fresh environment can find nothing, and nothing says why unless you read the loads. A complete load means Storage accepted the records; the indexer may still be working.',
+    correction:
+      'Deployable says an environment can take a deploy; the loads say what data it holds.',
+    check: 'spi load --status',
+    source: 'namedLoads',
+    route: '#ready-not-loaded?detail=load-loads&claim=1',
+    routeLabel: 'The loads on the map',
+  },
+  {
     id: 'finished-means-ready',
     owner: 'flux',
     theme: 'readiness',
@@ -148,6 +162,19 @@ export const myths = [
     route: '#running-stack/developer?detail=vault',
     routeLabel: 'Key Vault and seed Secrets',
     here: { 'bring-up': '#bring-up/bootstrap?detail=vault' },
+  },
+  {
+    id: 'users-add-accumulates',
+    owner: 'cli',
+    theme: 'identity',
+    claim: 'Running spi users add again adds to the role I hold.',
+    reality:
+      'A role is one of four presets, and it is set, not accumulated. A second add with another role removes the other presets’ groups and adds this one’s; users stays. Going back to viewer removes users.datalake.impersonation, so ingestion as yourself stops.',
+    correction: 'spi users add sets your role; it replaces the one you held.',
+    check: 'spi users list',
+    source: 'peopleAccess',
+    route: '#who-is-asking?detail=ask-roles&claim=2',
+    routeLabel: 'The role presets on the map',
   },
   {
     id: 'reapply-retries',
@@ -338,6 +365,34 @@ export const myths = [
     source: 'ephemeralPins',
     route: '#handshake?detail=restore',
     routeLabel: 'The restore step',
+  },
+  {
+    id: 'refresh-is-automatic',
+    owner: 'you',
+    theme: 'seam',
+    claim: "My environment picks up the fork's new main on its own.",
+    reality:
+      'spi up resolves each canonical once and keeps the lock on a rerun unless asked to refresh. Only the shared environment refreshes on a schedule, every weekday. On a personal environment, spi info and spi status mark a canonical built more than 21 days ago, and the fork’s weekly retention can delete it once it is over 30 days old and main has built past it.',
+    correction:
+      'A personal environment keeps its images until you refresh them.',
+    check: 'spi info',
+    source: 'images',
+    route: '#whose-image?detail=img-refresh&claim=2',
+    routeLabel: 'The refresh on the map',
+  },
+  {
+    id: 'passed-means-checked',
+    owner: 'fork',
+    theme: 'seam',
+    claim: 'The suite passed, so every test checked something.',
+    reality:
+      'The verdict counts tests, and JUnit reports a test with an empty body as a pass. The report’s Hollow column counts the passing tests that prove nothing: the empty ones --report finds in the suite’s sources, and the ones --review grades as proving nothing against the service’s own API contract. Without a review, Hollow counts only the empty ones, and the scoreboard marks the service not reviewed.',
+    correction:
+      "A passing suite can hold tests that prove nothing; the report's Hollow count, with --review, says how many.",
+    check: 'spi test partition --suite all --report --review',
+    source: 'suiteReport',
+    route: '#prove-from-desk?detail=desk-report&claim=1',
+    routeLabel: 'The report on the map',
   },
 ];
 
