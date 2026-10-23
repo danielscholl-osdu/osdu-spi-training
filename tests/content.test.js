@@ -93,7 +93,7 @@ import {
   spiNamesFigure,
 } from '../src/components/infographics.js';
 import { multipleVariantTryIt, singleVariantTryIt } from './fixtures/try-it.js';
-import { lessonFieldnote } from './fixtures/fieldnote.js';
+import { coreDagsFieldnote, lessonFieldnote } from './fixtures/fieldnote.js';
 import { tryItShells } from '../src/try-it-shell.js';
 
 const mapChapters = Object.entries(chapters).filter(
@@ -711,6 +711,272 @@ test('readiness drawer distinguishes observed state from API proof', () => {
   assert.match(readiness.body, /Job should be Complete rather than Running/);
   for (const phrase of ['first of five', 'the rest', 'later milestone'])
     assert.doesNotMatch(drawerCopy, new RegExp(phrase, 'i'));
+});
+
+test('core DAG evidence isolates actors, credentials, and inspectable artifacts', () => {
+  const expected = {
+    'dag-catalog': ['coreDagInputs', /catalog\.yaml/],
+    'dag-loader': ['coreDagInputs', /load-osdu-dags/],
+    'dag-processor': ['coreDagsDecision', /--require-hashes/],
+    'dag-registration': ['coreDagRegistration', /spi-osdu-dag-registration/],
+    'dag-caller': ['coreDagInputs', /spi test dags --as me --report/],
+    'dag-workflow': ['coreDagsDecision', /submittedBy/],
+    'dag-airflow-api': ['coreDagsDecision', /\/airflow\/auth\/token/],
+    'dag-task': ['coreDagsDecision', /LocalExecutor/],
+    'dag-storage': ['coreDagInputs', /createUser/],
+    'dag-caller-token': ['coreDagInputs', /--as me/],
+    'dag-airflow-login': ['coreDagRegistration', /osdu-workflow/],
+    'dag-osdu-identity': ['coreDagsDecision', /on-behalf-of: <you>/],
+  };
+  for (const [id, [source, artifact]] of Object.entries(expected)) {
+    const detail = componentDetails[id];
+    assert.equal(detail.source, source, id);
+    assert.match(detail.artifact.code, artifact, id);
+    assert.ok(detail.body.length > 100, id);
+    verifySourceRecord(source, sources[source]);
+  }
+  assert.match(componentDetails['dag-loader'].body, /node loss.*no old pod/);
+  assert.match(componentDetails['dag-task'].body, /not separate task pods/);
+  assert.match(componentDetails['dag-airflow-login'].body, /role User/);
+  assert.match(
+    componentDetails['dag-osdu-identity'].body,
+    /users\.datalake\.delegation/,
+  );
+  assert.match(
+    componentDetails['dag-osdu-identity'].body,
+    /users\.datalake\.impersonation/,
+  );
+});
+
+test('core DAG diagram separates delivery, registration, and credential authority', () => {
+  const html = diagramRenderers.coreDags();
+  const ids = [...html.matchAll(/data-detail="([^"]+)"/g)].map(
+    (match) => match[1],
+  );
+  const expected = Object.keys(componentDetails).filter((id) =>
+    id.startsWith('dag-'),
+  );
+  assert.equal(ids.length, 12);
+  assert.equal(new Set(ids).size, ids.length);
+  assert.deepEqual([...ids].sort(), expected.sort());
+  for (const id of ids) assert.ok(componentDetails[id], id);
+  for (const scope of ['dag-delivery', 'dag-registration', 'dag-provenance'])
+    assert.match(html, new RegExp(`data-scope="${scope}"`));
+  for (const label of [
+    'Your token',
+    'osdu-workflow login',
+    'OSDU identity + on-behalf-of',
+    'LocalExecutor',
+    'platform/workload-identity-sa',
+    'OSDU Workflow API',
+    'OSDU Storage API',
+    'Airflow role User · no OSDU authority',
+    'not an Azure Storage account',
+  ])
+    assert.ok(html.includes(label), label);
+  assert.match(html, /separate Job/);
+  assert.match(html, /not a task pod/);
+  assert.equal(html.match(/no OSDU Workload Identity/g)?.length, 2);
+  assert.match(html, /osdu namespace/);
+  assert.match(html, /platform namespace/);
+  assert.doesNotMatch(html, /fork-code|task-pod|blob Storage account/);
+  const actors = [
+    'dag-caller',
+    'dag-workflow',
+    'dag-airflow-api',
+    'dag-task',
+    'dag-storage',
+  ];
+  for (let index = 1; index < actors.length; index++)
+    assert.ok(ids.indexOf(actors[index - 1]) < ids.indexOf(actors[index]));
+});
+
+test('core DAG lesson connects three claims and five ingestion hops at the workloads rung', () => {
+  const chapter = chapters['core-dags'];
+  assert.equal(chapter.title, 'On behalf of you');
+  assert.equal(chapter.book, 'Working the stack');
+  assert.equal(chapter.selected, 'dag-catalog');
+  assert.equal(chapter.diagram, 'coreDags');
+  assert.equal(chapter.outcomes.length, 3);
+  assert.deepEqual(
+    chapter.outcomes.map(({ headline }) => headline),
+    [
+      'A DAG reaches Airflow from a reviewed catalog, hash by hash.',
+      'Registration comes later, and it does not gate Deployable.',
+      'Each task writes on behalf of the caller.',
+    ],
+  );
+  assert.equal(chapter.example.title, 'Proof: spi test dags, as me');
+  assert.equal(chapter.example.code, 'spi test dags --as me');
+  assert.deepEqual(
+    chapter.example.hops.map(({ detail }) => detail),
+    [
+      'dag-caller',
+      'dag-workflow',
+      'dag-airflow-api',
+      'dag-task',
+      'dag-storage',
+    ],
+  );
+  assert.ok(
+    zoomLevels
+      .find(({ id }) => id === 'workloads')
+      .chapters.includes('core-dags'),
+  );
+  assert.equal(chapter.lesson, undefined);
+  assert.equal(chapter.tryIt, undefined);
+  assert.equal(lessonWatch('core-dags'), '');
+  for (const [index, claim] of chapter.outcomes.entries()) {
+    assert.ok(
+      claimContext('core-dags', index).includes(escapeHtml(claim.text)),
+    );
+    verifyRoute(
+      `#core-dags?detail=${claim.evidence}&claim=${index}`,
+      'core DAG claim',
+    );
+  }
+});
+
+test('core DAG misconception stays local and uses operator and derived spi chips', () => {
+  const myth = myths.find(({ id }) => id === 'run-succeeded-means-stored');
+  assert.equal(myth.owner, 'you');
+  assert.equal(myth.theme, 'readiness');
+  assert.equal(myth.source, 'coreDagInputs');
+  assert.equal(mythTool(myth.check), 'spi');
+  verifyRoute(myth.route, 'core DAG misconception');
+  const callout = mythCallout(myth.id, 'core-dags');
+  assert.match(callout, /data-map-jump/);
+  assert.ok(callout.includes(myth.route));
+  assert.ok(callout.includes(mythChips(myth)));
+  assert.match(myth.reality, /creates and retains new proof/);
+  assert.match(myth.reality, /existing run/);
+});
+
+test('core DAG routes distinguish claim evidence from the optional trace', () => {
+  const chapter = chapters['core-dags'];
+  const initial = parseRoute('#core-dags');
+  assert.equal(initial.chapter, 'core-dags');
+  assert.equal(initial.step, '');
+  assert.equal(initial.detail, null);
+  assert.deepEqual(resolveLessonSelection(chapter, initial), {
+    claim: 0,
+    hop: -1,
+    exampleOpen: false,
+  });
+  for (const [claim, { evidence }] of chapter.outcomes.entries()) {
+    const href = routeHref('core-dags', '', evidence, { claim });
+    verifyRoute(href, 'DAG evidence');
+    assert.deepEqual(resolveLessonSelection(chapter, parseRoute(href)), {
+      claim,
+      hop: -1,
+      exampleOpen: false,
+    });
+  }
+  for (const [hop, { detail }] of chapter.example.hops.entries()) {
+    const href = routeHref('core-dags', '', detail, { hop });
+    verifyRoute(href, 'DAG hop');
+    const selection = resolveLessonSelection(chapter, parseRoute(href));
+    assert.equal(selection.hop, hop);
+    assert.equal(selection.exampleOpen, true);
+  }
+  const legacyHop = resolveLessonSelection(
+    chapter,
+    parseRoute('#core-dags?detail=dag-workflow'),
+  );
+  assert.deepEqual(legacyHop, { claim: 0, hop: 1, exampleOpen: true });
+  const overlapping = structuredClone(chapter);
+  overlapping.outcomes[2].evidence = 'dag-storage';
+  assert.deepEqual(
+    resolveLessonSelection(
+      overlapping,
+      parseRoute('#core-dags?detail=dag-storage'),
+    ),
+    {
+      claim: 2,
+      hop: -1,
+      exampleOpen: false,
+    },
+  );
+  assert.deepEqual(
+    resolveLessonSelection(
+      overlapping,
+      parseRoute('#core-dags?detail=dag-storage&hop=4'),
+    ),
+    {
+      claim: 2,
+      hop: 4,
+      exampleOpen: true,
+    },
+  );
+  // The Storage myth carries explicit claim intent despite naming a trace hop.
+  const myth = myths.find(({ id }) => id === 'run-succeeded-means-stored');
+  assert.deepEqual(resolveLessonSelection(chapter, parseRoute(myth.route)), {
+    claim: 2,
+    hop: -1,
+    exampleOpen: false,
+  });
+  const evidence = resolveLessonSelection(
+    chapter,
+    parseRoute('#core-dags?detail=dag-osdu-identity'),
+  );
+  assert.deepEqual(evidence, { claim: 2, hop: -1, exampleOpen: false });
+  const shelf = exampleStrip('core-dags', initial, undefined, { shelf: true });
+  assert.match(shelf, /data-shelf-row="example"/);
+  assert.match(shelf, /Five hops · Proof: spi test dags, as me/);
+  assert.doesNotMatch(shelf, /<details[^>]*\bopen\b|data-seek|View poster/);
+  const fieldCheck = pageRenderers.myths();
+  assert.equal(fieldCheck.split(`id="myth-${myth.id}"`).length - 1, 1);
+  const readiness = fieldCheck.slice(
+    fieldCheck.indexOf('aria-label="Readiness and proof"'),
+    fieldCheck.indexOf('</section>'),
+  );
+  assert.ok(readiness.includes(`id="myth-${myth.id}"`));
+});
+
+test('core DAG lesson preserves storyboard claims and Keep it true qualifications', () => {
+  const storyboard = readFileSync(
+    new URL('../docs/fieldnotes/11-on-behalf-of-you.md', import.meta.url),
+    'utf8',
+  );
+  const chapter = chapters['core-dags'];
+  for (const claim of chapter.outcomes)
+    assert.ok(storyboard.includes(`**${claim.headline}**`));
+  assert.ok(storyboard.includes(`**${chapter.example.title}**`));
+  const copy = [
+    chapter.intro,
+    chapter.scope,
+    chapter.example.note,
+    ...chapter.outcomes.flatMap(({ text, why }) => [text, why]),
+    ...chapter.example.hops.map(({ copy }) => copy),
+    diagramRenderers.coreDags(),
+  ].join(' ');
+  for (const pattern of [
+    /spi-smoke.*Echo_DAG.*airflow_monitoring/,
+    /core-ingestion.*Osdu_ingest.*manifest_ingestion/,
+    /full commits.*per-file SHA-256/,
+    /hash-locked/,
+    /No git-sync, blob delivery, or custom Airflow image/,
+    /layer-6 Job.*does not gate Deployable/,
+    /fresh parses.*zero import errors/,
+    /never deletes DAGs or Workflow records/,
+    /rejects a supplied user ID/,
+    /Airflow role User · no OSDU authority/,
+    /LocalExecutor.*inside the scheduler/,
+    /not task pods/,
+    /users\.datalake\.delegation.*users\.datalake\.impersonation/,
+    /editor, admin, and ops.*viewer does not/,
+    /Legal refuses validation.*not checked.*smoke continues/,
+    /Domain comparison is not group-membership testing/,
+    /grants no roles and creates no schemas or legal tags/,
+    /read-back.*createUser/,
+    /CI does not run this smoke against a live cluster/,
+    /not a guarantee after node loss/,
+  ])
+    assert.match(copy, pattern);
+  assert.doesNotMatch(
+    copy,
+    /takes \d+ (?:seconds|minutes)|pipeline proves ingestion/,
+  );
 });
 
 test('Go deeper links put primary evidence before deduplicated depth', () => {
@@ -1348,7 +1614,12 @@ test('audio markers are ordered, inside the recording, and point at real views',
   );
   assert.deepEqual(
     chapters.start.index.map((group) => group.label),
-    ['The stack', 'Provider code and engineering'],
+    [
+      'The stack',
+      'Provider code and engineering',
+      'Across the path',
+      'Working the stack',
+    ],
   );
   assert.deepEqual(
     chapters.start.index.flatMap((group) => Object.keys(group.lessons)),
@@ -1776,6 +2047,24 @@ test('readiness signals guide compares five proof scopes without ordering them',
 test('source links use readable documentation and match a sibling checkout when present', () => {
   for (const [key, source] of Object.entries(sources))
     verifySourceRecord(key, source);
+});
+
+test('core DAG sources name the reviewed files on the default branch', () => {
+  const paths = {
+    coreDagsDecision: 'docs/decisions/044-core-profile-dags.md',
+    coreDagInputs: 'software/stacks/osdu/dags/README.md',
+    coreDagRegistration: 'software/stacks/osdu/dag-registration/README.md',
+  };
+  for (const [key, path] of Object.entries(paths)) {
+    const source = sources[key];
+    assert.equal(source.repo, 'osdu-spi-stack');
+    assert.equal(source.path, path);
+    assert.equal(
+      source.href,
+      `https://github.com/Azure/osdu-spi-stack/blob/main/${path}`,
+    );
+    verifySourceRecord(key, source);
+  }
 });
 
 test('tryIt fixtures and authored recipes satisfy the content contract', () => {
@@ -2336,7 +2625,7 @@ test('field check remains lesson 07 after the round trip', () => {
   );
 
   assert.equal(route.chapter, 'not-true');
-  assert.deepEqual(learnKeys.slice(-2), ['handshake', 'not-true']);
+  assert.deepEqual(learnKeys.slice(-3), ['handshake', 'not-true', 'core-dags']);
   assert.equal(indexedKeys.filter((key) => key === 'not-true').length, 1);
   assert.equal(learnKeys.indexOf('not-true') + 1, 7);
   assert.equal(chapters['not-true'].title, 'Things that are not true');
@@ -2362,6 +2651,47 @@ test('field check remains lesson 07 after the round trip', () => {
       'href="#not-true">07 · Things that are not true →</a>',
     ),
   );
+});
+
+test('Working the stack navigation keeps lesson numbering derived from order', () => {
+  const learn = Object.keys(chapters).filter(
+    (key) => chapters[key].group === 'learn',
+  );
+  assert.deepEqual(learn, [
+    'running-stack',
+    'bring-up',
+    'spi-boundary',
+    'fork-shape',
+    'fork-day',
+    'handshake',
+    'not-true',
+    'core-dags',
+  ]);
+  assert.deepEqual(
+    chapters.start.index.flatMap(({ lessons }) => Object.keys(lessons)),
+    learn,
+  );
+  for (const key of learn) assert.equal(chapters[key].number, undefined);
+  const home = pageRenderers.home();
+  assert.match(
+    home,
+    /href="#core-dags"><span class="lesson-number">08<\/span><b>On behalf of you<\/b>/,
+  );
+  const rail = chapterNavigation('core-dags');
+  assert.match(
+    rail,
+    /href="#core-dags" class="chapter-link" aria-current="page"><span class="number">08<\/span>/,
+  );
+  assert.ok(
+    rail.indexOf('Across the path') < rail.indexOf('Working the stack'),
+  );
+  assert.match(
+    zoomLadder(),
+    /href="#core-dags" title="Open 08 · On behalf of you">08<\/a>/,
+  );
+  const main = readFileSync(new URL('../src/main.js', import.meta.url), 'utf8');
+  assert.match(main, /if \(key === 'not-true'\) return 'start';/);
+  assert.match(main, /of \$\{learnOrder.length\}/);
 });
 
 test('the familiar-things guide links every row to a component on the map', () => {
@@ -3641,7 +3971,14 @@ test('map lesson examples other than the step lesson use one closed disclosure a
   );
   assert.deepEqual(
     exampleLessons.map(([key]) => key),
-    ['running-stack', 'bring-up', 'spi-boundary', 'fork-shape', 'fork-day'],
+    [
+      'running-stack',
+      'bring-up',
+      'spi-boundary',
+      'fork-shape',
+      'fork-day',
+      'core-dags',
+    ],
   );
   for (const [key, chapter] of exampleLessons) {
     const steps = chapterSteps(key).length ? chapterSteps(key) : [''];
@@ -4702,7 +5039,11 @@ function cutFromDifferences(video) {
         ),
       );
   }
-  const next = learnKeys[learnKeys.indexOf(video.chapter) + 1];
+  // Field check keeps its Back to the start exit after the book expands.
+  const next =
+    video.chapter === 'not-true'
+      ? null
+      : learnKeys[learnKeys.indexOf(video.chapter) + 1];
   if ((cut.next ?? null) !== (next ? chapters[next].question : null))
     differences.push(differs('next', `chapters['${next}'].question`));
   return differences;
@@ -4864,6 +5205,73 @@ test('a Fieldnote cut that drifts from its lesson names the episode and field', 
   assert.deepEqual(cutFromDifferences(uncut), [
     'Fieldnote 01: cutFrom is missing',
   ]);
+});
+
+test('core DAG video contract uses a frozen test-only Fieldnote 11 cut', () => {
+  const video = coreDagsFieldnote();
+  verifyFieldnote(video);
+  assert.equal(fieldnoteFor('core-dags'), null);
+  assert.equal(fieldnoteById('11'), null);
+  assert.equal(lessonWatch('core-dags'), '');
+  assert.equal(video.nextChapter, undefined);
+  assert.match(claimStrip('core-dags', video), /data-video-open="11"/);
+  const marks = fieldnoteChapters(video);
+  assert.deepEqual(
+    marks.slice(0, 3).map(({ title }) => title),
+    chapters['core-dags'].outcomes.map(({ headline }) => headline),
+  );
+  assert.equal(marks[3].title, 'Example: Proof: spi test dags, as me');
+  assert.equal(
+    marks[4].title,
+    'Easy mistake: the run finished, so every record is stored',
+  );
+  for (const [field, mutate] of [
+    [
+      'claims[0].headline',
+      (cut) => {
+        cut.claims[0].headline = 'Older headline.';
+      },
+    ],
+    [
+      'claims[2].text',
+      (cut) => {
+        cut.claims[2].text = 'Older outcome.';
+      },
+    ],
+    [
+      'example',
+      (cut) => {
+        cut.example = 'Older example';
+      },
+    ],
+    [
+      'mistake.claim',
+      (cut) => {
+        cut.mistake.claim = 'Older assumption.';
+      },
+    ],
+  ]) {
+    const changed = coreDagsFieldnote();
+    mutate(changed.cutFrom);
+    const from =
+      field === 'mistake.claim'
+        ? "myths.js 'run-succeeded-means-stored'"
+        : "chapters['core-dags']";
+    assert.deepEqual(cutFromDifferences(changed), [
+      `Fieldnote 11: cutFrom.${field} differs from ${from}`,
+    ]);
+    assert.throws(() => verifyFieldnote(changed), /Fieldnote 11: cutFrom/);
+  }
+  const seam = fieldnoteById('06');
+  assert.equal(seam.cutFrom.next, chapters['not-true'].question);
+  assert.equal(seam.nextChapter, undefined);
+  verifyFieldnote(seam);
+  const fieldCheck = fieldnoteById('07');
+  verifyFieldnote(fieldCheck);
+  assert.deepEqual(
+    fieldCheck.chapters.map(({ theme }) => theme),
+    mythThemes.map(({ id }) => id),
+  );
 });
 
 test('Fieldnote routes parse and keep the published keys', () => {

@@ -27,6 +27,8 @@ Two kinds of material live here. The first supports the training site itself: sc
 
 ## Reviewed against
 
+The core DAG lesson, **On behalf of you** (lesson 08, based on the Fieldnote 11 storyboard), was reviewed in October 2026 against `Azure/osdu-spi-stack` `870f7295f49dea52afdeada61dca731d9ca88ff1`: `docs/decisions/044-core-profile-dags.md`, `software/stacks/osdu/dags/README.md`, and `software/stacks/osdu/dag-registration/README.md`. This review covers catalog delivery, registration, caller provenance, and Storage read-back only; it does not refresh other lessons or claim a live-cluster walkthrough. The draft storyboard used `3d3106d` / CLI 0.32.0. Learner-facing links follow `main`.
+
 The site's technical claims were checked against pinned revisions of the source repositories. This section was kept out of the top-level README so that the case study could lead; the content test still resolves every source path against the sibling checkouts named here.
 
 The Lessons 01 and 03 Try it copy was edited on 16 September 2026 against the installation guide at `osdu-spi-stack` `c15d9bc2cb8db9156bf2d87180c0262b97e9e16b`, the current installation guide at `8e804487efaf0956dcb8577de9f202687f3790e9`, prerequisite detection at `dc2c95638ded6459538085cfdb2ada46b692c27b`, and provider and packaging source at `osdu-spi-partition` `3a5690da3147d022ca9a2402858cd7b96e4688cf`. Lesson 01 distinguishes the latest installer from Lesson 02's pinned version and makes uninstall optional. Lesson 03 distinguishes a Deployment's configured image from running-pod state and the source being read. Command text and publication records are unchanged; this editorial review adds no deployment or walkthrough claim.

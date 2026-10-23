@@ -38,3 +38,52 @@ export function lessonFieldnote() {
     notes: [],
   };
 }
+
+// Synthetic media and times exercise the contract, not publication evidence.
+export function coreDagsFieldnote() {
+  return {
+    id: '11',
+    chapter: 'core-dags',
+    title: 'On behalf of you',
+    duration: 100,
+    width: 1920,
+    height: 1080,
+    files: {
+      video: 'fixture-core-dags/video.mp4',
+      captions: 'fixture-core-dags/captions.vtt',
+      chapters: 'fixture-core-dags/chapters.vtt',
+    },
+    chapters: [
+      { time: 10, claim: 0 },
+      { time: 25, claim: 1 },
+      { time: 40, claim: 2 },
+      { time: 60, example: true },
+      { time: 80, mistake: 'run-succeeded-means-stored' },
+    ],
+    cutFrom: {
+      claims: [
+        {
+          headline:
+            'A DAG reaches Airflow from a reviewed catalog, hash by hash.',
+          text: 'A reviewed catalog selects two DAG families and four IDs; init containers verify full commits and per-file SHA-256 hashes before the scheduler and processor receive their files.',
+        },
+        {
+          headline:
+            'Registration comes later, and it does not gate Deployable.',
+          text: 'After Airflow and initialization, the separate layer-6 Job registers system workflows and unpauses declared DAGs, but its success does not gate Deployable.',
+        },
+        {
+          headline: 'Each task writes on behalf of the caller.',
+          text: 'Workflow derives the caller from their token; a LocalExecutor task inside the scheduler calls Storage with the OSDU identity plus on-behalf-of, and read-back must show that caller as createUser.',
+        },
+      ],
+      example: 'Proof: spi test dags, as me',
+      mistake: {
+        id: 'run-succeeded-means-stored',
+        claim: 'The run finished, so every record is stored.',
+      },
+      next: null,
+    },
+    notes: [],
+  };
+}

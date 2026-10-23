@@ -2,6 +2,24 @@
 // Licensed under the MIT License.
 
 export const sources = {
+  coreDagsDecision: {
+    label: 'Core profile DAG delivery and caller identity',
+    repo: 'osdu-spi-stack',
+    path: 'docs/decisions/044-core-profile-dags.md',
+    href: 'https://github.com/Azure/osdu-spi-stack/blob/main/docs/decisions/044-core-profile-dags.md',
+  },
+  coreDagInputs: {
+    label: 'Core DAG catalog, loader, and ingestion proof',
+    repo: 'osdu-spi-stack',
+    path: 'software/stacks/osdu/dags/README.md',
+    href: 'https://github.com/Azure/osdu-spi-stack/blob/main/software/stacks/osdu/dags/README.md',
+  },
+  coreDagRegistration: {
+    label: 'Core DAG system registration',
+    repo: 'osdu-spi-stack',
+    path: 'software/stacks/osdu/dag-registration/README.md',
+    href: 'https://github.com/Azure/osdu-spi-stack/blob/main/software/stacks/osdu/dag-registration/README.md',
+  },
   architecture: {
     label: 'Stack architecture',
     repo: 'osdu-spi-stack',
