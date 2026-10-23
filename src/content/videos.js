@@ -582,6 +582,51 @@ export const fieldnotes = [
     },
     notes: [],
   },
+  {
+    id: '12',
+    chapter: 'prove-from-desk',
+    title: 'Prove it from your desk',
+    duration: 223,
+    width: 1920,
+    height: 1080,
+    files: {
+      video: 'fieldnote-12/video.mp4',
+      poster: 'fieldnote-12/poster.jpg',
+      captions: 'fieldnote-12/captions.vtt',
+      chapters: 'fieldnote-12/chapters.vtt',
+    },
+    chapters: [
+      { time: 44.5, claim: 0 },
+      { time: 74.8, claim: 1 },
+      { time: 107.0, claim: 2 },
+      { time: 134.7, example: true },
+      { time: 161.2, mistake: 'passed-means-checked' },
+    ],
+    cutFrom: {
+      claims: [
+        {
+          headline: 'spi test runs the suite the deployed commit shipped.',
+          text: 'When a canonical is resolved, the lock also records the digest of the acceptance image built from the same commit; spi test runs that image by digest with the descriptor, resolver, and verdict script fetched from the fork at that commit.',
+        },
+        {
+          headline:
+            'A pass counts tests, and the report shows what they prove.',
+          text: 'The verdict is the commit’s own script: a zero exit, at least one test not skipped, and no failures; --report counts the passing tests with empty bodies, and --review grades what each test proves against the service’s own API docs.',
+        },
+        {
+          headline: 'A change on your desk reaches the stack as a local pin.',
+          text: 'spi service pin --source builds the JAR on your machine and the image in the environment’s own registry, pins it by digest, and waits for the rollout; spi test --source then runs your checkout’s suite, labeled matched when its commit and a clean tree equal the pin.',
+        },
+      ],
+      example: 'spi test partition, paired',
+      mistake: {
+        id: 'passed-means-checked',
+        claim: 'The suite passed, so every test checked something.',
+      },
+      next: null,
+    },
+    notes: [],
+  },
 ];
 
 export function isLocalVideoFile(path) {
