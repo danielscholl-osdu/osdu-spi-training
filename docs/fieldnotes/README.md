@@ -81,7 +81,7 @@ Five rules keep an idea from being taught twice:
 - **Each path stands alone.** An idea both paths need at the same depth lives in level 100. A practical detail both need, such as reading a green Validation Summary, is taught once in each path.
 - **Examples advance.** An example is traced in full once. The service path's example is the viewer's own environment and change; the platform path follows one fork and the shared environment. A request's path through the stack is traced in 102 and nowhere else.
 - **Each idea is said once.** No standfirst previews the beats, and the recall is one line, not the headlines again.
-- **Mistakes live at home.** An easy mistake appears in the episode that is its idea's home: at most one in a level 100 or 200 episode, while a level 300 episode about failure may carry several.
+- **Mistakes live at home.** An easy mistake appears in the episode that is its idea's home, or, for an idea taught at level 100, in the level 200 episode where its check can be run: at most one in a level 100 or 200 episode, while a level 300 episode about failure may carry several.
 
 ## Identity
 

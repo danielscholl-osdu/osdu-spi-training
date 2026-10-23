@@ -663,9 +663,10 @@ test('lesson 03 claim evidence resolves all three claims and cache-hop proof', (
   assert.match(details[1].summary, /one process, not across a network/);
   assert.match(
     details[2].summary,
-    /regenerates shared source separately from fork-owned Azure source/,
+    /partition-core\/, the shared code, sits beside provider\/partition-azure\//,
   );
-  assert.match(details[2].summary, /does not depend on upstream carrying one/);
+  assert.match(details[2].summary, /no Azure provider/);
+  assert.doesNotMatch(details[2].summary, /\bremov|\bdelet|\bgenerated\b/i);
 
   for (const id of ['redis', 'azureclients']) {
     const detail = resolveDetail(id, 'spi-boundary');
@@ -4006,17 +4007,17 @@ test('lesson 03 states its prerequisite and place in its lead', () => {
 
 test('lesson 03 editorial copy stays at the provider boundary', () => {
   const chapter = chapters['spi-boundary'];
-  const requiredCopy = [
-    chapter.question,
-    chapter.goal,
-    chapter.scope,
-    ...chapter.outcomes.flatMap(({ headline, text, why }) => [
-      headline,
-      text,
-      why,
-    ]),
-    diagramRenderers.spi(),
-  ].join(' ');
+  const strings = (value) =>
+    typeof value === 'string'
+      ? [value]
+      : Array.isArray(value)
+        ? value.flatMap(strings)
+        : value && typeof value === 'object'
+          ? Object.values(value).flatMap(strings)
+          : [];
+  // Try it's clean-up removes what the learner made; every other field is lesson copy.
+  const { tryIt: _tryIt, ...copy } = chapter;
+  const requiredCopy = [...strings(copy), diagramRenderers.spi()].join(' ');
 
   assert.equal(
     chapter.question,
@@ -5745,6 +5746,11 @@ test('Fieldnote routes parse and keep the published keys', () => {
   assert.equal(parseRoute('#watch/00').video, '101', 'a replaced cut');
   assert.equal(parseRoute('#watch/01').video, '102', 'a replaced cut');
   assert.equal(parseRoute('#watch/03').video, '103', 'a replaced cut');
+  assert.equal(
+    parseRoute('#watch/03?t=150').time,
+    null,
+    'a moment in a replaced cut opens its episode at the start',
+  );
   for (const [retired, current] of Object.entries(retiredFieldnotes)) {
     assert.ok(!fieldnotes.some(({ id }) => id === retired), retired);
     assert.equal(fieldnoteById(retired)?.id, current, retired);
@@ -6053,7 +6059,8 @@ function ideaHomeErrors(map) {
 }
 
 function buildsOn(episode, home) {
-  if (home.level === 100 || episode.after.includes(home.code)) return true;
+  if (episode.after.includes(home.code)) return true;
+  if (home.level === 100 && episode.level > 100) return true;
   if (home.path !== episode.path) return false;
   return (
     home.level < episode.level ||
@@ -6189,6 +6196,10 @@ test('a curriculum idea has one home in each path that teaches it', () => {
 test('a curriculum episode uses only ideas taught before it or in what it builds on', () => {
   assert.deepEqual(ideaUseErrors(curriculum()), []);
   assertCurriculumCases(ideaUseErrors, [
+    [
+      (map) => episodeIn(map, '102').uses.push('line-and-product'),
+      "102: uses 'line-and-product' without building on 105",
+    ],
     [
       (map) => episodeIn(map, 'S201').uses.push('maintenance-closes-deploys'),
       "S201: uses 'maintenance-closes-deploys' without building on P202",

@@ -4,7 +4,7 @@
 import { chapters } from './content/chapters.js';
 import { creationMoments } from './content/creation-moments.js';
 import { forkMoments } from './content/fork-moments.js';
-import { fieldnoteById } from './content/videos.js';
+import { fieldnoteById, retiredFieldnotes } from './content/videos.js';
 
 // Route keys that were published and later split or renamed keep resolving.
 // A retired chapter maps to a new chapter, and each of its components to the
@@ -117,7 +117,11 @@ export function parseRoute(hash) {
         ? (fieldnoteById(requestedStepRaw)?.id ?? null)
         : null,
     watch: seconds(params.get('watch')),
-    time: seconds(params.get('t')),
+    // A moment in a retired cut names nothing in the episode that replaced it.
+    time:
+      chapter === 'watch' && Object.hasOwn(retiredFieldnotes, requestedStepRaw)
+        ? null
+        : seconds(params.get('t')),
   };
 }
 

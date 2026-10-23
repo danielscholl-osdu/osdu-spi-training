@@ -124,7 +124,7 @@ export const fieldnotes = [
       next: 'Where does shared code hand the lookup to the Azure provider?',
     },
     notes: [
-      'Lesson 03 now asks: “Where does the Azure code live in a service?”',
+      'The end card asks where shared code hands the lookup to the Azure provider; lesson 03 asks “Where does the Azure code live in a service?”',
     ],
   },
   {
