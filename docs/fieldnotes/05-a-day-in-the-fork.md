@@ -1,6 +1,6 @@
 # Fieldnote 05 · A day in the fork
 
-**Status: revised for the current stack and cut.** Cut from lesson 05 (`chapters['fork-day']`). Revised against osdu-spi `main` 8935867, osdu-spi-partition `main` 8aa26ca0, and osdu-spi-stack `main` 870f729 (v0.32.0), and checked against the partition fork's public pages on 22 October 2026. Aim for about 3 minutes; the cut runs 3:15.
+**Status: published.** Cut from lesson 05 (`chapters['fork-day']`). Revised against osdu-spi `main` 8935867, osdu-spi-partition `main` 8aa26ca0, and osdu-spi-stack `main` 870f729 (v0.32.0), and checked against the partition fork's public pages on 22 October 2026. Aim for about 3 minutes; the cut runs 3:15.
 
 **Who is watching:** an engineer who has seen the fork's three branches in Fieldnote 04. **What they should believe after it:** upstream arrives as a generated tree through a reviewed PR, never as a merge someone runs, and it never carries the Azure provider; the tracking issue's labels are the state of the day; and every eligible commit gets an image digest and a turn in the stack before any release exists, so a release only tags an image that is already there.
 
