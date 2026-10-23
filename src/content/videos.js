@@ -1,7 +1,8 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT License.
 
-// Fieldnotes: one short narrated video per lesson. A file path with no scheme
+// Fieldnotes: one short narrated video per lesson, its id a lesson cut's two
+// digits or a curriculum code from curriculum.js. A file path with no scheme
 // resolves against videoBase, the media repository on Pages; a path under
 // video/ is served from this site's public/ directory. A chapter names a claim
 // index, the example, a myth id, or (lesson 07) a theme id. `cutFrom` records
@@ -35,24 +36,24 @@ export const fieldnotes = [
     notes: [],
   },
   {
-    id: '01',
+    id: '102',
     chapter: 'running-stack',
     title: 'Anatomy of a stack',
-    duration: 138,
+    duration: 126,
     width: 1920,
     height: 1080,
     files: {
-      video: 'fieldnote-01/video.mp4',
-      poster: 'fieldnote-01/poster.jpg',
-      captions: 'fieldnote-01/captions.vtt',
-      chapters: 'fieldnote-01/chapters.vtt',
+      video: 'fieldnote-102/video.mp4',
+      poster: 'fieldnote-102/poster.jpg',
+      captions: 'fieldnote-102/captions.vtt',
+      chapters: 'fieldnote-102/chapters.vtt',
     },
     chapters: [
-      { time: 20.8, claim: 0 },
-      { time: 35.3, claim: 1 },
-      { time: 58.5, claim: 2 },
-      { time: 72.4, example: true },
-      { time: 97.1, mistake: 'stack-is-only-aks' },
+      { time: 13.2, claim: 0 },
+      { time: 27.7, claim: 1 },
+      { time: 51.0, claim: 2 },
+      { time: 64.9, example: true },
+      { time: 89.6, mistake: 'stack-is-only-aks' },
     ],
     cutFrom: {
       claims: [
@@ -75,7 +76,7 @@ export const fieldnotes = [
         id: 'stack-is-only-aks',
         claim: 'The stack is just AKS.',
       },
-      next: 'How is the stack created, and when is it usable?',
+      next: 'Where does the Azure code live in a service?',
     },
     notes: [],
   },
@@ -639,8 +640,15 @@ export function videoUrl(path) {
   return new URL(path.replace(/^\/+/, ''), videoBase).href;
 }
 
-export const fieldnoteById = (id) =>
-  fieldnotes.find((entry) => entry.id === id) || null;
+// A lesson cut replaced by a curriculum episode keeps its published id.
+export const retiredFieldnotes = { '01': '102' };
+
+export const fieldnoteById = (id) => {
+  const current = Object.hasOwn(retiredFieldnotes, id)
+    ? retiredFieldnotes[id]
+    : id;
+  return fieldnotes.find((entry) => entry.id === current) || null;
+};
 
 export const fieldnoteFor = (chapter) =>
   fieldnotes.find((entry) => entry.chapter === chapter) || null;

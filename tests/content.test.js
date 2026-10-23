@@ -16,6 +16,7 @@ import {
   fieldnotes,
   fieldnoteById,
   fieldnoteFor,
+  retiredFieldnotes,
   videoBase,
   videoUrl,
 } from '../src/content/videos.js';
@@ -5288,6 +5289,15 @@ function lessonMistakes(chapter) {
   return Array.isArray(value) ? value : Object.values(value).flat();
 }
 
+// The next episode at the same level of the same path; 105 closes on the
+// choice of path instead.
+function curriculumNext(episode) {
+  const track = curriculumEpisodes.filter(
+    ({ level, path }) => level === episode.level && path === episode.path,
+  );
+  return track[track.indexOf(episode) + 1] ?? null;
+}
+
 // A cut records the lesson as it stood. Any difference names the episode and
 // the field, so the fix is a re-cut or a source-check note on that chapter.
 function cutFromDifferences(video) {
@@ -5336,6 +5346,15 @@ function cutFromDifferences(video) {
         ),
       );
   }
+  const episode = curriculumEpisodes.find(({ code }) => code === video.id);
+  if (episode) {
+    const next = curriculumNext(episode);
+    if ((cut.next ?? null) !== (next?.question ?? null))
+      differences.push(
+        differs('next', `the episode after ${episode.code} in curriculum.js`),
+      );
+    return differences;
+  }
   // Field check keeps its Back to the start exit after the book expands.
   const next =
     video.chapter === 'not-true'
@@ -5348,7 +5367,12 @@ function cutFromDifferences(video) {
 
 function verifyFieldnote(video) {
   const id = `Fieldnote ${video.id}`;
-  assert.match(video.id, /^\d{2}$/, `${id}: id`);
+  assert.ok(
+    /^\d{2}$/.test(video.id) ||
+      curriculumEpisodes.find(({ code }) => code === video.id)?.video ===
+        video.id,
+    `${id}: id is a lesson cut or a curriculum episode that records it`,
+  );
   assert.ok(Object.hasOwn(chapters, video.chapter), `${id}: chapter`);
   const lesson = chapters[video.chapter];
   assert.ok(video.title?.trim(), `${id}: title`);
@@ -5502,6 +5526,11 @@ test('a Fieldnote cut that drifts from its lesson names the episode and field', 
   assert.deepEqual(cutFromDifferences(uncut), [
     'Fieldnote 01: cutFrom is missing',
   ]);
+  const curriculumCut = structuredClone(fieldnoteById('102'));
+  curriculumCut.cutFrom.next = chapters['bring-up'].question;
+  assert.deepEqual(cutFromDifferences(curriculumCut), [
+    'Fieldnote 102: cutFrom.next differs from the episode after 102 in curriculum.js',
+  ]);
 });
 
 test('core DAG video contract holds for the fixture and the published Fieldnote 11', () => {
@@ -5582,6 +5611,11 @@ test('Fieldnote routes parse and keep the published keys', () => {
     ['watch', '00', 30],
   );
   assert.equal(parseRoute('#watch/99').video, null, 'unknown episode');
+  assert.equal(parseRoute('#watch/01').video, '102', 'a replaced cut');
+  for (const [retired, current] of Object.entries(retiredFieldnotes)) {
+    assert.ok(!fieldnotes.some(({ id }) => id === retired), retired);
+    assert.equal(fieldnoteById(retired)?.id, current, retired);
+  }
   assert.equal(parseRoute('#watch/99').chapter, 'watch');
   assert.equal(parseRoute('#running-stack/00').video, null);
   const lesson = parseRoute('#running-stack?watch=55');
@@ -5605,7 +5639,7 @@ test('a lesson Fieldnote shows its chip, claim cues, and dialog chapters', () =>
   assert.match(chip, /data-video-open="01" data-video-at="0"/);
   assert.match(chip, /<b>Watch this lesson<\/b>.*· 2:50/);
   assert.match(chip, /aria-haspopup="dialog"/);
-  assert.match(lessonWatch('running-stack'), /data-video-open="01"/);
+  assert.match(lessonWatch('running-stack'), /data-video-open="102"/);
   assert.equal(lessonWatch('whose-image', null), '', 'a lesson with no cut');
   assert.equal(lessonWatch('start', fieldnoteFor('start')), '');
 

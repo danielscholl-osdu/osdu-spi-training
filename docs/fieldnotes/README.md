@@ -10,13 +10,13 @@ Codes name the level and the path: 103 is the third foundation episode, S203 the
 
 ### Level 100: Foundations
 
-| Code | Episode             | Question                                                | From                                          | Status  |
-| ---- | ------------------- | ------------------------------------------------------- | --------------------------------------------- | ------- |
-| 101  | Three parts         | What is the Azure SPI machinery made of?                | Fieldnote 00, re-cut to the three parts       | planned |
-| 102  | Anatomy of a stack  | What is actually running when someone says "the stack"? | Fieldnote 01's body with new bookends         | planned |
-| 103  | The provider inside | Where does the Azure code live in a service?            | Fieldnote 03's boards, without the code panes | planned |
-| 104  | The line            | How does a change reach a running service?              | new, from boards in Fieldnotes 04 and 05      | planned |
-| 105  | Two kinds of work   | Who does what, and which path is mine?                  | new                                           | planned |
+| Code | Episode                                         | Question                                                | From                                          | Status    |
+| ---- | ----------------------------------------------- | ------------------------------------------------------- | --------------------------------------------- | --------- |
+| 101  | Three parts                                     | What is the Azure SPI machinery made of?                | Fieldnote 00, re-cut to the three parts       | planned   |
+| 102  | [Anatomy of a stack](102-anatomy-of-a-stack.md) | What is actually running when someone says "the stack"? | Fieldnote 01's body with new bookends         | published |
+| 103  | The provider inside                             | Where does the Azure code live in a service?            | Fieldnote 03's boards, without the code panes | planned   |
+| 104  | The line                                        | How does a change reach a running service?              | new, from boards in Fieldnotes 04 and 05      | planned   |
+| 105  | Two kinds of work                               | Who does what, and which path is mine?                  | new                                           | planned   |
 
 The service path (S201 to S207), the platform path (P201 to P208), and the library get their tables in the rounds that make them.
 
@@ -27,7 +27,7 @@ The thirteen cuts made one per lesson stay published, with their routes, until t
 | Fieldnote | Lesson                   | Form          | Storyboard                                                       | Status                     |
 | --------- | ------------------------ | ------------- | ---------------------------------------------------------------- | -------------------------- |
 | 00        | Start: three parts       | boards        | [00-three-parts.md](00-three-parts.md)                           | published                  |
-| 01        | Anatomy of a stack       | boards        | [01-anatomy-of-a-stack.md](01-anatomy-of-a-stack.md)             | published                  |
+| 01        | Anatomy of a stack       | boards        | [01-anatomy-of-a-stack.md](01-anatomy-of-a-stack.md)             | replaced by 102            |
 | 02        | How it comes to life     | mixed         | [02-how-it-comes-to-life.md](02-how-it-comes-to-life.md)         | published; re-take on 0.32 |
 | 03        | The SPI boundary         | boards + code | [03-the-spi-boundary.md](03-the-spi-boundary.md)                 | published                  |
 | 04        | The shape of the fork    | mixed         | [04-the-shape-of-the-fork.md](04-the-shape-of-the-fork.md)       | published                  |

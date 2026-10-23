@@ -113,8 +113,8 @@ export function parseRoute(hash) {
     guide,
     episode: params.get('episode'),
     video:
-      chapter === 'watch' && fieldnoteById(requestedStepRaw)
-        ? requestedStepRaw
+      chapter === 'watch'
+        ? (fieldnoteById(requestedStepRaw)?.id ?? null)
         : null,
     watch: seconds(params.get('watch')),
     time: seconds(params.get('t')),

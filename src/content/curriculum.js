@@ -79,6 +79,7 @@ export const episodes = [
     ],
     uses: [],
     mistakes: ['stack-is-only-aks'],
+    video: '102',
   },
   {
     code: '103',
