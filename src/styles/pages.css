@@ -3106,7 +3106,7 @@ body:has(.audio-dock:not([hidden])) main {
 }
 .fieldnote-book {
   /* A book never spans more columns than the grid has; a longer one wraps its cards. */
-  --span: min(var(--cards), 3);
+  --span: var(--in-three);
   grid-column: span var(--span);
 }
 .fieldnote-book h2 {
@@ -3205,7 +3205,7 @@ body:has(.audio-dock:not([hidden])) main {
     grid-template-columns: repeat(2, minmax(0, 1fr));
   }
   .fieldnote-book {
-    --span: min(var(--cards), 2);
+    --span: var(--in-two);
   }
 }
 @media (max-width: 560px) {

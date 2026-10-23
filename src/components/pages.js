@@ -1080,7 +1080,7 @@ function watchPage(route) {
     <nav class="fieldnote-books" aria-label="Fieldnotes">${books
       .map(
         (group) =>
-          `<section class="fieldnote-book" style="--cards: ${group.entries.length}"><h2>${escapeHtml(group.book)}</h2><div class="fieldnote-cards">${group.entries.map(card).join('')}</div></section>`,
+          `<section class="fieldnote-book" style="--in-three: ${Math.min(group.entries.length, 3)}; --in-two: ${Math.min(group.entries.length, 2)}"><h2>${escapeHtml(group.book)}</h2><div class="fieldnote-cards">${group.entries.map(card).join('')}</div></section>`,
       )
       .join('')}</nav>`;
 }

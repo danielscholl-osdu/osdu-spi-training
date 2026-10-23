@@ -5739,7 +5739,12 @@ test('the Fieldnotes page lists episodes by book with one player and a transcrip
     assert.ok(page.includes(`href="#watch/${video.id}"`), video.id);
   assert.match(
     page,
-    /<section class="fieldnote-book" style="--cards: 1"><h2>Start<\/h2>/,
+    /<section class="fieldnote-book" style="--in-three: 1; --in-two: 1"><h2>Start<\/h2>/,
+  );
+  assert.match(
+    page,
+    /style="--in-three: 3; --in-two: 2"><h2>Working the stack<\/h2>/,
+    'a book longer than the grid spans its columns and wraps',
   );
   assert.equal(page.split('<video').length - 1, 1, 'one player');
   assert.ok(
