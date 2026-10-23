@@ -62,6 +62,12 @@ export const sources = {
     path: 'docs/decisions/033-explicit-canonical-image-source-policy.md',
     href: 'https://github.com/Azure/osdu-spi-stack/blob/main/docs/decisions/033-explicit-canonical-image-source-policy.md',
   },
+  localBuilds: {
+    label: 'Local builds pin from the environment registry',
+    repo: 'osdu-spi-stack',
+    path: 'docs/decisions/038-local-builds-pin-from-the-environment-registry.md',
+    href: 'https://github.com/Azure/osdu-spi-stack/blob/main/docs/decisions/038-local-builds-pin-from-the-environment-registry.md',
+  },
   forkDeploy: {
     label: 'Fork deployment contract',
     repo: 'osdu-spi-stack',

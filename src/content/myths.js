@@ -201,8 +201,7 @@ export const myths = [
       'The service fork keeps a relationship with upstream, not a copy of it. Every day the filter regenerates fork_upstream from the upstream tip, and the cascade carries that into the fork-owned tree. What the fork owns is a short list of paths, not the repository.',
     correction:
       'fork_upstream is regenerated from upstream daily; the fork owns only a short list of paths.',
-    check:
-      'git log -1 --format=%B fork_upstream | grep -E "Upstream-Sha|Filter-Rev"',
+    check: 'git log -1 --grep=Upstream-Sha --format=%B fork_upstream',
     source: 'ownership',
     route: '#fork-shape?detail=fork-upstream',
     routeLabel: 'The generated branch',

@@ -4,7 +4,7 @@
   Render: SCALE=2 bash ~/.claude/skills/infographic/scripts/render.sh backing-environment-site.html backing-environment-site.png 1800x1200
   Web copy: sips -Z 2000 -s format jpeg -s formatOptions 85 backing-environment-site.png --out public/posters/backing-environment.jpg
   Sources: osdu-spi-stack docs/design/environment-lifecycle.md, docs/design/fork-deployment.md, ADR-028 to ADR-034.
-  Status reviewed September 2026. The dashed gray band is unbuilt; only <name> stands for the environment.
+  Status reviewed October 2026. The dashed gray band is unbuilt; only <name> stands for the environment.
   Edit this HTML and re-render; never edit the PNG.
 -->
 <html lang="en">
@@ -176,8 +176,8 @@
       <div class="box tint k-green axis">
         <div class="head-row"><div class="eyebrow">Axis 2 · canonical images</div><div class="tag">recorded</div></div>
         <div class="name-sm">The service digests in <span class="code">osdu-image-lock</span></div>
-        <div class="fine">Every canonical image comes from the community registry today. The weekday refresh preserves them; only an upgrade's <span class="code">--refresh-images</span> pass moves them, after a lock snapshot is saved as a run artifact.</div>
-        <div class="moves">moves by: env-upgrade only</div>
+        <div class="fine">Each canonical is the main build of the service's Azure fork, or of a trusted mirror. The weekday refresh advances every canonical; an upgrade's <span class="code">--refresh-images</span> pass moves them too, after a lock snapshot is saved as a run artifact.</div>
+        <div class="moves">moves by: weekday refresh · env-upgrade</div>
       </div>
       <div class="box tint k-amber axis">
         <div class="head-row"><div class="eyebrow">Axis 3 · ephemeral pins</div><div class="tag">transient</div></div>
@@ -201,13 +201,13 @@
           <div class="n-sub">a human merges the bump · the push to the pin file is the trigger · nothing else moves this axis</div></div>
         <div class="node k-blue"><div class="n-title">Upgrade</div>
           <div class="n-mid"><div class="n-dot">3</div></div>
-          <div class="n-sub"><span class="code">env-upgrade</span>: set <span class="code">maintenance</span>, snapshot the lock, <span class="code">spi up --tag --refresh-images</span> with the tag's own wheel · 6 h budget</div></div>
+          <div class="n-sub"><span class="code">env-upgrade</span>: set <span class="code">maintenance</span>, snapshot the lock, <span class="code">spi up --tag --refresh-images</span> with the tag's own wheel · 6.5 h budget</div></div>
         <div class="node k-green"><div class="n-title">Open</div>
           <div class="n-mid"><div class="n-dot">4</div></div>
           <div class="n-sub">source resumed, revision checked against the tag's commit, suspended again · probes pass · the flag clears and forks may deploy</div></div>
       </div>
       <div class="callout k-blue" style="padding:10px 18px; font-size:16px;">
-        <span class="b">Refresh, built:</span> <span class="code">env-refresh</span> on weekdays at 05:00 UTC sets <span class="code">maintenance</span>, runs plain <span class="code">spi reconcile</span>, waits for Flux and the gateway probes, asserts the deployed ref and source suspension are unchanged, then clears the flag. It moves no axis. A red run leaves the flag set.
+        <span class="b">Refresh, built:</span> <span class="code">env-refresh</span> on weekdays at 04:00 UTC sets <span class="code">maintenance</span>, runs plain <span class="code">spi reconcile</span>, restores declared fork trust and source policy, advances every canonical with <span class="code">spi service refresh --forks</span>, waits for Flux and the gateway probes, asserts the deployed ref and source suspension are unchanged, then clears the flag. It moves the canonical axis only. A red run leaves the flag set.
       </div>
     </div>
     <div class="band" style="gap:10px;">
@@ -240,10 +240,10 @@
       </div>
     </div>
     <div class="band" style="gap:10px;">
-      <div class="band-label ruled">Not yet built · status reviewed September 2026</div>
+      <div class="band-label ruled">Not yet built · status reviewed October 2026</div>
       <div class="group tint planned k-gray" style="flex:1; gap:10px;">
         <div class="group-label">Designed in the lifecycle guide, ahead of the code · not the operating rhythm today</div>
-        <div class="cols" style="grid-template-columns:1fr 1fr; gap:12px; align-items:stretch;">
+        <div class="cols" style="grid-template-columns:1fr 1fr 1fr; gap:12px; align-items:stretch;">
           <div class="box dashed k-gray">
             <div class="eyebrow">env-reset · Saturday rebuild</div>
             <div class="fine">The workflow that would run <span class="code">spi down</span> then <span class="code">spi up --tag</span> cold, 7 h budget. The verb exists; the scheduled job does not.</div>
@@ -254,11 +254,7 @@
           </div>
           <div class="box dashed k-gray">
             <div class="eyebrow">Pin backstop and drain in refresh</div>
-            <div class="fine">The stale sweep verb exists; its workflow step, the drain of in-flight fork jobs, and <span class="code">spi service refresh</span> do not.</div>
-          </div>
-          <div class="box dashed k-gray">
-            <div class="eyebrow">Source promotion · ADR-033</div>
-            <div class="fine"><span class="code">--canonical-source fork</span>, the <span class="code">forks:</span> roster in the declaration, and intent loading before image resolution. The lock projects the trust roster today; every canonical source stays community.</div>
+            <div class="fine">The stale sweep verb exists; its workflow step and the drain of in-flight fork jobs do not.</div>
           </div>
         </div>
       </div>

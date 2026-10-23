@@ -172,7 +172,7 @@ function identityGuide() {
       <h4>Inbound · a client calls OSDU</h4>
       <ol>
         <li><b>Bearer + data-partition-id</b><span>the same headers you already send to OSDU</span></li>
-        <li><b>Gateway</b><span>spi-gateway bound to the managed Istio ingress</span></li>
+        <li><b>Gateway</b><span>spi-gateway in platform, deployed by managed Istio</span></li>
         <li><b>Sidecar</b><span>RequestAuthentication validates; an EnvoyFilter projects x-app-id and x-user-id</span></li>
         <li><b>The service decides</b><span>entitlements answer for most services; partition admits app-only callers</span></li>
       </ol>
@@ -335,7 +335,7 @@ const familiar = [
     lives:
       'Istio gateway, then a sidecar that identifies the caller, then the service',
     owner: 'you',
-    where: 'AKS · aks-istio-ingress',
+    where: 'AKS · platform',
     href: '#running-stack/request?detail=gateway&claim=2',
     detail: 'gateway',
   },

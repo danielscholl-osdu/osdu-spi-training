@@ -141,10 +141,11 @@ const stackMarkers = [
   },
   {
     time: 2937,
-    title: 'One environment, eight forks by design',
-    copy: 'The standing shared environment is the test target for the service forks: designed for eight, with partition the first. Its design is mostly about not letting them break each other.',
+    title: 'One environment for every service fork',
+    copy: 'The standing shared environment is the test target for the service forks, one for each service the stack deploys. Its design is mostly about not letting them break each other.',
     route: '#handshake?detail=running',
     routeLabel: 'The shared running environment',
+    note: 'The recording says the environment was designed for eight forks, with partition the first. Every service the stack deploys now has its own Azure fork with a .spi/service.yaml descriptor; there were thirteen when this note was written in October 2026.',
   },
   {
     time: 3040,
@@ -163,9 +164,10 @@ const stackMarkers = [
   {
     time: 3406,
     title: 'What the design is really about',
-    copy: 'A deliberate pause for forensic debuggability, identity rewritten at the edge, and infrastructure treated as a version-controlled log so eight teams can share one playground.',
+    copy: 'A deliberate pause for forensic debuggability, identity rewritten at the edge, and infrastructure treated as a version-controlled log so every service fork can share one playground.',
     route: '#not-true',
     routeLabel: 'Things that are not true',
+    note: 'The recording says eight teams. Every service the stack deploys now has its own fork sharing the environment.',
   },
 ];
 
@@ -212,7 +214,6 @@ const orientationMarkers = [
     copy: 'What Microsoft holds is what it maintains, and Azure Data Manager for Energy depends on that code.',
     route: '#fork-shape?detail=provider-azure',
     routeLabel: 'The fork-owned provider',
-    note: 'Upstream plans to remove its Azure implementation (community ADR 61; osdu-spi ADR-038). As of September 2026 the directory is still there; the fork is built so that removal deletes nothing on its side whenever it lands.',
     note: '“Proprietary” is the narration’s word. The service forks and both Microsoft projects are public repositories under the Apache 2.0 license. What changed is ownership and responsibility, not visibility.',
   },
   {
@@ -249,7 +250,7 @@ const orientationMarkers = [
     copy: 'A merge would faithfully carry upstream’s deletion of its Azure directory into the fork. A generated branch that never contained the provider has nothing to delete.',
     route: '#fork-shape?detail=fork-upstream',
     routeLabel: 'The generated branch',
-    note: 'The generated branch holds shared code and references to the Azure modules, not the Azure source; the provider joins it on the integration branch. Upstream’s removal of its Azure directories is the planned consequence of ADR 61, and the fork is built for it whether or not that deletion has landed.',
+    note: 'The generated branch holds shared code and references to the Azure modules, not the Azure source; the provider joins it on the integration branch. Upstream does not carry the Azure provider (ADR 61); the community partition repository removed it in October 2026, and the generated branch, which never held it, did not change.',
   },
   {
     time: 727.9,
@@ -383,10 +384,11 @@ const branchesMarkers = [
   },
   {
     time: 376,
-    title: 'Upstream plans to remove the Azure code',
-    copy: 'A fork that stops taking upstream changes drifts from the community implementation; a hand-merged fork compounds in cost. The fork must own the provider directory permanently while taking shared code daily.',
+    title: 'Upstream does not carry the Azure code',
+    copy: 'A fork that stops taking upstream changes drifts from the community implementation; a hand-merged fork compounds in cost. The fork owns the provider directory permanently while taking shared code daily.',
     route: '#fork-shape?detail=upstream',
     routeLabel: 'Upstream on the map',
+    note: 'The recording describes the removal of upstream’s Azure code as planned. The community partition repository removed its Azure provider in October 2026; the fork carries it.',
   },
   {
     time: 571,
@@ -397,10 +399,11 @@ const branchesMarkers = [
   },
   {
     time: 617,
-    title: 'One template for eight services',
-    copy: 'The workflows, actions, and rulesets live in osdu-spi. The forks, designed for eight with partition the first, are generated from it; each owns its Azure provider code, tests, and configuration. The rule: split what fails differently.',
+    title: 'One template for every service fork',
+    copy: 'The workflows, actions, and rulesets live in osdu-spi. Every service fork is generated from it; each owns its Azure provider code, tests, and configuration. The rule: split what fails differently.',
     route: '#fork-shape?detail=engineering',
     routeLabel: 'The template on the map',
+    note: 'The recording says the system was designed for eight forks, with partition the first. Every service the stack deploys now has its own fork from this template.',
   },
   {
     time: 807,

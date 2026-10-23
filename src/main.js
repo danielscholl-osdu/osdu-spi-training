@@ -976,25 +976,6 @@ document
     applyTryItShell(event.currentTarget, tryItShell);
   });
 
-// The what-if switch in 04 swaps each affected cell's text and accessible
-// name together, so the table and its screen-reader reading agree.
-document.addEventListener('change', (event) => {
-  const toggle = event.target.closest('.what-if-switch');
-  if (!toggle) return;
-  const map = toggle.closest('.tree-map');
-  map.dataset.whatIf = String(toggle.checked);
-  map.querySelectorAll('.has-after').forEach((cell) => {
-    const after = toggle.checked;
-    cell.querySelector('span').textContent = after
-      ? cell.dataset.after
-      : cell.dataset.now;
-    cell.setAttribute(
-      'aria-label',
-      after ? cell.dataset.afterLabel : cell.dataset.nowLabel,
-    );
-  });
-});
-
 let jumpRequested = false;
 let stageRequested = null;
 // A stage control leaves the new stage's explanation readable below the sticky
