@@ -4,8 +4,8 @@
 import { chapters } from '../../src/content/chapters.js';
 import { myths } from '../../src/content/myths.js';
 
-// A lesson 01 episode for the renderer contract, its cut-from record taken
-// from the lesson as it stands.
+// A lesson cut of the running-stack page for the renderer contract, its
+// cut-from record taken from the lesson as it stands.
 export function lessonFieldnote() {
   const lesson = chapters['running-stack'];
   const myth = myths.find((item) => item.id === 'stack-is-only-aks');
@@ -33,7 +33,7 @@ export function lessonFieldnote() {
       claims: lesson.outcomes.map(({ headline, text }) => ({ headline, text })),
       example: lesson.example.title,
       mistake: { id: myth.id, claim: myth.claim },
-      next: chapters['bring-up'].question,
+      next: chapters['spi-boundary'].question,
     },
     notes: [],
   };

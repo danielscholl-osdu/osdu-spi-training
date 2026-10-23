@@ -80,6 +80,36 @@ export const sources = {
     path: 'README.md',
     href: 'https://github.com/Azure/osdu-spi-partition',
   },
+  partitionContributing: {
+    label: 'Where a change belongs in the partition fork',
+    repo: 'osdu-spi-partition',
+    path: 'CONTRIBUTING.md',
+    href: 'https://github.com/Azure/osdu-spi-partition/blob/main/CONTRIBUTING.md',
+  },
+  partitionCodeowners: {
+    label: 'Partition code owners',
+    repo: 'osdu-spi-partition',
+    path: '.github/CODEOWNERS',
+    href: 'https://github.com/Azure/osdu-spi-partition/blob/main/.github/CODEOWNERS',
+  },
+  partitionSyncWorkflow: {
+    label: 'Partition sync workflow',
+    repo: 'osdu-spi-partition',
+    path: '.github/workflows/sync.yml',
+    href: 'https://github.com/Azure/osdu-spi-partition/blob/main/.github/workflows/sync.yml',
+  },
+  partitionValidateWorkflow: {
+    label: 'Partition validation workflow',
+    repo: 'osdu-spi-partition',
+    path: '.github/workflows/validate.yml',
+    href: 'https://github.com/Azure/osdu-spi-partition/blob/main/.github/workflows/validate.yml',
+  },
+  partitionReleaseWorkflow: {
+    label: 'Partition release workflow',
+    repo: 'osdu-spi-partition',
+    path: '.github/workflows/release.yml',
+    href: 'https://github.com/Azure/osdu-spi-partition/blob/main/.github/workflows/release.yml',
+  },
   partitionDescriptor: {
     label: 'Partition service descriptor',
     repo: 'osdu-spi-partition',

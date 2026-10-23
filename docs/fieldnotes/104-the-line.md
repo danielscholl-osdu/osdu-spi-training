@@ -1,6 +1,6 @@
 # Fieldnote 104 · The line
 
-**Status: storyboard.** Level 100, the fourth foundation episode. Its companion page is new (`chapters['the-line']`), and its record is in `src/content/videos.js`.
+**Status: published.** Level 100, the fourth foundation episode. Its companion page is `chapters['the-line']`, and its cut-from record is in `src/content/videos.js`.
 
 **Who is watching:** anyone taking the course, straight after 103. **What they should believe after it:** a service fork owns a few of its paths, its workflows come from one template, and the community's code is regenerated from upstream every day; a change reaches a running service through six stations that are the same in every fork; and every eligible commit gets an image and a turn in a running stack before any release exists, so a release only tags an image that is already there.
 

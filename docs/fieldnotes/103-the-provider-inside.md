@@ -1,6 +1,6 @@
 # Fieldnote 103 · The provider inside
 
-**Status: published.** Level 100, the third foundation episode. Its companion page is lesson 03 (`chapters['spi-boundary']`), and its cut-from record is in `src/content/videos.js`.
+**Status: published.** Level 100, the third foundation episode. Its companion page is `chapters['spi-boundary']`, and its cut-from record is in `src/content/videos.js`.
 
 **Who is watching:** anyone taking the course, straight after 102. **What they should believe after it:** the Azure code is a provider behind a Java interface inside each service, not a separate service; shared code and provider ship in one image, so crossing the interface is a method call; and the provider is source in the service's fork.
 

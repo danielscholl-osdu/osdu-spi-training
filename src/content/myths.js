@@ -411,17 +411,20 @@ export const mythThemes = [
   {
     id: 'identity',
     title: 'Identity and data access',
-    built: { label: '03 · The SPI boundary', href: '#spi-boundary' },
+    built: { label: '103 · The SPI boundary', href: '#spi-boundary' },
   },
   {
     id: 'network',
     title: 'The front door',
-    built: { label: '01 · Anatomy of a stack', href: '#running-stack/request' },
+    built: {
+      label: '102 · Anatomy of a stack',
+      href: '#running-stack/request',
+    },
   },
   {
     id: 'estate',
     title: 'The Azure estate',
-    built: { label: '01 · Anatomy of a stack', href: '#running-stack' },
+    built: { label: '102 · Anatomy of a stack', href: '#running-stack' },
   },
   {
     id: 'fork',

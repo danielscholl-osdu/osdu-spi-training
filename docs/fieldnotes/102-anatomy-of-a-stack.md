@@ -1,6 +1,6 @@
 # Fieldnote 102 · Anatomy of a stack
 
-**Status: published.** Level 100, the second foundation episode. Its companion page is lesson 01 (`chapters['running-stack']`), and its cut-from record is in `src/content/videos.js`.
+**Status: published.** Level 100, the second foundation episode. Its companion page is `chapters['running-stack']`, and its cut-from record is in `src/content/videos.js`.
 
 **Who is watching:** anyone taking the course, straight after 101. **What they should believe after it:** the stack is a resource group, not a cluster; some of its resources belong to a partition and some are shared; the services sit in one namespace behind one gateway, and one request's path through them.
 

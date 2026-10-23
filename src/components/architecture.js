@@ -56,7 +56,7 @@ export function architectureMap(stage = null, path = 'developer') {
                   ? `<div class="controllers">${node('flux', 'Flux', 'Reconcile workloads', '', 'flux-system')}${node('operators', 'Operators', 'ECK · CNPG · certificates', '', 'foundation')}</div>
                 ${node('gateway', 'Istio gateway', 'Routes OSDU API requests', request ? 'path-emphasis' : '', 'platform')}
                 <div class="inside-arrow" aria-hidden="true">↓</div>
-                <section data-scope="service-boundary" class="service-boundary ${request ? 'path-emphasis' : ''}"><div class="group-label">${iconSvg('k8s', { className: 'label-icon' })}osdu · OSDU service workloads</div>${node('service', 'OSDU services', 'Partition · entitlements · storage · one image each')}<small>Lesson 03 opens one of them.</small></section>
+                <section data-scope="service-boundary" class="service-boundary ${request ? 'path-emphasis' : ''}"><div class="group-label">${iconSvg('k8s', { className: 'label-icon' })}osdu · OSDU service workloads</div>${node('service', 'OSDU services', 'Partition · entitlements · storage · one image each')}<small>The SPI boundary (103) opens one of them.</small></section>
                 ${node('middleware', 'Platform middleware', 'Elasticsearch · Redis · PostgreSQL', '', 'platform')}
                 ${node('initialization', 'Initialize OSDU', 'Partitions · entitlements · schema load', '', 'osdu')}`
                   : removed

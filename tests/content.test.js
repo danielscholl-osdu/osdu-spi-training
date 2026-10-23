@@ -100,6 +100,14 @@ import {
 import { multipleVariantTryIt, singleVariantTryIt } from './fixtures/try-it.js';
 import { coreDagsFieldnote, lessonFieldnote } from './fixtures/fieldnote.js';
 import { tryItShells } from '../src/try-it-shell.js';
+import {
+  chapterNumber,
+  foundationPlace,
+  learnOrder,
+  lessonCount,
+  lessonNumber,
+  placeLabel,
+} from '../src/content/course.js';
 
 const mapChapters = Object.entries(chapters).filter(
   ([, chapter]) => chapter.kind === 'map',
@@ -542,7 +550,7 @@ test('lesson 01 draws its rung: the service closed, the sources held for lesson 
   for (const absent of ['provider', 'config-source', 'image-source'])
     assert.ok(!ids.includes(absent), `${absent} waits for a later lesson`);
   assert.ok(ids.includes('service'));
-  assert.match(overview, /Lesson 03 opens one of them\./);
+  assert.match(overview, /The SPI boundary \(103\) opens one of them\./);
   assert.doesNotMatch(overview, /Both are packaged inside the service/);
   const assembling = diagramRenderers.creation(
     parseRoute('#bring-up/reconcile'),
@@ -599,7 +607,10 @@ test('lesson 01 claim evidence resolves all three claims in stack context', () =
     details[2].summary,
     /Kubernetes workloads, one image each, behind the Istio gateway/,
   );
-  assert.match(details[2].summary, /Lesson 03 opens the partition service/);
+  assert.match(
+    details[2].summary,
+    /The SPI boundary \(103\) opens the partition service/,
+  );
   assert.doesNotMatch(
     details[2].summary,
     /partition-core|POM|Spring Boot|Dockerfile/,
@@ -1251,6 +1262,135 @@ test('Working the stack lessons keep their storyboard words and rungs', () => {
       /still (?:carries|holds|ships)|plans to|has begun/,
     ])
       assert.doesNotMatch(copy, pattern, `${lesson.key}: avoids ${pattern}`);
+  }
+});
+
+const foundationPages = [
+  {
+    key: 'the-line',
+    storyboard: '104-the-line.md',
+    diagram: 'theLine',
+    prefix: 'line-',
+    forkOwned: ['line-own'],
+  },
+  {
+    key: 'two-kinds-of-work',
+    storyboard: '105-two-kinds-of-work.md',
+    diagram: 'twoKinds',
+    prefix: 'kinds-',
+    forkOwned: ['kinds-provider'],
+  },
+];
+
+test('the new level 100 pages keep their storyboard words and word lists', () => {
+  const straight = (text) => text.replace(/’/g, "'");
+  for (const page of foundationPages) {
+    const chapter = chapters[page.key];
+    const storyboard = readFileSync(
+      new URL(`../docs/fieldnotes/${page.storyboard}`, import.meta.url),
+      'utf8',
+    );
+    const companion = storyboard.slice(
+      storyboard.indexOf('## The companion page'),
+      storyboard.indexOf('## Word list'),
+    );
+    const video = fieldnoteFor(page.key);
+    const episode = curriculumEpisodes.find(({ code }) => code === video.id);
+    assert.equal(episode?.video, video.id, `${page.key}: its episode`);
+    assert.equal(episode.level, 100, page.key);
+    assert.deepEqual(episode.mistakes, [], page.key);
+    assert.deepEqual(chapter.mistakes, [], page.key);
+    assert.equal(chapter.book, 'Foundations', page.key);
+    assert.equal(chapter.diagram, page.diagram, page.key);
+    assert.ok(
+      companion.includes(`Question: "${chapter.question}"`),
+      `${page.key}: question`,
+    );
+    for (const [index, claim] of chapter.outcomes.entries()) {
+      assert.ok(
+        straight(companion).includes(
+          straight(`Claim ${index + 1}, "${claim.headline}": "${claim.text}"`),
+        ),
+        `${page.key}: claim ${index + 1}`,
+      );
+      assert.ok(
+        storyboard.includes(`**${claim.headline}**`),
+        `${page.key}: chapter ${index + 1}`,
+      );
+      verifyRoute(
+        `#${page.key}?detail=${claim.evidence}&claim=${index}`,
+        `${page.key} claim`,
+      );
+    }
+    assert.ok(
+      storyboard.includes(`**Example: ${chapter.example.title}**`),
+      `${page.key}: example title`,
+    );
+    for (const hop of chapter.example.hops)
+      assert.ok(
+        straight(storyboard).includes(straight(`${hop.label} ("${hop.copy}")`)),
+        `${page.key}: hop ${hop.label}`,
+      );
+    assert.ok(chapter.tryIt, `${page.key}: Try it`);
+    for (const variant of chapter.tryIt.variants)
+      assert.equal(variant.access, 'browser only', page.key);
+
+    const html = diagramRenderers[page.diagram]();
+    const ids = [...html.matchAll(/data-detail="([^"]+)"/g)].map(
+      (match) => match[1],
+    );
+    assert.ok(ids.length <= 12, `${page.key}: as small as core-dags`);
+    assert.deepEqual(
+      [...ids].sort(),
+      Object.keys(componentDetails)
+        .filter((key) => key.startsWith(page.prefix))
+        .sort(),
+      `${page.key}: every explanation is on the map`,
+    );
+    const orange = [
+      ...html.matchAll(
+        /class="node fork-code[^"]*"[^>]*data-detail="([^"]+)"/g,
+      ),
+    ].map((match) => match[1]);
+    assert.deepEqual(orange, page.forkOwned, `${page.key}: orange`);
+
+    const copy = [
+      chapter.intro,
+      chapter.subhead,
+      chapter.scope,
+      chapter.goal,
+      chapter.example.note,
+      ...chapter.outcomes.flatMap(({ headline, text, why }) => [
+        headline,
+        text,
+        why,
+      ]),
+      ...chapter.example.hops.flatMap(({ label, copy: hop }) => [label, hop]),
+      html,
+      ...ids.flatMap((id) => [
+        componentDetails[id].title,
+        componentDetails[id].body,
+      ]),
+    ].join(' ');
+    for (const pattern of [
+      /\bfork_upstream\b|\bfork_integration\b|release\/upstream|sync\/upstream/,
+      /human-required|upstream-sync|sync-failed|cascade-(?:active|blocked|failed|escalated)|\btemplate-sync\b/,
+      /\b(?:builder|steward)s?\b|\b(?:service|platform) engineers?\b/i,
+      /\b(?:\d+|eight|ten|thirteen) (?:service )?forks\b/i,
+      /\bv?\d+\.\d+\.\d+\b/,
+      /(?<!not )every change (?:rides|passes|visits)/i,
+      /\b20\d\d-\d\d-\d\d\b|\b(?:January|February|March|April|May|June|July|August|September|October|November|December)\b/,
+      /\bremov|\bdelet|still (?:carries|holds|ships)|plans to|has begun/i,
+    ])
+      assert.doesNotMatch(copy, pattern, `${page.key}: avoids ${pattern}`);
+  }
+});
+
+test('a published curriculum episode asks its page’s question', () => {
+  for (const episode of curriculumEpisodes.filter(({ video }) => video)) {
+    const page = chapters[fieldnoteById(episode.video).chapter];
+    if (page.group !== 'learn') continue;
+    assert.equal(episode.question, page.question, episode.code);
   }
 });
 
@@ -1910,6 +2050,7 @@ test('audio markers are ordered, inside the recording, and point at real views',
   assert.deepEqual(
     chapters.start.index.map((group) => group.label),
     [
+      'Level 100 · Foundations',
       'The stack',
       'Provider code and engineering',
       'Across the path',
@@ -1923,8 +2064,11 @@ test('audio markers are ordered, inside the recording, and point at real views',
   );
   assert.deepEqual(Object.keys(chapters.start.index[0].lessons), [
     'running-stack',
-    'bring-up',
+    'spi-boundary',
+    'the-line',
+    'two-kinds-of-work',
   ]);
+  assert.deepEqual(Object.keys(chapters.start.index[1].lessons), ['bring-up']);
   for (const group of chapters.start.index)
     assert.ok(home.includes(`>${group.label}</h3>`), group.label);
   for (const key of learnKeys)
@@ -1936,9 +2080,9 @@ test('audio markers are ordered, inside the recording, and point at real views',
   assert.match(
     home,
     new RegExp(
-      `<li class="is-first"><a href="${routeHref(learnKeys[0])}"><span class="lesson-number">01</span>`,
+      `<li class="is-first"><a href="${routeHref(learnKeys[0])}"><span class="lesson-number">102</span>`,
     ),
-    '01 carries the starting emphasis',
+    '102 carries the starting emphasis',
   );
   assert.ok(
     home.indexOf('data-video-open') < home.indexOf('class="lesson-index"'),
@@ -2920,13 +3064,14 @@ test('field check remains lesson 07 after the round trip', () => {
   );
 
   assert.equal(route.chapter, 'not-true');
-  assert.deepEqual(learnKeys.slice(5, 8), [
+  const at = learnKeys.indexOf('not-true');
+  assert.deepEqual(learnKeys.slice(at - 1, at + 2), [
     'handshake',
     'not-true',
     'whose-image',
   ]);
   assert.equal(indexedKeys.filter((key) => key === 'not-true').length, 1);
-  assert.equal(learnKeys.indexOf('not-true') + 1, 7);
+  assert.equal(lessonNumber('not-true'), 7);
   assert.equal(chapters['not-true'].title, 'Things that are not true');
   assert.equal(chapters['not-true'].subtitle, 'Field check');
   assert.equal(
@@ -2952,14 +3097,17 @@ test('field check remains lesson 07 after the round trip', () => {
   );
 });
 
-test('Working the stack navigation keeps lesson numbering derived from order', () => {
+test('the course runs the level 100 pages first, and lessons keep their numbers', () => {
   const learn = Object.keys(chapters).filter(
     (key) => chapters[key].group === 'learn',
   );
+  assert.deepEqual(learn, learnOrder);
   assert.deepEqual(learn, [
     'running-stack',
-    'bring-up',
     'spi-boundary',
+    'the-line',
+    'two-kinds-of-work',
+    'bring-up',
     'fork-shape',
     'fork-day',
     'handshake',
@@ -2970,24 +3118,53 @@ test('Working the stack navigation keeps lesson numbering derived from order', (
     'core-dags',
     'prove-from-desk',
   ]);
-  assert.deepEqual(
-    chapters.start.index.flatMap(({ lessons }) => Object.keys(lessons)),
-    learn,
+  const indexed = Object.fromEntries(
+    chapters.start.index.flatMap(({ lessons }) => Object.entries(lessons)),
   );
+  assert.deepEqual(Object.keys(indexed), learn);
   for (const key of learn) assert.equal(chapters[key].number, undefined);
-  const home = pageRenderers.home();
-  const ladder = zoomLadder();
+  assert.equal(lessonCount, 12);
+  assert.deepEqual(foundationPlace('start'), { code: '101', n: 1, of: 5 });
+  for (const [key, code, n] of [
+    ['running-stack', '102', 2],
+    ['spi-boundary', '103', 3],
+    ['the-line', '104', 4],
+    ['two-kinds-of-work', '105', 5],
+  ]) {
+    assert.deepEqual(foundationPlace(key), { code, n, of: 5 }, key);
+    assert.equal(lessonNumber(key), null, key);
+    assert.equal(chapterNumber(key), code, key);
+    assert.equal(placeLabel(key), `Level 100 · ${n} of 5`, key);
+    assert.equal(chapters[key].book, 'Foundations', key);
+  }
   for (const [key, number] of [
+    ['bring-up', '02'],
+    ['fork-shape', '04'],
+    ['fork-day', '05'],
+    ['handshake', '06'],
+    ['not-true', '07'],
     ['whose-image', '08'],
     ['who-is-asking', '09'],
     ['ready-not-loaded', '10'],
     ['core-dags', '11'],
     ['prove-from-desk', '12'],
   ]) {
+    assert.equal(foundationPlace(key), null, key);
+    assert.equal(chapterNumber(key), number, key);
+    assert.equal(
+      placeLabel(key),
+      `${Number(number)} of 12 · ${chapters[key].book}`,
+      key,
+    );
+  }
+  const home = pageRenderers.home();
+  const ladder = zoomLadder();
+  for (const key of learn) {
+    const number = chapterNumber(key);
     const title = escapeHtml(chapters[key].title);
     assert.ok(
       home.includes(
-        `href="#${key}"><span class="lesson-number">${number}</span><b>${title}</b>`,
+        `href="#${key}"><span class="lesson-number">${number}</span><b>${escapeHtml(indexed[key])}</b>`,
       ),
       `${key}: start index`,
     );
@@ -2997,20 +3174,27 @@ test('Working the stack navigation keeps lesson numbering derived from order', (
       ),
       `${key}: rail`,
     );
-    assert.ok(
-      ladder.includes(
-        `href="#${key}" title="Open ${number} · ${title}">${number}</a>`,
-      ),
-      `${key}: ladder`,
-    );
+    if (zoomLevels.some((level) => level.chapters.includes(key)))
+      assert.ok(
+        ladder.includes(
+          `href="#${key}" title="Open ${number} · ${title}">${number}</a>`,
+        ),
+        `${key}: ladder`,
+      );
   }
   const rail = chapterNavigation('core-dags');
+  assert.ok(rail.indexOf('Foundations') < rail.indexOf('The stack'));
   assert.ok(
     rail.indexOf('Across the path') < rail.indexOf('Working the stack'),
   );
   const main = readFileSync(new URL('../src/main.js', import.meta.url), 'utf8');
   assert.match(main, /if \(key === 'not-true'\) return 'start';/);
-  assert.match(main, /of \$\{learnOrder.length\}/);
+  assert.match(main, /scene\.group === 'learn'\) return placeLabel\(key\);/);
+  assert.match(main, /`Next · \$\{placeLabel\(next\)\}`/);
+  assert.match(
+    main,
+    /`Next lesson · \$\{lessonNumber\(next\)\} of \$\{lessonCount\}`/,
+  );
 });
 
 test('the familiar-things guide links every row to a component on the map', () => {
@@ -3993,7 +4177,7 @@ test('every lesson opens with a short lead the header can carry', () => {
 
 test('lesson 03 states its prerequisite and place in its lead', () => {
   const chapter = chapters['spi-boundary'];
-  assert.match(chapter.intro, /^<p>Builds on the partition lookup from 01/);
+  assert.match(chapter.intro, /^<p>Builds on the partition lookup from 102/);
   assert.match(chapter.intro, /one service inside the osdu namespace/);
   assert.match(chapter.intro, /partition in your environment/);
   assert.match(chapter.intro, /Service Provider Interface \(SPI\)/);
@@ -4024,7 +4208,7 @@ test('lesson 03 editorial copy stays at the provider boundary', () => {
     'Where does the Azure code live in a service?',
   );
   assert.equal(
-    chapters.start.index[1].lessons['spi-boundary'],
+    chapters.start.index[0].lessons['spi-boundary'],
     chapter.question,
   );
   assert.equal(
@@ -4037,7 +4221,7 @@ test('lesson 03 editorial copy stays at the provider boundary', () => {
   );
   assert.equal(
     chapter.outcomes[2].why,
-    'The fork’s source tree holds partition-core/, the shared code, and provider/partition-azure/, the Azure implementation. Lesson 04 shows who owns which of those paths.',
+    'The fork’s source tree holds partition-core/, the shared code, and provider/partition-azure/, the Azure implementation. The next page, 104, shows who owns which of those paths.',
   );
   assert.deepEqual(chapter.mistakes, []);
   assert.doesNotMatch(
@@ -4367,8 +4551,10 @@ test('map lesson examples other than the step lesson use one closed disclosure a
     exampleLessons.map(([key]) => key),
     [
       'running-stack',
-      'bring-up',
       'spi-boundary',
+      'the-line',
+      'two-kinds-of-work',
+      'bring-up',
       'fork-shape',
       'fork-day',
       'whose-image',
@@ -5206,7 +5392,7 @@ test('field guide groups open in place and keep every sheet', () => {
       `${section.title} previews its sheets: ${preview}`,
     );
     assert.doesNotMatch(
-      summary.replace(/<b>\d\d<\/b>/g, ''),
+      summary.replace(/<b>\d{2,3}<\/b>/g, ''),
       /\d+ sheets?/,
       `${section.title} shows no bare count`,
     );
@@ -5390,13 +5576,22 @@ function lessonMistakes(chapter) {
   return Array.isArray(value) ? value : Object.values(value).flat();
 }
 
-// The next episode at the same level of the same path; 105 closes on the
-// choice of path instead.
+// The next episode at the same level of the same path.
 function curriculumNext(episode) {
   const track = curriculumEpisodes.filter(
     ({ level, path }) => level === episode.level && path === episode.path,
   );
   return track[track.indexOf(episode) + 1] ?? null;
+}
+
+// 105 closes on the choice of path: the first episode of each path after it.
+function pathChoice(episode) {
+  return curriculumEpisodes
+    .filter(
+      ({ after, path }) =>
+        after.includes(episode.code) && path !== episode.path,
+    )
+    .map(({ code, title }) => ({ code, title }));
 }
 
 // A cut records the lesson as it stood. Any difference names the episode and
@@ -5459,9 +5654,15 @@ function cutFromDifferences(video) {
     );
   const episode = curriculumEpisodes.find(({ code }) => code === video.id);
   if (episode) {
-    if (nextDiffers(curriculumNext(episode)?.question ?? null))
+    const following = curriculumNext(episode);
+    if (following || !Array.isArray(cut.next)) {
+      if (nextDiffers(following?.question ?? null))
+        differences.push(
+          differs('next', `the episode after ${episode.code} in curriculum.js`),
+        );
+    } else if (JSON.stringify(cut.next) !== JSON.stringify(pathChoice(episode)))
       differences.push(
-        differs('next', `the episode after ${episode.code} in curriculum.js`),
+        differs('next', `the paths after ${episode.code} in curriculum.js`),
       );
     return differences;
   }
@@ -5617,7 +5818,7 @@ test('a Fieldnote cut that drifts from its lesson names the episode and field', 
     ],
     [
       (cut) => (cut.next = 'How is the stack made?'),
-      "Fieldnote 01: cutFrom.next differs from chapters['bring-up'].question",
+      "Fieldnote 01: cutFrom.next differs from chapters['spi-boundary'].question",
     ],
   ];
   for (const [change, message] of cases) {
@@ -5645,18 +5846,28 @@ test('a Fieldnote cut that drifts from its lesson names the episode and field', 
   const after102 = curriculumEpisodes.find(({ code }) => code === '103');
   curriculumCut.notes = [`Fieldnote 103 asks: “${after102.question}”`];
   assert.deepEqual(cutFromDifferences(curriculumCut), []);
+  const choice = structuredClone(fieldnoteById('105'));
+  assert.deepEqual(
+    choice.cutFrom.next.map(({ code }) => code),
+    ['S201', 'P201'],
+    '105 closes on both paths',
+  );
+  choice.cutFrom.next[1].title = 'How the stack is made';
+  assert.deepEqual(cutFromDifferences(choice), [
+    'Fieldnote 105: cutFrom.next differs from the paths after 105 in curriculum.js',
+  ]);
 
-  const asked = chapters['bring-up'].question;
+  const asked = chapters['spi-boundary'].question;
   const unnoted = lessonFieldnote();
   unnoted.cutFrom.next = 'How was the stack made?';
   const nextMoved = [
-    "Fieldnote 01: cutFrom.next differs from chapters['bring-up'].question",
+    "Fieldnote 01: cutFrom.next differs from chapters['spi-boundary'].question",
   ];
   assert.deepEqual(cutFromDifferences(unnoted), nextMoved);
   for (const [notes, expected] of [
-    [[`Lesson 02 now asks: “${asked}”`], []],
-    [['Lesson 02 now asks how the stack is created.'], nextMoved],
-    [[{ chapter: 0, text: `Lesson 02 now asks: “${asked}”` }], nextMoved],
+    [[`103 now asks: “${asked}”`], []],
+    [['103 now asks where the Azure code lives.'], nextMoved],
+    [[{ chapter: 0, text: `103 now asks: “${asked}”` }], nextMoved],
   ])
     assert.deepEqual(
       cutFromDifferences({ ...unnoted, notes }),
@@ -5746,6 +5957,15 @@ test('Fieldnote routes parse and keep the published keys', () => {
   assert.equal(parseRoute('#watch/00').video, '101', 'a replaced cut');
   assert.equal(parseRoute('#watch/01').video, '102', 'a replaced cut');
   assert.equal(parseRoute('#watch/03').video, '103', 'a replaced cut');
+  for (const id of ['104', '105']) {
+    const route = parseRoute(`#watch/${id}?t=12`);
+    assert.deepEqual(
+      [route.chapter, route.video, route.time],
+      ['watch', id, 12],
+    );
+  }
+  assert.equal(parseRoute('#the-line?watch=35').watch, 35);
+  assert.equal(parseRoute('#two-kinds-of-work?watch=34').watch, 34);
   assert.equal(
     parseRoute('#watch/03?t=150').time,
     null,
@@ -5915,9 +6135,43 @@ test('the Fieldnotes page lists episodes by book with one player and a transcrip
   const page = pageRenderers.watch(parseRoute('#watch'));
   for (const video of fieldnotes)
     assert.ok(page.includes(`href="#watch/${video.id}"`), video.id);
+  assert.deepEqual(
+    fieldnotes.map(({ id }) => id),
+    [
+      '101',
+      '102',
+      '103',
+      '104',
+      '105',
+      '02',
+      '04',
+      '05',
+      '06',
+      '07',
+      '08',
+      '09',
+      '10',
+      '11',
+      '12',
+    ],
+    'the level 100 episodes come first, then the lesson cuts in course order',
+  );
   assert.match(
     page,
-    /<section class="fieldnote-book" style="--in-three: 1; --in-two: 1"><h2>Start<\/h2>/,
+    /<nav class="fieldnote-books" aria-label="Fieldnotes"><section class="fieldnote-book" style="--in-three: 3; --in-two: 2"><h2>Level 100 · Foundations<\/h2>/,
+  );
+  assert.match(
+    pageRenderers.watch(parseRoute('#watch/104')),
+    /<p class="watch-book"><a href="#the-line">Level 100 · 4 of 5 · The line →<\/a><\/p>/,
+  );
+  assert.match(
+    pageRenderers.watch(parseRoute('#watch/105')),
+    /<a href="#watch\/104" data-watch-play>← Fieldnote 104<\/a><a href="#watch\/02" data-watch-play>Fieldnote 02 →<\/a>/,
+    'the last level 100 episode leads to the first lesson cut',
+  );
+  assert.match(
+    pageRenderers.watch(parseRoute('#watch/02')),
+    /<p class="watch-book">The stack · <a href="#bring-up">Lesson 02 · How it comes to life →<\/a><\/p>/,
   );
   assert.match(
     page,

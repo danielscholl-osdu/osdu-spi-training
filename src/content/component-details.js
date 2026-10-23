@@ -2,6 +2,255 @@
 // Licensed under the MIT License.
 
 export const componentDetails = {
+  'line-own': {
+    label: 'Azure/osdu-spi-partition / the fork’s own paths',
+    title:
+      'The fork owns its Azure provider, its Azure tests, and the files that describe it.',
+    body: 'Partition’s CONTRIBUTING.md names three owners, and the fork’s own share is short: provider/*-azure/, testing/*-test-azure/, .spi/, and a few files such as its CODEOWNERS and README. A change to them is a pull request in the fork; neither sync nor template sync writes over them.',
+    artifact: {
+      label: 'Where a change belongs',
+      code: 'provider/*-azure/ · testing/*-test-azure/ · .spi/\n.github/upstream-filter.yml · .github/CODEOWNERS\nCONTRIBUTING.md · README.md',
+    },
+    source: 'partitionContributing',
+    goDeeper: ['partitionCodeowners', 'ownership'],
+  },
+  'line-template': {
+    label: 'Azure/osdu-spi-partition / workflows from the template',
+    title: 'Every fork’s workflows come from one template.',
+    body: 'Each service fork is created from the Azure/osdu-spi template and runs the same workflows. The template also owns the rest of .github/, build/, and the release configuration, and template sync proposes its updates to each fork every day at 08:00 UTC, one pull request at a time.',
+    artifact: {
+      label: 'How a fork is created',
+      code: 'gh repo create <org>/<service> --template Azure/osdu-spi --public',
+    },
+    source: 'forkLifecycle',
+    goDeeper: ['templateSync', 'workflowSystem'],
+  },
+  'line-community': {
+    label: 'Azure/osdu-spi-partition / community code',
+    title: 'The community’s code is regenerated from upstream every day.',
+    body: 'Everything else in the tree is the community’s shared service code. Sync regenerates it from the upstream tip, keeps the shared modules, and drops other providers. Anything its filter cannot classify stops the sync and opens an issue for a person.',
+    artifact: {
+      label: 'The filter sync applies',
+      code: '.github/upstream-filter.yml',
+    },
+    source: 'ownership',
+    goDeeper: ['synchronization'],
+  },
+  'line-upstream': {
+    label: 'OSDU community / upstream',
+    title: 'Upstream is where the community changes shared code.',
+    body: 'The community’s partition repository is the first station. Sync reads the tip of its default branch, and a change there reaches the fork only through sync. Upstream carries no Azure provider; that lives in the fork.',
+    artifact: {
+      label: 'The upstream repository',
+      code: 'https://community.opengroup.org/osdu/platform/system/partition',
+    },
+    source: 'synchronization',
+    goDeeper: ['ownership'],
+  },
+  'line-sync': {
+    label: 'Azure/osdu-spi-partition / sync',
+    title: 'Sync proposes upstream’s changes to the fork every day.',
+    body: 'At midnight UTC the sync workflow fetches the upstream tip, regenerates the community’s code, and opens a pull request with a tracking issue. It proposes and never merges: a person merges the pull request, and that merge starts cascade.',
+    artifact: {
+      label: 'Its schedule',
+      code: ".github/workflows/sync.yml\ncron: '0 0 * * *'  # Daily at midnight UTC",
+    },
+    source: 'synchronization',
+    goDeeper: ['partitionSyncWorkflow'],
+  },
+  'line-cascade': {
+    label: 'Azure/osdu-spi-partition / cascade',
+    title: 'Cascade builds upstream’s changes with the fork’s own code.',
+    body: 'Once a sync is merged, cascade combines main with the synced code, checks that the Azure provider and tests are still there, builds and tests the service with its Azure provider, and opens a pull request into main. A conflict or a failed build opens an issue for a person instead.',
+    artifact: {
+      label: 'Its workflow',
+      code: '.github/workflows/cascade.yml',
+    },
+    source: 'cascade',
+    goDeeper: ['branches'],
+  },
+  'line-main': {
+    label: 'Azure/osdu-spi-partition / main',
+    title: 'Main is the fork’s protected branch.',
+    body: 'Cascade’s pull request lands here. So does a fork’s own change, such as a fix to its Azure provider, without visiting upstream, sync, or cascade. A push to main that changes code builds an image, and that image takes its turn in the lane.',
+    artifact: {
+      label: 'The image main last built',
+      code: 'ghcr.io/azure/osdu-spi-partition:main-snapshot',
+    },
+    source: 'branches',
+    goDeeper: ['images'],
+  },
+  'line-release': {
+    label: 'Azure/osdu-spi-partition / release',
+    title: 'A release tags an image that is already there.',
+    body: 'Each push to main updates a release pull request with the next version and its changelog. When a person merges it, the release workflow creates the GitHub release, waits for the release commit’s image, and adds the version tag to that image. Nothing is rebuilt.',
+    artifact: {
+      label: 'The retag, in the release workflow',
+      code: '# Registry-side retag: add :<version> to the release commit\'s image. No rebuild.\ndocker buildx imagetools create --tag "${REPO}:${VERSION}" "$SRC"',
+    },
+    source: 'release',
+    goDeeper: ['partitionReleaseWorkflow'],
+  },
+  'line-image': {
+    label: 'GHCR / ghcr.io/azure/osdu-spi-partition',
+    title: 'Every eligible commit gets an image.',
+    body: 'When the Java build passes on the fork’s own pull request or on a push to the integration workspace or main, the validation workflow builds the service image and pushes it to GHCR under the commit’s sha tag. That image, not a rebuild, is what the lane runs and what a release later tags.',
+    artifact: {
+      label: 'The tag a commit’s image carries',
+      code: 'ghcr.io/azure/osdu-spi-partition:sha-<12>',
+    },
+    source: 'validation',
+    goDeeper: ['ghcr'],
+  },
+  'line-lane': {
+    label: 'Azure/osdu-spi-partition / the lane',
+    title: 'In the lane, a new image takes a turn in a running stack.',
+    body: 'Deploy and Test runs on the fork’s own pull requests and on pushes to the integration workspace and to main, all before any release. It runs the new image in a stack and checks it with the service’s own tests. The run after a merge to main proves the image a stack runs by default.',
+    artifact: {
+      label: 'The lane’s jobs',
+      code: '.github/workflows/validate.yml\nDeploy Gate · Deploy and Test',
+    },
+    source: 'proof',
+    goDeeper: ['deployTest', 'partitionValidateWorkflow'],
+  },
+  'line-stack': {
+    label: 'Azure / a running stack',
+    title: 'A stack runs main’s image by default.',
+    body: 'A service with no recorded source runs the image its fork’s main last published: the digest main-snapshot names, recorded under the sha tag of the commit that built it. The packages are public, so no trust record is needed.',
+    artifact: {
+      label: 'The default, from tag to digest',
+      code: 'main-snapshot → sha-<12> → sha256:<digest>',
+    },
+    source: 'images',
+  },
+  'kinds-template': {
+    label: 'Azure/osdu-spi / the template',
+    title: 'One template gives every fork the same workflows.',
+    body: 'Each service fork is created from Azure/osdu-spi and keeps receiving the template’s workflows, its build/ directory, and its release configuration through template sync: a pull request into main, opened every day at 08:00 UTC when the template has moved. A change to the line made here reaches every fork that way.',
+    artifact: {
+      label: 'Template sync’s schedule',
+      code: ".github/workflows/sync-template.yml\ncron: '0 8 * * *'  # Daily at 08:00 UTC",
+    },
+    source: 'templateSync',
+    goDeeper: ['workflowSystem'],
+  },
+  'kinds-stack': {
+    label: 'Azure/osdu-spi-stack / the shared stack',
+    title: 'The shared stack is where each new image takes its turn.',
+    body: 'Azure/osdu-spi-stack holds the CLI and the definitions that build an environment. The shared environment the forks’ lanes run in is pinned to a stack release, and moving it to a newer one is a pull request a person merges.',
+    artifact: {
+      label: 'The shared environment’s declaration',
+      code: 'ops/environments/shared.yaml',
+    },
+    source: 'pinnedEnv',
+    goDeeper: ['architecture'],
+  },
+  'kinds-automation': {
+    label: 'GitHub / automation',
+    title: 'Automation opens much of the work.',
+    body: 'The fork’s workflows open the sync, cascade, release, and template sync pull requests, and Dependabot opens dependency updates for the Azure modules. Only cascade arms auto-merge, and auto-merge waits for the approval main requires.',
+    artifact: {
+      label: 'Where the pull requests come from',
+      code: 'sync.yml · cascade.yml · release.yml · sync-template.yml\n.github/dependabot.yml',
+    },
+    source: 'workflowSystem',
+    goDeeper: ['cascade'],
+  },
+  'kinds-platform-work': {
+    label: 'The line / platform work',
+    title: 'Platform work changes what carries every service.',
+    body: 'Changing the stack, the template’s workflows, or the shared environment changes the line under every service at once. That work lands in Azure/osdu-spi and Azure/osdu-spi-stack and reaches the forks through template sync and stack releases. It is the platform path’s work.',
+    artifact: {
+      label: 'Where platform work lands',
+      code: 'Azure/osdu-spi · Azure/osdu-spi-stack',
+    },
+    source: 'engineering',
+    goDeeper: ['architecture'],
+  },
+  'kinds-service': {
+    label: 'Azure/osdu-spi-partition / the service',
+    title: 'The product is what a service does for its callers.',
+    body: 'Partition’s code, its tests, and the API its callers use are what the line carries. Its shared code comes from the community through sync; its Azure provider and Azure tests are the fork’s own, changed by pull requests into main.',
+    artifact: {
+      label: 'The service’s repository',
+      code: 'Azure/osdu-spi-partition',
+    },
+    source: 'partitionRepo',
+    goDeeper: ['partitionContributing'],
+  },
+  'kinds-provider': {
+    label: 'Azure/osdu-spi-partition / the Azure provider',
+    title: 'The Azure provider is the fork’s own code.',
+    body: 'provider/partition-azure/ connects partition’s shared code to Azure services. The fork owns it, so a change to it is a pull request into the fork’s main, and nothing from upstream or the template writes over it.',
+    artifact: {
+      label: 'Where it lives',
+      code: 'provider/partition-azure/',
+    },
+    source: 'partitionProvider',
+    goDeeper: ['partitionContributing'],
+  },
+  'kinds-service-work': {
+    label: 'The product / service work',
+    title: 'Service work changes what a service does.',
+    body: 'A new feature, a fix to the Azure provider, or a new test is service work: a pull request in the service’s fork, approved by its code owners and proved in the lane. It is the service path’s work.',
+    artifact: {
+      label: 'Where service work starts',
+      code: 'Branch from main · open a pull request against main',
+    },
+    source: 'partitionContributing',
+  },
+  'kinds-sync-merge': {
+    label: 'Azure/osdu-spi-partition / the sync pull request',
+    title: 'A person merges the sync pull request.',
+    body: 'Sync opens its pull request and a tracking issue at midnight UTC and then waits for a person. Merging it starts cascade. While it waits, the next day’s sync updates the same pull request instead of opening another.',
+    artifact: {
+      label: 'The step that waits',
+      code: 'Waits for human review: the team merges the PR to continue the cascade',
+    },
+    source: 'synchronization',
+  },
+  'kinds-main-approval': {
+    label: 'Azure/osdu-spi-partition / the gate before main',
+    title: 'Nothing reaches main until a code owner approves it.',
+    body: 'Main’s ruleset needs a code owner’s review, an approval given after the last push, every review thread resolved, and the CodeQL and Validation Summary checks green on a branch that is up to date. The fork’s CODEOWNERS names the owners, and one person cannot approve their own pull request.',
+    artifact: {
+      label: 'What merging needs',
+      code: 'Passing CodeQL and validation checks, every review thread resolved, and a code owner’s approval.',
+    },
+    source: 'partitionContributing',
+    goDeeper: ['partitionCodeowners', 'forkLifecycle', 'engineering'],
+  },
+  'kinds-release-call': {
+    label: 'Azure/osdu-spi-partition / the release pull request',
+    title: 'A person decides when a release is ready.',
+    body: 'Release Please keeps one release pull request open with the next version and its changelog, updated on each push to main. A person merges it when the version and changelog are ready, and the release workflow then tags the image already built, without rebuilding.',
+    artifact: {
+      label: 'The person’s step, in the release guide',
+      code: 'Merge the generated PR when the version and changelog are ready',
+    },
+    source: 'release',
+  },
+  'kinds-copilot': {
+    label: 'GitHub / Copilot review',
+    title: 'Copilot may review first; its review is never the approval.',
+    body: 'Where the organization supports it, a ruleset asks Copilot to review each pull request into main on every push. Its review arrives as comments. The approval main needs comes from a code owner.',
+    artifact: {
+      label: 'How it shows on a pull request',
+      code: 'copilot-pull-request-reviewer · Commented',
+    },
+    source: 'engineering',
+  },
+  'kinds-issue': {
+    label: 'GitHub / an issue for a person',
+    title: 'When the line cannot go on alone, it opens an issue for a person.',
+    body: 'A sync that finds something its filter cannot classify stops and opens an issue. A cascade that hits a merge conflict or a failed build opens one that records the error and the recovery steps. Each waits for a person to fix the cause and start the line again.',
+    artifact: {
+      label: 'Where cascade records a failure',
+      code: 'A dedicated issue records the error and the recovery steps',
+    },
+    source: 'cascade',
+    goDeeper: ['synchronization'],
+  },
   'dag-catalog': {
     label: 'Reviewed stack inputs',
     title: 'The catalog approves the code Airflow may run.',
@@ -636,7 +885,7 @@ export const componentDetails = {
       'running-stack': {
         context: 'The osdu namespace',
         summary:
-          'Partition, entitlements, legal, schema, storage, search, and indexer run here as Kubernetes workloads, one image each, behind the Istio gateway. Lesson 03 opens the partition service to show the shared code and the Azure provider packaged inside it.',
+          'Partition, entitlements, legal, schema, storage, search, and indexer run here as Kubernetes workloads, one image each, behind the Istio gateway. The SPI boundary (103) opens the partition service to show the shared code and the Azure provider packaged inside it.',
         artifact: {
           label: 'List the service workloads',
           code: 'kubectl get deployments -n osdu',

@@ -103,7 +103,8 @@ export const episodes = [
     path: 'everyone',
     title: 'The line',
     question: 'How does a change reach a running service?',
-    leaves: 'the six stations every change passes, the same in every fork',
+    leaves:
+      'six stations, the same in every fork, and an image proved before any release',
     from: [],
     after: ['103'],
     teaches: [
@@ -114,6 +115,7 @@ export const episodes = [
     ],
     uses: [],
     mistakes: [],
+    video: '104',
   },
   {
     code: '105',
@@ -128,6 +130,7 @@ export const episodes = [
     teaches: ['line-and-product'],
     uses: [],
     mistakes: [],
+    video: '105',
   },
   {
     code: 'S201',

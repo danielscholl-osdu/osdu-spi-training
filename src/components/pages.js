@@ -1153,7 +1153,7 @@ export const guideSections = [
   {
     title: 'The stack',
     owner: 'cli',
-    lessons: 'Lessons 01 and 02',
+    lessons: 'Lessons 102 and 02',
     ids: [
       'familiar',
       'owners',
@@ -1167,13 +1167,13 @@ export const guideSections = [
   {
     title: 'One service',
     owner: 'fork',
-    lessons: 'Lesson 03',
+    lessons: 'Lesson 103',
     ids: ['identity', 'one-request'],
   },
   {
     title: 'The fork',
     owner: 'fork',
-    lessons: 'Lessons 04 and 05',
+    lessons: 'Lessons 104, 105, 04, and 05',
     ids: ['contribution-chain', 'clocks', 'labels'],
   },
   {
@@ -1248,7 +1248,7 @@ export function sheetPreview(ids) {
 // The lesson numbers a group sits beside, drawn as the chips the six-place
 // ladder uses, so the row and the map inside it read the same way.
 function lessonChips(lessons) {
-  const numbers = lessons?.match(/\d\d/g);
+  const numbers = lessons?.match(/\d{2,3}/g);
   if (!numbers) return '';
   return `<span class="zoom-tags"><small>${numbers.length > 1 ? 'Lessons' : 'Lesson'}</small>${numbers.map((n) => `<b>${n}</b>`).join('')}</span> · `;
 }

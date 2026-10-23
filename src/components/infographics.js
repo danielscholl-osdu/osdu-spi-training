@@ -417,12 +417,12 @@ export function roundTripFigure() {
     `<a class="loop-stop" href="${href}"><span class="loop-number">${number}</span><b>${title}</b><small>${sub}</small></a>`;
   return `<div class="round-trip">
     <div class="loop-side loop-stack">
-      <div class="loop-head"><b>The stack</b><small>a place · lessons 01 to 03</small></div>
-      ${stop('#running-stack/request', '01', 'A partition lookup', 'arrives at your environment’s gateway')}
+      <div class="loop-head"><b>The stack</b><small>a place · 102, 02, and 103</small></div>
+      ${stop('#running-stack/request', '102', 'A partition lookup', 'arrives at your environment’s gateway')}
       <span class="loop-arrow" aria-hidden="true">↓</span>
       ${stop('#bring-up', '02', 'The stack that answers it', 'built by one spi up')}
       <span class="loop-arrow" aria-hidden="true">↓</span>
-      ${stop('#spi-boundary', '03', 'Inside the partition service', 'common code, the interface, the Azure provider')}
+      ${stop('#spi-boundary', '103', 'Inside the partition service', 'common code, the interface, the Azure provider')}
     </div>
     <div class="loop-cross loop-out"><span>a fix to that provider</span><span aria-hidden="true">→</span></div>
     <div class="loop-side loop-fork">

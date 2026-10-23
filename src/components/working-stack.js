@@ -3,13 +3,13 @@
 
 import { node } from './node.js';
 
-const arrow = (text) => `<div class="work-arrow">${text}</div>`;
+export const arrow = (text) => `<div class="work-arrow">${text}</div>`;
 
-function zone(scope, title, body, kind = '') {
+export function zone(scope, title, body, kind = '') {
   return `<section class="work-zone${kind ? ` ${kind}` : ''}" data-scope="${scope}"><h3>${title}</h3>${body}</section>`;
 }
 
-const forkLegend =
+export const forkLegend =
   '<div class="ownership-legend"><span><i class="fork-swatch"></i>Fork-owned source</span></div>';
 
 // Lesson 08: where a canonical image comes from, what records it, and its clock.

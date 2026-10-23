@@ -15,8 +15,8 @@ Codes name the level and the path: 103 is the third foundation episode, S203 the
 | 101  | [Three parts](101-three-parts.md)                 | What is the Azure SPI machinery made of?                | Fieldnote 00, re-cut to the three parts       | published |
 | 102  | [Anatomy of a stack](102-anatomy-of-a-stack.md)   | What is actually running when someone says "the stack"? | Fieldnote 01's body with new bookends         | published |
 | 103  | [The provider inside](103-the-provider-inside.md) | Where does the Azure code live in a service?            | Fieldnote 03's boards, without the code panes | published |
-| 104  | The line                                          | How does a change reach a running service?              | new, from boards in Fieldnotes 04 and 05      | planned   |
-| 105  | Two kinds of work                                 | Who does what, and which path is mine?                  | new                                           | planned   |
+| 104  | [The line](104-the-line.md)                       | How does a change reach a running service?              | new, from boards in Fieldnotes 04 and 05      | published |
+| 105  | [Two kinds of work](105-two-kinds-of-work.md)     | Who does what, and which path is mine?                  | new                                           | published |
 
 The service path (S201 to S207), the platform path (P201 to P208), and the library get their tables in the rounds that make them.
 

@@ -68,6 +68,8 @@ export const zoomLevels = [
       'Not a place inside the stack: the repositories the service is built from. A service fork owns the provider; osdu-spi supplies the workflows; a run in the fork borrows a stack to prove a digest.',
     example: 'three repositories',
     chapters: [
+      'the-line',
+      'two-kinds-of-work',
       'fork-shape',
       'fork-day',
       'handshake',
@@ -91,7 +93,7 @@ export const spiMeanings = [
       href: 'https://github.com/Azure/osdu-spi-stack',
     },
     href: '#running-stack',
-    hrefLabel: '01 · Anatomy of a stack',
+    hrefLabel: '102 · Anatomy of a stack',
     owner: 'cli',
   },
   {
@@ -105,7 +107,7 @@ export const spiMeanings = [
     },
     lives: 'provider/partition-azure/',
     href: '#spi-boundary',
-    hrefLabel: '03 · The SPI boundary',
+    hrefLabel: '103 · The SPI boundary',
     owner: 'fork',
   },
   {

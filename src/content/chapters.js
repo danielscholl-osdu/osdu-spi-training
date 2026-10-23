@@ -398,7 +398,7 @@ export const chapters = {
     subtitle: 'Find where the Azure code sits',
     subhead: 'The provider lives inside the service.',
     intro:
-      '<p>Builds on the partition lookup from 01 and works at one service inside the osdu namespace: partition in your environment.</p><p>Inside it, a Service Provider Interface (SPI) connects shared behavior to an implementation. The community partition-core-plus implementation and the fork-owned Azure implementation connect that interface to different dependencies. Follow the opendes lookup across the Azure seam.</p>',
+      '<p>Builds on the partition lookup from 102 and works at one service inside the osdu namespace: partition in your environment.</p><p>Inside it, a Service Provider Interface (SPI) connects shared behavior to an implementation. The community partition-core-plus implementation and the fork-owned Azure implementation connect that interface to different dependencies. Follow the opendes lookup across the Azure seam.</p>',
     figure: 'One service, two source owners',
     selected: 'azureimpl',
     diagram: 'spi',
@@ -572,7 +572,7 @@ export const chapters = {
     ],
     question: 'Where does the Azure code live in a service?',
     builds:
-      'Zooms into the partition service from 01 and follows the same lookup through its provider.',
+      'Zooms into the partition service from 102 and follows the same lookup through its provider.',
     where:
       'One service inside the osdu namespace. Everything from the first two views is still around it; only the scale changed.',
     example: {
@@ -762,11 +762,463 @@ export const chapters = {
       {
         headline: 'The Azure code lives in the service’s fork.',
         text: 'The Azure implementation is source in the service’s fork, in its own provider folder beside the shared code.',
-        why: 'The fork’s source tree holds partition-core/, the shared code, and provider/partition-azure/, the Azure implementation. Lesson 04 shows who owns which of those paths.',
+        why: 'The fork’s source tree holds partition-core/, the shared code, and provider/partition-azure/, the Azure implementation. The next page, 104, shows who owns which of those paths.',
         focus: ['upstream', 'azureimpl', 'engineering'],
         scopes: ['spi-provider', 'spi-sources'],
         evidence: 'upstream',
         crossing: 'Azure source in the service’s fork',
+      },
+    ],
+  },
+  'the-line': {
+    kind: 'map',
+    group: 'learn',
+    book: 'Foundations',
+    title: 'The line',
+    subtitle: 'Follow a change to a running service',
+    subhead:
+      'A change reaches a running service through six stations, the same in every fork.',
+    intro:
+      '<p>A service fork owns a few of its paths. One template gives every fork its workflows, and sync brings in the community’s code every day.</p><p>Builds on the partition service from 103 and follows one upstream change to a running stack. This view works where the code comes from: the partition fork on GitHub, its workflows, and the stack its images run in.</p>',
+    figure: 'One fork, six stations, one stack',
+    selected: 'line-own',
+    diagram: 'theLine',
+    listen: [],
+    guides: ['contribution-chain'],
+    tryIt: {
+      activity: 'read the partition fork’s line',
+      summary: 'Try it: read the partition fork’s line · browser only',
+      outcome:
+        'Find the fork’s own paths, the time sync runs, the lane in a run on main, and the release step that tags an existing image.',
+      badge: 'code-magnifier',
+      variants: [
+        {
+          label: 'Read the line on GitHub',
+          result:
+            'Read one fork’s three owners, its sync schedule, a validation run on main with the lane in it, and the release job that adds a version tag to an image already built.',
+          access: 'browser only',
+          accessNote:
+            'Read the public fork on GitHub without creating an environment.',
+          prerequisites: [
+            {
+              kind: 'browser',
+              label: 'A browser',
+              text: 'For every step.',
+              sources: ['partitionRepo'],
+            },
+          ],
+          time: {
+            active: 'About 10 minutes.',
+            wait: 'No automated waiting.',
+            cleanup: 'Under a minute.',
+            minutes: { active: 10, wait: 0, cleanup: 1 },
+          },
+          footprint: [
+            {
+              place: 'workstation',
+              state: 'untouched',
+              note: 'Nothing installed.',
+            },
+            {
+              place: 'github',
+              state: 'reads',
+              note: 'The partition fork’s files and workflow runs, in the browser.',
+            },
+            {
+              place: 'azure',
+              state: 'untouched',
+              note: 'No environment is read or changed.',
+            },
+          ],
+          effects:
+            'Nothing is created or changed. Every step reads the public partition fork on GitHub.',
+          steps: [
+            {
+              click:
+                'Open the fork’s CONTRIBUTING.md and find Where a change belongs.',
+              touch: { kind: 'reads', note: 'reads the fork’s main branch' },
+              expect:
+                'A table names three owners. The fork owns provider/*-azure/, testing/*-test-azure/, .spi/, and a few files that describe it; the template owns the rest of .github/, build/, and .release-please-config.json; everything else is the community’s shared code.',
+              sources: ['partitionContributing'],
+            },
+            {
+              click: 'Open .github/workflows/sync.yml and find its schedule.',
+              touch: { kind: 'reads', note: 'reads one workflow file' },
+              expect:
+                "The schedule is cron: '0 0 * * *', daily at midnight UTC. The template supplies this file, so every fork carries the same schedule.",
+              sources: ['partitionSyncWorkflow', 'synchronization'],
+            },
+            {
+              click:
+                'Open the Actions tab, choose the Validation workflow, and open its newest run from a push to main.',
+              touch: { kind: 'reads', note: 'reads one workflow run' },
+              expect:
+                'The run’s jobs include Java Build, Docker Push, Deploy Gate, and Deploy and Test. Docker Push publishes the commit’s image; Deploy and Test is the lane, where that image takes its turn in a running stack.',
+              sources: ['partitionValidateWorkflow', 'proof'],
+            },
+            {
+              click:
+                'Open .github/workflows/release.yml and find the Tag Release Image job.',
+              touch: { kind: 'reads', note: 'reads one workflow file' },
+              expect:
+                'Its step waits for the release commit’s image, then adds the version tag with docker buildx imagetools create. The comment above it reads “Registry-side retag: add :<version> to the release commit’s image. No rebuild.”',
+              sources: ['partitionReleaseWorkflow', 'release'],
+            },
+          ],
+          alternate: {
+            observation:
+              'The run you opened skipped Deploy and Test, or a file no longer matches the description.',
+            next: 'A push whose changes are all on the workflow’s ignored paths skips the build and the lane; open an earlier run from a merged pull request. Files on main change as template updates arrive; search the file for the job or key the step names.',
+          },
+          cleanup: {
+            steps: [
+              {
+                click: 'Close the tabs.',
+                touch: { kind: 'reads', note: 'nothing to remove' },
+                expect: 'Nothing to remove; every step only read.',
+              },
+            ],
+            remains: 'Nothing was created.',
+          },
+          sources: [
+            'partitionContributing',
+            'partitionSyncWorkflow',
+            'partitionValidateWorkflow',
+            'partitionReleaseWorkflow',
+          ],
+          tested: {
+            cli: 'Not applicable: browser steps only; the same files, runs, and job names were read with gh 2.102.0.',
+            stack: 'Not applicable: no environment is read.',
+            template:
+              'Not applicable: reads the reference fork at osdu-spi-partition 8aa26ca0; no fork is created.',
+            shell: 'Not applicable: no commands.',
+            os: 'macOS 27.0.1 on Apple silicon',
+            date: '2026-10-23',
+          },
+        },
+      ],
+    },
+    mistakes: [],
+    scope:
+      'Read at level 100: one fork’s own paths, its workflows, and the six stations every fork shares. Lesson 04 reads the fork by its branches, lesson 05 follows its day, and lesson 06 opens the lane. This map is illustrative, executes nothing, and reports no live state.',
+    sources: [
+      'partitionContributing',
+      'forkLifecycle',
+      'engineering',
+      'workflowSystem',
+      'templateSync',
+      'ownership',
+      'synchronization',
+      'cascade',
+      'branches',
+      'validation',
+      'proof',
+      'release',
+      'images',
+    ],
+    question: 'How does a change reach a running service?',
+    builds:
+      'Builds on the partition service from 103 and follows one upstream change to a running stack.',
+    where:
+      'Where the code comes from: the partition fork on GitHub, its workflows, and the stack its images run in.',
+    example: {
+      title: 'Follow one upstream change along the line',
+      code: 'Azure/osdu-spi-partition',
+      scopes: ['line-stations', 'line-lane'],
+      crossing: 'Upstream → Sync → Cascade → the lane → Main → Release',
+      hops: [
+        {
+          detail: 'line-upstream',
+          label: 'Upstream',
+          copy: 'A change lands',
+        },
+        {
+          detail: 'line-sync',
+          label: 'Sync',
+          copy: 'Proposed at 00:00 UTC',
+        },
+        {
+          detail: 'line-cascade',
+          label: 'Cascade',
+          copy: 'Built with the Azure provider',
+        },
+        {
+          detail: 'line-lane',
+          label: 'The lane',
+          copy: 'Its image takes a turn',
+        },
+        {
+          detail: 'line-main',
+          label: 'Main',
+          copy: 'Main’s image takes its turn',
+        },
+        {
+          detail: 'line-release',
+          label: 'Release',
+          copy: 'Tags an existing image',
+        },
+      ],
+      note: 'The stations are the same in every fork; the change is one example. Main’s image is the one a stack runs by default. This site executes nothing and reports no live state.',
+    },
+    goal: 'Say how a change reaches a running service: the few paths a fork owns, the six stations every fork shares, and why a release only tags an image that is already there.',
+    outcomes: [
+      {
+        headline: 'A fork owns only a few of its paths.',
+        text: 'A service fork owns its Azure provider, its Azure tests, and the files that describe it; its workflows come from the template, and the community’s code is regenerated from upstream every day.',
+        why: 'Partition’s CONTRIBUTING.md names three owners: the fork’s own paths, the template’s .github/, build/, and release configuration, and the community’s shared code. Template sync overwrites the template’s files and sync regenerates the community’s, so the fork changes only its own.',
+        focus: ['line-own', 'line-template', 'line-community'],
+        scopes: ['line-fork'],
+        evidence: 'line-own',
+        crossing: 'Three owners in one fork',
+      },
+      {
+        headline: 'Every fork has the same six stations.',
+        text: 'A change reaches a running service through upstream, sync, cascade, main, and release, with the lane beside them, and every fork has the same six because every fork comes from one template.',
+        why: 'Every fork is created from the Azure/osdu-spi template and runs the same workflows. Not every change visits every station: a fork’s own change joins at main.',
+        focus: [
+          'line-template',
+          'line-upstream',
+          'line-sync',
+          'line-cascade',
+          'line-main',
+          'line-release',
+          'line-lane',
+        ],
+        scopes: ['line-stations'],
+        evidence: 'line-template',
+        crossing: 'One template, six stations',
+      },
+      {
+        headline: 'Every eligible commit is proved before any release.',
+        text: 'Every eligible commit gets an image and a turn in a running stack before any release exists, so a release only tags an image that is already there.',
+        why: 'The lane runs on the fork’s own pull requests and on pushes to the integration workspace and to main. A release waits for the release commit’s image, then adds its version tag without rebuilding.',
+        focus: ['line-image', 'line-lane', 'line-stack', 'line-release'],
+        scopes: ['line-lane'],
+        evidence: 'line-lane',
+        crossing: 'Image → the lane → a version tag',
+      },
+    ],
+  },
+  'two-kinds-of-work': {
+    kind: 'map',
+    group: 'learn',
+    book: 'Foundations',
+    title: 'Two kinds of work',
+    subtitle: 'Find who approves and your path',
+    subhead:
+      'The line carries the product, a person approves what reaches main, and your work picks your path.',
+    intro:
+      '<p>Automation opens much of the work on the line, and a person makes each call that moves a change into main or into a release.</p><p>Builds on the line from 104 and looks at who acts on it. This view works where the code comes from: the template, the stack, and the partition fork on GitHub.</p>',
+    figure: 'The line, the product, and where a person acts',
+    selected: 'kinds-template',
+    diagram: 'twoKinds',
+    listen: [],
+    guides: ['contribution-chain'],
+    tryIt: {
+      activity: 'find the person on a pull request',
+      summary: 'Try it: find the person on a pull request · browser only',
+      outcome:
+        'Find who opened, reviewed, approved, and merged the pull requests on one fork’s line.',
+      badge: 'code-magnifier',
+      variants: [
+        {
+          label: 'Read the pull requests on GitHub',
+          result:
+            'Read what merging into main needs, then find the person on a cascade, a sync, and a release pull request.',
+          access: 'browser only',
+          accessNote:
+            'Read the public fork on GitHub without creating an environment.',
+          prerequisites: [
+            {
+              kind: 'browser',
+              label: 'A browser',
+              text: 'For every step.',
+              sources: ['partitionRepo'],
+            },
+          ],
+          time: {
+            active: 'About 10 minutes.',
+            wait: 'No automated waiting.',
+            cleanup: 'Under a minute.',
+            minutes: { active: 10, wait: 0, cleanup: 1 },
+          },
+          footprint: [
+            {
+              place: 'workstation',
+              state: 'untouched',
+              note: 'Nothing installed.',
+            },
+            {
+              place: 'github',
+              state: 'reads',
+              note: 'The partition fork’s files and closed pull requests, in the browser.',
+            },
+            {
+              place: 'azure',
+              state: 'untouched',
+              note: 'No environment is read or changed.',
+            },
+          ],
+          effects:
+            'Nothing is created or changed. Every step reads the public partition fork on GitHub.',
+          steps: [
+            {
+              click:
+                'Open the fork’s CONTRIBUTING.md and find step 4 of Making a change.',
+              touch: { kind: 'reads', note: 'reads the fork’s main branch' },
+              expect:
+                'Merging into main needs passing CodeQL and validation checks, every review thread resolved, and a code owner’s approval.',
+              sources: ['partitionContributing'],
+            },
+            {
+              click: 'Open .github/CODEOWNERS.',
+              touch: { kind: 'reads', note: 'reads one file' },
+              expect:
+                'The file sorts the tree into the same three areas as CONTRIBUTING.md, and every area names the code owners whose review main requires.',
+              sources: ['partitionCodeowners', 'forkLifecycle'],
+            },
+            {
+              click:
+                'In Pull requests, search the closed ones for “Upstream Integration to Main” and open the newest.',
+              touch: { kind: 'reads', note: 'reads one pull request' },
+              expect:
+                'The automation app opened it. Copilot’s review arrives as comments, and a person’s approval comes before the merge. The Checks tab lists CodeQL and Validation Summary among its checks.',
+              sources: ['cascade', 'engineering'],
+            },
+            {
+              click:
+                'Search the closed pull requests for “Sync with upstream” and open the newest.',
+              touch: { kind: 'reads', note: 'reads one pull request' },
+              expect:
+                'The automation app opened it and a person merged it. It targets the fork’s copy of upstream, not main, so cascade opens a second pull request into main.',
+              sources: ['synchronization'],
+            },
+            {
+              click:
+                'Search the closed pull requests for “chore: release” and open the newest.',
+              touch: { kind: 'reads', note: 'reads one pull request' },
+              expect:
+                'The automation app opened it with the next version and its changelog, and a person merged it. That merge started the release workflow, which tagged an image already built.',
+              sources: ['release'],
+            },
+          ],
+          alternate: {
+            observation:
+              'A search finds no closed pull request, or a title no longer matches.',
+            next: 'Sync, template, and release pull requests are updated in place while they wait, so the newest may still be open; open the newest closed one. If a title changed, filter the pull requests by the automation app as author.',
+          },
+          cleanup: {
+            steps: [
+              {
+                click: 'Close the tabs.',
+                touch: { kind: 'reads', note: 'nothing to remove' },
+                expect: 'Nothing to remove; every step only read.',
+              },
+            ],
+            remains: 'Nothing was created.',
+          },
+          sources: [
+            'partitionContributing',
+            'partitionCodeowners',
+            'synchronization',
+            'cascade',
+            'release',
+          ],
+          tested: {
+            cli: 'Not applicable: browser steps only; the same files, reviews, and merges were read with gh 2.102.0.',
+            stack: 'Not applicable: no environment is read.',
+            template:
+              'Not applicable: reads the reference fork at osdu-spi-partition 8aa26ca0; no fork is created.',
+            shell: 'Not applicable: no commands.',
+            os: 'macOS 27.0.1 on Apple silicon',
+            date: '2026-10-23',
+          },
+        },
+      ],
+    },
+    mistakes: [],
+    scope:
+      'Read at level 100: who opens the work on the line, where a person approves it, and which path a kind of work takes. Lesson 05 follows the fork’s day with the issues and checks a person reads. This map is illustrative, executes nothing, and reports no live state.',
+    sources: [
+      'engineering',
+      'workflowSystem',
+      'templateSync',
+      'pinnedEnv',
+      'partitionContributing',
+      'partitionCodeowners',
+      'partitionProvider',
+      'forkLifecycle',
+      'synchronization',
+      'cascade',
+      'release',
+    ],
+    question: 'Who does what, and which path is mine?',
+    builds: 'Builds on the line from 104 and looks at who acts on it.',
+    where:
+      'Where the code comes from: the template, the stack, and the partition fork on GitHub.',
+    example: {
+      title: 'Find the person on one upstream change',
+      code: 'Azure/osdu-spi-partition',
+      scopes: ['kinds-person'],
+      crossing: 'Sync → Main → Release',
+      hops: [
+        {
+          detail: 'kinds-sync-merge',
+          label: 'Sync',
+          copy: 'A person merges it',
+        },
+        {
+          detail: 'kinds-main-approval',
+          label: 'Main',
+          copy: 'A code owner approves',
+        },
+        {
+          detail: 'kinds-release-call',
+          label: 'Release',
+          copy: 'A person decides it’s ready',
+        },
+      ],
+      note: 'Automation opened each pull request; a person made each call. The gates are the same in every fork. This site executes nothing and reports no live state.',
+    },
+    goal: 'Say what the line carries and what the product is, where a person approves a change, and which path your own work takes.',
+    outcomes: [
+      {
+        headline: 'The line carries the product.',
+        text: 'The line is the template and its workflows, the shared stack, and the automation that runs them; the product is each service’s code, its Azure provider, its tests, and what the service promises its callers.',
+        why: 'Every fork is created from one template and runs its workflows, and every fork’s new images take their turn in the shared stack. A service’s code, provider, and tests change in its own fork; the line changes in the template’s and the stack’s repositories.',
+        focus: [
+          'kinds-template',
+          'kinds-stack',
+          'kinds-automation',
+          'kinds-service',
+          'kinds-provider',
+        ],
+        scopes: ['kinds-line', 'kinds-product'],
+        evidence: 'kinds-template',
+        crossing: 'The line → the product',
+      },
+      {
+        headline: 'A person approves what reaches main.',
+        text: 'Automation opens the sync, cascade, release, dependency, and template pull requests, and nothing reaches main until a code owner approves it after its last push with the required checks green; when the line cannot go on alone, it opens an issue for a person.',
+        why: 'Main’s ruleset requires a code owner’s review, an approval after the last push, every review thread resolved, and the required checks green. Cascade arms auto-merge, which waits for that approval, and a Copilot review never counts as one.',
+        focus: [
+          'kinds-automation',
+          'kinds-main-approval',
+          'kinds-copilot',
+          'kinds-issue',
+        ],
+        scopes: ['kinds-person'],
+        evidence: 'kinds-main-approval',
+        crossing: 'Automation opens · a person approves',
+      },
+      {
+        headline: 'Your work picks your path.',
+        text: 'Changing what a service does is service work and takes the service path; changing what carries every service is platform work and takes the platform path; one person can do both.',
+        why: 'Service work is a pull request in a service’s fork, in the paths the fork owns. Platform work lands in the template and the stack, and reaches every fork through template sync and the shared environment.',
+        focus: ['kinds-service-work', 'kinds-platform-work'],
+        scopes: ['kinds-line', 'kinds-product'],
+        evidence: 'kinds-service-work',
+        crossing: 'Service work · platform work',
       },
     ],
   },
@@ -779,7 +1231,7 @@ export const chapters = {
     subtitle: 'Create, use, and remove',
     subhead: 'spi up creates the environment. Flux continues the rollout.',
     intro:
-      'Build on lesson 01’s wide map: follow your environment from your workstation into the resource group, AKS cluster, and namespaces, then remove it.',
+      'Build on the wide map from 102: follow your environment from your workstation into the resource group, AKS cluster, and namespaces, then remove it.',
     figure: 'Follow the environment',
     selected: 'workstation',
     diagram: 'creation',
@@ -822,7 +1274,7 @@ export const chapters = {
             {
               kind: 'lesson',
               chapter: 'running-stack',
-              label: 'The CLI from lesson 01',
+              label: 'The CLI from 102',
               text: 'Keep it current rather than reinstalling an older release; spi --version prints a version.',
               sources: ['install'],
             },
@@ -1025,7 +1477,7 @@ export const chapters = {
     sources: ['install', 'lifecycle', 'flux', 'identity'],
     question: 'How is the stack created, and when is it usable?',
     builds:
-      'Uses the boundaries from 01: the stack, AKS, and the resources outside it.',
+      'Uses the boundaries from 102: the stack, AKS, and the resources outside it.',
     where:
       'The same wide picture through time: Azure resources, then the cluster, then the namespaces Flux assembles inside it.',
     example: {
@@ -1118,7 +1570,7 @@ export const chapters = {
     intro:
       '<p>A service fork is a short list of paths the fork owns, beside a tree regenerated from upstream every day.</p><p>Read the repository by owner: each row is a path, each column is a branch, and the cells say where the path exists.</p>',
     premise:
-      'The cache fallback from 03 has to live somewhere upstream cannot delete. From here the journey is illustrative: the real fix arrived from upstream before the filter; follow a fix like it made in the fork today.',
+      'The cache fallback from 103 has to live somewhere upstream cannot delete. From here the journey is illustrative: the real fix arrived from upstream before the filter; follow a fix like it made in the fork today.',
     figure: 'One repository, read by owner',
     selected: 'provider-azure',
     diagram: 'fork',
@@ -1147,7 +1599,7 @@ export const chapters = {
     question:
       'Who owns that provider code, and how does it survive upstream deleting it?',
     builds:
-      'Uses the fork-owned paths from 03 and the image the stack pulls in 01.',
+      'Uses the fork-owned paths from 103 and the image the stack pulls in 102.',
     where:
       'Outside the stack entirely: the service repository on GitHub, the community upstream it is generated from, and the template that gives it its workflows.',
     example: {
@@ -1311,7 +1763,7 @@ export const chapters = {
     ],
     question:
       'How does a candidate image reach a running stack, what proves it, and how is the temporary test deployment restored?',
-    builds: 'Uses the candidate digest from 05 and the environment from 01.',
+    builds: 'Uses the candidate digest from 05 and the environment from 102.',
     where:
       'Both maps at once: a GitHub Actions run on the fork side, and your environment’s image lock, pod, and deploy identity on the stack side.',
     example: {
