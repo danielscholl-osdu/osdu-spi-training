@@ -82,7 +82,7 @@ export function coreDagsFieldnote() {
         id: 'run-succeeded-means-stored',
         claim: 'The run finished, so every record is stored.',
       },
-      next: chapters['prove-from-desk'].question,
+      next: null,
     },
     notes: [],
   };

@@ -24,8 +24,8 @@ import {
 import { routeHref, parseRoute } from '../router.js';
 import {
   chapterNumber,
-  foundationPlace,
   learnOrder,
+  pathPlace,
   placeLabel,
 } from '../content/course.js';
 import { badge, glyph } from './badges.js';
@@ -1032,9 +1032,7 @@ function listenPage(route) {
 function watchPage(route) {
   const video = fieldnoteById(route?.video) || fieldnotes[0];
   const bookOf = (entry) =>
-    foundationPlace(entry.chapter)
-      ? 'Level 100 · Foundations'
-      : chapters[entry.chapter].book;
+    pathPlace(entry.chapter)?.book ?? chapters[entry.chapter].book;
   const minutes = (entry) =>
     `${Math.max(1, Math.round(entry.duration / 60))} min`;
   const books = [];
@@ -1049,7 +1047,7 @@ function watchPage(route) {
     return `<a class="fieldnote-card" href="#watch/${entry.id}"${current ? ' aria-current="page"' : ''} data-watch-play><span class="fieldnote-thumb">${poster ? `<img src="${poster}" alt="" width="${entry.width}" height="${entry.height}" loading="lazy" />` : ''}${current ? '<span class="fieldnote-now">Now playing</span>' : ''}<span class="fieldnote-duration">${minutes(entry)}</span></span><span class="episode-kicker">Fieldnote ${entry.id}</span><b>${escapeHtml(entry.title)}</b><small>${escapeHtml(entry.summary || chapters[entry.chapter].subhead || '')}</small></a>`;
   };
   const lesson = chapters[video.chapter];
-  const place = foundationPlace(video.chapter);
+  const place = pathPlace(video.chapter);
   const lessonLink = `<a href="${routeHref(video.chapter)}">${place ? placeLabel(video.chapter) : `Lesson ${chapterNumber(video.chapter)}`} · ${escapeHtml(lesson.title)} →</a>`;
   const index = fieldnotes.indexOf(video);
   const step = (entry, label) =>

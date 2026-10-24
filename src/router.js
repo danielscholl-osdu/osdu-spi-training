@@ -42,6 +42,14 @@ export const retiredDetails = {
   'bring-up': {
     provider: ['spi-boundary', null, 'azureimpl'],
   },
+  // The maintenance drawer's route lands on spi status, which carries the verdict.
+  'ready-not-loaded': {
+    'load-maintenance': ['ready-not-loaded', null, 'load-status'],
+  },
+  // The report's route lands on the verdict; what a suite proves is a deep dive.
+  'prove-from-desk': {
+    'desk-report': ['prove-from-desk', null, 'desk-verdict'],
+  },
   'fork-day': {
     'release-pr': ['fork-day', 'review', 'integration-pr'],
     'template-pr': ['fork-day', null, 'template-pr'],
@@ -98,7 +106,8 @@ export function parseRoute(hash) {
   const chapter = Object.hasOwn(chapters, resolved) ? resolved : 'start';
   const steps = chapterSteps(chapter);
   const step = steps.includes(requestedStep) ? requestedStep : steps[0] || '';
-  let claim = selectionIndex(params.get('claim'));
+  // A claim index written beside a retired component named the old page's claims.
+  let claim = retired ? null : selectionIndex(params.get('claim'));
   let hop = selectionIndex(params.get('hop'));
   if (claim !== null && hop !== null) {
     claim = null;

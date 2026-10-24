@@ -18,7 +18,19 @@ Codes name the level and the path: 103 is the third foundation episode, S203 the
 | 104  | [The line](104-the-line.md)                       | How does a change reach a running service?              | new, from boards in Fieldnotes 04 and 05      | published |
 | 105  | [Two kinds of work](105-two-kinds-of-work.md)     | Who does what, and which path is mine?                  | new                                           | published |
 
-The service path (S201 to S207), the platform path (P201 to P208), and the library get their tables in the rounds that make them.
+### Level 200: Service path
+
+| Code | Episode                                                    | Question                                                   | From                                          | Status    |
+| ---- | ---------------------------------------------------------- | ---------------------------------------------------------- | --------------------------------------------- | --------- |
+| S201 | [Your own environment](S201-your-own-environment.md)       | How do I get an environment I can use?                     | A new take with Fieldnote 02's footage idioms | published |
+| S202 | [Who is asking](S202-who-is-asking.md)                     | Who does the stack think you are?                          | Fieldnote 09, its two ideas re-voiced         | published |
+| S203 | [Ready is not loaded](S203-ready-is-not-loaded.md)         | What does a new environment hold, and does ingestion work? | Fieldnote 10's body with Fieldnote 11's proof | published |
+| S204 | [Whose image is running](S204-whose-image-is-running.md)   | Which commit does each service run?                        | Fieldnote 08 without its traced example       | published |
+| S205 | [Prove it from your desk](S205-prove-it-from-your-desk.md) | How do I prove a change before a pull request?             | Fieldnote 12, re-cut from a new take          | published |
+| S206 | Ship it through the line                                   | What happens to my change after I open a pull request?     | new                                           | planned   |
+| S207 | Changes that come to you                                   | What does the line ask of me when upstream moves?          | new                                           | planned   |
+
+A service path episode's companion page shows "Service path · N of 7" and its code. The platform path (P201 to P208) and the library get their tables in the rounds that make them.
 
 ### Lesson cuts
 
@@ -37,15 +49,15 @@ The thirteen cuts made one per lesson stay published, with their routes, until t
 
 #### Season 2: Working the stack
 
-Season 1 ends at one authenticated partition lookup by the deploy identity. Season 2 covers what an engineer does with a running core environment on spi 0.32: whose images it runs, who may call it, what data it holds, how ingestion runs, and how to prove a service from a workstation. Each episode is cut from the stack's own decision records and docs and paired with its lesson in the _Working the stack_ book.
+Season 1 ends at one authenticated partition lookup by the deploy identity. Season 2 covers what an engineer does with a running core environment on spi 0.32: whose images it runs, who may call it, what data it holds, how ingestion runs, and how to prove a service from a workstation. Each episode is cut from the stack's own decision records and docs and was paired with its lesson in the _Working the stack_ book; S204, S202, S203 and S205 have since replaced 08, 09, 10 and 12, and 11 keeps its lesson.
 
-| Fieldnote | Episode                 | Covers (osdu-spi-stack)                                                                    | Form        | Storyboard                                                     | Status    |
-| --------- | ----------------------- | ------------------------------------------------------------------------------------------ | ----------- | -------------------------------------------------------------- | --------- |
-| 08        | Whose image is running? | canonical source per service, fork `main` on GHCR, weekday refresh, 21-day age (ADR-033)   | mixed       | [08-whose-image-is-running.md](08-whose-image-is-running.md)   | published |
-| 09        | Who is asking           | `spi users` roles, `spi token --me`, entitlements groups (ADR-039)                         | mixed       | [09-who-is-asking.md](09-who-is-asking.md)                     | published |
-| 10        | Ready is not loaded     | `spi load` and its registry; ready, deployable, loaded, ingesting (ADR-040, ADR-030)       | mixed       | [10-ready-is-not-loaded.md](10-ready-is-not-loaded.md)         | published |
-| 11        | On behalf of you        | core DAGs, registration, `on-behalf-of`, `spi test dags --report` (ADR-044)                | mixed       | [11-on-behalf-of-you.md](11-on-behalf-of-you.md)               | published |
-| 12        | Prove it from your desk | `spi test <service>`, `--report`, `--review`, `spi build`, `pin --source` (ADR-036 to 038) | footage-led | [12-prove-it-from-your-desk.md](12-prove-it-from-your-desk.md) | published |
+| Fieldnote | Episode                 | Covers (osdu-spi-stack)                                                                    | Form        | Storyboard                                                     | Status           |
+| --------- | ----------------------- | ------------------------------------------------------------------------------------------ | ----------- | -------------------------------------------------------------- | ---------------- |
+| 08        | Whose image is running? | canonical source per service, fork `main` on GHCR, weekday refresh, 21-day age (ADR-033)   | mixed       | [08-whose-image-is-running.md](08-whose-image-is-running.md)   | replaced by S204 |
+| 09        | Who is asking           | `spi users` roles, `spi token --me`, entitlements groups (ADR-039)                         | mixed       | [09-who-is-asking.md](09-who-is-asking.md)                     | replaced by S202 |
+| 10        | Ready is not loaded     | `spi load` and its registry; ready, deployable, loaded, ingesting (ADR-040, ADR-030)       | mixed       | [10-ready-is-not-loaded.md](10-ready-is-not-loaded.md)         | replaced by S203 |
+| 11        | On behalf of you        | core DAGs, registration, `on-behalf-of`, `spi test dags --report` (ADR-044)                | mixed       | [11-on-behalf-of-you.md](11-on-behalf-of-you.md)               | published        |
+| 12        | Prove it from your desk | `spi test <service>`, `--report`, `--review`, `spi build`, `pin --source` (ADR-036 to 038) | footage-led | [12-prove-it-from-your-desk.md](12-prove-it-from-your-desk.md) | replaced by S205 |
 
 The season shares one take day: a throwaway core environment on 0.32, which also re-records Fieldnote 02 through Ready and a successful lookup (its 12 October take stalled at 20 of 29 on an image lineage the stack has since retired).
 

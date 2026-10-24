@@ -12,7 +12,7 @@ export const zoomLevels = [
     name: 'Subscription and resource group',
     detail: 'One environment is one resource group, named by --env.',
     example: 'spi-stack-<name>',
-    chapters: ['running-stack', 'bring-up'],
+    chapters: ['running-stack', 'your-environment', 'bring-up'],
     href: '#running-stack/developer?detail=environment',
   },
   {

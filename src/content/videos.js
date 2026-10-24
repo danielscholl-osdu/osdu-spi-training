@@ -206,6 +206,208 @@ export const fieldnotes = [
     notes: [],
   },
   {
+    id: 'S201',
+    chapter: 'your-environment',
+    title: 'Your own environment',
+    duration: 142.5,
+    width: 1920,
+    height: 1080,
+    files: {
+      video: 'fieldnote-S201/video.mp4',
+      poster: 'fieldnote-S201/poster.jpg',
+      captions: 'fieldnote-S201/captions.vtt',
+      chapters: 'fieldnote-S201/chapters.vtt',
+    },
+    chapters: [
+      { time: 20.56, claim: 0 },
+      { time: 47.1, claim: 1 },
+      { time: 77.128, claim: 2 },
+      { time: 98.884, mistake: 'finished-means-ready' },
+    ],
+    cutFrom: {
+      claims: [
+        {
+          headline: 'Check first, then spi up builds your environment',
+          text: 'spi check confirms the tools spi drives and that your Azure sign-in may create resource groups, clusters and role assignments; spi up --env <name> then builds your stack as one resource group in your subscription.',
+        },
+        {
+          headline:
+            'spi up returns before the environment is usable; wait for Deployable',
+          text: 'spi up returns while Flux is still reconciling, so follow the rollout with spi status --watch until its summary reads Deployable, which in this take came 22 minutes after the command returned.',
+        },
+        {
+          headline:
+            'spi info names your endpoints, and spi down gives the environment back',
+          text: 'spi info prints your environment’s base URL and its endpoints, and spi down --env <name> takes the environment down when you are done, keeping its managed identities for the next spi up.',
+        },
+      ],
+      example: null,
+      mistake: {
+        id: 'finished-means-ready',
+        claim: 'The command finished, so it is ready.',
+      },
+      next: 'Who does the stack think you are?',
+    },
+    notes: [],
+  },
+  {
+    id: 'S202',
+    chapter: 'who-is-asking',
+    title: 'Who is asking',
+    duration: 145,
+    width: 1920,
+    height: 1080,
+    files: {
+      video: 'fieldnote-S202/video.mp4',
+      poster: 'fieldnote-S202/poster.jpg',
+      captions: 'fieldnote-S202/captions.vtt',
+      chapters: 'fieldnote-S202/chapters.vtt',
+    },
+    chapters: [
+      { time: 29.474, claim: 0 },
+      { time: 80.916, claim: 1 },
+      { time: 102.608, mistake: 'users-add-accumulates' },
+    ],
+    cutFrom: {
+      claims: [
+        {
+          headline: 'The mesh authenticates and entitlements authorizes',
+          text: 'spi token --me prints your own Azure token; the mesh accepts it and writes your unique_name as the caller, entitlements refuses you with 401 until you are a member, and spi users add --me makes you one and checks with your own token.',
+        },
+        {
+          headline:
+            'A role is a preset of groups, and spi users add replaces it',
+          text: 'A role is one of four presets of groups, and you hold one at a time: viewer is users and users.datalake.viewers; editor, admin and ops each add their own groups and users.datalake.impersonation; and spi users add with another role replaces the one you held.',
+        },
+      ],
+      example: 'From 401 to 200',
+      mistake: {
+        id: 'users-add-accumulates',
+        claim: 'Running spi users add again adds to the role I hold.',
+      },
+      next: 'What does a new environment hold, and does ingestion work?',
+    },
+    notes: [],
+  },
+  {
+    id: 'S203',
+    chapter: 'ready-not-loaded',
+    title: 'Ready is not loaded',
+    duration: 155,
+    width: 1920,
+    height: 1080,
+    files: {
+      video: 'fieldnote-S203/video.mp4',
+      poster: 'fieldnote-S203/poster.jpg',
+      captions: 'fieldnote-S203/captions.vtt',
+      chapters: 'fieldnote-S203/chapters.vtt',
+    },
+    chapters: [
+      { time: 33.918, claim: 0 },
+      { time: 55.906, claim: 1 },
+      { time: 72.606, claim: 2 },
+      { time: 92.77, example: true },
+      { time: 111.814, mistake: 'deployable-means-loaded' },
+    ],
+    cutFrom: {
+      claims: [
+        {
+          headline: 'A Deployable environment holds schemas and no records',
+          text: 'Bring-up registers the schemas and writes no records; reference data, from the community’s data definitions, is loaded by nothing until you run spi load, and spi load refuses to start until the environment is Deployable.',
+        },
+        {
+          headline:
+            'Loaded means Storage accepted the records, not that search finds them',
+          text: 'spi load creates one Job per partition that writes the reference data to Storage; complete means Storage accepted the records, and the indexer may still be working.',
+        },
+        {
+          headline: 'Ingestion writes on behalf of whoever started it',
+          text: 'Deployable does not wait for the DAGs to register, so prove ingestion: a run started with your own token writes on behalf of you, and the stored record’s createUser is you, not the platform.',
+        },
+      ],
+      example: 'spi test dags, as me',
+      mistake: {
+        id: 'deployable-means-loaded',
+        claim: "It's Deployable, so the data is there.",
+      },
+      next: 'Which commit does each service run?',
+    },
+    notes: [],
+  },
+  {
+    id: 'S204',
+    chapter: 'whose-image',
+    title: 'Whose image is running',
+    duration: 134,
+    width: 1920,
+    height: 1080,
+    files: {
+      video: 'fieldnote-S204/video.mp4',
+      poster: 'fieldnote-S204/poster.jpg',
+      captions: 'fieldnote-S204/captions.vtt',
+      chapters: 'fieldnote-S204/chapters.vtt',
+    },
+    chapters: [
+      { time: 28.34, claim: 0 },
+      { time: 69.564, claim: 1 },
+      { time: 91.248, mistake: 'refresh-is-automatic' },
+    ],
+    cutFrom: {
+      claims: [
+        {
+          headline:
+            'The image lock ties each service to one commit and one digest',
+          text: 'At spi up the CLI asks GHCR which digest main-snapshot names for each of thirteen forks and records it in the image lock under the sha tag of the commit that built it; a tag can move, so the lock keeps the digest and its build date, and the pods run the locked digest.',
+        },
+        {
+          headline:
+            'A canonical image ages toward retention until a refresh moves it',
+          text: 'Every image ages from the day it was built, and once it is old enough and main has built past it, GHCR retention can delete it, so spi info and spi status mark an old canonical, and only a refresh moves it.',
+        },
+      ],
+      example: "Follow partition's tag home",
+      mistake: {
+        id: 'refresh-is-automatic',
+        claim: "My environment picks up the fork's new main on its own.",
+      },
+      next: 'How do I prove a change before a pull request?',
+    },
+    notes: [],
+  },
+  {
+    id: 'S205',
+    chapter: 'prove-from-desk',
+    title: 'Prove it from your desk',
+    duration: 132,
+    width: 1920,
+    height: 1080,
+    files: {
+      video: 'fieldnote-S205/video.mp4',
+      poster: 'fieldnote-S205/poster.jpg',
+      captions: 'fieldnote-S205/captions.vtt',
+      chapters: 'fieldnote-S205/chapters.vtt',
+    },
+    chapters: [
+      { time: 27.95, claim: 0 },
+      { time: 53.456, claim: 1 },
+    ],
+    cutFrom: {
+      claims: [
+        {
+          headline: 'spi test runs the suite the deployed commit shipped',
+          text: 'When spi up resolves a service, the lock also records the acceptance image built from the same commit; once the environment is Deployable, spi test pulls that image by digest and runs its suite against your services, and the verdict names the image.',
+        },
+        {
+          headline: 'A local change reaches the environment as a pin',
+          text: 'spi service pin --source builds the JAR from your checkout and the image in the environment’s own registry, pins the service to the image’s digest, and waits until a pod runs it; spi test --source then runs the checkout’s suite, labeled matched when the checkout is at the pin’s commit with a clean tree and unmatched otherwise, and spi service reset puts the canonical back.',
+        },
+      ],
+      example: null,
+      next: 'What happens to my change after I open a pull request?',
+    },
+    notes: [],
+  },
+  {
     id: '02',
     chapter: 'bring-up',
     title: 'How it comes to life',
@@ -486,141 +688,6 @@ export const fieldnotes = [
     notes: [],
   },
   {
-    id: '08',
-    chapter: 'whose-image',
-    title: 'Whose image is running?',
-    duration: 211,
-    width: 1920,
-    height: 1080,
-    files: {
-      video: 'fieldnote-08/video.mp4',
-      poster: 'fieldnote-08/poster.jpg',
-      captions: 'fieldnote-08/captions.vtt',
-      chapters: 'fieldnote-08/chapters.vtt',
-    },
-    chapters: [
-      { time: 46.9, claim: 0 },
-      { time: 76.6, claim: 1 },
-      { time: 99.5, claim: 2 },
-      { time: 131.8, example: true },
-      { time: 160.2, mistake: 'refresh-is-automatic' },
-    ],
-    cutFrom: {
-      claims: [
-        {
-          headline: "Each service runs its Azure fork's main image from GHCR.",
-          text: 'At spi up the CLI asks GHCR which digest main-snapshot names for each of thirteen forks and records it under the sha tag of the commit that built it; schema’s loader comes from the same commit as schema.',
-        },
-        {
-          headline: 'The lock ties each tag to one fork commit and one digest.',
-          text: 'osdu-image-lock records each service’s repository, sha tag, digest, and build date; the tag names a commit on the fork’s main, and the pods run the digest.',
-        },
-        {
-          headline:
-            'A canonical image ages toward retention until a refresh moves it.',
-          text: 'Nothing moves a canonical on its own: spi info and spi status mark one built more than 21 days ago, and the fork’s weekly retention can delete a sha image over 30 days old once main has built past it.',
-        },
-      ],
-      example: "Follow partition's tag home",
-      mistake: {
-        id: 'refresh-is-automatic',
-        claim: "My environment picks up the fork's new main on its own.",
-      },
-      next: 'Who does the stack think you are, and what may you do?',
-    },
-    notes: [],
-  },
-  {
-    id: '09',
-    chapter: 'who-is-asking',
-    title: 'Who is asking',
-    duration: 202,
-    width: 1920,
-    height: 1080,
-    files: {
-      video: 'fieldnote-09/video.mp4',
-      poster: 'fieldnote-09/poster.jpg',
-      captions: 'fieldnote-09/captions.vtt',
-      chapters: 'fieldnote-09/chapters.vtt',
-    },
-    chapters: [
-      { time: 42.5, claim: 0 },
-      { time: 74.4, claim: 1 },
-      { time: 99.2, claim: 2 },
-      { time: 124.1, example: true },
-      { time: 149.6, mistake: 'users-add-accumulates' },
-    ],
-    cutFrom: {
-      claims: [
-        {
-          headline: 'Your own token passes the mesh, and entitlements decides.',
-          text: 'spi token --me prints your own Azure token; the mesh accepts its issuer and writes your unique_name as x-user-id, and entitlements refuses you with 401 until you are a member.',
-        },
-        {
-          headline: 'spi users stores the id the mesh writes, and proves it.',
-          text: 'spi users add --me applies the mesh’s own claim order to your token and stores that id; the deploy identity writes your groups, then the command calls entitlements with your token for up to a minute.',
-        },
-        {
-          headline: 'Only editor, admin and ops can run ingestion as you.',
-          text: 'A role is one of four presets of groups; editor, admin and ops carry users.datalake.impersonation, which lets the stack’s OSDU identity act for you through Workflow, and viewer does not.',
-        },
-      ],
-      example: 'From 401 to 200',
-      mistake: {
-        id: 'users-add-accumulates',
-        claim: 'Running spi users add again adds to the role I hold.',
-      },
-      next: 'When is a new environment ready, open for deploys, and holding data?',
-    },
-    notes: [],
-  },
-  {
-    id: '10',
-    chapter: 'ready-not-loaded',
-    title: 'Ready is not loaded',
-    duration: 227,
-    width: 1920,
-    height: 1080,
-    files: {
-      video: 'fieldnote-10/video.mp4',
-      poster: 'fieldnote-10/poster.jpg',
-      captions: 'fieldnote-10/captions.vtt',
-      chapters: 'fieldnote-10/chapters.vtt',
-    },
-    chapters: [
-      { time: 47.9, claim: 0 },
-      { time: 85.6, claim: 1 },
-      { time: 114.4, claim: 2 },
-      { time: 142.0, example: true },
-      { time: 173.3, mistake: 'deployable-means-loaded' },
-    ],
-    cutFrom: {
-      claims: [
-        {
-          headline:
-            'Deployable is Ready, with maintenance off and bootstrap finished.',
-          text: 'spi status answers two questions: Ready means every gating Flux layer has converged, and Deployable adds maintenance off, a deploy record present, and the members Job finished in every partition.',
-        },
-        {
-          headline: 'A Deployable environment holds schemas and no records.',
-          text: 'Bring-up registers the schemas through a Flux Job behind a gating layer and writes no records; reference data is loaded by nothing until you run spi load.',
-        },
-        {
-          headline:
-            'Loaded means Storage accepted the records, not that search finds them.',
-          text: 'spi load creates one Job per partition that checks every kind against Schema and writes in batches of 500, skipping duplicates; complete means Storage accepted the records, and the indexer may still be working.',
-        },
-      ],
-      example: 'From Ready to 80,103 records',
-      mistake: {
-        id: 'deployable-means-loaded',
-        claim: "It's Deployable, so the data is there.",
-      },
-      next: 'How does a DAG reach the stack, who does each task act as, and how do you know it stored anything?',
-    },
-    notes: [],
-  },
-  {
     id: '11',
     chapter: 'core-dags',
     title: 'On behalf of you',
@@ -664,52 +731,9 @@ export const fieldnotes = [
       },
       next: 'How do you prove a service from your desk?',
     },
-    notes: [],
-  },
-  {
-    id: '12',
-    chapter: 'prove-from-desk',
-    title: 'Prove it from your desk',
-    duration: 223,
-    width: 1920,
-    height: 1080,
-    files: {
-      video: 'fieldnote-12/video.mp4',
-      poster: 'fieldnote-12/poster.jpg',
-      captions: 'fieldnote-12/captions.vtt',
-      chapters: 'fieldnote-12/chapters.vtt',
-    },
-    chapters: [
-      { time: 44.5, claim: 0 },
-      { time: 74.8, claim: 1 },
-      { time: 107.0, claim: 2 },
-      { time: 134.7, example: true },
-      { time: 161.2, mistake: 'passed-means-checked' },
+    notes: [
+      'The end card asks “How do you prove a service from your desk?”, which S205 answers earlier on the service path; this lesson is the last page, so its pager returns to the start.',
     ],
-    cutFrom: {
-      claims: [
-        {
-          headline: 'spi test runs the suite the deployed commit shipped.',
-          text: 'When a canonical is resolved, the lock also records the digest of the acceptance image built from the same commit; spi test runs that image by digest with the descriptor, resolver, and verdict script fetched from the fork at that commit.',
-        },
-        {
-          headline:
-            'A pass counts tests, and the report shows what they prove.',
-          text: 'The verdict is the commit’s own script: a zero exit, at least one test not skipped, and no failures; --report counts the passing tests with empty bodies, and --review grades what each test proves against the service’s own API docs.',
-        },
-        {
-          headline: 'A change on your desk reaches the stack as a local pin.',
-          text: 'spi service pin --source builds the JAR on your machine and the image in the environment’s own registry, pins it by digest, and waits for the rollout; spi test --source then runs your checkout’s suite, labeled matched when its commit and a clean tree equal the pin.',
-        },
-      ],
-      example: 'spi test partition, paired',
-      mistake: {
-        id: 'passed-means-checked',
-        claim: 'The suite passed, so every test checked something.',
-      },
-      next: null,
-    },
-    notes: [],
   },
 ];
 
@@ -724,7 +748,15 @@ export function videoUrl(path) {
 }
 
 // A lesson cut replaced by a curriculum episode keeps its published id.
-export const retiredFieldnotes = { '00': '101', '01': '102', '03': '103' };
+export const retiredFieldnotes = {
+  '00': '101',
+  '01': '102',
+  '03': '103',
+  '08': 'S204',
+  '09': 'S202',
+  10: 'S203',
+  12: 'S205',
+};
 
 export const fieldnoteById = (id) => {
   const current = Object.hasOwn(retiredFieldnotes, id)
