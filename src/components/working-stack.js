@@ -174,3 +174,73 @@ export function yourEnvironmentDiagram() {
     )}
   </div>`;
 }
+
+// S206's page: main's rules, the run that proves the image, and the merge.
+export function shipItDiagram() {
+  return `<div class="work-map">
+    ${zone(
+      'ship-pr',
+      'Your pull request · Azure/osdu-spi-partition',
+      `${node('ship-change', 'Your change', 'From a branch in the fork · the Azure code', 'fork-code')}
+      ${node('ship-rules', 'main’s ruleset', 'Two checks · a code owner · up to date with main')}
+      ${node('ship-codeql', 'CodeQL', 'Required check · its own workflow')}
+      ${node('ship-summary', 'Validation Summary', 'Required check · the build, the image and the lane')}
+      ${node('ship-approval', 'A code owner’s approval', 'After the last push · every thread resolved', 'artifact')}`,
+      'work-outside',
+    )}
+    ${zone(
+      'ship-run',
+      'Validation · GitHub Actions',
+      `${node('ship-build', 'Java Build', 'core,azure · compiles and tests')}
+      ${node('ship-image', 'Docker Push', 'An image named by its digest · GHCR')}
+      ${node('ship-gate', 'Deploy Gate', 'Lets the run borrow the shared stack')}
+      ${arrow('↓ after a person merges')}
+      ${node('ship-push', 'The push to main', 'The merge commit’s own digest · the lane again')}
+      ${node('ship-release', 'A release', 'Later · tags an image that already exists', 'artifact')}`,
+      'work-outside',
+    )}
+    ${zone(
+      'ship-stack',
+      'The shared stack · Azure and AKS',
+      `${node('ship-env', 'The shared environment', 'Must report Deployable before the lane starts')}
+      ${arrow('↓ pins the digest · runs the suites · puts the canonical back')}
+      ${node('ship-lane', 'Deploy and Test', 'Your image in a real stack, before any release')}`,
+    )}
+  </div>${forkLegend}`;
+}
+
+// S207's page: what upstream and the template send, and where a person acts.
+export function changesToYouDiagram() {
+  return `<div class="work-map">
+    ${zone(
+      'chg-sources',
+      'Where the changes come from',
+      `${node('chg-upstream', 'Upstream', 'The community repository the fork follows')}
+      ${node('chg-template', 'The template · Azure/osdu-spi', 'The workflows every fork gets')}`,
+      'work-outside',
+    )}
+    ${zone(
+      'chg-fork',
+      'Your service’s fork · Azure/osdu-spi-partition',
+      `<h4>When upstream moves</h4>
+      ${node('chg-sync', 'Sync', 'Daily · a pull request into fork_upstream')}
+      ${node('chg-issue', 'The tracking issue', 'human-required · cascade-active · validated', 'artifact')}
+      ${node('chg-cascade', 'Cascade', 'Builds the change with the fork’s own code')}
+      ${node('chg-cascade-pr', 'The cascade pull request', 'To main · the full lane · a person merges')}
+      <h4>When the template moves</h4>
+      ${node('chg-template-pr', 'The template sync pull request', 'Daily · one pull request, updated in place')}`,
+      'work-outside',
+    )}
+    ${zone(
+      'chg-main',
+      'Into main',
+      `<h4>Your pull request</h4>
+      ${node('chg-own-path', 'provider/partition-azure/pom.xml', 'A path the fork owns', 'fork-code')}
+      ${node('chg-upstream-file', 'pom.xml', 'From fork_upstream · upstream-owned')}
+      ${node('chg-check-paths', 'Check Paths', 'Fails on an upstream-owned file')}
+      ${node('chg-port', 'The port label', 'Declares a deliberate port · re-run Check Paths')}
+      ${arrow('↓ every pull request to main, the line’s and yours')}
+      ${node('chg-merge', 'A person merges', 'Nothing lands on main without it')}`,
+    )}
+  </div>${forkLegend}`;
+}

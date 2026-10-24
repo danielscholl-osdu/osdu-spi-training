@@ -27,7 +27,8 @@ export const forkMoments = [
     action: 'Merge main, then fork_upstream, into fork_integration',
     detail: 'cascade-run',
     time: 'After the sync PR merges',
-    timeKind: 'Dispatched by a person; the monitor is the six-hour safety net',
+    timeKind:
+      'Dispatched by Cascade Monitor when the sync PR closes; its six-hour schedule is the safety net',
     active: ['fork-upstream', 'fork-integration', 'main-branch'],
   },
   {

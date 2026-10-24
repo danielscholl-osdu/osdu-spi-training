@@ -75,6 +75,8 @@ export const zoomLevels = [
       'handshake',
       'whose-image',
       'prove-from-desk',
+      'ship-it',
+      'changes-to-you',
     ],
     href: '#fork-shape',
   },

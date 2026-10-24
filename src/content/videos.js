@@ -408,6 +408,88 @@ export const fieldnotes = [
     notes: [],
   },
   {
+    id: 'S206',
+    chapter: 'ship-it',
+    title: 'Ship it through the line',
+    duration: 173,
+    width: 1920,
+    height: 1080,
+    files: {
+      video: 'fieldnote-S206/video.mp4',
+      poster: 'fieldnote-S206/poster.jpg',
+      captions: 'fieldnote-S206/captions.vtt',
+      chapters: 'fieldnote-S206/chapters.vtt',
+    },
+    chapters: [
+      { time: 24.658, claim: 0 },
+      { time: 54.918, example: true },
+      { time: 125.502, mistake: 'acceptance-needs-a-release' },
+    ],
+    cutFrom: {
+      claims: [
+        {
+          headline:
+            "A pull request's checks, the lane among them, and a code owner's approval",
+          text: 'Two required checks gate a merge into main, CodeQL and Validation Summary, and Validation Summary speaks for the build, the image and the lane; a code owner approves after the last push, a new push dismisses that approval, and every review thread is resolved.',
+        },
+      ],
+      example: 'one fix, from pull request to main',
+      mistake: {
+        id: 'acceptance-needs-a-release',
+        claim: 'The stack only ever runs released versions of a fork.',
+      },
+      next: 'What does the line ask of me when upstream moves?',
+    },
+    notes: [],
+  },
+  {
+    id: 'S207',
+    chapter: 'changes-to-you',
+    title: 'Changes that come to you',
+    duration: 199.9,
+    width: 1920,
+    height: 1080,
+    files: {
+      video: 'fieldnote-S207/video.mp4',
+      poster: 'fieldnote-S207/poster.jpg',
+      captions: 'fieldnote-S207/captions.vtt',
+      chapters: 'fieldnote-S207/chapters.vtt',
+    },
+    chapters: [
+      { time: 24.694, claim: 0 },
+      { time: 96.71, claim: 1 },
+      { time: 129.23, claim: 2 },
+      { time: 158.782, mistake: 'template-sync-overwrites' },
+    ],
+    cutFrom: {
+      claims: [
+        {
+          headline: "Sync, cascade and the tracking issue's labels",
+          text: 'Once a day sync opens a pull request into fork_upstream and a tracking issue, both labeled human-required; after a person merges it, the cascade starts within seconds, the issue goes cascade-active and then validated, and the cascade opens a pull request to main that gets the full lane and that a person merges. When the cascade cannot finish, the issue goes cascade-blocked and a new human-required issue says what stopped it.',
+        },
+        {
+          headline: 'Upstream-owned files change only with the port label',
+          text: 'A file that comes from fork_upstream is upstream-owned; when your pull request to main changes one, Check Paths fails and the Validation Summary fails with it, unless the pull request carries the port label and Check Paths is re-run, when it names each file as a declared port.',
+        },
+        {
+          headline:
+            'Template sync proposes a pull request; nothing lands until a person merges',
+          text: 'Once a day template sync proposes the template’s changes as one pull request to main labeled template-sync, updated in place if the template moves again, with the template’s whole copy of each changed file on its branch; nothing reaches main until a person merges it.',
+        },
+      ],
+      example: null,
+      mistake: {
+        id: 'template-sync-overwrites',
+        claim:
+          'Template sync will overwrite the workflow change I made in my fork.',
+      },
+      next: 'How is fork_upstream generated?',
+    },
+    notes: [
+      'The end card’s Next is P304, The filter, a deep dive that asks “How is fork_upstream generated?” and has no page yet; this page’s Next leads on to How it comes to life.',
+    ],
+  },
+  {
     id: '02',
     chapter: 'bring-up',
     title: 'How it comes to life',
@@ -685,7 +767,12 @@ export const fieldnotes = [
         },
       ],
     },
-    notes: [],
+    notes: [
+      {
+        chapter: 5,
+        text: 'Template sync’s pull request carries the template’s whole copy of each file it changed, so a local edit to that file shows in its diff as a change to review, and nothing lands on main until a person merges. The recording calls the kept change a review comment.',
+      },
+    ],
   },
   {
     id: '11',

@@ -298,13 +298,15 @@ export const myths = [
     claim:
       'Template sync will overwrite the workflow change I made in my fork.',
     reality:
-      'It opens a pull request. Sync Template compares the template commit range with the fork and proposes the difference as one PR labeled template-sync, updated in place if the template moves again. A local change you want to keep is a review comment, not a lost file.',
+      'It opens a pull request. Once a day Sync Template proposes the template’s changes to main as one pull request labeled template-sync, and updates that same pull request if the template moves again. A local edit you want to keep shows there as a change to review, and nothing lands on main until a person merges.',
     correction:
-      'Template sync proposes workflow changes in a pull request instead of overwriting local files.',
-    check: 'gh pr list --label template-sync',
+      'Template sync proposes the template’s changes in a pull request; nothing lands on main until a person merges it.',
+    check:
+      'gh pr list -R Azure/osdu-spi-partition --label template-sync --state all',
     source: 'templateSync',
-    route: '#fork-day?detail=template-pr',
-    routeLabel: 'The template PR',
+    route: '#changes-to-you?detail=chg-template-pr&claim=2',
+    routeLabel: 'Template sync on the map',
+    here: { 'fork-day': '#fork-day?detail=template-pr' },
   },
   {
     id: 'descriptor-comes-from-template',
@@ -327,14 +329,15 @@ export const myths = [
     theme: 'fork',
     claim: 'The stack only ever runs released versions of a fork.',
     reality:
-      'Every eligible same-repository PR and every push to main or fork_integration pushes a sha-* digest, and Deploy Gate lets that run borrow the stack for it. A release is a later, optional tag on one of those digests. The version PR can sit unmerged for weeks while candidates are proved daily.',
+      'A pull request from a branch in the fork and a push to main or fork_integration each push a sha-* digest when the service changes, and Deploy Gate lets that run borrow the stack for it. The cascade’s own push to fork_integration is the exception: it uses the workflow token, so it starts no run, and an upstream change gets its image from the cascade’s pull request and the push to main. A release comes later: merging its pull request makes a release commit on main, and the release tags that commit’s own image. The release pull request can stay open while each merge is proved. For the push run on main, read its Deploy and Test job beside the latest release.',
     correction:
-      'Eligible pull requests and branch pushes can deploy sha-* images before a release.',
+      'Pull requests from the fork and pushes to main deploy sha-* images in the stack before any release.',
     check:
-      'gh run list --workflow Validation --json headBranch,event,conclusion | head',
+      'gh release list -R Azure/osdu-spi-partition --limit 1\ngh run view <run-id> -R Azure/osdu-spi-partition --json jobs --jq \'.jobs[] | select(.name=="Deploy and Test") | [.name, .conclusion, .completedAt] | @tsv\'',
     source: 'deployTest',
-    route: '#fork-day/prove?detail=stack-slot',
-    routeLabel: 'The prove moment',
+    route: '#ship-it?detail=ship-release',
+    routeLabel: 'The release on the map',
+    here: { 'fork-day': '#fork-day/prove?detail=stack-slot' },
   },
   {
     id: 'validation-summary-means-deployed',

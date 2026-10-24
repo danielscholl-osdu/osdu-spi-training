@@ -912,6 +912,267 @@ export const componentDetails = {
     source: 'imageLock',
     goDeeper: ['localBuilds'],
   },
+  'ship-change': {
+    label: 'GitHub / your branch in the fork',
+    title: 'A branch in the fork gets an image and a turn in the stack.',
+    body: 'A pull request from a branch in Azure/osdu-spi-partition runs Validation with the fork’s deploy identity, so it can push an image and run the lane. A pull request from another repository builds and validates only: its run carries no deploy identity, so it gets no image and no lane. The example’s change was two files under provider/partition-azure, the fork’s own Azure code: AzureIstioSecurityFilter.java and its test.',
+    artifact: {
+      label: 'Is it from a branch in the fork?',
+      code: 'gh pr view <number> -R Azure/osdu-spi-partition --json isCrossRepository',
+    },
+    source: 'validation',
+    goDeeper: ['partitionContributing'],
+  },
+  'ship-rules': {
+    label: 'GitHub / main’s ruleset',
+    title: 'main’s ruleset names two checks and one approval.',
+    body: 'The fork’s Default Branch Protection ruleset requires CodeQL and Validation Summary to pass on a branch that is up to date with main, and one approving review from a code owner after the last push; a new push dismisses an earlier approval, and every review thread must be resolved. The template ships the ruleset, and the fork’s Settings Apply workflow reconciles it on the repository.',
+    artifact: {
+      label: 'Read the rules on main',
+      code: "gh api repos/Azure/osdu-spi-partition/rules/branches/main --jq '.[].type'",
+    },
+    source: 'partitionRuleset',
+    goDeeper: ['validation'],
+  },
+  'ship-codeql': {
+    label: 'GitHub / CodeQL',
+    title: 'CodeQL is the second required check, from its own workflow.',
+    body: 'CodeQL runs in codeql.yml beside Validation and reports one stable CodeQL status, which the ruleset requires; GitHub’s code scanning adds a second CodeQL row with its own result, such as “No new alerts in code changed by this pull request”. Validation Summary also appears twice in gh pr checks: the run that did the work, and a skipped twin from the pull_request_target trigger the workflow did not use for this pull request.',
+    artifact: {
+      label: 'The pull request’s required checks',
+      code: 'gh pr checks <number> -R Azure/osdu-spi-partition --required',
+    },
+    source: 'validation',
+  },
+  'ship-summary': {
+    label: 'GitHub / Validation Summary',
+    title: 'Validation Summary speaks for the build, the image, and the lane.',
+    body: 'It reports after every other Validation job and turns red when the Java build, an image build, the push, or the lane fails; code quality stays advisory. It posts one comment on the pull request and edits it in place on every run: a table of every job with its result and a note on any skip, then one line per suite the lane ran. In the example the comment went red on the first try and green after the re-run.',
+    artifact: {
+      label: 'Read the summary comment',
+      code: 'gh pr view <number> -R Azure/osdu-spi-partition --comments',
+    },
+    source: 'validation',
+  },
+  'ship-approval': {
+    label: 'GitHub / a code owner’s review',
+    title: 'A code owner approves after the last push.',
+    body: 'One approving review is required, from an owner that .github/CODEOWNERS names for the changed paths, and it must come after the most recent push: a new commit dismisses an earlier approval. Every review thread must be resolved before the merge, and the branch must be up to date with main.',
+    artifact: {
+      label: 'Who owns which paths',
+      code: 'gh api repos/Azure/osdu-spi-partition/contents/.github/CODEOWNERS --jq .content | base64 -d',
+    },
+    source: 'partitionCodeowners',
+    goDeeper: ['partitionRuleset'],
+  },
+  'ship-build': {
+    label: 'GitHub Actions / Java Build',
+    title: 'Java Build compiles and tests the Azure profile set.',
+    body: 'Validation builds the service with Maven profiles core and azure and runs its unit tests; in the example it took 2 minutes 54 seconds. A change limited to documentation or configuration skips the Java and container jobs, and the required checks still report.',
+    artifact: {
+      label: 'Build it the same way on your machine',
+      code: 'mvn clean install -P core,azure',
+    },
+    source: 'validation',
+  },
+  'ship-image': {
+    label: 'GitHub Actions / Docker Push',
+    title: 'Docker Push names the image by its digest.',
+    body: 'A run with the fork’s identity pushes the service image to ghcr.io/azure/osdu-spi-partition, and the acceptance image beside it from the same commit. The lane takes the digest, so the image it proves is the one pushed: in the example sha256:0ed8e1e3e406…. The image’s sha-* tag names the commit GitHub tested, which for a pull request is a test merge with main, not the branch’s head.',
+    artifact: {
+      label: 'Find the pushed digest',
+      code: "gh run view <run-id> -R Azure/osdu-spi-partition --log | grep -F 'Image pushed: `ghcr.io/azure/osdu-spi-partition@'",
+    },
+    source: 'validation',
+    goDeeper: ['ghcr'],
+  },
+  'ship-gate': {
+    label: 'GitHub Actions / Deploy Gate',
+    title: 'Deploy Gate decides whether the run may borrow the stack.',
+    body: 'It always reports. It lets the lane run when the fork is onboarded to a stack, carries a .spi/service.yaml, pushed an image, and the run came from the fork itself; otherwise the lane skips and the gate names which of those was missing. Reading a skipped or red lane is a deep dive of its own.',
+    artifact: {
+      label: 'The gate’s result in a run',
+      code: 'gh run view <run-id> -R Azure/osdu-spi-partition --json jobs --jq \'.jobs[] | select(.name=="Deploy Gate") | .conclusion\'',
+    },
+    source: 'deployTest',
+    goDeeper: ['proof'],
+  },
+  'ship-env': {
+    label: 'The shared stack / Deployable',
+    title: 'The lane waits for the shared environment to be Deployable.',
+    body: 'Before it pins anything, Deploy and Test confirms that the shared environment can take a deploy, and gives up after 10 minutes with “environment is not deployable after 10 minutes”. That failure is the environment’s, not the change’s: once the environment reports Deployable, re-run the failed jobs, and the lane runs again on the same image.',
+    artifact: {
+      label: 'Run the failed jobs again',
+      code: 'gh run rerun <run-id> -R Azure/osdu-spi-partition --failed',
+    },
+    source: 'validation',
+    goDeeper: ['deployTest'],
+  },
+  'ship-lane': {
+    label: 'The shared stack / Deploy and Test',
+    title: 'Deploy and Test runs your image in a real stack.',
+    body: 'The lane pins the service to the pushed digest in the shared environment, runs every suite .spi/service.yaml declares against it, and puts the canonical image back. In the example the re-run pinned sha256:0ed8e1e3e406…, passed 11 acceptance and 42 integration tests, and restored partition to canonical. How the lane borrows a service and owns its pin is a deep dive of its own.',
+    artifact: {
+      label: 'The suites the fork declares',
+      code: 'gh api repos/Azure/osdu-spi-partition/contents/.spi/service.yaml --jq .content | base64 -d',
+    },
+    source: 'proof',
+    goDeeper: ['deployTest'],
+  },
+  'ship-push': {
+    label: 'GitHub Actions / the push to main',
+    title: 'The push to main proves the merge commit’s own digest.',
+    body: 'A merge makes a new commit on main, so the push run builds a new image with a new digest and runs the lane on it again. In the example merge commit 5c53ff0 became sha256:a7cb38e2e732…, and its lane passed the same 11 and 42 tests. Every commit that lands on main gets its own image and its own run of the lane the same way.',
+    artifact: {
+      label: 'The latest push run on main',
+      code: 'gh run list -R Azure/osdu-spi-partition --workflow Validation --branch main --event push --limit 1',
+    },
+    source: 'validation',
+    goDeeper: ['proof'],
+  },
+  'ship-release': {
+    label: 'GitHub / a release',
+    title: 'A release tags an image that already exists.',
+    body: 'Release Please keeps a release pull request open on main. Merging it makes a release commit on main, and that commit’s push run builds its own sha-* image; the release workflow waits for that image and adds the version tag to it without rebuilding. No release is needed for a change to reach the shared stack: in the example the fix ran there twice while the release pull request stayed open.',
+    artifact: {
+      label: 'The latest release',
+      code: 'gh release list -R Azure/osdu-spi-partition --limit 1',
+    },
+    source: 'release',
+    goDeeper: ['partitionReleaseWorkflow'],
+  },
+  'chg-upstream': {
+    label: 'Upstream / the community service',
+    title: 'Upstream reaches the fork through fork_upstream.',
+    body: 'The fork never merges the community repository directly. Its fork_upstream branch carries upstream’s code without the Azure provider, and every upstream change reaches the fork as a pull request into that branch. How that branch is generated, and which paths it keeps, is a deep dive of its own.',
+    artifact: {
+      label: 'The commit fork_upstream holds',
+      code: 'gh api repos/Azure/osdu-spi-partition/branches/fork_upstream --jq .commit.sha',
+    },
+    source: 'branches',
+    goDeeper: ['ownership'],
+  },
+  'chg-sync': {
+    label: 'GitHub Actions / Sync',
+    title: 'Sync opens a pull request into fork_upstream and a tracking issue.',
+    body: 'Sync runs daily at midnight UTC. When upstream has moved, it opens one pull request into fork_upstream and a tracking issue, both labeled upstream-sync and human-required, and nothing moves on until a person reviews and merges the pull request. In the episode a one-line upstream change waited almost seventeen hours for that.',
+    artifact: {
+      label: 'Sync pull requests, open and merged',
+      code: 'gh pr list -R Azure/osdu-spi-partition --label upstream-sync --base fork_upstream --state all',
+    },
+    source: 'partitionSyncWorkflow',
+    goDeeper: ['synchronization'],
+  },
+  'chg-issue': {
+    label: 'GitHub / the tracking issue',
+    title: 'The tracking issue’s labels say whose move it is.',
+    body: 'human-required means a person acts: review the sync pull request and merge it. Within seconds of the merge, Cascade Monitor starts the cascade and the issue goes cascade-active, then validated; the cascade’s pull request closes it when a person merges that. When the cascade cannot finish, the issue goes cascade-blocked and a new issue labeled human-required says what stopped it. Why nothing retries while human-required stays is a deep dive of its own.',
+    artifact: {
+      label: 'Recent tracking issues and their labels',
+      code: 'gh issue list -R Azure/osdu-spi-partition --label upstream-sync --state all --limit 3',
+    },
+    source: 'cascadeMonitor',
+    goDeeper: ['humanRequired'],
+  },
+  'chg-cascade': {
+    label: 'GitHub Actions / Cascade Integration',
+    title: 'The cascade builds upstream’s change with the fork’s own code.',
+    body: 'Cascade Integration merges main and then fork_upstream into fork_integration and builds and tests core and azure there. Its own push to fork_integration uses the workflow token, which starts no Validation run; the image and the lane come from the pull request it opens to main and from the push to main after a person merges it. When upstream moved to Java 25 the cascade’s build failed, the fix went to main in the provider’s own pom, and a person ran the cascade again.',
+    artifact: {
+      label: 'Recent cascade runs',
+      code: 'gh run list -R Azure/osdu-spi-partition --workflow cascade.yml --limit 3',
+    },
+    source: 'cascade',
+    goDeeper: ['partitionCascadeWorkflow'],
+  },
+  'chg-cascade-pr': {
+    label: 'GitHub / the cascade pull request',
+    title: 'The cascade’s pull request to main gets the full lane.',
+    body: 'It comes from a release/upstream-* branch, closes the tracking issue, and runs Validation like any pull request to main: Docker Build, Docker Push, Deploy and Test, and Validation Summary. A person approves it and merges it with a merge commit, not a squash, because the next cascade checks that main contains it.',
+    artifact: {
+      label: 'Recent cascade pull requests',
+      code: 'gh pr list -R Azure/osdu-spi-partition --label upstream-sync --base main --state all --limit 3',
+    },
+    source: 'cascade',
+    goDeeper: ['partitionCascadeWorkflow'],
+  },
+  'chg-template-pr': {
+    label: 'GitHub / the template sync pull request',
+    title: 'Template sync proposes one pull request and updates it in place.',
+    body: 'Daily at 08:00 UTC, Sync Template opens a pull request to main titled chore(template-sync) and labeled template-sync. While one is open it force-pushes that branch and retitles the pull request instead of opening another. For each synced file the template changed, the branch holds the template’s whole copy, so a local edit to that file shows in the diff as a change to review; files outside the sync list are never touched.',
+    artifact: {
+      label: 'Every template sync pull request',
+      code: 'gh pr list -R Azure/osdu-spi-partition --label template-sync --state all',
+    },
+    source: 'templateSync',
+    goDeeper: ['partitionTemplateSyncWorkflow'],
+  },
+  'chg-template': {
+    label: 'osdu-spi / the template',
+    title: 'The template owns the workflows every fork gets.',
+    body: 'Azure/osdu-spi holds the workflows, actions, and rulesets each fork receives, listed in its sync configuration. A fork records the template commit it last took in .github/.template-sync-commit, and template sync proposes what the template changed since.',
+    artifact: {
+      label: 'The template commit the fork took last',
+      code: 'gh api repos/Azure/osdu-spi-partition/contents/.github/.template-sync-commit --jq .content | base64 -d',
+    },
+    source: 'workflowSystem',
+    goDeeper: ['templateSync'],
+  },
+  'chg-own-path': {
+    label: 'Fork / provider/partition-azure/pom.xml',
+    title: 'A path the fork owns changes with no label.',
+    body: 'provider/partition-azure and the fork’s other own paths are not on fork_upstream, so Check Paths lets a pull request to main change them. The fix for the Java 25 cascade failure changed only provider/partition-azure/pom.xml, went to main as an ordinary pull request, and carried no label.',
+    artifact: {
+      label: 'Not on fork_upstream: the request returns 404',
+      code: 'gh api "repos/Azure/osdu-spi-partition/contents/provider/partition-azure/pom.xml?ref=fork_upstream"',
+    },
+    source: 'partitionPom',
+    goDeeper: ['ownership'],
+  },
+  'chg-upstream-file': {
+    label: 'Fork / pom.xml from fork_upstream',
+    title: 'A file that comes from fork_upstream is upstream-owned.',
+    body: 'The root pom.xml is on fork_upstream, so it belongs to upstream. A pull request to main that changes it fails Check Paths, as a Dependabot pull request on the root pom did; the change belongs upstream, or in the fork as a declared port.',
+    artifact: {
+      label: 'On fork_upstream: the request returns the file',
+      code: 'gh api "repos/Azure/osdu-spi-partition/contents/pom.xml?ref=fork_upstream" --jq .path',
+    },
+    source: 'ownership',
+  },
+  'chg-check-paths': {
+    label: 'GitHub Actions / Check Paths',
+    title:
+      'Check Paths fails a pull request to main that changes an upstream-owned file.',
+    body: 'It compares the pull request’s changed files with the files on fork_upstream and, without the port label, fails with “Upstream-owned file changed on a PR to main without the port label (ADR-038)”; Validation Summary, a required check, fails with it. Sync’s and the cascade’s own pull requests change upstream-owned files by design and are exempt. Which paths it reads is a deep dive of its own.',
+    artifact: {
+      label: 'The checks on a pull request',
+      code: 'gh pr checks <number> -R Azure/osdu-spi-partition',
+    },
+    source: 'partitionValidateWorkflow',
+    goDeeper: ['validation'],
+  },
+  'chg-port': {
+    label: 'GitHub / the port label',
+    title: 'The port label declares a deliberate port.',
+    body: 'Adding the label starts no run, so re-run Check Paths: it passes and prints “Declared port of an upstream-owned file (port label)” for each file. Use it to bring an upstream fix in early, on purpose. A fork initialized before the label existed creates it once with gh label create port.',
+    artifact: {
+      label: 'Label the pull request, then re-run Check Paths',
+      code: 'gh pr edit <number> -R Azure/osdu-spi-partition --add-label port',
+    },
+    source: 'validation',
+    goDeeper: ['partitionValidateWorkflow'],
+  },
+  'chg-merge': {
+    label: 'GitHub / main',
+    title: 'Nothing lands on main until a person merges.',
+    body: 'The cascade’s pull request, template sync’s, and your own all meet main’s ruleset: CodeQL and Validation Summary, and a code owner’s approval after the last push. Sync’s pull request into fork_upstream waits for a person too. The line opens the pull requests; a person reviews and merges each one.',
+    artifact: {
+      label: 'Open pull requests',
+      code: 'gh pr list -R Azure/osdu-spi-partition',
+    },
+    source: 'partitionRuleset',
+    goDeeper: ['humanRequired'],
+  },
   environment: {
     label: 'The stack boundary',
     title: 'AKS is one part of the environment.',
@@ -1311,7 +1572,7 @@ export const componentDetails = {
   image: {
     label: 'The image, by digest',
     title: 'One Dockerfile, one public package, addressed by digest.',
-    body: 'Validation builds build/Dockerfile on the Microsoft OpenJDK 17 Azure Linux base with the provider JAR and pushes it as ghcr.io/azure/osdu-spi-partition tagged sha-<commit>. The package name is SERVICE_NAME when the repository sets that variable and the repository name otherwise; partition has not set it, so it publishes under its repository name. The stack pins by digest, never by tag, so a retag cannot change what runs. The package must stay public: if its visibility flips, pods fail with ErrImagePull and Settings Apply can only report it.',
+    body: 'Validation builds build/Dockerfile on the Microsoft OpenJDK Azure Linux base for the Java release the root pom declares, 25 for partition, with the provider JAR and pushes it as ghcr.io/azure/osdu-spi-partition tagged sha-<commit>. The package name is SERVICE_NAME when the repository sets that variable and the repository name otherwise; partition has not set it, so it publishes under its repository name. The stack pins by digest, never by tag, so a retag cannot change what runs. The package must stay public: if its visibility flips, pods fail with ErrImagePull and Settings Apply can only report it.',
     artifact: {
       label: 'What leaves the fork',
       code: 'ghcr.io/azure/osdu-spi-partition:sha-<commit>\nghcr.io/azure/osdu-spi-partition@sha256:<digest>\nSERVICE_NAME   (repository variable; unset on partition)',
@@ -1459,7 +1720,7 @@ export const componentDetails = {
   'main-branch': {
     label: 'main',
     title: 'Protected. Two required checks, named exactly.',
-    body: 'main receives the fork-owned fix through an ordinary pull request and the upstream change through the integration PR the cascade opens from release/upstream-*. Both need CodeQL and Validation Summary to pass and a person to approve. Auto-merge is armed with a merge commit, never a squash, because a squash breaks the ancestry check the monitor relies on. The rulesets that say so are reconciled every Monday.',
+    body: 'main receives the fork-owned fix through an ordinary pull request and the upstream change through the integration PR the cascade opens from release/upstream-*. Both need CodeQL and Validation Summary to pass and a person to approve. A person merges the integration PR with a merge commit, never a squash, because a squash breaks the cascade’s ancestry check. The rulesets that say so are reconciled every Monday.',
     artifact: {
       label: 'Required status checks',
       code: 'CodeQL\nValidation Summary',
@@ -1510,7 +1771,7 @@ export const componentDetails = {
   'cascade-run': {
     label: 'Cascade Integration',
     title: 'The first build of the provider against the new shared code.',
-    body: 'The cascade is where the fork-owned fix, already on main, and the upstream change, on fork_upstream, compile together. It is a workflow_dispatch run: a person starts it with the tracking issue number after merging the sync PR, and Cascade Monitor catches a forgotten one within six hours. It merges main first, then fork_upstream, builds -P core,azure with Java 17, and opens the integration PR when the build and tests pass. Coverage is reported, not gated.',
+    body: 'The cascade is where the fork-owned fix, already on main, and the upstream change, on fork_upstream, compile together. Cascade Monitor dispatches it when the sync PR into fork_upstream closes, with its six-hour schedule as the safety net, and a person can also dispatch it with the tracking issue number. It merges main first, then fork_upstream, so a fix on either branch reaches the build, then builds -P core,azure with the JDK the root pom declares, and opens the integration PR when the build and tests pass. Coverage is reported, not gated.',
     artifact: {
       label: 'Cascade build',
       code: "mvn -B clean install -P ${{ vars.MAVEN_PROFILE || 'core,azure' }}",
