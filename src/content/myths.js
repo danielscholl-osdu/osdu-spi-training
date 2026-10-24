@@ -329,7 +329,7 @@ export const myths = [
     theme: 'fork',
     claim: 'The stack only ever runs released versions of a fork.',
     reality:
-      'A pull request from a branch in the fork and a push to main each push a sha-* digest when the service changes, and Deploy Gate lets that run borrow the stack for it. The cascade’s own push to fork_integration starts no run; an upstream change gets its image from the cascade’s pull request and the push to main. A release comes later and tags one of those digests, and its pull request can stay open while each merge is proved. For the push run on main, read its Deploy and Test job beside the latest release.',
+      'A pull request from a branch in the fork and a push to main or fork_integration each push a sha-* digest when the service changes, and Deploy Gate lets that run borrow the stack for it. The cascade’s own push to fork_integration is the exception: it uses the workflow token, so it starts no run, and an upstream change gets its image from the cascade’s pull request and the push to main. A release comes later: merging its pull request makes a release commit on main, and the release tags that commit’s own image. The release pull request can stay open while each merge is proved. For the push run on main, read its Deploy and Test job beside the latest release.',
     correction:
       'Pull requests from the fork and pushes to main deploy sha-* images in the stack before any release.',
     check:

@@ -1209,7 +1209,7 @@ const servicePathPages = [
       /Re-run failed jobs ran the lane again on the same image/,
       /11 acceptance and 42 integration tests/,
       /a new digest/,
-      /cascade’s own push to fork_integration starts no run/,
+      /cascade’s own push to fork_integration is the exception[^.]*starts no run/,
     ],
     never: [
       /sha-76f88812fbf5/,
@@ -1246,10 +1246,10 @@ const servicePathPages = [
   },
 ];
 
-// What the line does on its own, as the S206 and S207 research corrected it.
+// What the line never does on its own.
 const lineNever = [
   /auto-?merg/i,
-  /push(?:es)? to fork_integration (?:runs|starts|triggers) (?:a |the )?(?:Validation|lane)/i,
+  /cascade[^.]*push(?:es)? to fork_integration (?:runs|starts|triggers) (?:a |the )?(?:Validation|lane)/i,
 ];
 
 test('the service path pages keep their storyboard words and homes', () => {
@@ -2214,8 +2214,12 @@ test('the line myths live on the service path, and lesson 05 keeps its own targe
     lane,
     /^gh run view <run-id> -R Azure\/osdu-spi-partition --json jobs .*"Deploy and Test"/,
   );
-  assert.match(release.reality, /fork_integration starts no run/);
-  assert.doesNotMatch(release.reality, /main or fork_integration/);
+  // A person's push to fork_integration runs Validation; the cascade's does not.
+  assert.match(release.reality, /a push to main or fork_integration/);
+  assert.match(
+    release.reality,
+    /cascade’s own push to fork_integration is the exception[^.]*starts no run/,
+  );
   const template = myths.find(({ id }) => id === 'template-sync-overwrites');
   assert.equal(
     template.check,

@@ -937,7 +937,7 @@ export const componentDetails = {
   'ship-codeql': {
     label: 'GitHub / CodeQL',
     title: 'CodeQL is the second required check, from its own workflow.',
-    body: 'CodeQL runs in codeql.yml beside Validation and reports one stable CodeQL status, which the ruleset requires. gh pr checks lists each required check twice for a pull request from a branch in the fork: the run that did the work, and a skipped twin from the trigger the workflow did not use.',
+    body: 'CodeQL runs in codeql.yml beside Validation and reports one stable CodeQL status, which the ruleset requires; GitHub’s code scanning adds a second CodeQL row with its own result, such as “No new alerts in code changed by this pull request”. Validation Summary also appears twice in gh pr checks: the run that did the work, and a skipped twin from the pull_request_target trigger the workflow did not use for this pull request.',
     artifact: {
       label: 'The pull request’s required checks',
       code: 'gh pr checks <number> -R Azure/osdu-spi-partition --required',
@@ -981,7 +981,7 @@ export const componentDetails = {
     body: 'A run with the fork’s identity pushes the service image to ghcr.io/azure/osdu-spi-partition, and the acceptance image beside it from the same commit. The lane takes the digest, so the image it proves is the one pushed: in the example sha256:0ed8e1e3e406…. The image’s sha-* tag names the commit GitHub tested, which for a pull request is a test merge with main, not the branch’s head.',
     artifact: {
       label: 'Find the pushed digest',
-      code: 'gh run view <run-id> -R Azure/osdu-spi-partition --log | grep "Image pushed"',
+      code: "gh run view <run-id> -R Azure/osdu-spi-partition --log | grep -F 'Image pushed: `ghcr.io/azure/osdu-spi-partition@'",
     },
     source: 'validation',
     goDeeper: ['ghcr'],
@@ -1022,7 +1022,7 @@ export const componentDetails = {
   'ship-push': {
     label: 'GitHub Actions / the push to main',
     title: 'The push to main proves the merge commit’s own digest.',
-    body: 'A merge makes a new commit on main, so the push run builds a new image with a new digest and runs the lane on it again. In the example merge commit 5c53ff0 became sha256:a7cb38e2e732…, and its lane passed the same 11 and 42 tests. That digest is the one a release would later tag.',
+    body: 'A merge makes a new commit on main, so the push run builds a new image with a new digest and runs the lane on it again. In the example merge commit 5c53ff0 became sha256:a7cb38e2e732…, and its lane passed the same 11 and 42 tests. Every commit that lands on main gets its own image and its own run of the lane the same way.',
     artifact: {
       label: 'The latest push run on main',
       code: 'gh run list -R Azure/osdu-spi-partition --workflow Validation --branch main --event push --limit 1',
@@ -1033,7 +1033,7 @@ export const componentDetails = {
   'ship-release': {
     label: 'GitHub / a release',
     title: 'A release tags an image that already exists.',
-    body: 'Release Please keeps a release pull request open on main; when a person merges it, the release workflow adds the version tag to the image the push run already built and proved. No release is needed for a change to reach the shared stack: in the example the fix ran there twice while the release pull request stayed open.',
+    body: 'Release Please keeps a release pull request open on main. Merging it makes a release commit on main, and that commit’s push run builds its own sha-* image; the release workflow waits for that image and adds the version tag to it without rebuilding. No release is needed for a change to reach the shared stack: in the example the fix ran there twice while the release pull request stayed open.',
     artifact: {
       label: 'The latest release',
       code: 'gh release list -R Azure/osdu-spi-partition --limit 1',
@@ -1057,8 +1057,8 @@ export const componentDetails = {
     title: 'Sync opens a pull request into fork_upstream and a tracking issue.',
     body: 'Sync runs daily at midnight UTC. When upstream has moved, it opens one pull request into fork_upstream and a tracking issue, both labeled upstream-sync and human-required, and nothing moves on until a person reviews and merges the pull request. In the episode a one-line upstream change waited almost seventeen hours for that.',
     artifact: {
-      label: 'Open sync pull requests',
-      code: 'gh pr list -R Azure/osdu-spi-partition --label upstream-sync',
+      label: 'Sync pull requests, open and merged',
+      code: 'gh pr list -R Azure/osdu-spi-partition --label upstream-sync --base fork_upstream --state all',
     },
     source: 'partitionSyncWorkflow',
     goDeeper: ['synchronization'],
@@ -1572,7 +1572,7 @@ export const componentDetails = {
   image: {
     label: 'The image, by digest',
     title: 'One Dockerfile, one public package, addressed by digest.',
-    body: 'Validation builds build/Dockerfile on the Microsoft OpenJDK 17 Azure Linux base with the provider JAR and pushes it as ghcr.io/azure/osdu-spi-partition tagged sha-<commit>. The package name is SERVICE_NAME when the repository sets that variable and the repository name otherwise; partition has not set it, so it publishes under its repository name. The stack pins by digest, never by tag, so a retag cannot change what runs. The package must stay public: if its visibility flips, pods fail with ErrImagePull and Settings Apply can only report it.',
+    body: 'Validation builds build/Dockerfile on the Microsoft OpenJDK Azure Linux base for the Java release the root pom declares, 25 for partition, with the provider JAR and pushes it as ghcr.io/azure/osdu-spi-partition tagged sha-<commit>. The package name is SERVICE_NAME when the repository sets that variable and the repository name otherwise; partition has not set it, so it publishes under its repository name. The stack pins by digest, never by tag, so a retag cannot change what runs. The package must stay public: if its visibility flips, pods fail with ErrImagePull and Settings Apply can only report it.',
     artifact: {
       label: 'What leaves the fork',
       code: 'ghcr.io/azure/osdu-spi-partition:sha-<commit>\nghcr.io/azure/osdu-spi-partition@sha256:<digest>\nSERVICE_NAME   (repository variable; unset on partition)',
@@ -1720,7 +1720,7 @@ export const componentDetails = {
   'main-branch': {
     label: 'main',
     title: 'Protected. Two required checks, named exactly.',
-    body: 'main receives the fork-owned fix through an ordinary pull request and the upstream change through the integration PR the cascade opens from release/upstream-*. Both need CodeQL and Validation Summary to pass and a person to approve. Auto-merge is armed with a merge commit, never a squash, because a squash breaks the ancestry check the monitor relies on. The rulesets that say so are reconciled every Monday.',
+    body: 'main receives the fork-owned fix through an ordinary pull request and the upstream change through the integration PR the cascade opens from release/upstream-*. Both need CodeQL and Validation Summary to pass and a person to approve. A person merges the integration PR with a merge commit, never a squash, because a squash breaks the cascade’s ancestry check. The rulesets that say so are reconciled every Monday.',
     artifact: {
       label: 'Required status checks',
       code: 'CodeQL\nValidation Summary',
@@ -1771,7 +1771,7 @@ export const componentDetails = {
   'cascade-run': {
     label: 'Cascade Integration',
     title: 'The first build of the provider against the new shared code.',
-    body: 'The cascade is where the fork-owned fix, already on main, and the upstream change, on fork_upstream, compile together. It is a workflow_dispatch run: a person starts it with the tracking issue number after merging the sync PR, and Cascade Monitor catches a forgotten one within six hours. It merges main first, then fork_upstream, builds -P core,azure with Java 17, and opens the integration PR when the build and tests pass. Coverage is reported, not gated.',
+    body: 'The cascade is where the fork-owned fix, already on main, and the upstream change, on fork_upstream, compile together. Cascade Monitor dispatches it when the sync PR into fork_upstream closes, with its six-hour schedule as the safety net, and a person can also dispatch it with the tracking issue number. It merges main first, then fork_upstream, so a fix on either branch reaches the build, then builds -P core,azure with the JDK the root pom declares, and opens the integration PR when the build and tests pass. Coverage is reported, not gated.',
     artifact: {
       label: 'Cascade build',
       code: "mvn -B clean install -P ${{ vars.MAVEN_PROFILE || 'core,azure' }}",

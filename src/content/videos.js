@@ -767,7 +767,12 @@ export const fieldnotes = [
         },
       ],
     },
-    notes: [],
+    notes: [
+      {
+        chapter: 5,
+        text: 'Template sync’s pull request carries the template’s whole copy of each file it changed, so a local edit to that file shows in its diff as a change to review, and nothing lands on main until a person merges. The recording calls the kept change a review comment.',
+      },
+    ],
   },
   {
     id: '11',

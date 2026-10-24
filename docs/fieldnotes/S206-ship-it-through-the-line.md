@@ -43,7 +43,7 @@ A page for S206, made from this storyboard:
 - Question: "What happens to my change after I open a pull request?"
 - Claim 1, "A pull request's checks, the lane among them, and a code owner's approval": "Two required checks gate a merge into main, CodeQL and Validation Summary, and Validation Summary speaks for the build, the image and the lane; a code owner approves after the last push, a new push dismisses that approval, and every review thread is resolved."
 - Example, _One fix, from pull request to main_: a one-line fix in the fork's Azure code, from a branch in the fork, built and pushed as an image named by its digest; its lane's first try failed because the shared environment wasn't ready, and Re-run failed jobs passed on the same image; after the merge, the push run built the merge commit's own digest and ran the lane again. A pull request from another repository builds, but gets no image and no lane.
-- Easy mistake: "The stack only ever runs released versions of a fork." (`acceptance-needs-a-release`, owner fork). Its check on the page should match the episode: `gh release list -R <fork> --limit 1` beside the push run's Deploy and Test on `main`; the myth's current `check` (`gh run list --workflow Validation …`) has no `-R` and prints conclusions, which do not show that a lane ran (take notes).
+- Easy mistake: "The stack only ever runs released versions of a fork." (`acceptance-needs-a-release`, owner fork). Its check is the episode's pair: `gh release list -R Azure/osdu-spi-partition --limit 1` beside the push run's Deploy and Test job on `main`, read with `gh run view <run-id> -R Azure/osdu-spi-partition --json jobs`.
 - Reading a red lane, the Note column's reasons and `validation-summary-means-deployed` are S305's; borrowing and run-owned pins are P205's. The page names them only in the drawer.
 
 ## Take notes
@@ -55,7 +55,7 @@ A page for S206, made from this storyboard:
 - **The approval:** the episode teaches the rule from the live ruleset and never shows #197's reviews, its review decision or its merge box. The card's approval row is a rule with no status. (#197 merged with `reviewDecision` `REVIEW_REQUIRED` through a ruleset bypass, as most October merges did; research S206 section 5.)
 - **The image** is named by its digest on screen, never by the `sha-76f88812fbf5` tag, which names GitHub's test-merge commit for the pull request, not its head.
 - **Masks:** the shared environment's name as `<name>`; no host, region, tenant or subscription id, login, email or personal name survives the extract; the author, reviewers and the workflow's bot never appear. Digests are cut to twelve hex characters. Run and job ids, commit ids and the repository name are public and stay.
-- **The myth's check** in `myths.js` should become the pair the episode shows; until it does, the companion page quotes the episode's check.
+- **The myth's check** in `myths.js` is the pair the episode shows: the latest release, and the push run's Deploy and Test job on `main`. A run's conclusion alone does not show that a lane ran.
 - **Pointers:** "You proved your change from your desk" is the episode's only use of S205; `six-stations` and `line-and-product` are named by the strip and "a person must approve", not retaught. No line speaks an episode code.
 
 ## Review the cut

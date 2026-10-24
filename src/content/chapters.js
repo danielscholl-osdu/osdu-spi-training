@@ -506,7 +506,7 @@ export const chapters = {
               click: 'Open build/Dockerfile.',
               touch: { kind: 'reads', note: 'reads the fork’s source' },
               expect:
-                'The image receives the already-built JAR through COPY ${JAR_FILE} /app.jar. Maven does not run here. The OpenJDK 17 base runs that JAR, which contains both the shared code and the Azure provider.',
+                'The image receives the already-built JAR through COPY ${JAR_FILE} /app.jar. Maven does not run here. The OpenJDK base for the Java release the root pom declares runs that JAR, which contains both the shared code and the Azure provider.',
               sources: ['partitionDockerfile'],
             },
             {
@@ -974,7 +974,7 @@ export const chapters = {
       {
         headline: 'A fork owns only a few of its paths.',
         text: 'A service fork owns its Azure provider, its Azure tests, and the files that describe it; its workflows come from the template, and the community’s code is regenerated from upstream every day.',
-        why: 'Partition’s CONTRIBUTING.md names three owners: the fork’s own paths, the template’s .github/, build/, and release configuration, and the community’s shared code. Template sync overwrites the template’s files and sync regenerates the community’s, so a change to either belongs in the template or upstream.',
+        why: 'Partition’s CONTRIBUTING.md names three owners: the fork’s own paths, the template’s .github/, build/, and release configuration, and the community’s shared code. Template sync proposes the template’s copy of its files in a pull request and sync regenerates the community’s, so a change to either belongs in the template or upstream.',
         focus: ['line-own', 'line-template', 'line-community'],
         scopes: ['line-fork'],
         evidence: 'line-own',
