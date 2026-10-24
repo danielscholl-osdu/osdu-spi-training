@@ -462,6 +462,123 @@ export const componentDetails = {
     },
     source: 'imageLock',
   },
+  'env-check': {
+    label: 'Your workstation / spi check',
+    title: 'spi check reads your tools and what your sign-in may create.',
+    body: 'It lists the five tools spi drives, az, bicep, kubectl, kubelogin, and flux, with each version, then reads the Azure role assignments of the account az is signed in as: whether it may create resource groups, AKS clusters, and role assignments, and remove role assignments. It exits 1 when a tool is missing or a permission is not granted, and names which.',
+    artifact: {
+      label: 'Check before you build',
+      code: 'az login\nspi check',
+    },
+    source: 'install',
+    goDeeper: ['cli'],
+  },
+  'env-up': {
+    label: 'Your workstation / spi up',
+    title: 'spi up returns while Flux is still at work.',
+    body: 'spi up --env <name> creates or reuses the resource group spi-stack-<name>, builds the cluster and the Azure data services in it, and hands the cluster to Flux. Its last lines say Flux is reconciling in the background and, on the default branch, that the environment is deployable after convergence; with --tag the line reads maintenance enabled instead. A successful exit means the build went through without a fatal error, not that an API answers.',
+    artifact: {
+      label: 'Build your environment',
+      code: 'spi up --env <name>',
+    },
+    source: 'cli',
+    goDeeper: ['lifecycle'],
+  },
+  'env-status': {
+    label: 'Your workstation / spi status --watch',
+    title: 'spi status --watch rewrites its summary every 30 seconds.',
+    body: 'Each refresh reads the cluster and prints a summary whose verdict line reads Deployable, or Not deployable followed by what holds it back. In the take behind this page the first summary, six seconds after spi up returned, read Not deployable, and Deployable came 22 minutes later. Ctrl+C stops the watch; spi status without --watch exits 0 only when the environment is Deployable.',
+    artifact: {
+      label: 'Follow the rollout',
+      code: 'spi status --watch',
+    },
+    source: 'statusView',
+    goDeeper: ['statusContract'],
+  },
+  'env-deployable': {
+    label: 'spi status / the verdict',
+    title: 'Deployable is the word to wait for.',
+    body: 'The verdict reads Deployable once spi status finds the environment able to take a deploy, and until then Not deployable with the first thing holding it back. How the verdict is computed belongs to How it comes to life. Deployable says nothing about records: a new environment holds schemas and no reference data until you load it.',
+    artifact: {
+      label: 'The verdict as data',
+      code: 'spi status --json | jq .deployable',
+    },
+    source: 'statusContract',
+  },
+  'env-info': {
+    label: 'Your workstation / spi info',
+    title: 'spi info names where your environment answers.',
+    body: 'It prints the Base URL and OSDU APIs lines, then an Endpoints table: the gateway, where the OSDU APIs answer, with Kibana and Airflow beside it. Until ingress has an address, the Base URL line says it is not yet available. spi info --show-apis lists every OSDU API’s URL, such as partition’s under /api/partition/v1/.',
+    artifact: {
+      label: 'List every API',
+      code: 'spi info --show-apis',
+    },
+    source: 'cli',
+    goDeeper: ['gateway'],
+  },
+  'env-down': {
+    label: 'Your workstation / spi down',
+    title: 'spi down deletes the group’s resources and keeps the identities.',
+    body: 'spi down --env <name> deletes every resource in spi-stack-<name> except the managed identities, in dependency order, removes the kubeconfig context, and leaves the group holding only the identities and its tags. It asks you to type y unless you pass --force, and gives up after 45 minutes. spi down --purge also removes the identities’ grants outside the group and deletes the group itself.',
+    artifact: {
+      label: 'Give the environment back',
+      code: 'spi down --env <name>',
+    },
+    source: 'teardown',
+    goDeeper: ['cli'],
+  },
+  'env-group': {
+    label: 'Azure / resource group spi-stack-<name>',
+    title: 'Your environment is one resource group in your subscription.',
+    body: 'spi up names the group spi-stack-<name> from --env and tags it, so a later spi up or spi down finds the same environment. The cluster, Cosmos DB, Storage, Service Bus, Key Vault, and the managed identities all sit in it; the cluster’s nodes run in a second, managed nodes group that Azure creates for AKS.',
+    artifact: {
+      label: 'Find your group',
+      code: 'az group show --name spi-stack-<name>',
+    },
+    source: 'lifecycle',
+    goDeeper: ['architecture'],
+  },
+  'env-cluster': {
+    label: 'Azure / AKS and the data services',
+    title: 'The cluster and the data services sit side by side.',
+    body: 'The group holds an AKS Automatic cluster beside Cosmos DB, Storage, Service Bus, and Key Vault, and the services in the cluster reach them with Workload Identity. spi down deletes all of them and their data, so the next spi up starts from empty data under the same names.',
+    artifact: {
+      label: 'List what the group holds',
+      code: 'az resource list --resource-group spi-stack-<name> -o table',
+    },
+    source: 'architecture',
+  },
+  'env-identities': {
+    label: 'Azure / managed identities',
+    title: 'The managed identities outlive spi down.',
+    body: 'Teardown leaves the user-assigned managed identities standing with the group and its tags, so a rebuild never rotates the deploy identity’s client id and the next spi up reuses them. In the take behind this page, the group held five identities after spi down. Only spi down --purge removes them, after removing their role assignments outside the group.',
+    artifact: {
+      label: 'Remove the environment completely',
+      code: 'spi down --env <name> --purge',
+    },
+    source: 'teardown',
+  },
+  'env-flux': {
+    label: 'AKS / Flux',
+    owner: 'Flux',
+    title: 'Flux keeps working after spi up returns.',
+    body: 'spi up pins Flux to the resolved commit of the stack’s branch and returns while Flux is still applying it, so workloads and setup Jobs keep arriving after the command exits. spi reconcile moves the environment to the latest commit on the branch when you want it.',
+    artifact: {
+      label: 'Move to the branch’s latest commit',
+      code: 'spi reconcile',
+    },
+    source: 'flux',
+  },
+  'env-gateway': {
+    label: 'AKS / the gateway',
+    title: 'Every call reaches your environment through one gateway.',
+    body: 'spi info’s Base URL is the gateway’s address: the OSDU APIs answer under /api/, and Kibana and Airflow sit beside them. A call still needs a token; plain spi token acts as the platform’s deploy identity, and calling as yourself is the subject of Who is asking.',
+    artifact: {
+      label: 'One authenticated lookup',
+      code: 'curl -H "Authorization: Bearer $(spi token)" https://<api-host>/api/partition/v1/partitions/opendes',
+    },
+    source: 'gateway',
+  },
   'ask-me-token': {
     label: 'Your workstation / your own token',
     title: 'spi token --me prints your own Azure token.',
@@ -680,9 +797,8 @@ export const componentDetails = {
   },
   'desk-guards': {
     label: 'Your workstation / before the suite',
-    title:
-      'spi test runs only on a Deployable environment and an unborrowed service.',
-    body: 'The run refuses while spi status reports the environment not deployable, and refuses with service_borrowed, naming the run id, while an ephemeral pin holds the service. It reads the service’s lock entry, its pods’ digest, and its rollout revision before the suite and again after; a change discards the result as target_changed. spi test holds no lease.',
+    title: 'spi test runs only on a Deployable environment.',
+    body: 'The run refuses with not_deployable while spi status reports the environment not deployable, and with service_borrowed, naming the run id, while a fork run’s ephemeral pin holds the service. It reads the service’s lock entry, its pods’ digest, and its rollout revision before the suite and again after; a change discards the result as target_changed. spi test holds no lease.',
     artifact: {
       label: 'Bind and stop, without a verdict',
       code: 'spi test partition --dry-run',
@@ -702,8 +818,8 @@ export const componentDetails = {
   },
   'desk-commit': {
     label: 'GitHub / the deployed commit',
-    title: 'The commit supplies the descriptor, the resolver, and the verdict.',
-    body: 'The CLI resolves the lock’s short sha to the full commit through the GitHub commits API and fetches .spi/service.yaml, the acceptance resolver, and suite-verdict.py at that commit. It never reads the descriptor itself; the resolver runs with facts from spi info. Each paired run makes one commit lookup and three file fetches, against an anonymous limit of 60 requests an hour without gh authentication or GH_TOKEN.',
+    title: 'One commit builds the service image and its suite.',
+    body: 'The fork’s template builds the service image and its acceptance image from the same commit, and spi info shows that commit as the service’s sha tag. For a paired run the CLI resolves the lock’s short sha to the full commit through the GitHub commits API and fetches .spi/service.yaml, the acceptance resolver, and suite-verdict.py at that commit: one lookup and three file fetches, against an anonymous limit of 60 requests an hour without gh authentication or GH_TOKEN.',
     artifact: {
       label: 'Files fetched at the commit',
       code: '.spi/service.yaml\n.github/actions/acceptance-resolver/resolve.py\n.github/actions/acceptance-image/suite-verdict.py',
@@ -727,14 +843,14 @@ export const componentDetails = {
     body: 'spi test pulls the acceptance image for linux/amd64 by the recorded digest and runs it with docker run, passing only an env file and SUITE_DIR. The CLI mints the deploy, member, and no-access callers through the path spi token uses. On Apple Silicon the image runs under emulation. Paired mode needs Docker, which spi check does not cover.',
     artifact: {
       label: 'Run the acceptance suite',
-      code: 'spi test partition --report',
+      code: 'spi test partition',
     },
     source: 'deployedSuites',
   },
   'desk-verdict': {
     label: 'Your workstation / the verdict',
-    title: 'The verdict is the commit’s own script, and it counts tests.',
-    body: 'suite-verdict.py passes a run with a zero exit, at least one test not skipped, and no failures or errors. The exit code is 0 passed, 3 the suite ran and failed, 2 not run or discarded, and 1 not run for any other reason. With --report the run also writes spi-test-<service>-<suites>.html under the system temporary directory.',
+    title: 'The verdict names the image it ran.',
+    body: 'The last line reads pass or fail with the counts, then what ran: paired and the acceptance digest, or checkout, matched or unmatched, and the commit. In one run partition read pass: 11 tests, 1 skipped, paired with sha256:7fbfeeed…. The verdict is the commit’s own suite-verdict.py, and the exit code is 0 passed, 3 the suite ran and failed, 2 not run or discarded, and 1 not run for any other reason.',
     artifact: {
       label: 'Exit codes',
       code: '0 passed · 3 failed · 2 not run or discarded · 1 other',
@@ -742,34 +858,46 @@ export const componentDetails = {
     source: 'deployedSuites',
     goDeeper: ['suiteReport'],
   },
-  'desk-report': {
-    label: 'Your workstation / --report and --review',
-    title: 'Hollow counts the passing tests that prove nothing.',
-    body: 'JUnit reports a test whose body holds no statement as a pass. --report finds those empty tests in the suite’s own sources and sends nothing anywhere. --review sends the sources and the run’s facts to a reviewer (copilot -p), which grades each test against the service’s api-docs: 0 nothing, 1 the status, 2 the body or headers, 3 state read back. Without a review, Hollow counts only the empty tests, and the scoreboard marks the service not reviewed. Neither option changes a verdict or an exit code.',
-    artifact: {
-      label: 'Report and review every suite',
-      code: 'spi test partition --suite all --report --review',
-    },
-    source: 'suiteReport',
-  },
   'desk-checkout': {
     label: 'Your workstation / your checkout',
-    title: 'Your checkout builds on your machine and tests the same way.',
-    body: 'spi service pin <service> --source <path> runs Maven on the host (clean install -P core,azure -DskipTests), builds the image with az acr run for linux/amd64, pins it by digest, and waits for the rollout. spi test <service> --source <path> then runs the checkout’s own descriptor and suite with native mvn, labeled matched when its commit equals the pin and the tree is clean, unmatched otherwise. Checkout mode needs a JDK and Maven.',
+    title:
+      'spi service pin --source builds your checkout into your environment.',
+    body: 'spi service pin <service> --source <path> runs Maven on the host (clean install -P core,azure -DskipTests), builds the image with az acr run for linux/amd64 in the environment’s registry, pins it by digest, and waits until a pod runs the build. Checkout mode needs a JDK and Maven and paired mode needs Docker; spi check covers neither.',
     artifact: {
-      label: 'Pin your change, then test it',
-      code: 'spi service pin partition --source <path>\nspi test partition --source <path>',
+      label: 'Pin your checkout',
+      code: 'spi service pin partition --source <path>',
     },
     source: 'localBuilds',
     goDeeper: ['deployedSuites'],
+  },
+  'desk-source-test': {
+    label: 'Your workstation / spi test --source',
+    title: 'Matched means the checkout is the commit the pod runs.',
+    body: 'spi test <service> --source <path> runs the checkout’s own descriptor and suite with native mvn against your environment. The verdict reads matched when the checkout’s HEAD is the deployed commit and git status --porcelain is empty, and unmatched otherwise; for a local pin the deployed commit is the pin’s source commit. An unmatched run still passes or fails on its tests, and its pass proves nothing about the commit the pod runs.',
+    artifact: {
+      label: 'Test the checkout you pinned',
+      code: 'spi test partition --source <path>',
+    },
+    source: 'deployedSuites',
+    goDeeper: ['forkDeploy'],
+  },
+  'desk-reset': {
+    label: 'Your workstation / spi service reset',
+    title: 'spi service reset puts the canonical image back.',
+    body: 'Until the reset, spi service list shows the pin as a local build of your checkout’s commit with its digest. spi service reset <service> restores the canonical lock entries exactly, waits for the rollout, and reports the service restored to its canonical image; spi service list then reads No services are pinned.',
+    artifact: {
+      label: 'Reset, then check',
+      code: 'spi service reset partition\nspi service list',
+    },
+    source: 'localBuilds',
   },
   'desk-registry': {
     label: 'Azure / the environment’s container registry',
     title: 'A local build lands in your environment’s own registry.',
     body: 'The image is <registry>/local/<service>, tagged sha-<12>, sha-<12>-dirty when the tree had uncommitted changes, or -prebuilt when Maven did not write the JAR in the same run. The pin records origin local, and the cluster pulls as its kubelet identity with AcrPull. A local pin refuses while a fork run borrows the service. Nothing prunes local/ repositories.',
     artifact: {
-      label: 'Put the canonical back',
-      code: 'spi service reset partition',
+      label: 'See the pin',
+      code: 'spi service list',
     },
     source: 'localBuilds',
   },
@@ -778,8 +906,8 @@ export const componentDetails = {
     title: 'The pods follow the lock, canonical or pinned.',
     body: 'A local pin overwrites the service’s lock keys and records the canonical image in the lock annotation; Flux renders the new digest and the pods roll. spi service reset restores the canonical entries exactly. A paired spi test refuses a pinned service with unpaired, so a local pin is tested with --source.',
     artifact: {
-      label: 'See active pins',
-      code: 'spi service list',
+      label: 'See what each pod runs',
+      code: 'spi status',
     },
     source: 'imageLock',
     goDeeper: ['localBuilds'],

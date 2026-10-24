@@ -46,6 +46,10 @@ export const retiredDetails = {
   'ready-not-loaded': {
     'load-maintenance': ['ready-not-loaded', null, 'load-status'],
   },
+  // S205's page leaves what a suite proves to its deep dive; the verdict stays.
+  'prove-from-desk': {
+    'desk-report': ['prove-from-desk', null, 'desk-verdict'],
+  },
   'fork-day': {
     'release-pr': ['fork-day', 'review', 'integration-pr'],
     'template-pr': ['fork-day', null, 'template-pr'],

@@ -60,10 +60,12 @@ export const chapters = {
       {
         label: 'Service path',
         lessons: {
+          'your-environment': 'How do I get an environment I can use?',
           'who-is-asking': 'Who does the stack think you are?',
           'ready-not-loaded':
             'What does a new environment hold, and does ingestion work?',
           'whose-image': 'Which commit does each service run?',
+          'prove-from-desk': 'How do I prove a change before a pull request?',
         },
       },
       {
@@ -90,7 +92,6 @@ export const chapters = {
         label: 'Working the stack',
         lessons: {
           'core-dags': 'On behalf of you',
-          'prove-from-desk': 'Prove it from your desk',
         },
       },
     ],
@@ -1228,6 +1229,63 @@ export const chapters = {
       },
     ],
   },
+  'your-environment': {
+    kind: 'map',
+    group: 'learn',
+    book: 'Service path',
+    title: 'Your own environment',
+    subtitle: 'spi up, Deployable, and spi down',
+    subhead:
+      'spi up returns before the environment is usable, and spi status says when it is Deployable.',
+    intro:
+      '<p>Your own environment is one resource group in your subscription: spi up builds it, Flux finishes it, and spi down gives it back.</p><p>Builds on the stack as one resource group from 102 and the service path you chose in 105. This view works at the subscription and resource group level: the CLI on your workstation, the resource group it builds, and Flux finishing the work in its cluster.</p>',
+    figure: 'From spi check to Deployable, and back with spi down',
+    selected: 'env-up',
+    diagram: 'yourEnvironment',
+    guides: [],
+    listen: [],
+    mistakes: ['finished-means-ready'],
+    scope:
+      'One environment of your own on the default branch. How spi up builds it step by step, and how spi status decides Deployable, belong to How it comes to life. This map is illustrative, executes nothing, and reports no live state.',
+    sources: ['install', 'cli', 'statusView', 'teardown', 'lifecycle'],
+    question: 'How do I get an environment I can use?',
+    builds:
+      'Builds on the stack as one resource group from 102 and the service path you chose in 105.',
+    where:
+      'Subscription and resource group: the CLI on your workstation, the resource group spi up builds, and Flux finishing the work in its cluster.',
+    goal: 'You can build an environment of your own, tell when it is usable, find where it answers, and give it back.',
+    outcomes: [
+      {
+        headline: 'Check first, then spi up builds your environment',
+        text: 'spi check confirms the tools spi drives and that your Azure sign-in may create resource groups, clusters and role assignments; spi up --env <name> then builds your stack as one resource group in your subscription.',
+        why: 'spi check exits 1 and names what is missing when a tool is absent or your sign-in lacks a permission, before anything is created. spi up names the group spi-stack-<name>, and the cluster and the Azure data services sit in it side by side.',
+        focus: ['env-check', 'env-up', 'env-group', 'env-cluster'],
+        scopes: ['env-azure'],
+        crossing: 'spi check → spi up → one resource group',
+        evidence: 'env-up',
+      },
+      {
+        headline:
+          'spi up returns before the environment is usable; wait for Deployable',
+        text: 'spi up returns while Flux is still reconciling, so follow the rollout with spi status --watch until its summary reads Deployable, which in this take came 22 minutes after the command returned.',
+        why: 'spi up’s own last lines say Flux is reconciling in the background and the environment is deployable after convergence. spi status --watch refreshes every 30 seconds, and its summary reads Not deployable, naming what holds it back, until it turns to Deployable.',
+        focus: ['env-up', 'env-flux', 'env-status', 'env-deployable'],
+        scopes: ['env-running'],
+        crossing: 'spi up returns → Flux keeps working → Deployable',
+        evidence: 'env-status',
+      },
+      {
+        headline:
+          'spi info names your endpoints, and spi down gives the environment back',
+        text: 'spi info prints your environment’s base URL and its endpoints, and spi down --env <name> takes the environment down when you are done, keeping its managed identities for the next spi up.',
+        why: 'The gateway is where the OSDU APIs answer, with Kibana and Airflow beside it. spi down deletes everything else in the resource group and leaves the managed identities standing, so the next spi up reuses them; it asks you to confirm unless you pass --force.',
+        focus: ['env-info', 'env-gateway', 'env-down', 'env-identities'],
+        scopes: ['env-azure'],
+        crossing: 'spi info → the gateway · spi down → the identities stay',
+        evidence: 'env-down',
+      },
+    ],
+  },
   'who-is-asking': {
     kind: 'map',
     group: 'learn',
@@ -1430,7 +1488,7 @@ export const chapters = {
     listen: [],
     mistakes: ['refresh-is-automatic'],
     scope:
-      'Canonical images only; pins are lesson 06’s subject. The tag, commit, and digest in the example are the values one environment showed. This map is illustrative, executes nothing, and reports no live state.',
+      'Canonical images only; a local pin is the subject of Prove it from your desk, and a fork run’s pin of lesson 06. The tag, commit, and digest in the example are the values one environment showed. This map is illustrative, executes nothing, and reports no live state.',
     sources: ['images', 'imageLock', 'imagePins', 'envRefresh'],
     question: 'Which commit does each service run?',
     builds: 'Builds on the line from 104 and an environment of your own.',
@@ -1500,6 +1558,66 @@ export const chapters = {
       ],
       note: 'The values are the ones one environment showed; yours name other commits and digests. This site executes nothing and reports no live state.',
     },
+  },
+  'prove-from-desk': {
+    kind: 'map',
+    group: 'learn',
+    book: 'Service path',
+    title: 'Prove it from your desk',
+    subtitle: 'spi test and local pins',
+    subhead:
+      'spi test runs the suite your deployed commit shipped, and your own change reaches the environment as a pin.',
+    intro:
+      '<p>spi test runs a service’s own acceptance suite against your environment, and a pin takes your change there before a pull request.</p><p>Builds on a Deployable environment of your own and the image lock from Whose image is running. This view works where the code comes from: the service fork at the deployed commit, your checkout, and the image lock, registry, and pods in your environment.</p>',
+    figure: 'One commit, from the fork or your desk to the pods',
+    selected: 'desk-run',
+    diagram: 'proveFromDesk',
+    guides: [],
+    listen: [],
+    mistakes: [],
+    scope:
+      'Service acceptance suites run from a workstation against your own environment. What a passing suite proves, test by test, is a deep dive of its own. This map is illustrative, executes nothing, and reports no live state.',
+    sources: ['deployedSuites', 'localBuilds', 'imageLock', 'suiteReport'],
+    question: 'How do I prove a change before a pull request?',
+    builds:
+      'Builds on a Deployable environment of your own and the image lock from Whose image is running.',
+    where:
+      'Where the code comes from: the service fork at the deployed commit, your checkout, and the image lock, registry, and pods in your environment.',
+    goal: 'You can run the suite your deployed commit shipped, take a change from your checkout to your environment as a pin, and tell whether a pass proves the commit the pod runs.',
+    outcomes: [
+      {
+        headline: 'spi test runs the suite the deployed commit shipped',
+        text: 'When spi up resolves a service, the lock also records the acceptance image built from the same commit; once the environment is Deployable, spi test pulls that image by digest and runs its suite against your services, and the verdict names the image.',
+        why: 'The fork builds the service image and its acceptance image from one commit, and the lock pairs them, so the image the verdict names is the suite that commit shipped. spi info shows the same commit as the service’s tag.',
+        focus: [
+          'desk-lock',
+          'desk-commit',
+          'desk-acceptance',
+          'desk-guards',
+          'desk-run',
+          'desk-verdict',
+        ],
+        scopes: ['desk-github'],
+        crossing: 'Lock → paired image → your machine → verdict',
+        evidence: 'desk-run',
+      },
+      {
+        headline: 'A local change reaches the environment as a pin',
+        text: 'spi service pin --source builds the JAR from your checkout and the image in the environment’s own registry, pins the service to the image’s digest, and waits until a pod runs it; spi test --source then runs the checkout’s suite, labeled matched when the checkout is at the pin’s commit with a clean tree and unmatched otherwise, and spi service reset puts the canonical back.',
+        why: 'spi service list shows the pin as a local build of your checkout’s commit. An unmatched pass proves nothing about the commit the pod runs, so commit the change and pin again before you trust it.',
+        focus: [
+          'desk-checkout',
+          'desk-registry',
+          'desk-lock',
+          'desk-pods',
+          'desk-source-test',
+          'desk-reset',
+        ],
+        scopes: ['desk-environment'],
+        crossing: 'Checkout → environment registry → lock → pods',
+        evidence: 'desk-registry',
+      },
+    ],
   },
   'bring-up': {
     kind: 'map',
@@ -2208,101 +2326,6 @@ export const chapters = {
         },
       ],
       note: 'Both Workflow runs and the new record are retained; repeated checks create new evidence. To check an existing run, read its record from Storage instead. This site executes nothing. CI does not run this smoke against a live cluster.',
-    },
-  },
-  'prove-from-desk': {
-    kind: 'map',
-    group: 'learn',
-    book: 'Working the stack',
-    title: 'Prove it from your desk',
-    subtitle: 'spi test, reports, and local pins',
-    subhead:
-      'spi test runs the suite the deployed commit shipped, the report says what its tests prove, and a local build reaches the environment as a pin you can test the same way.',
-    intro:
-      '<p>spi test runs a service’s own suite from your workstation against the commit your environment runs; a local pin proves a change before a pull request.</p><p>Builds on the image lock and the temporary test deployment from lesson 06, and the canonical images from Whose image is running. This view works where the code comes from: the service fork at the deployed commit, your workstation, and the lock, registry, and pods in your environment.</p>',
-    figure: 'One commit, from the fork to your desk to the pods',
-    selected: 'desk-run',
-    diagram: 'proveFromDesk',
-    guides: [],
-    listen: [],
-    mistakes: ['passed-means-checked'],
-    scope:
-      'Service acceptance suites run from a workstation; spi test dags is lesson 11’s. The commit and counts in the example are from one run. This map is illustrative, executes nothing, and reports no live state.',
-    sources: ['deployedSuites', 'suiteReport', 'localBuilds', 'imageLock'],
-    question: 'How do you prove a service from your desk?',
-    builds:
-      'Builds on the image lock and the temporary test deployment from lesson 06, and the canonical images from Whose image is running.',
-    where:
-      'Where the code comes from: the service fork at the deployed commit, your workstation, and the image lock, registry, and pods in your environment.',
-    goal: 'You can run the suite a deployed commit shipped, read what a pass does and does not prove, and test a local change the same way.',
-    outcomes: [
-      {
-        headline: 'spi test runs the suite the deployed commit shipped.',
-        text: 'When a canonical is resolved, the lock also records the digest of the acceptance image built from the same commit; spi test runs that image by digest with the descriptor, resolver, and verdict script fetched from the fork at that commit.',
-        why: 'The run refuses unless the environment is Deployable and the service is not borrowed, mints the test callers the way spi token does, and discards its result if the target changed during the suite. A pin, a non-canonical entry, or no recorded acceptance digest refuses paired mode.',
-        focus: [
-          'desk-lock',
-          'desk-commit',
-          'desk-acceptance',
-          'desk-guards',
-          'desk-run',
-        ],
-        scopes: ['desk-github'],
-        crossing: 'Lock → fork commit → paired image → your machine',
-        evidence: 'desk-run',
-      },
-      {
-        headline: 'A pass counts tests, and the report shows what they prove.',
-        text: 'The verdict is the commit’s own script: a zero exit, at least one test not skipped, and no failures; --report counts the passing tests with empty bodies, and --review grades what each test proves against the service’s own API docs.',
-        why: 'JUnit reports a test with an empty body as a pass. --report computes its facts on your machine and sends nothing; --review sends the suite’s sources to a reviewer. Neither changes the verdict or the exit code.',
-        focus: ['desk-verdict', 'desk-report'],
-        scopes: ['desk-workstation'],
-        crossing: 'Verdict → --report → --review',
-        evidence: 'desk-report',
-      },
-      {
-        headline: 'A change on your desk reaches the stack as a local pin.',
-        text: 'spi service pin --source builds the JAR on your machine and the image in the environment’s own registry, pins it by digest, and waits for the rollout; spi test --source then runs your checkout’s suite, labeled matched when its commit and a clean tree equal the pin.',
-        why: 'The pin records origin local and refuses while a fork run borrows the service. A dirty or prebuilt build is labeled unmatched. spi service reset puts the canonical back. Checkout mode needs a JDK and Maven; paired mode needs Docker; spi check covers neither.',
-        focus: ['desk-checkout', 'desk-registry', 'desk-lock', 'desk-pods'],
-        scopes: ['desk-environment'],
-        crossing: 'Checkout → environment registry → lock → pods',
-        evidence: 'desk-registry',
-      },
-    ],
-    example: {
-      title: 'spi test partition, paired',
-      code: 'spi test partition --report',
-      scopes: ['desk-workstation'],
-      crossing: 'Guards → lock → GitHub at the commit → paired image → verdict',
-      hops: [
-        {
-          detail: 'desk-guards',
-          label: 'Guards',
-          copy: 'The environment is Deployable and partition is not borrowed. The CLI reads the target: the lock entry, the pods’ digest, and the rollout revision.',
-        },
-        {
-          detail: 'desk-lock',
-          label: 'Image lock',
-          copy: 'The lock gives the commit, sha-8aa26ca007ad, and the acceptance digest recorded beside it, sha256:7fbfeeed….',
-        },
-        {
-          detail: 'desk-commit',
-          label: 'GitHub at the commit',
-          copy: 'At the full commit, Azure/osdu-spi-partition gives .spi/service.yaml, the acceptance resolver, and suite-verdict.py.',
-        },
-        {
-          detail: 'desk-run',
-          label: 'Paired image',
-          copy: 'docker run pulls partition-acceptance by digest as linux/amd64 and runs the acceptance suite against the environment.',
-        },
-        {
-          detail: 'desk-verdict',
-          label: 'Verdict and page',
-          copy: 'The commit’s verdict: pass, 11 tests and 1 skipped. The CLI reads the target again, and --report writes spi-test-partition-acceptance.html.',
-        },
-      ],
-      note: 'The commit and counts are from one run; that run was not reviewed. This site executes nothing and reports no live state.',
     },
   },
   watch: {

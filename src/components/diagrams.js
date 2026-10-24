@@ -12,6 +12,7 @@ import {
   whoIsAskingDiagram,
   readyNotLoadedDiagram,
   proveFromDeskDiagram,
+  yourEnvironmentDiagram,
 } from './working-stack.js';
 
 function spiBoundaryDiagram() {
@@ -377,6 +378,7 @@ export const diagramRenderers = {
   fork: forkShapeDiagram,
   forkDay: forkDayDiagram,
   seam: seamDiagram,
+  yourEnvironment: yourEnvironmentDiagram,
   whoseImage: whoseImageDiagram,
   whoIsAsking: whoIsAskingDiagram,
   readyNotLoaded: readyNotLoadedDiagram,

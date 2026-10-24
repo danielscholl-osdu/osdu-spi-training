@@ -144,6 +144,7 @@ export const episodes = [
     teaches: ['wait-for-deployable'],
     uses: ['stack-is-a-resource-group'],
     mistakes: ['finished-means-ready'],
+    video: 'S201',
   },
   {
     code: 'S202',
@@ -199,6 +200,7 @@ export const episodes = [
     teaches: ['suite-from-deployed-commit', 'local-change-as-pin'],
     uses: ['wait-for-deployable'],
     mistakes: [],
+    video: 'S205',
   },
   {
     code: 'S206',

@@ -542,6 +542,18 @@ export const sources = {
     path: '.github/workflows/env-refresh.yml',
     href: 'https://github.com/Azure/osdu-spi-stack/blob/main/.github/workflows/env-refresh.yml',
   },
+  statusView: {
+    label: 'spi status: the summary and its verdict',
+    repo: 'osdu-spi-stack',
+    path: 'src/spi/status.py',
+    href: 'https://github.com/Azure/osdu-spi-stack/blob/main/src/spi/status.py',
+  },
+  teardown: {
+    label: 'spi down keeps the managed identities',
+    repo: 'osdu-spi-stack',
+    path: 'src/spi/teardown.py',
+    href: 'https://github.com/Azure/osdu-spi-stack/blob/main/src/spi/teardown.py',
+  },
   peopleAccess: {
     label: 'People join entitlements through the CLI',
     repo: 'osdu-spi-stack',

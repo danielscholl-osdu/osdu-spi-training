@@ -41,8 +41,9 @@ export const myths = [
       'A successful spi up exit proves orchestration completed, not that an API is ready.',
     check: 'spi status --watch',
     source: 'lifecycle',
-    route: '#bring-up/inspect?detail=readiness',
-    routeLabel: 'Readiness signals',
+    route: '#your-environment?detail=env-status&claim=1',
+    routeLabel: 'spi status on the map',
+    here: { 'bring-up': '#bring-up/inspect?detail=readiness' },
   },
   {
     id: 'suspended-means-frozen',
@@ -391,8 +392,8 @@ export const myths = [
       "A passing suite can hold tests that prove nothing; the report's Hollow count, with --review, says how many.",
     check: 'spi test partition --suite all --report --review',
     source: 'suiteReport',
-    route: '#prove-from-desk?detail=desk-report&claim=1',
-    routeLabel: 'The report on the map',
+    route: '#prove-from-desk?detail=desk-verdict&claim=0',
+    routeLabel: 'The verdict on the map',
   },
 ];
 

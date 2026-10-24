@@ -404,6 +404,15 @@ function mythlessCurriculumLesson(key) {
   );
 }
 
+// A curriculum page may go without a running example when its cut traces none.
+function untracedCurriculumLesson(key) {
+  const video = fieldnoteFor(key);
+  return (
+    curriculumEpisodes.some((episode) => video && episode.video === video.id) &&
+    !video.chapters.some(({ example }) => example)
+  );
+}
+
 test('chapters connect to renderers, explanations, and named sources', () => {
   for (const [id, chapter] of Object.entries(chapters)) {
     for (const field of ['title', 'subtitle'])
@@ -448,10 +457,11 @@ test('chapters connect to renderers, explanations, and named sources', () => {
       );
     const example = chapter.example;
     assert.ok(
-      example?.title && example.code && example.hops?.length >= 3,
+      (example?.title && example.code && example.hops?.length >= 3) ||
+        (!example && untracedCurriculumLesson(id)),
       `${id}: running example`,
     );
-    for (const hop of example.hops) {
+    for (const hop of example?.hops || []) {
       const step = hop.step || example.step || steps[0] || '';
       const markup = diagramRenderers[chapter.diagram](
         parseRoute(`#${id}${step ? `/${step}` : ''}`),
@@ -1020,166 +1030,34 @@ test('core DAG lesson preserves storyboard claims and Keep it true qualification
   );
 });
 
-// The season 2 lessons beside core-dags, each cut from its storyboard.
-const workingStackLessons = [
+const servicePathPages = [
   {
-    key: 'prove-from-desk',
-    storyboard: '12-prove-it-from-your-desk.md',
-    diagram: 'proveFromDesk',
-    prefix: 'desk-',
-    level: 'source',
-    myth: ['passed-means-checked', 'fork', 'seam', 'suiteReport'],
+    key: 'your-environment',
+    storyboard: 'S201-your-own-environment.md',
+    diagram: 'yourEnvironment',
+    prefix: 'env-',
+    level: 'subscription',
+    myth: ['finished-means-ready', 'flux', 'readiness', 'lifecycle'],
     sources: {
-      deployedSuites: 'docs/decisions/036-spi-test-runs-the-deployed-commit.md',
-      suiteReport: 'docs/decisions/037-spi-test-reports-what-a-suite-proves.md',
+      cli: 'src/spi/cli.py',
+      statusView: 'src/spi/status.py',
+      teardown: 'src/spi/teardown.py',
     },
     keep: [
-      /acceptance image built from the same commit/,
-      /descriptor, resolver, and verdict script fetched from the fork at that commit/,
-      /Deployable and the service is not borrowed/,
-      /discards its result if the target changed/,
-      /a zero exit, at least one test not skipped, and no failures/,
-      /sends nothing/,
-      /Neither changes the verdict or the exit code/,
-      /matched when its commit and a clean tree equal the pin/,
-      /spi check covers neither/,
-      /that run was not reviewed/,
+      /one resource group in your subscription/,
+      /Flux is reconciling in the background/,
+      /deployable after convergence/,
+      /every 30 seconds/,
+      /Not deployable/,
+      /keeping its managed identities for the next spi up/,
+      /spi down --purge/,
     ],
-    never: [
-      /the CLI decides/i,
-      /revisit this later|Istio is changing|fifteen/i,
-      /spi test dags --as/,
+    never: [/\b\d+ of \d+\b|\d+\/\d+ ready/, /\bSUSPENDED\b/i],
+    moved: [
+      /phase|Flux layer|\blayers?\b|Kustomization|gating|maintenance|--tag/i,
+      /--purge|client id/i,
     ],
   },
-];
-
-test('Working the stack lessons keep their storyboard words and rungs', () => {
-  for (const lesson of workingStackLessons) {
-    const chapter = chapters[lesson.key];
-    const storyboard = readFileSync(
-      new URL(`../docs/fieldnotes/${lesson.storyboard}`, import.meta.url),
-      'utf8',
-    );
-    const proposal = storyboard.slice(storyboard.indexOf('## Proposed lesson'));
-    assert.equal(chapter.book, 'Working the stack', lesson.key);
-    assert.equal(chapter.diagram, lesson.diagram, lesson.key);
-    assert.ok(proposal.includes(`**Title:** ${chapter.title}`), lesson.key);
-    assert.ok(proposal.includes(`**Subhead:** ${chapter.subhead}`), lesson.key);
-    assert.ok(
-      proposal.includes(`**Question:** ${chapter.question}`),
-      lesson.key,
-    );
-    assert.equal(chapter.outcomes.length, 3, lesson.key);
-    for (const [index, claim] of chapter.outcomes.entries()) {
-      assert.ok(
-        proposal.includes(`${index + 1}. ${claim.headline}`),
-        `${lesson.key}: headline ${index + 1}`,
-      );
-      assert.ok(
-        storyboard.includes(`**${claim.headline}**`),
-        `${lesson.key}: chapter ${index + 1}`,
-      );
-      verifyRoute(
-        `#${lesson.key}?detail=${claim.evidence}&claim=${index}`,
-        `${lesson.key} claim`,
-      );
-    }
-    assert.ok(
-      storyboard.includes(`**Example: ${chapter.example.title}**`),
-      `${lesson.key}: example title`,
-    );
-    assert.ok(
-      proposal.includes(
-        `_${chapter.example.title}_, \`${chapter.example.code}\``,
-      ),
-      `${lesson.key}: example command`,
-    );
-    assert.equal(chapter.lesson, undefined, lesson.key);
-    assert.equal(chapter.tryIt, undefined, lesson.key);
-    const cut = fieldnoteFor(lesson.key);
-    if (cut) assert.equal(cut.chapter, lesson.key, `${lesson.key}: its cut`);
-    assert.ok(
-      zoomLevels
-        .find(({ id }) => id === lesson.level)
-        .chapters.includes(lesson.key),
-      `${lesson.key}: rung`,
-    );
-
-    const [id, owner, theme, source] = lesson.myth;
-    const myth = myths.find((entry) => entry.id === id);
-    assert.deepEqual(chapter.mistakes, [id], lesson.key);
-    assert.equal(myth.owner, owner, id);
-    assert.equal(myth.theme, theme, id);
-    assert.equal(myth.source, source, id);
-    assert.equal(mythTool(myth.check), 'spi', id);
-    assert.ok(storyboard.includes(`Claim: "${myth.claim}"`), `${id}: claim`);
-    assert.ok(
-      storyboard.includes(`**Easy mistake: ${myth.claim}**`),
-      `${id}: chapter title`,
-    );
-    assert.ok(storyboard.includes(`Check: \`${myth.check}\``), `${id}: check`);
-    verifyRoute(myth.route, `${id} route`);
-    assert.ok(myth.route.startsWith(`#${lesson.key}?`), `${id}: local route`);
-    const callout = mythCallout(id, lesson.key);
-    assert.match(callout, /data-map-jump/);
-    assert.ok(callout.includes(mythChips(myth)), `${id}: chips`);
-
-    const html = diagramRenderers[lesson.diagram]();
-    const ids = [...html.matchAll(/data-detail="([^"]+)"/g)].map(
-      (match) => match[1],
-    );
-    assert.equal(new Set(ids).size, ids.length, lesson.key);
-    assert.ok(ids.length <= 12, `${lesson.key}: as small as core-dags`);
-    for (const detailId of ids) {
-      assert.ok(detailId.startsWith(lesson.prefix), detailId);
-      verifySourceRecord(
-        componentDetails[detailId].source,
-        sources[componentDetails[detailId].source],
-      );
-    }
-    assert.deepEqual(
-      [...ids].sort(),
-      Object.keys(componentDetails)
-        .filter((key) => key.startsWith(lesson.prefix))
-        .sort(),
-      `${lesson.key}: every explanation is on the map`,
-    );
-    for (const [key, path] of Object.entries(lesson.sources)) {
-      assert.equal(sources[key].repo, 'osdu-spi-stack', key);
-      assert.equal(
-        sources[key].href,
-        `https://github.com/Azure/osdu-spi-stack/blob/main/${path}`,
-        key,
-      );
-      verifySourceRecord(key, sources[key]);
-    }
-
-    const copy = [
-      chapter.intro,
-      chapter.scope,
-      chapter.example.note,
-      ...chapter.outcomes.flatMap(({ text, why }) => [text, why]),
-      ...chapter.example.hops.map(({ copy: hop }) => hop),
-      myth.reality,
-      myth.correction,
-      html,
-      ...ids.flatMap((detailId) => [
-        componentDetails[detailId].title,
-        componentDetails[detailId].body,
-      ]),
-    ].join(' ');
-    for (const pattern of lesson.keep)
-      assert.match(copy, pattern, `${lesson.key}: keeps ${pattern}`);
-    for (const pattern of [
-      ...lesson.never,
-      /\b20\d\d-\d\d-\d\d\b|\b(?:January|February|March|April|May|June|July|August|September|October|November|December)\b/,
-      /still (?:carries|holds|ships)|plans to|has begun/,
-    ])
-      assert.doesNotMatch(copy, pattern, `${lesson.key}: avoids ${pattern}`);
-  }
-});
-
-const servicePathPages = [
   {
     key: 'who-is-asking',
     storyboard: 'S202-who-is-asking.md',
@@ -1267,6 +1145,37 @@ const servicePathPages = [
       /trusted mirror|canonical-source|community registry/i,
     ],
   },
+  {
+    key: 'prove-from-desk',
+    storyboard: 'S205-prove-it-from-your-desk.md',
+    diagram: 'proveFromDesk',
+    prefix: 'desk-',
+    level: 'source',
+    myth: null,
+    sources: {
+      deployedSuites: 'docs/decisions/036-spi-test-runs-the-deployed-commit.md',
+      localBuilds:
+        'docs/decisions/038-local-builds-pin-from-the-environment-registry.md',
+    },
+    keep: [
+      /acceptance image built from the same commit/,
+      /pulls that image by digest/,
+      /the verdict names the image/,
+      /labeled matched when the checkout is at the pin’s commit with a clean tree/,
+      /proves nothing about the commit the pod runs/,
+      /spi check covers neither/,
+      /spi service reset puts the canonical/,
+    ],
+    never: [
+      /the CLI decides/i,
+      /spi test dags --as/,
+      /unmatched (?:run|pass) fail/i,
+    ],
+    moved: [
+      /--report|--review|Hollow|scoreboard|suite-verdict|verdict script/i,
+      /borrow/i,
+    ],
+  },
 ];
 
 test('the service path pages keep their storyboard words and homes', () => {
@@ -1319,17 +1228,24 @@ test('the service path pages keep their storyboard words and homes', () => {
         `${page.key} claim`,
       );
     }
-    assert.ok(
-      companion.includes(
-        straight(`_${chapter.example.title}_, \`${chapter.example.code}\``),
-      ),
-      `${page.key}: example`,
-    );
-    assert.equal(
-      video.chapters.some(({ example }) => example),
-      storyboard.includes(`**Example: ${chapter.example.title}**`),
-      `${page.key}: an example chapter only where the episode traces it`,
-    );
+    if (chapter.example) {
+      assert.ok(
+        companion.includes(
+          straight(`_${chapter.example.title}_, \`${chapter.example.code}\``),
+        ),
+        `${page.key}: example`,
+      );
+      assert.equal(
+        video.chapters.some(({ example }) => example),
+        storyboard.includes(`**Example: ${chapter.example.title}**`),
+        `${page.key}: an example chapter only where the episode traces it`,
+      );
+    } else
+      assert.ok(
+        !video.chapters.some(({ example }) => example) &&
+          !storyboard.includes('**Example: '),
+        `${page.key}: no example on the page or in the episode`,
+      );
     assert.ok(
       zoomLevels
         .find(({ id }) => id === page.level)
@@ -1337,31 +1253,42 @@ test('the service path pages keep their storyboard words and homes', () => {
       `${page.key}: rung`,
     );
 
-    const [id, owner, theme, source] = page.myth;
+    // Only the home episode's easy mistake appears; a mythless episode shows none.
+    const [id, owner, theme, source] = page.myth || [];
     const myth = myths.find((entry) => entry.id === id);
-    assert.deepEqual(chapter.mistakes, [id], page.key);
-    assert.deepEqual(episode.mistakes, [id], page.key);
-    assert.equal(myth.owner, owner, id);
-    assert.equal(myth.theme, theme, id);
-    assert.equal(myth.source, source, id);
-    assert.equal(mythTool(myth.check), 'spi', id);
-    assert.ok(
-      companion.includes(
-        straight(
-          `Easy mistake: "${myth.claim}" (\`${id}\`, checked with \`${myth.check}\`)`,
-        ),
-      ),
-      `${id}: companion page`,
-    );
-    assert.ok(
-      storyboard.includes(`**Easy mistake: ${myth.claim}**`),
-      `${id}: chapter title`,
-    );
-    verifyRoute(myth.route, `${id} route`);
-    assert.ok(myth.route.startsWith(`#${page.key}?`), `${id}: local route`);
-    const callout = mythCallout(id, page.key);
-    assert.match(callout, /data-map-jump/);
-    assert.ok(callout.includes(mythChips(myth)), `${id}: chips`);
+    assert.deepEqual(chapter.mistakes, id ? [id] : [], page.key);
+    assert.deepEqual(episode.mistakes, id ? [id] : [], page.key);
+    if (!id) {
+      assert.ok(companion.includes('No easy mistake'), `${page.key}: none`);
+      assert.ok(
+        !video.chapters.some(({ mistake }) => mistake) &&
+          !storyboard.includes('**Easy mistake: '),
+        `${page.key}: no easy mistake in the episode`,
+      );
+    } else {
+      assert.equal(myth.owner, owner, id);
+      assert.equal(myth.theme, theme, id);
+      assert.equal(myth.source, source, id);
+      assert.equal(mythTool(myth.check), 'spi', id);
+      const line = companion
+        .split('\n')
+        .find((text) =>
+          text.includes(`Easy mistake: "${straight(myth.claim)}" (\`${id}\``),
+        );
+      assert.ok(
+        line?.includes(`checked with \`${myth.check}\`)`),
+        `${id}: companion page`,
+      );
+      assert.ok(
+        storyboard.includes(`**Easy mistake: ${myth.claim}**`),
+        `${id}: chapter title`,
+      );
+      verifyRoute(myth.route, `${id} route`);
+      assert.ok(myth.route.startsWith(`#${page.key}?`), `${id}: local route`);
+      const callout = mythCallout(id, page.key);
+      assert.match(callout, /data-map-jump/);
+      assert.ok(callout.includes(mythChips(myth)), `${id}: chips`);
+    }
 
     const html = diagramRenderers[page.diagram]();
     const ids = [...html.matchAll(/data-detail="([^"]+)"/g)].map(
@@ -1409,10 +1336,10 @@ test('the service path pages keep their storyboard words and homes', () => {
     const copy = [
       surface,
       chapter.scope,
-      chapter.example.note,
-      ...chapter.example.hops.map(({ copy: hop }) => hop),
-      myth.reality,
-      myth.correction,
+      chapter.example?.note ?? '',
+      ...(chapter.example?.hops || []).map(({ copy: hop }) => hop),
+      myth?.reality ?? '',
+      myth?.correction ?? '',
       html,
       ...ids.flatMap((detailId) => [
         componentDetails[detailId].title,
@@ -1425,7 +1352,7 @@ test('the service path pages keep their storyboard words and homes', () => {
       ...page.never,
       /\b20\d\d-\d\d-\d\d\b|\b(?:January|February|March|April|May|June|July|August|September|October|November|December)\b/,
       /still (?:carries|holds|ships)|plans to|has begun/,
-      /\b(?:lessons?|views?) (?:08|09|10)\b/i,
+      /\b(?:lessons?|views?) (?:08|09|10|12)\b/i,
     ])
       assert.doesNotMatch(copy, pattern, `${page.key}: avoids ${pattern}`);
   }
@@ -1872,8 +1799,20 @@ test('every published chapter, step, alias, and retired detail resolves', () => 
     }
   }
 
-  // Components the service path pages published as lessons 08 to 10.
+  // Components the service path pages published as lessons 08 to 10 and 12.
   for (const [chapter, ids] of Object.entries({
+    'prove-from-desk': [
+      'desk-guards',
+      'desk-lock',
+      'desk-commit',
+      'desk-acceptance',
+      'desk-run',
+      'desk-verdict',
+      'desk-report',
+      'desk-checkout',
+      'desk-registry',
+      'desk-pods',
+    ],
     'who-is-asking': [
       'ask-me-token',
       'ask-deploy-token',
@@ -2145,8 +2084,18 @@ test('readiness misconception separates possible convergence from API proof', ()
   assert.equal(readiness.claim, 'The command finished, so it is ready.');
   assert.equal(readiness.check, 'spi status --watch');
   assert.equal(readiness.source, 'lifecycle');
-  assert.equal(readiness.route, '#bring-up/inspect?detail=readiness');
-  assert.equal(readiness.routeLabel, 'Readiness signals');
+  assert.equal(readiness.route, '#your-environment?detail=env-status&claim=1');
+  assert.equal(readiness.routeLabel, 'spi status on the map');
+  assert.deepEqual(readiness.here, {
+    'bring-up': '#bring-up/inspect?detail=readiness',
+  });
+  verifyRoute(readiness.here['bring-up'], 'readiness on the lifecycle');
+  assert.equal(chapters['bring-up'].mistakes.inspect, readiness.id);
+  assert.match(
+    mythCallout(readiness.id, 'bring-up'),
+    /href="#bring-up\/inspect\?detail=readiness" data-map-jump/,
+    'the lifecycle keeps its own readiness stage',
+  );
   assert.match(
     readiness.correction,
     /orchestration completed, not that an API is ready/,
@@ -2316,11 +2265,14 @@ test('audio markers are ordered, inside the recording, and point at real views',
     'two-kinds-of-work',
   ]);
   assert.deepEqual(Object.keys(chapters.start.index[1].lessons), [
+    'your-environment',
     'who-is-asking',
     'ready-not-loaded',
     'whose-image',
+    'prove-from-desk',
   ]);
   assert.deepEqual(Object.keys(chapters.start.index[2].lessons), ['bring-up']);
+  assert.deepEqual(Object.keys(chapters.start.index[5].lessons), ['core-dags']);
   for (const group of chapters.start.index)
     assert.ok(home.includes(`>${group.label}</h3>`), group.label);
   for (const key of learnKeys)
@@ -3359,16 +3311,17 @@ test('the course runs level 100, then the service path, and lessons keep their n
     'spi-boundary',
     'the-line',
     'two-kinds-of-work',
+    'your-environment',
     'who-is-asking',
     'ready-not-loaded',
     'whose-image',
+    'prove-from-desk',
     'bring-up',
     'fork-shape',
     'fork-day',
     'handshake',
     'not-true',
     'core-dags',
-    'prove-from-desk',
   ]);
   const indexed = Object.fromEntries(
     chapters.start.index.flatMap(({ lessons }) => Object.entries(lessons)),
@@ -3400,9 +3353,11 @@ test('the course runs level 100, then the service path, and lessons keep their n
   );
   assert.equal(service.length, 7);
   for (const [key, code, n] of [
+    ['your-environment', 'S201', 1],
     ['who-is-asking', 'S202', 2],
     ['ready-not-loaded', 'S203', 3],
     ['whose-image', 'S204', 4],
+    ['prove-from-desk', 'S205', 5],
   ]) {
     assert.deepEqual(
       pathPlace(key),
@@ -3422,7 +3377,6 @@ test('the course runs level 100, then the service path, and lessons keep their n
     ['handshake', '06'],
     ['not-true', '07'],
     ['core-dags', '11'],
-    ['prove-from-desk', '12'],
   ]) {
     assert.equal(pathPlace(key), null, key);
     assert.equal(chapterNumber(key), number, key);
@@ -3443,8 +3397,15 @@ test('the course runs level 100, then the service path, and lessons keep their n
       'Working the stack',
     ],
   );
-  for (const key of ['who-is-asking', 'ready-not-loaded', 'whose-image'])
+  for (const key of learn.filter(
+    (key) => pathPlace(key)?.track === 'Service path',
+  ))
     assert.equal(indexed[key], chapters[key].question, `${key}: its question`);
+  assert.equal(
+    learn.filter((key) => chapters[key].book === 'Working the stack').join(),
+    'core-dags',
+  );
+  assert.equal(learn.at(-1), 'core-dags', 'the last page returns to the start');
   const home = pageRenderers.home();
   const ladder = zoomLadder();
   for (const key of learn) {
@@ -3765,7 +3726,7 @@ test('structured claims resolve their focus, evidence, and scopes on every scene
       };
     };
     for (const step of chapterSceneSteps)
-      for (const id of chapter.example.scopes || [])
+      for (const id of chapter.example?.scopes || [])
         assert.ok(
           scene(step).scopes.has(id),
           `${key}/${step}: example scope ${id}`,
@@ -4850,7 +4811,6 @@ test('map lesson examples other than the step lesson use one closed disclosure a
       'fork-shape',
       'fork-day',
       'core-dags',
-      'prove-from-desk',
     ],
   );
   for (const [key, chapter] of exampleLessons) {
@@ -5932,14 +5892,14 @@ function cutFromDifferences(video) {
       );
   }
   // A whole-video note that quotes the question asked now stands in for a
-  // re-cut end card.
+  // re-cut end card; on a page that now asks none, it quotes the end card's.
   const nextDiffers = (question) =>
     (cut.next ?? null) !== question &&
     !(video.notes || []).some(
       (note) =>
         typeof note === 'string' &&
-        question !== null &&
-        note.includes(question),
+        (question ?? cut.next) !== null &&
+        note.includes(question ?? cut.next),
     );
   const episode = curriculumEpisodes.find(({ code }) => code === video.id);
   if (episode) {
@@ -6250,13 +6210,14 @@ test('Fieldnote routes parse and keep the published keys', () => {
     ['08', 'S204'],
     ['09', 'S202'],
     ['10', 'S203'],
+    ['12', 'S205'],
   ]) {
     assert.equal(parseRoute(`#watch/${cut}`).video, episode, `cut ${cut}`);
     assert.equal(parseRoute(`#watch/${cut}?t=120`).time, null, `cut ${cut}`);
   }
-  for (const id of ['02', '11', '12'])
+  for (const id of ['02', '11'])
     assert.equal(parseRoute(`#watch/${id}`).video, id, 'still published');
-  for (const id of ['104', '105', 'S202', 'S203', 'S204']) {
+  for (const id of ['104', '105', 'S201', 'S202', 'S203', 'S204', 'S205']) {
     const route = parseRoute(`#watch/${id}?t=12`);
     assert.deepEqual(
       [route.chapter, route.video, route.time],
@@ -6442,16 +6403,17 @@ test('the Fieldnotes page lists episodes by book with one player and a transcrip
       '103',
       '104',
       '105',
+      'S201',
       'S202',
       'S203',
       'S204',
+      'S205',
       '02',
       '04',
       '05',
       '06',
       '07',
       '11',
-      '12',
     ],
     'level 100, then the service path, then the lesson cuts in course order',
   );
@@ -6474,12 +6436,21 @@ test('the Fieldnotes page lists episodes by book with one player and a transcrip
   );
   assert.match(
     pageRenderers.watch(parseRoute('#watch/105')),
-    /<a href="#watch\/104" data-watch-play>← Fieldnote 104<\/a><a href="#watch\/S202" data-watch-play>Fieldnote S202 →<\/a>/,
+    /<a href="#watch\/104" data-watch-play>← Fieldnote 104<\/a><a href="#watch\/S201" data-watch-play>Fieldnote S201 →<\/a>/,
     'the last level 100 episode leads to the service path',
   );
   assert.match(
-    pageRenderers.watch(parseRoute('#watch/S204')),
-    /<a href="#watch\/S203" data-watch-play>← Fieldnote S203<\/a><a href="#watch\/02" data-watch-play>Fieldnote 02 →<\/a>/,
+    pageRenderers.watch(parseRoute('#watch/S201')),
+    /<p class="watch-book"><a href="#your-environment">Service path · 1 of 7 · Your own environment →<\/a><\/p>/,
+  );
+  assert.match(
+    pageRenderers.watch(parseRoute('#watch/12')),
+    /<p class="watch-book"><a href="#prove-from-desk">Service path · 5 of 7 · Prove it from your desk →<\/a><\/p>/,
+    'a replaced cut opens its episode',
+  );
+  assert.match(
+    pageRenderers.watch(parseRoute('#watch/S205')),
+    /<a href="#watch\/S204" data-watch-play>← Fieldnote S204<\/a><a href="#watch\/02" data-watch-play>Fieldnote 02 →<\/a>/,
     'the service path leads to the first lesson cut',
   );
   assert.match(
@@ -6488,7 +6459,7 @@ test('the Fieldnotes page lists episodes by book with one player and a transcrip
   );
   assert.match(
     page,
-    /style="--in-three: 2; --in-two: 2"><h2>Working the stack<\/h2>/,
+    /style="--in-three: 1; --in-two: 1"><h2>Working the stack<\/h2>/,
     'a book shorter than the grid spans only its cards',
   );
   assert.equal(page.split('<video').length - 1, 1, 'one player');

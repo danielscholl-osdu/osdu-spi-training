@@ -112,33 +112,65 @@ export function readyNotLoadedDiagram() {
   </div>`;
 }
 
-// Prove it from your desk: the fork at the deployed commit, the workstation, the environment.
+// S205's page: the suite a deployed commit shipped, and a checkout pinned in.
 export function proveFromDeskDiagram() {
   return `<div class="work-map">
     ${zone(
       'desk-github',
       'GitHub and GHCR · Azure/osdu-spi-partition',
-      `${node('desk-commit', 'The deployed commit', '.spi/service.yaml · resolve.py · suite-verdict.py', 'fork-code')}
-      ${node('desk-acceptance', 'partition-acceptance image', 'Same commit as the service · linux/amd64')}`,
+      `${node('desk-commit', 'The deployed commit', 'Builds the service image and its acceptance image', 'fork-code')}
+      ${node('desk-acceptance', 'partition-acceptance image', 'Same commit as the service · pulled by digest')}`,
       'work-outside',
     )}
     ${zone(
       'desk-workstation',
       'Your workstation',
-      `${node('desk-guards', 'Guards', 'Deployable · not borrowed · target read before and after')}
-      ${node('desk-run', 'spi test partition', 'docker run by digest · linux/amd64')}
-      ${node('desk-verdict', 'Verdict and page', 'The commit’s suite-verdict.py · a page with --report')}
-      ${node('desk-report', '--report and --review', 'Hollow: empty tests and tests graded 0')}
-      ${node('desk-checkout', 'Your checkout', 'spi service pin --source · spi test --source', 'fork-code')}`,
+      `${node('desk-guards', 'Deployable first', 'spi test refuses until the environment is Deployable')}
+      ${node('desk-run', 'spi test partition', 'Pulls the paired image by digest · runs its suite')}
+      ${node('desk-verdict', 'The verdict', 'pass or fail · names the image it ran')}
+      ${node('desk-checkout', 'Your checkout', 'spi service pin --source builds it', 'fork-code')}
+      ${node('desk-source-test', 'spi test --source', 'Your checkout’s suite · matched or unmatched')}
+      ${node('desk-reset', 'spi service reset', 'Puts the canonical image back')}`,
       'work-outside',
     )}
     ${zone(
       'desk-environment',
       'Your environment · Azure and AKS',
-      `${node('desk-lock', 'osdu-image-lock', 'sha tag · service digest · acceptance digest')}
-      ${node('desk-registry', 'Environment registry', '&lt;registry&gt;/local/&lt;service&gt; · pinned as origin local')}
+      `${node('desk-registry', 'Environment registry', '&lt;registry&gt;/local/&lt;service&gt; · built with az acr run')}
+      ${node('desk-lock', 'osdu-image-lock', 'sha tag · service digest · acceptance digest')}
       ${arrow('↓ Flux renders the locked digest')}
-      ${node('desk-pods', 'partition pods', 'Canonical or pinned, they run the lock')}`,
+      ${node('desk-pods', 'partition pods', 'Run the lock: canonical, or your pin')}`,
     )}
   </div>${forkLegend}`;
+}
+
+// S201's page: the commands on your desk, the group they build, and the wait.
+export function yourEnvironmentDiagram() {
+  return `<div class="work-map">
+    ${zone(
+      'env-workstation',
+      'Your workstation',
+      `${node('env-check', 'spi check', 'The tools spi drives · what your sign-in may create')}
+      ${node('env-up', 'spi up --env &lt;name&gt;', 'Builds your environment · returns while Flux works')}
+      ${node('env-status', 'spi status --watch', 'Refreshes every 30 seconds · reads the summary')}
+      ${node('env-deployable', 'Deployable', 'The verdict to wait for', 'artifact')}
+      ${node('env-info', 'spi info', 'Base URL and endpoints')}
+      ${node('env-down', 'spi down --env &lt;name&gt;', 'Gives the environment back')}`,
+      'work-outside',
+    )}
+    ${zone(
+      'env-azure',
+      'Your subscription · one resource group',
+      `${node('env-group', 'spi-stack-&lt;name&gt;', 'One resource group per environment')}
+      ${node('env-cluster', 'AKS and the data services', 'Side by side in the group · deleted by spi down')}
+      ${node('env-identities', 'Managed identities', 'Kept by spi down · reused by the next spi up', 'artifact')}`,
+    )}
+    ${zone(
+      'env-running',
+      'Inside the cluster · after spi up returns',
+      `${node('env-flux', 'Flux', 'Keeps reconciling after the command returns')}
+      ${arrow('↓ Not deployable until the rollout is done')}
+      ${node('env-gateway', 'The gateway', 'Where the OSDU APIs answer · Kibana and Airflow beside it')}`,
+    )}
+  </div>`;
 }

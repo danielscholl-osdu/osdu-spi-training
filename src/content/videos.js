@@ -206,6 +206,51 @@ export const fieldnotes = [
     notes: [],
   },
   {
+    id: 'S201',
+    chapter: 'your-environment',
+    title: 'Your own environment',
+    duration: 142.5,
+    width: 1920,
+    height: 1080,
+    files: {
+      video: 'fieldnote-S201/video.mp4',
+      poster: 'fieldnote-S201/poster.jpg',
+      captions: 'fieldnote-S201/captions.vtt',
+      chapters: 'fieldnote-S201/chapters.vtt',
+    },
+    chapters: [
+      { time: 20.56, claim: 0 },
+      { time: 47.1, claim: 1 },
+      { time: 77.128, claim: 2 },
+      { time: 98.884, mistake: 'finished-means-ready' },
+    ],
+    cutFrom: {
+      claims: [
+        {
+          headline: 'Check first, then spi up builds your environment',
+          text: 'spi check confirms the tools spi drives and that your Azure sign-in may create resource groups, clusters and role assignments; spi up --env <name> then builds your stack as one resource group in your subscription.',
+        },
+        {
+          headline:
+            'spi up returns before the environment is usable; wait for Deployable',
+          text: 'spi up returns while Flux is still reconciling, so follow the rollout with spi status --watch until its summary reads Deployable, which in this take came 22 minutes after the command returned.',
+        },
+        {
+          headline:
+            'spi info names your endpoints, and spi down gives the environment back',
+          text: 'spi info prints your environment’s base URL and its endpoints, and spi down --env <name> takes the environment down when you are done, keeping its managed identities for the next spi up.',
+        },
+      ],
+      example: null,
+      mistake: {
+        id: 'finished-means-ready',
+        claim: 'The command finished, so it is ready.',
+      },
+      next: 'Who does the stack think you are?',
+    },
+    notes: [],
+  },
+  {
     id: 'S202',
     chapter: 'who-is-asking',
     title: 'Who is asking',
@@ -326,6 +371,39 @@ export const fieldnotes = [
         claim: "My environment picks up the fork's new main on its own.",
       },
       next: 'How do I prove a change before a pull request?',
+    },
+    notes: [],
+  },
+  {
+    id: 'S205',
+    chapter: 'prove-from-desk',
+    title: 'Prove it from your desk',
+    duration: 132,
+    width: 1920,
+    height: 1080,
+    files: {
+      video: 'fieldnote-S205/video.mp4',
+      poster: 'fieldnote-S205/poster.jpg',
+      captions: 'fieldnote-S205/captions.vtt',
+      chapters: 'fieldnote-S205/chapters.vtt',
+    },
+    chapters: [
+      { time: 27.95, claim: 0 },
+      { time: 53.456, claim: 1 },
+    ],
+    cutFrom: {
+      claims: [
+        {
+          headline: 'spi test runs the suite the deployed commit shipped',
+          text: 'When spi up resolves a service, the lock also records the acceptance image built from the same commit; once the environment is Deployable, spi test pulls that image by digest and runs its suite against your services, and the verdict names the image.',
+        },
+        {
+          headline: 'A local change reaches the environment as a pin',
+          text: 'spi service pin --source builds the JAR from your checkout and the image in the environment’s own registry, pins the service to the image’s digest, and waits until a pod runs it; spi test --source then runs the checkout’s suite, labeled matched when the checkout is at the pin’s commit with a clean tree and unmatched otherwise, and spi service reset puts the canonical back.',
+        },
+      ],
+      example: null,
+      next: 'What happens to my change after I open a pull request?',
     },
     notes: [],
   },
@@ -653,52 +731,9 @@ export const fieldnotes = [
       },
       next: 'How do you prove a service from your desk?',
     },
-    notes: [],
-  },
-  {
-    id: '12',
-    chapter: 'prove-from-desk',
-    title: 'Prove it from your desk',
-    duration: 223,
-    width: 1920,
-    height: 1080,
-    files: {
-      video: 'fieldnote-12/video.mp4',
-      poster: 'fieldnote-12/poster.jpg',
-      captions: 'fieldnote-12/captions.vtt',
-      chapters: 'fieldnote-12/chapters.vtt',
-    },
-    chapters: [
-      { time: 44.5, claim: 0 },
-      { time: 74.8, claim: 1 },
-      { time: 107.0, claim: 2 },
-      { time: 134.7, example: true },
-      { time: 161.2, mistake: 'passed-means-checked' },
+    notes: [
+      'The end card asks “How do you prove a service from your desk?”, which S205 now answers earlier on the service path; this lesson is the last page, so its pager returns to the start.',
     ],
-    cutFrom: {
-      claims: [
-        {
-          headline: 'spi test runs the suite the deployed commit shipped.',
-          text: 'When a canonical is resolved, the lock also records the digest of the acceptance image built from the same commit; spi test runs that image by digest with the descriptor, resolver, and verdict script fetched from the fork at that commit.',
-        },
-        {
-          headline:
-            'A pass counts tests, and the report shows what they prove.',
-          text: 'The verdict is the commit’s own script: a zero exit, at least one test not skipped, and no failures; --report counts the passing tests with empty bodies, and --review grades what each test proves against the service’s own API docs.',
-        },
-        {
-          headline: 'A change on your desk reaches the stack as a local pin.',
-          text: 'spi service pin --source builds the JAR on your machine and the image in the environment’s own registry, pins it by digest, and waits for the rollout; spi test --source then runs your checkout’s suite, labeled matched when its commit and a clean tree equal the pin.',
-        },
-      ],
-      example: 'spi test partition, paired',
-      mistake: {
-        id: 'passed-means-checked',
-        claim: 'The suite passed, so every test checked something.',
-      },
-      next: null,
-    },
-    notes: [],
   },
 ];
 
@@ -720,6 +755,7 @@ export const retiredFieldnotes = {
   '08': 'S204',
   '09': 'S202',
   10: 'S203',
+  12: 'S205',
 };
 
 export const fieldnoteById = (id) => {
