@@ -42,6 +42,10 @@ export const retiredDetails = {
   'bring-up': {
     provider: ['spi-boundary', null, 'azureimpl'],
   },
+  // Readiness left S203's page; spi status still carries the verdict there.
+  'ready-not-loaded': {
+    'load-maintenance': ['ready-not-loaded', null, 'load-status'],
+  },
   'fork-day': {
     'release-pr': ['fork-day', 'review', 'integration-pr'],
     'template-pr': ['fork-day', null, 'template-pr'],

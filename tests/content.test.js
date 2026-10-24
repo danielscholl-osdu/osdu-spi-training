@@ -102,10 +102,10 @@ import { coreDagsFieldnote, lessonFieldnote } from './fixtures/fieldnote.js';
 import { tryItShells } from '../src/try-it-shell.js';
 import {
   chapterNumber,
-  foundationPlace,
   learnOrder,
   lessonCount,
   lessonNumber,
+  pathPlace,
   placeLabel,
 } from '../src/content/course.js';
 
@@ -1023,92 +1023,6 @@ test('core DAG lesson preserves storyboard claims and Keep it true qualification
 // The season 2 lessons beside core-dags, each cut from its storyboard.
 const workingStackLessons = [
   {
-    key: 'whose-image',
-    storyboard: '08-whose-image-is-running.md',
-    diagram: 'whoseImage',
-    prefix: 'img-',
-    level: 'source',
-    myth: ['refresh-is-automatic', 'you', 'seam', 'images'],
-    sources: {
-      imagePins: 'src/spi/pins.py',
-      envRefresh: '.github/workflows/env-refresh.yml',
-    },
-    keep: [
-      /thirteen forks/,
-      /schema’s loader comes from the same commit as schema/,
-      /community registry is not a source/,
-      /never falls back|rather than falling back/,
-      /spi onboard --canonical-source fork/,
-      /Source column is the policy the next refresh resolves/,
-      /more than 21 days ago/,
-      /once main has built past it/,
-      /weekday at 04:00 UTC/,
-      /Pinned services are not marked/,
-    ],
-    never: [
-      /latest image/i,
-      /fourteen forks/i,
-      /Monday/,
-      /no longer pullable|fails to pull/,
-      /v0\.30|#371|PR 371/,
-    ],
-  },
-  {
-    key: 'who-is-asking',
-    storyboard: '09-who-is-asking.md',
-    diagram: 'whoIsAsking',
-    prefix: 'ask-',
-    level: 'workloads',
-    myth: ['users-add-accumulates', 'cli', 'identity', 'peopleAccess'],
-    sources: {
-      peopleAccess:
-        'docs/decisions/039-people-join-entitlements-through-the-cli.md',
-      userRoles: 'src/spi/users.py',
-      projectedId: 'src/spi/identity.py',
-    },
-    keep: [
-      /seeds three identities, the workload, the deploy identity, and the member, and no person/,
-      /writes your unique_name as x-user-id/,
-      /it grants nothing/,
-      /first partition written/,
-      /nothing about data ACLs/,
-      /stored as typed and verified by nothing/,
-      /editor, admin and ops carry users\.datalake\.impersonation.*viewer does not/,
-      /the default is admin/,
-      /impersonation_missing/,
-    ],
-    never: [/looks you up/i, /mesh authorizes/i, /\d+ groups/],
-  },
-  {
-    key: 'ready-not-loaded',
-    storyboard: '10-ready-is-not-loaded.md',
-    diagram: 'readyNotLoaded',
-    prefix: 'load-',
-    level: 'workloads',
-    myth: ['deployable-means-loaded', 'cli', 'readiness', 'namedLoads'],
-    sources: {
-      namedLoads: 'docs/decisions/040-named-loads.md',
-      loadRegistry: 'software/stacks/osdu/init/load-registry.yaml',
-    },
-    keep: [
-      /every gating Flux layer has converged/,
-      /maintenance off, a deploy record present, and the members Job finished in every partition/,
-      /read the boolean/,
-      /brought up with --tag starts in maintenance/,
-      /deployable after convergence/,
-      /not_deployable, exit 2/,
-      /batches of 500, skipping duplicates/,
-      /indexer may still be working/,
-      /up to 1% failed/,
-      /removes the fact, not the records/,
-    ],
-    never: [
-      /every new environment starts in maintenance/i,
-      /search (?:finds|found|returned) the records/i,
-      /six minutes/,
-    ],
-  },
-  {
     key: 'prove-from-desk',
     storyboard: '12-prove-it-from-your-desk.md',
     diagram: 'proveFromDesk',
@@ -1262,6 +1176,258 @@ test('Working the stack lessons keep their storyboard words and rungs', () => {
       /still (?:carries|holds|ships)|plans to|has begun/,
     ])
       assert.doesNotMatch(copy, pattern, `${lesson.key}: avoids ${pattern}`);
+  }
+});
+
+const servicePathPages = [
+  {
+    key: 'who-is-asking',
+    storyboard: 'S202-who-is-asking.md',
+    diagram: 'whoIsAsking',
+    prefix: 'ask-',
+    level: 'workloads',
+    myth: ['users-add-accumulates', 'cli', 'identity', 'peopleAccess'],
+    sources: {
+      peopleAccess:
+        'docs/decisions/039-people-join-entitlements-through-the-cli.md',
+      userRoles: 'src/spi/users.py',
+      projectedId: 'src/spi/identity.py',
+    },
+    keep: [
+      /writes your unique_name as the caller/,
+      /it grants nothing/,
+      /for up to a minute/,
+      /replaces the one you held/,
+      /users stays/,
+      /the default is admin/,
+      /impersonation_missing/,
+    ],
+    never: [/looks you up/i, /mesh authorizes/i, /\d+ groups/],
+    moved: [/\bseed/i, /claim order/i, /on-behalf-of|delegation/i],
+  },
+  {
+    key: 'ready-not-loaded',
+    storyboard: 'S203-ready-is-not-loaded.md',
+    diagram: 'readyNotLoaded',
+    prefix: 'load-',
+    level: 'workloads',
+    myth: ['deployable-means-loaded', 'cli', 'readiness', 'namedLoads'],
+    sources: {
+      namedLoads: 'docs/decisions/040-named-loads.md',
+      loadRegistry: 'software/stacks/osdu/init/load-registry.yaml',
+      dagSmoke: 'src/spi/dag_testing.py',
+    },
+    keep: [
+      /not_deployable, exit 2/,
+      /indexer may still be working/,
+      /up to 1% failed/,
+      /removes the fact, not the records/,
+      /Deployable does not wait for the DAGs to register/,
+      /createUser is you/,
+      /impersonation_missing/,
+    ],
+    never: [
+      /every new environment starts in maintenance/i,
+      /search (?:finds|found|returned) the records/i,
+    ],
+    moved: [
+      /maintenance|deploy record|members Job|read the boolean/i,
+      /on-behalf-of|delegation|catalog|SHA-256|LocalExecutor/i,
+      /batches of 500/,
+    ],
+  },
+  {
+    key: 'whose-image',
+    storyboard: 'S204-whose-image-is-running.md',
+    diagram: 'whoseImage',
+    prefix: 'img-',
+    level: 'source',
+    myth: ['refresh-is-automatic', 'you', 'seam', 'images'],
+    sources: {
+      imagePins: 'src/spi/pins.py',
+      envRefresh: '.github/workflows/env-refresh.yml',
+    },
+    keep: [
+      /thirteen forks/,
+      /a tag can move/,
+      /pods run the locked digest/,
+      /once main has built past it/,
+      /Only the shared environment refreshes on a schedule/,
+      /--forks for every service/,
+    ],
+    never: [
+      /latest image/i,
+      /fourteen forks/i,
+      /Monday/,
+      /no longer pullable|fails to pull/,
+      /v0\.30|#371|PR 371/,
+    ],
+    moved: [
+      /\b\d+ days\b|weekly|weekday|04:00/i,
+      /trusted mirror|canonical-source|community registry/i,
+    ],
+  },
+];
+
+test('the service path pages keep their storyboard words and homes', () => {
+  const straight = (text) => text.replace(/’/g, "'");
+  for (const page of servicePathPages) {
+    const chapter = chapters[page.key];
+    const storyboard = readFileSync(
+      new URL(`../docs/fieldnotes/${page.storyboard}`, import.meta.url),
+      'utf8',
+    );
+    const from = storyboard.indexOf('## The companion page');
+    const companion = straight(
+      storyboard.slice(from, storyboard.indexOf('\n## ', from + 1)),
+    );
+    const video = fieldnoteFor(page.key);
+    const episode = curriculumEpisodes.find(({ code }) => code === video.id);
+    assert.equal(episode?.video, video.id, `${page.key}: its episode`);
+    assert.deepEqual([episode.path, episode.level], ['service', 200]);
+    assert.equal(chapter.book, 'Service path', page.key);
+    assert.equal(chapter.diagram, page.diagram, page.key);
+    assert.equal(chapter.lesson, undefined, page.key);
+    assert.equal(chapter.tryIt, undefined, page.key);
+    assert.ok(
+      companion.includes(`Question: "${chapter.question}"`),
+      `${page.key}: question`,
+    );
+    for (const id of episode.teaches)
+      assert.ok(
+        chapter.outcomes.some(({ headline }) => headline === ideas[id]),
+        `${page.key}: a claim teaches ${id} in the curriculum's words`,
+      );
+    assert.deepEqual(
+      video.chapters.flatMap(({ claim }) => claim ?? []),
+      chapter.outcomes.map((_, index) => index),
+      `${page.key}: one chapter per claim`,
+    );
+    for (const [index, claim] of chapter.outcomes.entries()) {
+      assert.ok(
+        companion.includes(
+          straight(`Claim ${index + 1}, "${claim.headline}": "${claim.text}"`),
+        ),
+        `${page.key}: claim ${index + 1}`,
+      );
+      assert.ok(
+        storyboard.includes(`**${claim.headline}**`),
+        `${page.key}: chapter ${index + 1}`,
+      );
+      verifyRoute(
+        `#${page.key}?detail=${claim.evidence}&claim=${index}`,
+        `${page.key} claim`,
+      );
+    }
+    assert.ok(
+      companion.includes(
+        straight(`_${chapter.example.title}_, \`${chapter.example.code}\``),
+      ),
+      `${page.key}: example`,
+    );
+    assert.equal(
+      video.chapters.some(({ example }) => example),
+      storyboard.includes(`**Example: ${chapter.example.title}**`),
+      `${page.key}: an example chapter only where the episode traces it`,
+    );
+    assert.ok(
+      zoomLevels
+        .find(({ id }) => id === page.level)
+        .chapters.includes(page.key),
+      `${page.key}: rung`,
+    );
+
+    const [id, owner, theme, source] = page.myth;
+    const myth = myths.find((entry) => entry.id === id);
+    assert.deepEqual(chapter.mistakes, [id], page.key);
+    assert.deepEqual(episode.mistakes, [id], page.key);
+    assert.equal(myth.owner, owner, id);
+    assert.equal(myth.theme, theme, id);
+    assert.equal(myth.source, source, id);
+    assert.equal(mythTool(myth.check), 'spi', id);
+    assert.ok(
+      companion.includes(
+        straight(
+          `Easy mistake: "${myth.claim}" (\`${id}\`, checked with \`${myth.check}\`)`,
+        ),
+      ),
+      `${id}: companion page`,
+    );
+    assert.ok(
+      storyboard.includes(`**Easy mistake: ${myth.claim}**`),
+      `${id}: chapter title`,
+    );
+    verifyRoute(myth.route, `${id} route`);
+    assert.ok(myth.route.startsWith(`#${page.key}?`), `${id}: local route`);
+    const callout = mythCallout(id, page.key);
+    assert.match(callout, /data-map-jump/);
+    assert.ok(callout.includes(mythChips(myth)), `${id}: chips`);
+
+    const html = diagramRenderers[page.diagram]();
+    const ids = [...html.matchAll(/data-detail="([^"]+)"/g)].map(
+      (match) => match[1],
+    );
+    assert.equal(new Set(ids).size, ids.length, page.key);
+    assert.ok(ids.length <= 12, `${page.key}: as small as core-dags`);
+    for (const detailId of ids) {
+      assert.ok(detailId.startsWith(page.prefix), detailId);
+      verifySourceRecord(
+        componentDetails[detailId].source,
+        sources[componentDetails[detailId].source],
+      );
+    }
+    assert.deepEqual(
+      [...ids].sort(),
+      Object.keys(componentDetails)
+        .filter((key) => key.startsWith(page.prefix))
+        .sort(),
+      `${page.key}: every explanation is on the map`,
+    );
+    for (const [key, path] of Object.entries(page.sources)) {
+      assert.equal(sources[key].repo, 'osdu-spi-stack', key);
+      assert.equal(
+        sources[key].href,
+        `https://github.com/Azure/osdu-spi-stack/blob/main/${path}`,
+        key,
+      );
+      verifySourceRecord(key, sources[key]);
+    }
+
+    // Material whose home moved stays off the page surface; the drawer keeps it.
+    const surface = [
+      chapter.subhead,
+      chapter.intro,
+      chapter.goal,
+      ...chapter.outcomes.flatMap(({ headline, text, why }) => [
+        headline,
+        text,
+        why,
+      ]),
+    ].join(' ');
+    for (const pattern of page.moved)
+      assert.doesNotMatch(surface, pattern, `${page.key}: leaves ${pattern}`);
+    const copy = [
+      surface,
+      chapter.scope,
+      chapter.example.note,
+      ...chapter.example.hops.map(({ copy: hop }) => hop),
+      myth.reality,
+      myth.correction,
+      html,
+      ...ids.flatMap((detailId) => [
+        componentDetails[detailId].title,
+        componentDetails[detailId].body,
+      ]),
+    ].join(' ');
+    for (const pattern of page.keep)
+      assert.match(copy, pattern, `${page.key}: keeps ${pattern}`);
+    for (const pattern of [
+      ...page.never,
+      /\b20\d\d-\d\d-\d\d\b|\b(?:January|February|March|April|May|June|July|August|September|October|November|December)\b/,
+      /still (?:carries|holds|ships)|plans to|has begun/,
+      /\b(?:lessons?|views?) (?:08|09|10)\b/i,
+    ])
+      assert.doesNotMatch(copy, pattern, `${page.key}: avoids ${pattern}`);
   }
 });
 
@@ -1705,6 +1871,50 @@ test('every published chapter, step, alias, and retired detail resolves', () => 
       );
     }
   }
+
+  // Components the service path pages published as lessons 08 to 10.
+  for (const [chapter, ids] of Object.entries({
+    'who-is-asking': [
+      'ask-me-token',
+      'ask-deploy-token',
+      'ask-users-add',
+      'ask-mesh',
+      'ask-entitlements',
+      'ask-groups',
+      'ask-roles',
+      'ask-workflow',
+    ],
+    'ready-not-loaded': [
+      'load-status',
+      'load-maintenance',
+      'load-cli',
+      'load-loads',
+      'load-gating',
+      'load-nongating',
+      'load-registry',
+      'load-schema-job',
+      'load-job',
+      'load-storage',
+    ],
+    'whose-image': [
+      'img-fork',
+      'img-ghcr',
+      'img-retention',
+      'img-resolve',
+      'img-info',
+      'img-refresh',
+      'img-lock',
+      'img-pods',
+    ],
+  }))
+    for (const id of ids) {
+      const route = parseRoute(`#${chapter}?detail=${id}`);
+      assert.match(
+        diagramRenderers[chapters[route.chapter].diagram](route),
+        new RegExp(`data-detail="${route.detail}"`),
+        `${chapter}: ${id}`,
+      );
+    }
 });
 
 test('selection intent is additive and invalid qualifiers preserve legacy routes', () => {
@@ -2087,6 +2297,7 @@ test('audio markers are ordered, inside the recording, and point at real views',
     chapters.start.index.map((group) => group.label),
     [
       'Level 100 · Foundations',
+      'Service path',
       'The stack',
       'Provider code and engineering',
       'Across the path',
@@ -2104,7 +2315,12 @@ test('audio markers are ordered, inside the recording, and point at real views',
     'the-line',
     'two-kinds-of-work',
   ]);
-  assert.deepEqual(Object.keys(chapters.start.index[1].lessons), ['bring-up']);
+  assert.deepEqual(Object.keys(chapters.start.index[1].lessons), [
+    'who-is-asking',
+    'ready-not-loaded',
+    'whose-image',
+  ]);
+  assert.deepEqual(Object.keys(chapters.start.index[2].lessons), ['bring-up']);
   for (const group of chapters.start.index)
     assert.ok(home.includes(`>${group.label}</h3>`), group.label);
   for (const key of learnKeys)
@@ -3104,7 +3320,7 @@ test('field check remains lesson 07 after the round trip', () => {
   assert.deepEqual(learnKeys.slice(at - 1, at + 2), [
     'handshake',
     'not-true',
-    'whose-image',
+    'core-dags',
   ]);
   assert.equal(indexedKeys.filter((key) => key === 'not-true').length, 1);
   assert.equal(lessonNumber('not-true'), 7);
@@ -3133,7 +3349,7 @@ test('field check remains lesson 07 after the round trip', () => {
   );
 });
 
-test('the course runs the level 100 pages first, and lessons keep their numbers', () => {
+test('the course runs level 100, then the service path, and lessons keep their numbers', () => {
   const learn = Object.keys(chapters).filter(
     (key) => chapters[key].group === 'learn',
   );
@@ -3143,14 +3359,14 @@ test('the course runs the level 100 pages first, and lessons keep their numbers'
     'spi-boundary',
     'the-line',
     'two-kinds-of-work',
+    'who-is-asking',
+    'ready-not-loaded',
+    'whose-image',
     'bring-up',
     'fork-shape',
     'fork-day',
     'handshake',
     'not-true',
-    'whose-image',
-    'who-is-asking',
-    'ready-not-loaded',
     'core-dags',
     'prove-from-desk',
   ]);
@@ -3160,18 +3376,44 @@ test('the course runs the level 100 pages first, and lessons keep their numbers'
   assert.deepEqual(Object.keys(indexed), learn);
   for (const key of learn) assert.equal(chapters[key].number, undefined);
   assert.equal(lessonCount, 12);
-  assert.deepEqual(foundationPlace('start'), { code: '101', n: 1, of: 5 });
+  const foundation = { track: 'Level 100', book: 'Level 100 · Foundations' };
+  assert.deepEqual(pathPlace('start'), {
+    code: '101',
+    n: 1,
+    of: 5,
+    ...foundation,
+  });
   for (const [key, code, n] of [
     ['running-stack', '102', 2],
     ['spi-boundary', '103', 3],
     ['the-line', '104', 4],
     ['two-kinds-of-work', '105', 5],
   ]) {
-    assert.deepEqual(foundationPlace(key), { code, n, of: 5 }, key);
+    assert.deepEqual(pathPlace(key), { code, n, of: 5, ...foundation }, key);
     assert.equal(lessonNumber(key), null, key);
     assert.equal(chapterNumber(key), code, key);
     assert.equal(placeLabel(key), `Level 100 · ${n} of 5`, key);
     assert.equal(chapters[key].book, 'Foundations', key);
+  }
+  const service = curriculumEpisodes.filter(
+    ({ path, level }) => path === 'service' && level === 200,
+  );
+  assert.equal(service.length, 7);
+  for (const [key, code, n] of [
+    ['who-is-asking', 'S202', 2],
+    ['ready-not-loaded', 'S203', 3],
+    ['whose-image', 'S204', 4],
+  ]) {
+    assert.deepEqual(
+      pathPlace(key),
+      { code, n, of: 7, track: 'Service path', book: 'Service path' },
+      key,
+    );
+    assert.equal(service[n - 1].code, code, key);
+    assert.equal(lessonNumber(key), null, key);
+    assert.equal(chapterNumber(key), code, key);
+    assert.equal(placeLabel(key), `Service path · ${n} of 7`, key);
+    assert.equal(chapters[key].book, 'Service path', key);
   }
   for (const [key, number] of [
     ['bring-up', '02'],
@@ -3179,13 +3421,10 @@ test('the course runs the level 100 pages first, and lessons keep their numbers'
     ['fork-day', '05'],
     ['handshake', '06'],
     ['not-true', '07'],
-    ['whose-image', '08'],
-    ['who-is-asking', '09'],
-    ['ready-not-loaded', '10'],
     ['core-dags', '11'],
     ['prove-from-desk', '12'],
   ]) {
-    assert.equal(foundationPlace(key), null, key);
+    assert.equal(pathPlace(key), null, key);
     assert.equal(chapterNumber(key), number, key);
     assert.equal(
       placeLabel(key),
@@ -3193,6 +3432,19 @@ test('the course runs the level 100 pages first, and lessons keep their numbers'
       key,
     );
   }
+  assert.deepEqual(
+    chapters.start.index.map(({ label }) => label),
+    [
+      'Level 100 · Foundations',
+      'Service path',
+      'The stack',
+      'Provider code and engineering',
+      'Across the path',
+      'Working the stack',
+    ],
+  );
+  for (const key of ['who-is-asking', 'ready-not-loaded', 'whose-image'])
+    assert.equal(indexed[key], chapters[key].question, `${key}: its question`);
   const home = pageRenderers.home();
   const ladder = zoomLadder();
   for (const key of learn) {
@@ -3219,7 +3471,8 @@ test('the course runs the level 100 pages first, and lessons keep their numbers'
       );
   }
   const rail = chapterNavigation('core-dags');
-  assert.ok(rail.indexOf('Foundations') < rail.indexOf('The stack'));
+  assert.ok(rail.indexOf('Foundations') < rail.indexOf('Service path'));
+  assert.ok(rail.indexOf('Service path') < rail.indexOf('The stack'));
   assert.ok(
     rail.indexOf('Across the path') < rail.indexOf('Working the stack'),
   );
@@ -4590,12 +4843,12 @@ test('map lesson examples other than the step lesson use one closed disclosure a
       'spi-boundary',
       'the-line',
       'two-kinds-of-work',
+      'who-is-asking',
+      'ready-not-loaded',
+      'whose-image',
       'bring-up',
       'fork-shape',
       'fork-day',
-      'whose-image',
-      'who-is-asking',
-      'ready-not-loaded',
       'core-dags',
       'prove-from-desk',
     ],
@@ -5993,7 +6246,17 @@ test('Fieldnote routes parse and keep the published keys', () => {
   assert.equal(parseRoute('#watch/00').video, '101', 'a replaced cut');
   assert.equal(parseRoute('#watch/01').video, '102', 'a replaced cut');
   assert.equal(parseRoute('#watch/03').video, '103', 'a replaced cut');
-  for (const id of ['104', '105']) {
+  for (const [cut, episode] of [
+    ['08', 'S204'],
+    ['09', 'S202'],
+    ['10', 'S203'],
+  ]) {
+    assert.equal(parseRoute(`#watch/${cut}`).video, episode, `cut ${cut}`);
+    assert.equal(parseRoute(`#watch/${cut}?t=120`).time, null, `cut ${cut}`);
+  }
+  for (const id of ['02', '11', '12'])
+    assert.equal(parseRoute(`#watch/${id}`).video, id, 'still published');
+  for (const id of ['104', '105', 'S202', 'S203', 'S204']) {
     const route = parseRoute(`#watch/${id}?t=12`);
     assert.deepEqual(
       [route.chapter, route.video, route.time],
@@ -6179,18 +6442,18 @@ test('the Fieldnotes page lists episodes by book with one player and a transcrip
       '103',
       '104',
       '105',
+      'S202',
+      'S203',
+      'S204',
       '02',
       '04',
       '05',
       '06',
       '07',
-      '08',
-      '09',
-      '10',
       '11',
       '12',
     ],
-    'the level 100 episodes come first, then the lesson cuts in course order',
+    'level 100, then the service path, then the lesson cuts in course order',
   );
   assert.match(
     page,
@@ -6201,9 +6464,23 @@ test('the Fieldnotes page lists episodes by book with one player and a transcrip
     /<p class="watch-book"><a href="#the-line">Level 100 · 4 of 5 · The line →<\/a><\/p>/,
   );
   assert.match(
+    page,
+    /<\/section><section class="fieldnote-book" style="--in-three: 3; --in-two: 2"><h2>Service path<\/h2>/,
+    'the service path follows level 100',
+  );
+  assert.match(
+    pageRenderers.watch(parseRoute('#watch/S202')),
+    /<p class="watch-book"><a href="#who-is-asking">Service path · 2 of 7 · Who is asking →<\/a><\/p>/,
+  );
+  assert.match(
     pageRenderers.watch(parseRoute('#watch/105')),
-    /<a href="#watch\/104" data-watch-play>← Fieldnote 104<\/a><a href="#watch\/02" data-watch-play>Fieldnote 02 →<\/a>/,
-    'the last level 100 episode leads to the first lesson cut',
+    /<a href="#watch\/104" data-watch-play>← Fieldnote 104<\/a><a href="#watch\/S202" data-watch-play>Fieldnote S202 →<\/a>/,
+    'the last level 100 episode leads to the service path',
+  );
+  assert.match(
+    pageRenderers.watch(parseRoute('#watch/S204')),
+    /<a href="#watch\/S203" data-watch-play>← Fieldnote S203<\/a><a href="#watch\/02" data-watch-play>Fieldnote 02 →<\/a>/,
+    'the service path leads to the first lesson cut',
   );
   assert.match(
     pageRenderers.watch(parseRoute('#watch/02')),
@@ -6211,8 +6488,8 @@ test('the Fieldnotes page lists episodes by book with one player and a transcrip
   );
   assert.match(
     page,
-    /style="--in-three: 3; --in-two: 2"><h2>Working the stack<\/h2>/,
-    'a book longer than the grid spans its columns and wraps',
+    /style="--in-three: 2; --in-two: 2"><h2>Working the stack<\/h2>/,
+    'a book shorter than the grid spans only its cards',
   );
   assert.equal(page.split('<video').length - 1, 1, 'one player');
   assert.ok(

@@ -578,6 +578,12 @@ export const sources = {
     path: 'docs/decisions/036-spi-test-runs-the-deployed-commit.md',
     href: 'https://github.com/Azure/osdu-spi-stack/blob/main/docs/decisions/036-spi-test-runs-the-deployed-commit.md',
   },
+  dagSmoke: {
+    label: 'The core DAG smoke, run as the caller',
+    repo: 'osdu-spi-stack',
+    path: 'src/spi/dag_testing.py',
+    href: 'https://github.com/Azure/osdu-spi-stack/blob/main/src/spi/dag_testing.py',
+  },
   suiteReport: {
     label: 'spi test reports what a suite proves',
     repo: 'osdu-spi-stack',

@@ -12,7 +12,7 @@ export function zone(scope, title, body, kind = '') {
 export const forkLegend =
   '<div class="ownership-legend"><span><i class="fork-swatch"></i>Fork-owned source</span></div>';
 
-// Lesson 08: where a canonical image comes from, what records it, and its clock.
+// S204's page: where a canonical image comes from, what records it, and its clock.
 export function whoseImageDiagram() {
   return `<div class="work-map">
     ${zone(
@@ -23,17 +23,16 @@ export function whoseImageDiagram() {
       ${arrow('↓ sha-&lt;12&gt; tag and main-snapshot on one digest')}
       <h4>GHCR · ghcr.io/azure/osdu-spi-&lt;service&gt;</h4>
       ${node('img-ghcr', 'osdu-spi-partition package', 'main-snapshot names main’s last published build')}
-      ${node('img-retention', 'Weekly retention', 'sha-* over 30 days, once main has built past it', 'artifact')}
-      <p>The community registry is not a source: its images don’t carry the Azure provider.</p>`,
+      ${node('img-retention', 'Retention', 'Can delete an old sha-* once main has built past it', 'artifact')}`,
       'work-outside',
     )}
     ${zone(
       'img-workstation',
       'Your workstation',
       `${node('img-resolve', 'spi up', 'Resolves each canonical once, when there is no lock')}
-      ${node('img-info', 'spi info', 'Reads the lock · Built warns after 21 days')}
+      ${node('img-info', 'spi info', 'Reads the lock · Built marks an old canonical')}
       ${node('img-refresh', 'spi service refresh', 'Moves a canonical to main’s current build')}
-      <p>Only the shared environment refreshes on a schedule, weekdays at 04:00 UTC.</p>`,
+      <p>Only the shared environment refreshes on a schedule.</p>`,
       'work-outside',
     )}
     ${zone(
@@ -48,7 +47,7 @@ export function whoseImageDiagram() {
   </div>${forkLegend}`;
 }
 
-// Lesson 09: who the stack thinks a person is, and who decides.
+// S202's page: who the stack thinks a person is, and who decides.
 export function whoIsAskingDiagram() {
   return `<div class="work-map">
     ${zone(
@@ -69,25 +68,25 @@ export function whoIsAskingDiagram() {
     ${zone(
       'ask-services',
       'AKS · osdu namespace · OSDU services',
-      `${node('ask-entitlements', 'Entitlements', 'Seeded with three identities and no person · 401 until you are a member')}
+      `${node('ask-entitlements', 'Entitlements', '401 until you are a member')}
       ${node('ask-groups', 'Your groups', 'users plus the role’s groups')}
       ${node('ask-roles', 'Four role presets', 'viewer · editor · admin · ops', 'artifact')}
-      ${arrow('↓ impersonation lets the OSDU identity act for you')}
+      ${arrow('↓ editor and above: ingestion can run as you')}
       ${node('ask-workflow', 'Workflow', 'Runs ingestion as you only with impersonation')}`,
     )}
   </div>`;
 }
 
-// Lesson 10: two verdicts, then a load that changes neither.
+// S203's page: schemas at bring-up, records only through a load, and a run as you.
 export function readyNotLoadedDiagram() {
   return `<div class="work-map">
     ${zone(
       'load-workstation',
       'Your workstation',
       `${node('load-status', 'spi status', 'Ready and Deployable · exit 0 only when Deployable')}
-      ${node('load-maintenance', 'spi maintenance clear', 'Clears the flag in spi-deploy-record · your decision')}
       ${node('load-cli', 'spi load', 'Refuses until Deployable · then creates the Job')}
-      ${node('load-loads', 'spi load --status', 'absent · running · complete · stale · failed')}`,
+      ${node('load-loads', 'spi load --status', 'absent · running · complete · stale · failed')}
+      ${node('load-dags', 'spi test dags --as me', 'Runs Echo and an ingest with your token · reads the record back')}`,
       'work-outside',
     )}
     ${zone(
@@ -95,21 +94,25 @@ export function readyNotLoadedDiagram() {
       'AKS · osdu-flux namespace · Flux layers',
       `${node('load-gating', 'Gating layers', 'Ready when every one has converged · includes spi-osdu-schema-load')}
       ${node('load-nongating', 'Non-gating layers', 'spi-osdu-legal · spi-osdu-members · spi-osdu-dag-registration', 'artifact')}
-      <p>The Kustomization count includes non-gating layers; read the ready boolean, not the count.</p>`,
+      <p>Deployable does not wait for the DAGs to register.</p>`,
     )}
     ${zone(
       'load-osdu',
-      'AKS · osdu namespace',
-      `${node('load-registry', 'spi-load-registry', 'schemas · reference-data')}
+      'AKS · OSDU services and Airflow',
+      `<h4>osdu namespace</h4>
+      ${node('load-registry', 'spi-load-registry', 'schemas · reference-data')}
       ${node('load-schema-job', 'schema-load Job', 'Flux · registers schemas · writes no records')}
       ${node('load-job', 'load-reference-data Job', 'data-definitions at a pinned commit · created by spi load')}
-      ${arrow('↓ batches of 500 · duplicates skipped')}
-      ${node('load-storage', 'OSDU Storage API', 'Accepts the records · the indexer may still be working')}`,
+      ${arrow('↓ the load Job writes the records')}
+      ${node('load-storage', 'OSDU Storage API', 'Accepts the records · the indexer may still be working')}
+      ${node('load-workflow', 'Workflow API', 'Starts each run as the caller whose token started it')}
+      <h4>platform namespace</h4>
+      ${node('load-airflow', 'Airflow scheduler', 'Runs each task · the ingest task writes as the caller')}`,
     )}
   </div>`;
 }
 
-// Lesson 12: the fork at the deployed commit, the workstation, the environment.
+// Prove it from your desk: the fork at the deployed commit, the workstation, the environment.
 export function proveFromDeskDiagram() {
   return `<div class="work-map">
     ${zone(

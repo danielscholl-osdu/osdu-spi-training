@@ -157,6 +157,7 @@ export const episodes = [
     teaches: ['mesh-and-entitlements', 'role-is-a-preset'],
     uses: ['one-gateway'],
     mistakes: ['users-add-accumulates'],
+    video: 'S202',
   },
   {
     code: 'S203',
@@ -170,6 +171,7 @@ export const episodes = [
     teaches: ['deployable-holds-no-records', 'ingestion-as-caller'],
     uses: ['wait-for-deployable'],
     mistakes: ['deployable-means-loaded'],
+    video: 'S203',
   },
   {
     code: 'S204',
@@ -183,6 +185,7 @@ export const episodes = [
     teaches: ['image-lock', 'canonical-ages'],
     uses: [],
     mistakes: ['refresh-is-automatic'],
+    video: 'S204',
   },
   {
     code: 'S205',

@@ -43,10 +43,10 @@ import {
 import { fieldnoteById, fieldnoteFor } from './content/videos.js';
 import {
   chapterNumber,
-  foundationPlace,
   learnOrder,
   lessonCount,
   lessonNumber,
+  pathPlace,
   placeLabel,
 } from './content/course.js';
 import { badge } from './components/badges.js';
@@ -513,7 +513,7 @@ function renderChapterFrame(route, scene) {
   document.getElementById('chapter-kicker').textContent =
     scene.group !== 'learn'
       ? kicker
-      : foundationPlace(key)
+      : pathPlace(key)
         ? positionLabel(key)
         : `Lesson ${positionLabel(key)}`;
   document.getElementById('chapter-kicker').hidden =
@@ -586,7 +586,7 @@ function renderChapterFrame(route, scene) {
   const next = nextChapter(key);
   const link = document.getElementById('next-link');
   link.href = routeHref(next);
-  const nextKicker = foundationPlace(next)
+  const nextKicker = pathPlace(next)
     ? `Next · ${placeLabel(next)}`
     : `Next lesson · ${lessonNumber(next)} of ${lessonCount}`;
   link.innerHTML =

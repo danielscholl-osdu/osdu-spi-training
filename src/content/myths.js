@@ -27,7 +27,7 @@ export const myths = [
       'Deployable says an environment can take a deploy; the loads say what data it holds.',
     check: 'spi load --status',
     source: 'namedLoads',
-    route: '#ready-not-loaded?detail=load-loads&claim=1',
+    route: '#ready-not-loaded?detail=load-loads&claim=0',
     routeLabel: 'The loads on the map',
   },
   {
@@ -173,7 +173,7 @@ export const myths = [
     correction: 'spi users add sets your role; it replaces the one you held.',
     check: 'spi users list',
     source: 'peopleAccess',
-    route: '#who-is-asking?detail=ask-roles&claim=2',
+    route: '#who-is-asking?detail=ask-roles&claim=1',
     routeLabel: 'The role presets on the map',
   },
   {
@@ -372,12 +372,12 @@ export const myths = [
     theme: 'seam',
     claim: "My environment picks up the fork's new main on its own.",
     reality:
-      'spi up resolves each canonical once and keeps the lock on a rerun unless asked to refresh. Only the shared environment refreshes on a schedule, every weekday. On a personal environment, spi info and spi status mark a canonical built more than 21 days ago, and the fork’s weekly retention can delete it once it is over 30 days old and main has built past it.',
+      'spi up chooses images once and keeps the lock on a rerun unless you ask for a refresh. Only the shared environment refreshes on a schedule. On a personal environment, spi info and spi status mark an old canonical, and GHCR retention can delete it once main has built past it, so the refresh is yours to run.',
     correction:
       'A personal environment keeps its images until you refresh them.',
     check: 'spi info',
     source: 'images',
-    route: '#whose-image?detail=img-refresh&claim=2',
+    route: '#whose-image?detail=img-refresh&claim=1',
     routeLabel: 'The refresh on the map',
   },
   {

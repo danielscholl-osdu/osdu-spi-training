@@ -581,17 +581,6 @@ export const componentDetails = {
     },
     source: 'statusContract',
   },
-  'load-maintenance': {
-    label: 'Your workstation / spi maintenance clear',
-    title: 'Clearing maintenance is your decision; spi up never makes it.',
-    body: 'An environment brought up with --tag starts in maintenance, a flag in the spi-deploy-record ConfigMap in osdu-flux; a branch environment is deployable after convergence. spi maintenance clear patches that flag once readiness and a probe such as a partition lookup have passed. A rerun of spi up keeps the existing flag.',
-    artifact: {
-      label: 'Allow deploys',
-      code: 'spi maintenance clear',
-    },
-    source: 'statusContract',
-    goDeeper: ['resetBoundary'],
-  },
   'load-registry': {
     label: 'osdu / ConfigMap spi-load-registry',
     title: 'The stack version ships the list of named loads.',
@@ -656,6 +645,38 @@ export const componentDetails = {
     },
     source: 'namedLoads',
     goDeeper: ['statusContract'],
+  },
+  'load-dags': {
+    label: 'Your workstation / spi test dags --as me',
+    title: 'spi test dags --as me proves that ingestion writes as you.',
+    body: 'On a core environment it first checks that you can act for others, that Echo_DAG and Osdu_ingest are registered, that their schemas exist, and that the legal tag and the record’s ACL domain hold, and refuses before any run when one fails; as a viewer it stops with impersonation_missing. Then it runs both DAGs with your token and fails unless the stored record’s createUser is you. Each run keeps its two Workflow runs and one smoke record.',
+    artifact: {
+      label: 'Put the evidence on one page',
+      code: 'spi test dags --as me --report',
+    },
+    source: 'dagSmoke',
+    goDeeper: ['coreDagsDecision'],
+  },
+  'load-workflow': {
+    label: 'osdu / Workflow API',
+    title: 'Workflow starts each run as the caller whose token started it.',
+    body: 'Workflow takes the submitter from the token, not from the payload, and the smoke checks that each run’s submittedBy is you. Registering the system workflows is a non-gating layer, so a Deployable environment can still answer dag_not_registered; the smoke then refuses and names spi-osdu-dag-registration.',
+    artifact: {
+      label: 'What the smoke reads from each run',
+      code: 'submittedBy = the caller',
+    },
+    source: 'coreDagsDecision',
+    goDeeper: ['dagSmoke'],
+  },
+  'load-airflow': {
+    label: 'platform / Airflow scheduler',
+    title: 'Airflow runs each task, and the ingest task writes as the caller.',
+    body: 'On a core environment Airflow runs tasks inside its scheduler pod, not as separate task pods. The ingest task calls Storage with the stack’s OSDU identity on behalf of the run’s caller, which works only while the caller holds users.datalake.impersonation; spi users editor, admin, and ops grant it, and viewer does not.',
+    artifact: {
+      label: 'Where the tasks run',
+      code: 'LocalExecutor · inside the scheduler pod · platform/workload-identity-sa',
+    },
+    source: 'coreDagsDecision',
   },
   'desk-guards': {
     label: 'Your workstation / before the suite',
