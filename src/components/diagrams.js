@@ -13,6 +13,8 @@ import {
   readyNotLoadedDiagram,
   proveFromDeskDiagram,
   yourEnvironmentDiagram,
+  shipItDiagram,
+  changesToYouDiagram,
 } from './working-stack.js';
 
 function spiBoundaryDiagram() {
@@ -384,4 +386,6 @@ export const diagramRenderers = {
   readyNotLoaded: readyNotLoadedDiagram,
   coreDags: coreDagsDiagram,
   proveFromDesk: proveFromDeskDiagram,
+  shipIt: shipItDiagram,
+  changesToYou: changesToYouDiagram,
 };

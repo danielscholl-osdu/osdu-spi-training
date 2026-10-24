@@ -6,7 +6,7 @@ The training site owns what is said. The video library at `~/workspace/videos` (
 
 ## The curriculum
 
-Codes name the level and the path: 103 is the third foundation episode, S203 the third on the service path, P305 a platform deep dive. The code is shown in the sting tag and on the episode's card, and is never spoken. `src/content/curriculum.js` records the ideas each episode teaches and the myths it is home to; `npm test` fails when an idea or a myth has two homes in a path.
+Codes name the level and the path: 103 is the third foundation episode, S203 the third on the service path, P305 a platform deep dive. An episode's own code shows in its sting tag, its running header and its episode card; another episode's code shows only on the Next card; no code is spoken. `src/content/curriculum.js` records the ideas each episode teaches and the myths it is home to; `npm test` fails when an idea or a myth has two homes in a path.
 
 ### Level 100: Foundations
 
@@ -20,15 +20,15 @@ Codes name the level and the path: 103 is the third foundation episode, S203 the
 
 ### Level 200: Service path
 
-| Code | Episode                                                    | Question                                                   | From                                          | Status    |
-| ---- | ---------------------------------------------------------- | ---------------------------------------------------------- | --------------------------------------------- | --------- |
-| S201 | [Your own environment](S201-your-own-environment.md)       | How do I get an environment I can use?                     | A new take with Fieldnote 02's footage idioms | published |
-| S202 | [Who is asking](S202-who-is-asking.md)                     | Who does the stack think you are?                          | Fieldnote 09, its two ideas re-voiced         | published |
-| S203 | [Ready is not loaded](S203-ready-is-not-loaded.md)         | What does a new environment hold, and does ingestion work? | Fieldnote 10's body with Fieldnote 11's proof | published |
-| S204 | [Whose image is running](S204-whose-image-is-running.md)   | Which commit does each service run?                        | Fieldnote 08 without its traced example       | published |
-| S205 | [Prove it from your desk](S205-prove-it-from-your-desk.md) | How do I prove a change before a pull request?             | Fieldnote 12, re-cut from a new take          | published |
-| S206 | Ship it through the line                                   | What happens to my change after I open a pull request?     | new                                           | planned   |
-| S207 | Changes that come to you                                   | What does the line ask of me when upstream moves?          | new                                           | planned   |
+| Code | Episode                                                      | Question                                                   | From                                          | Status    |
+| ---- | ------------------------------------------------------------ | ---------------------------------------------------------- | --------------------------------------------- | --------- |
+| S201 | [Your own environment](S201-your-own-environment.md)         | How do I get an environment I can use?                     | A new take with Fieldnote 02's footage idioms | published |
+| S202 | [Who is asking](S202-who-is-asking.md)                       | Who does the stack think you are?                          | Fieldnote 09, its two ideas re-voiced         | published |
+| S203 | [Ready is not loaded](S203-ready-is-not-loaded.md)           | What does a new environment hold, and does ingestion work? | Fieldnote 10's body with Fieldnote 11's proof | published |
+| S204 | [Whose image is running](S204-whose-image-is-running.md)     | Which commit does each service run?                        | Fieldnote 08 without its traced example       | published |
+| S205 | [Prove it from your desk](S205-prove-it-from-your-desk.md)   | How do I prove a change before a pull request?             | Fieldnote 12, re-cut from a new take          | published |
+| S206 | [Ship it through the line](S206-ship-it-through-the-line.md) | What happens to my change after I open a pull request?     | new, from a read-only `gh` take               | published |
+| S207 | [Changes that come to you](S207-changes-that-come-to-you.md) | What does the line ask of me when upstream moves?          | new, from a read-only `gh` take               | published |
 
 A service path episode's companion page shows "Service path · N of 7" and its code. The platform path (P201 to P208) and the library get their tables in the rounds that make them.
 
@@ -102,6 +102,7 @@ Five rules keep an idea from being taught twice:
 - **Sheet:** the site's paper (`--paper #f4f7fa`) with a faint field-notes rule, ink `#102b43`, owner colors from `src/styles/base.css`, orange only for fork-owned source. DM Sans and Manrope.
 - **Prequel:** an open field notebook on the desk, the camera pushing into the page until its gears register on the series emblem, the machinery gears from `docs/reference/start/machinery.png` cut into layers that turn one tooth as the tag `FIELDNOTE <code> · TITLE` sets. About 5 seconds, carrying the track and the title: "Foundations. Anatomy of a stack."
 - **Postquel:** "Next", the next episode's code and title, and its question on the notebook's empty left page, then the camera pulls back to the spread with the series name. Nothing advances on its own.
+- **Codes:** the episode's own code shows in the sting tag, in the running header and on its episode card; another episode's code appears only on the Next card. No line speaks a code.
 - **Motion:** each idea is a concept scene built in vector motion, never a held screenshot.
 - **Independent of the site's look:** no episode shows the site's interface or its map drawings. The series shares the site's palette and fonts, and the site may later take visual ideas from the videos, so a cut must not tie the two together.
 - **Generated art:** illustrations made with Gemini image models, and the notebook still behind the bookends, kept with their prompts in the video library. They set mood, metaphor, and summary; they assert nothing the lesson does not state, carry no generated text, and use owner colors only where the lesson assigns an owner.

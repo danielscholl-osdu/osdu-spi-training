@@ -110,6 +110,24 @@ export const sources = {
     path: '.github/workflows/release.yml',
     href: 'https://github.com/Azure/osdu-spi-partition/blob/main/.github/workflows/release.yml',
   },
+  partitionCascadeWorkflow: {
+    label: 'Partition cascade workflow',
+    repo: 'osdu-spi-partition',
+    path: '.github/workflows/cascade.yml',
+    href: 'https://github.com/Azure/osdu-spi-partition/blob/main/.github/workflows/cascade.yml',
+  },
+  partitionTemplateSyncWorkflow: {
+    label: 'Partition template sync workflow',
+    repo: 'osdu-spi-partition',
+    path: '.github/workflows/sync-template.yml',
+    href: 'https://github.com/Azure/osdu-spi-partition/blob/main/.github/workflows/sync-template.yml',
+  },
+  partitionRuleset: {
+    label: 'Partition main branch ruleset',
+    repo: 'osdu-spi-partition',
+    path: '.github/rulesets/default-branch.json',
+    href: 'https://github.com/Azure/osdu-spi-partition/blob/main/.github/rulesets/default-branch.json',
+  },
   partitionDescriptor: {
     label: 'Partition service descriptor',
     repo: 'osdu-spi-partition',

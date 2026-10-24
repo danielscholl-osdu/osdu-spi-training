@@ -413,6 +413,18 @@ function untracedCurriculumLesson(key) {
   );
 }
 
+// A curriculum page whose episode teaches one idea carries one claim.
+function singleIdeaCurriculumLesson(key) {
+  const video = fieldnoteFor(key);
+  const episode = curriculumEpisodes.find(
+    (entry) => video && entry.video === video.id,
+  );
+  return (
+    episode?.teaches.length === 1 &&
+    video.chapters.filter(({ claim }) => claim !== undefined).length === 1
+  );
+}
+
 test('chapters connect to renderers, explanations, and named sources', () => {
   for (const [id, chapter] of Object.entries(chapters)) {
     for (const field of ['title', 'subtitle'])
@@ -1176,6 +1188,68 @@ const servicePathPages = [
       /borrow/i,
     ],
   },
+  {
+    key: 'ship-it',
+    storyboard: 'S206-ship-it-through-the-line.md',
+    diagram: 'shipIt',
+    prefix: 'ship-',
+    level: 'source',
+    myth: ['acceptance-needs-a-release', 'fork', 'fork', 'deployTest'],
+    tool: 'gh',
+    sources: {
+      validation: 'doc/src/workflows/validation.md',
+      partitionRuleset: '.github/rulesets/default-branch.json',
+      partitionCodeowners: '.github/CODEOWNERS',
+    },
+    keep: [
+      /CodeQL and Validation Summary/,
+      /after the last push/,
+      /up to date with main/,
+      /a new push dismisses/,
+      /Re-run failed jobs ran the lane again on the same image/,
+      /11 acceptance and 42 integration tests/,
+      /a new digest/,
+      /cascade’s own push to fork_integration starts no run/,
+    ],
+    never: [
+      /sha-76f88812fbf5/,
+      /#197[’'s]* (?:approv|review)|approv\w* #197/i,
+      /every push to main or fork_integration/,
+    ],
+    moved: [/borrow|owns? (?:its|the) pin|run-owned/i, /Note column|\bskip/i],
+  },
+  {
+    key: 'changes-to-you',
+    storyboard: 'S207-changes-that-come-to-you.md',
+    diagram: 'changesToYou',
+    prefix: 'chg-',
+    level: 'source',
+    myth: ['template-sync-overwrites', 'fork', 'fork', 'templateSync'],
+    tool: 'gh',
+    sources: {
+      cascade: 'doc/src/workflows/cascade.md',
+      templateSync: 'doc/src/adr/012-template-update-propagation-strategy.md',
+      partitionValidateWorkflow: '.github/workflows/validate.yml',
+      partitionCascadeWorkflow: '.github/workflows/cascade.yml',
+    },
+    keep: [
+      /push to fork_integration [^.;]*starts no Validation run/,
+      /a person merges/,
+      /cascade-blocked/,
+      /Declared port of an upstream-owned file/,
+      /adding the label starts no run/i,
+      /a change to review/,
+      /updated in place/,
+    ],
+    never: [/overwrites nothing/i, /JaCoCo|class.file/i],
+    moved: [/generat|\bfilter|classif/i, /retr(?:y|ies)|red lane/i],
+  },
+];
+
+// What the line does on its own, as the S206 and S207 research corrected it.
+const lineNever = [
+  /auto-?merg/i,
+  /push(?:es)? to fork_integration (?:runs|starts|triggers) (?:a |the )?(?:Validation|lane)/i,
 ];
 
 test('the service path pages keep their storyboard words and homes', () => {
@@ -1229,12 +1303,16 @@ test('the service path pages keep their storyboard words and homes', () => {
       );
     }
     if (chapter.example) {
-      assert.ok(
-        companion.includes(
-          straight(`_${chapter.example.title}_, \`${chapter.example.code}\``),
-        ),
-        `${page.key}: example`,
-      );
+      // A companion page names the example, with its command when it gives one.
+      const named = straight(`_${chapter.example.title}_`).toLowerCase();
+      const at = companion.toLowerCase().indexOf(named);
+      assert.ok(at >= 0, `${page.key}: example`);
+      const after = companion.slice(at + named.length);
+      if (after.startsWith(', `'))
+        assert.ok(
+          after.startsWith(straight(`, \`${chapter.example.code}\``)),
+          `${page.key}: example command`,
+        );
       assert.equal(
         video.chapters.some(({ example }) => example),
         storyboard.includes(`**Example: ${chapter.example.title}**`),
@@ -1269,14 +1347,20 @@ test('the service path pages keep their storyboard words and homes', () => {
       assert.equal(myth.owner, owner, id);
       assert.equal(myth.theme, theme, id);
       assert.equal(myth.source, source, id);
-      assert.equal(mythTool(myth.check), 'spi', id);
+      assert.equal(mythTool(myth.check), page.tool || 'spi', id);
       const line = companion
         .split('\n')
         .find((text) =>
           text.includes(`Easy mistake: "${straight(myth.claim)}" (\`${id}\``),
         );
+      // The companion page quotes the check's first command, with <fork> for
+      // the fork it reads.
+      const first = myth.check.split('\n')[0];
       assert.ok(
-        line?.includes(`checked with \`${myth.check}\`)`),
+        line?.includes(`\`${first}\``) ||
+          line?.includes(
+            `\`${first.replace('Azure/osdu-spi-partition', '<fork>')}\``,
+          ),
         `${id}: companion page`,
       );
       assert.ok(
@@ -1311,12 +1395,13 @@ test('the service path pages keep their storyboard words and homes', () => {
       `${page.key}: every explanation is on the map`,
     );
     for (const [key, path] of Object.entries(page.sources)) {
-      assert.equal(sources[key].repo, 'osdu-spi-stack', key);
-      assert.equal(
-        sources[key].href,
-        `https://github.com/Azure/osdu-spi-stack/blob/main/${path}`,
-        key,
-      );
+      assert.equal(sources[key].path, path, key);
+      if (sources[key].repo === 'osdu-spi-stack')
+        assert.equal(
+          sources[key].href,
+          `https://github.com/Azure/osdu-spi-stack/blob/main/${path}`,
+          key,
+        );
       verifySourceRecord(key, sources[key]);
     }
 
@@ -1350,6 +1435,7 @@ test('the service path pages keep their storyboard words and homes', () => {
       assert.match(copy, pattern, `${page.key}: keeps ${pattern}`);
     for (const pattern of [
       ...page.never,
+      ...(page.tool === 'gh' ? lineNever : []),
       /\b20\d\d-\d\d-\d\d\b|\b(?:January|February|March|April|May|June|July|August|September|October|November|December)\b/,
       /still (?:carries|holds|ships)|plans to|has begun/,
       /\b(?:lessons?|views?) (?:08|09|10|12)\b/i,
@@ -1529,6 +1615,8 @@ test('Working the stack maps draw fork-owned source in orange and nothing else',
     whoIsAsking: [],
     readyNotLoaded: [],
     proveFromDesk: ['desk-commit', 'desk-checkout'],
+    shipIt: ['ship-change'],
+    changesToYou: ['chg-own-path'],
   };
   for (const [diagram, expected] of Object.entries(forkOwned)) {
     const html = diagramRenderers[diagram]();
@@ -2090,6 +2178,54 @@ test('field checks name a source, a command, and a place on the site', () => {
   }
 });
 
+test('the line myths live on the service path, and lesson 05 keeps its own targets', () => {
+  for (const [id, page, here] of [
+    [
+      'acceptance-needs-a-release',
+      'ship-it',
+      '#fork-day/prove?detail=stack-slot',
+    ],
+    [
+      'template-sync-overwrites',
+      'changes-to-you',
+      '#fork-day?detail=template-pr',
+    ],
+  ]) {
+    const myth = myths.find((entry) => entry.id === id);
+    assert.ok(myth.route.startsWith(`#${page}?`), `${id}: its home`);
+    assert.deepEqual(myth.here, { 'fork-day': here }, id);
+    verifyRoute(here, `${id} on lesson 05`);
+    assert.ok(
+      mythCallout(id, 'fork-day').includes(`href="${here}" data-map-jump`),
+      `${id}: lesson 05 keeps its own target`,
+    );
+  }
+  assert.equal(
+    chapters['fork-day'].mistakes.prove,
+    'acceptance-needs-a-release',
+  );
+  const release = myths.find(({ id }) => id === 'acceptance-needs-a-release');
+  const [releases, lane] = release.check.split('\n');
+  assert.equal(
+    releases,
+    'gh release list -R Azure/osdu-spi-partition --limit 1',
+  );
+  assert.match(
+    lane,
+    /^gh run view <run-id> -R Azure\/osdu-spi-partition --json jobs .*"Deploy and Test"/,
+  );
+  assert.match(release.reality, /fork_integration starts no run/);
+  assert.doesNotMatch(release.reality, /main or fork_integration/);
+  const template = myths.find(({ id }) => id === 'template-sync-overwrites');
+  assert.equal(
+    template.check,
+    'gh pr list -R Azure/osdu-spi-partition --label template-sync --state all',
+  );
+  for (const text of [template.reality, template.correction])
+    assert.match(text, /nothing lands on main until a person merges/);
+  assert.doesNotMatch(template.reality, /overwrit|review comment/i);
+});
+
 test('readiness misconception separates possible convergence from API proof', () => {
   const readiness = myths.find((myth) => myth.id === 'finished-means-ready');
   const misconceptionCopy = `${readiness.reality} ${readiness.routeLabel}`;
@@ -2283,6 +2419,8 @@ test('audio markers are ordered, inside the recording, and point at real views',
     'ready-not-loaded',
     'whose-image',
     'prove-from-desk',
+    'ship-it',
+    'changes-to-you',
   ]);
   assert.deepEqual(Object.keys(chapters.start.index[2].lessons), ['bring-up']);
   assert.deepEqual(Object.keys(chapters.start.index[5].lessons), ['core-dags']);
@@ -3085,7 +3223,10 @@ test('learn views retain authored lesson metadata and omit repeated scaffolding'
   for (const [id, chapter] of learn) {
     assert.ok(chapter.question?.trim(), `${id}: question`);
     assert.ok(chapter.builds?.trim(), `${id}: builds`);
-    assert.ok(chapter.outcomes?.length >= 2, `${id}: outcomes`);
+    assert.ok(
+      chapter.outcomes?.length >= (singleIdeaCurriculumLesson(id) ? 1 : 2),
+      `${id}: outcomes`,
+    );
     assert.ok(chapter.where?.trim(), `${id}: where`);
     const scope = chapterScope(id);
     const outcomes = chapterOutcomes(id);
@@ -3329,6 +3470,8 @@ test('the course runs level 100, then the service path, and lessons keep their n
     'ready-not-loaded',
     'whose-image',
     'prove-from-desk',
+    'ship-it',
+    'changes-to-you',
     'bring-up',
     'fork-shape',
     'fork-day',
@@ -3371,6 +3514,8 @@ test('the course runs level 100, then the service path, and lessons keep their n
     ['ready-not-loaded', 'S203', 3],
     ['whose-image', 'S204', 4],
     ['prove-from-desk', 'S205', 5],
+    ['ship-it', 'S206', 6],
+    ['changes-to-you', 'S207', 7],
   ]) {
     assert.deepEqual(
       pathPlace(key),
@@ -3716,8 +3861,9 @@ test('structured claims resolve their focus, evidence, and scopes on every scene
     );
     if (!claims.length) continue;
     assert.ok(
-      claims.length >= 2 && claims.length <= 4,
-      `${key}: a lesson carries two to four claims`,
+      claims.length >= (singleIdeaCurriculumLesson(key) ? 1 : 2) &&
+        claims.length <= 4,
+      `${key}: a lesson carries two to four claims, or one for one idea`,
     );
     assert.ok(chapter.goal, `${key}: goal`);
     const chapterSceneSteps = chapterSteps(key).length
@@ -4820,6 +4966,7 @@ test('map lesson examples other than the step lesson use one closed disclosure a
       'who-is-asking',
       'ready-not-loaded',
       'whose-image',
+      'ship-it',
       'bring-up',
       'fork-shape',
       'fork-day',
@@ -6228,9 +6375,19 @@ test('Fieldnote routes parse and keep the published keys', () => {
     assert.equal(parseRoute(`#watch/${cut}`).video, episode, `cut ${cut}`);
     assert.equal(parseRoute(`#watch/${cut}?t=120`).time, null, `cut ${cut}`);
   }
-  for (const id of ['02', '11'])
+  for (const id of ['02', '05', '11'])
     assert.equal(parseRoute(`#watch/${id}`).video, id, 'still published');
-  for (const id of ['104', '105', 'S201', 'S202', 'S203', 'S204', 'S205']) {
+  for (const id of [
+    '104',
+    '105',
+    'S201',
+    'S202',
+    'S203',
+    'S204',
+    'S205',
+    'S206',
+    'S207',
+  ]) {
     const route = parseRoute(`#watch/${id}?t=12`);
     assert.deepEqual(
       [route.chapter, route.video, route.time],
@@ -6421,6 +6578,8 @@ test('the Fieldnotes page lists episodes by book with one player and a transcrip
       'S203',
       'S204',
       'S205',
+      'S206',
+      'S207',
       '02',
       '04',
       '05',
@@ -6462,8 +6621,16 @@ test('the Fieldnotes page lists episodes by book with one player and a transcrip
     'a replaced cut opens its episode',
   );
   assert.match(
-    pageRenderers.watch(parseRoute('#watch/S205')),
-    /<a href="#watch\/S204" data-watch-play>← Fieldnote S204<\/a><a href="#watch\/02" data-watch-play>Fieldnote 02 →<\/a>/,
+    pageRenderers.watch(parseRoute('#watch/S206')),
+    /<p class="watch-book"><a href="#ship-it">Service path · 6 of 7 · Ship it through the line →<\/a><\/p>/,
+  );
+  assert.match(
+    pageRenderers.watch(parseRoute('#watch/S207')),
+    /<p class="watch-book"><a href="#changes-to-you">Service path · 7 of 7 · Changes that come to you →<\/a><\/p>/,
+  );
+  assert.match(
+    pageRenderers.watch(parseRoute('#watch/S207')),
+    /<a href="#watch\/S206" data-watch-play>← Fieldnote S206<\/a><a href="#watch\/02" data-watch-play>Fieldnote 02 →<\/a>/,
     'the service path leads to the first lesson cut',
   );
   assert.match(

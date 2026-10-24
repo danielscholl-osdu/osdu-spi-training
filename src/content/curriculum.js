@@ -38,7 +38,7 @@ export const ideas = {
   'port-label': 'Upstream-owned files change only with the port label',
   'sync-cascade-labels': "Sync, cascade and the tracking issue's labels",
   'template-sync-proposes':
-    'Template sync proposes a pull request and overwrites nothing',
+    'Template sync proposes a pull request; nothing lands until a person merges',
   'borrow-prove-restore': 'Borrow, prove, restore, and a run that owns its pin',
   'facts-and-needs': 'The stack publishes facts and the fork declares needs',
   'profiles-and-stack-file': 'Profiles and the stack file',
@@ -220,6 +220,7 @@ export const episodes = [
       'suite-from-deployed-commit',
     ],
     mistakes: ['acceptance-needs-a-release'],
+    video: 'S206',
   },
   {
     code: 'S207',
@@ -234,6 +235,7 @@ export const episodes = [
     teaches: ['port-label', 'sync-cascade-labels', 'template-sync-proposes'],
     uses: ['fork-owns-few-paths', 'six-stations'],
     mistakes: ['template-sync-overwrites'],
+    video: 'S207',
   },
   {
     code: 'P201',

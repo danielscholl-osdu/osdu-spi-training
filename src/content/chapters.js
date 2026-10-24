@@ -66,6 +66,8 @@ export const chapters = {
             'What does a new environment hold, and does ingestion work?',
           'whose-image': 'Which commit does each service run?',
           'prove-from-desk': 'How do I prove a change before a pull request?',
+          'ship-it': 'What happens to my change after I open a pull request?',
+          'changes-to-you': 'What does the line ask of me when upstream moves?',
         },
       },
       {
@@ -1616,6 +1618,176 @@ export const chapters = {
         scopes: ['desk-environment'],
         crossing: 'Checkout → environment registry → lock → pods',
         evidence: 'desk-registry',
+      },
+    ],
+  },
+  'ship-it': {
+    kind: 'map',
+    group: 'learn',
+    book: 'Service path',
+    title: 'Ship it through the line',
+    subtitle: 'Required checks, the lane, and the merge',
+    subhead:
+      'Two required checks and a code owner’s approval gate your pull request, and the lane runs your image in a real stack before any release.',
+    intro:
+      '<p>A pull request from a branch in your service’s fork gets an image named by its digest and a turn in the shared stack before anyone merges it.</p><p>Builds on the six stations from 104, where a person approves from 105, and a change you proved from your desk. This view works where the code comes from: your pull request and its Validation run in the service fork, and the shared stack that run visits.</p>',
+    figure: 'One pull request, from its checks to main',
+    selected: 'ship-rules',
+    diagram: 'shipIt',
+    guides: [],
+    listen: [],
+    mistakes: ['acceptance-needs-a-release'],
+    scope:
+      'One pull request from a branch in partition’s fork, under its main ruleset. Reading a red or skipped lane, and how the lane borrows a service, are deep dives of their own. The run, digests, and test counts in the example are from one pull request. This map is illustrative, executes nothing, and reports no live state.',
+    sources: [
+      'validation',
+      'partitionRuleset',
+      'deployTest',
+      'proof',
+      'release',
+    ],
+    question: 'What happens to my change after I open a pull request?',
+    builds:
+      'Builds on the six stations from 104, where a person approves from 105, and a change you proved from your desk.',
+    where:
+      'Where the code comes from: your pull request and its Validation run in the service fork, and the shared stack that run visits.',
+    goal: 'You can say what must pass before your pull request merges, what the lane proves before and after the merge, and why no release is needed for any of it.',
+    outcomes: [
+      {
+        headline:
+          "A pull request's checks, the lane among them, and a code owner's approval",
+        text: 'Two required checks gate a merge into main, CodeQL and Validation Summary, and Validation Summary speaks for the build, the image and the lane; a code owner approves after the last push, a new push dismisses that approval, and every review thread is resolved.',
+        why: 'The rules are main’s ruleset in the fork, and they also want the branch up to date with main. Validation Summary is one check for the whole run, so a failed build, image push, or lane turns it red.',
+        focus: [
+          'ship-rules',
+          'ship-codeql',
+          'ship-summary',
+          'ship-build',
+          'ship-image',
+          'ship-lane',
+          'ship-approval',
+        ],
+        scopes: ['ship-pr'],
+        crossing: 'Two checks → Validation Summary → a code owner',
+        evidence: 'ship-rules',
+      },
+    ],
+    example: {
+      title: 'one fix, from pull request to main',
+      code: 'gh run view 39476374522 -R Azure/osdu-spi-partition',
+      scopes: ['ship-run', 'ship-stack'],
+      crossing: 'Branch → image → gate → lane → summary → main',
+      hops: [
+        {
+          detail: 'ship-change',
+          label: 'A branch in the fork',
+          copy: 'Pull request #197 is a one-line fix in the fork’s Azure code, AzureIstioSecurityFilter.java with its test, from a branch in Azure/osdu-spi-partition itself.',
+        },
+        {
+          detail: 'ship-image',
+          label: 'An image by digest',
+          copy: 'Validation built it in three minutes, and Docker Push published ghcr.io/azure/osdu-spi-partition@sha256:0ed8e1e3e406….',
+        },
+        {
+          detail: 'ship-gate',
+          label: 'Deploy Gate',
+          copy: 'Deploy Gate let the run take its turn in the shared stack with the pushed image.',
+        },
+        {
+          detail: 'ship-env',
+          label: 'The first try',
+          copy: 'The shared environment was not ready: Deploy and Test waited ten minutes and stopped before it pinned anything, and Validation Summary went red.',
+        },
+        {
+          detail: 'ship-lane',
+          label: 'The re-run',
+          copy: 'Once the environment reported Deployable, Re-run failed jobs ran the lane again on the same image: it pinned sha256:0ed8e1e3e406…, passed 11 acceptance and 42 integration tests, and put the canonical image back.',
+        },
+        {
+          detail: 'ship-summary',
+          label: 'The summary comment',
+          copy: 'The summary comment on the pull request turned green in place, with one line for each suite.',
+        },
+        {
+          detail: 'ship-push',
+          label: 'The push to main',
+          copy: 'After the merge, the push run on main built merge commit 5c53ff0 into a new digest, sha256:a7cb38e2e732…, and ran the lane on it again.',
+        },
+      ],
+      note: 'The run, digests, and counts are the ones one pull request showed. This site executes nothing and reports no live state.',
+    },
+  },
+  'changes-to-you': {
+    kind: 'map',
+    group: 'learn',
+    book: 'Service path',
+    title: 'Changes that come to you',
+    subtitle: 'Sync, cascade, the port label, and template sync',
+    subhead:
+      'When upstream moves, the line opens the pull requests, and its labels tell you when it is your move.',
+    intro:
+      '<p>Upstream’s changes and the template’s reach your service’s fork as pull requests the line opens itself, and a person merges each one.</p><p>Builds on the six stations and the paths a fork owns from 104, and your own pull request from Ship it through the line. This view works where the code comes from: upstream and the template, your service’s fork, and the pull requests into its main.</p>',
+    figure: 'How upstream’s and the template’s changes reach main',
+    selected: 'chg-issue',
+    diagram: 'changesToYou',
+    guides: [],
+    listen: [],
+    mistakes: ['template-sync-overwrites'],
+    scope:
+      'One service fork, partition. How fork_upstream is generated and which paths Check Paths reads, reading a red lane run, and why nothing retries while human-required stays are deep dives of their own. This map is illustrative, executes nothing, and reports no live state.',
+    sources: [
+      'synchronization',
+      'cascade',
+      'cascadeMonitor',
+      'validation',
+      'templateSync',
+    ],
+    question: 'What does the line ask of me when upstream moves?',
+    builds:
+      'Builds on the six stations and the paths a fork owns from 104, and your own pull request from Ship it through the line.',
+    where:
+      'Where the code comes from: upstream and the template, your service’s fork, and the pull requests into its main.',
+    goal: 'You can read the labels on a sync and its tracking issue, say when your pull request needs the port label, and say what template sync does to a file you changed.',
+    outcomes: [
+      {
+        headline: "Sync, cascade and the tracking issue's labels",
+        text: 'Once a day sync opens a pull request into fork_upstream and a tracking issue, both labeled human-required; after a person merges it, the cascade starts within seconds, the issue goes cascade-active and then validated, and the cascade opens a pull request to main that gets the full lane and that a person merges. When the cascade cannot finish, the issue goes cascade-blocked and a new human-required issue says what stopped it.',
+        why: 'The labels are the state: human-required is your move, cascade-active says the cascade is running, validated that it passed. The cascade’s own push to fork_integration starts no Validation run; the image and the lane come from its pull request and from the push to main after a person merges it.',
+        focus: [
+          'chg-upstream',
+          'chg-sync',
+          'chg-issue',
+          'chg-cascade',
+          'chg-cascade-pr',
+          'chg-merge',
+        ],
+        scopes: ['chg-fork'],
+        crossing: 'Sync → a person merges → cascade → a person merges',
+        evidence: 'chg-issue',
+      },
+      {
+        headline: 'Upstream-owned files change only with the port label',
+        text: 'A file that comes from fork_upstream is upstream-owned; when your pull request to main changes one, Check Paths fails and the Validation Summary fails with it, unless the pull request carries the port label and Check Paths is re-run, when it names each file as a declared port.',
+        why: 'The fork owns a short list of paths, and everything else comes from fork_upstream. Sync’s and the cascade’s own pull requests change upstream-owned files by design and are exempt, and adding the label starts no run, so Check Paths has to be re-run.',
+        focus: [
+          'chg-own-path',
+          'chg-upstream-file',
+          'chg-check-paths',
+          'chg-port',
+        ],
+        scopes: ['chg-main'],
+        crossing: 'Upstream-owned file → Check Paths → port label → re-run',
+        evidence: 'chg-check-paths',
+      },
+      {
+        headline:
+          'Template sync proposes a pull request; nothing lands until a person merges',
+        text: 'Once a day template sync proposes the template’s changes as one pull request to main labeled template-sync, updated in place if the template moves again, with the template’s whole copy of each changed file on its branch; nothing reaches main until a person merges it.',
+        why: 'Because the branch holds the template’s copy, a local edit to a synced file shows in the diff as a change to review, and you decide before anything lands. Files outside the template’s sync list are never touched.',
+        focus: ['chg-template', 'chg-template-pr', 'chg-merge'],
+        scopes: ['chg-fork'],
+        crossing: 'Template → one pull request → a person merges',
+        evidence: 'chg-template-pr',
       },
     ],
   },
