@@ -63,17 +63,16 @@ The season shares one take day: a throwaway core environment on 0.32, which also
 
 ## Episode shape
 
-Every curriculum episode follows this order. The storyboard is written once, and the episode and its companion page are both made from it.
+Every curriculum episode follows this order, and every one opens on the prequel: no cold open or teaser plays before it. The storyboard is written once, and the episode and its companion page are both made from it.
 
-| Beat                         | Spoken                                                          | On screen                                                                                 |
-| ---------------------------- | --------------------------------------------------------------- | ----------------------------------------------------------------------------------------- |
-| Cold open, when there is one | the result, in a line or two                                    | the result itself: the last lines of a take, or the finished board                        |
-| Prequel and sting            | the track and the title: "Foundations. Anatomy of a stack."     | the notebook push-in; the gears turn as the tag `FIELDNOTE 102 · ANATOMY OF A STACK` sets |
-| Question                     | the question the episode answers                                | the question on a clean sheet                                                             |
-| Beats, two or three          | one idea each, in the companion page's words adapted for speech | a concept scene built for each idea                                                       |
-| Easy mistake, only at home   | the myth, what is true, and the check                           | the quoted claim with its owner chip, then what is true and the check                     |
-| Recall                       | one line: "So now you can say: …"                               | the line on the sheet                                                                     |
-| Next                         | the next episode's question                                     | the postquel: "Next", the next episode's code and title, and its question                 |
+| Beat                       | Spoken                                                          | On screen                                                                                 |
+| -------------------------- | --------------------------------------------------------------- | ----------------------------------------------------------------------------------------- |
+| Prequel and sting          | the track and the title: "Foundations. Anatomy of a stack."     | the notebook push-in; the gears turn as the tag `FIELDNOTE 102 · ANATOMY OF A STACK` sets |
+| Question                   | the question the episode answers                                | the question on a clean sheet                                                             |
+| Beats, two or three        | one idea each, in the companion page's words adapted for speech | a concept scene built for each idea                                                       |
+| Easy mistake, only at home | the myth, what is true, and the check                           | the quoted claim with its owner chip, then what is true and the check                     |
+| Recall                     | one line: "So now you can say: …"                               | the line on the sheet                                                                     |
+| Next                       | the next episode's question                                     | the postquel: "Next", the next episode's code and title, and its question                 |
 
 The tracks are spoken as "Foundations" (101 to 105), "Service path" (S2), "Platform path" (P2), and "Deep dive" (level 300). Next names the next episode in the viewer's path. 105 closes on the choice of path: S201 for engineers who change a service, P201 for engineers who run the stack and the line. A library episode closes on the episode it builds on or the next one a task leads to.
 
@@ -107,7 +106,7 @@ Five rules keep an idea from being taught twice:
 - **Independent of the site's look:** no episode shows the site's interface or its map drawings. The series shares the site's palette and fonts, and the site may later take visual ideas from the videos, so a cut must not tie the two together.
 - **Generated art:** illustrations made with Gemini image models, and the notebook still behind the bookends, kept with their prompts in the video library. They set mood, metaphor, and summary; they assert nothing the lesson does not state, carry no generated text, and use owner colors only where the lesson assigns an owner.
 - **Captions:** a VTT track from the narration's word times, not burned in. A second VTT carries the chapters.
-- **Sound:** the bright-mallets cue under the prequel (`kit/generated/audio/bed-prequel-mallets.wav` in the video library), with the episode line spoken over it, and its matching bed under the postquel (`bed-postquel-mallets.wav`). Under narration, only the series' under-narration bed (`kit/generated/audio/under/`), and only beneath a traced example, a recall, a cold open, or footage of a proof: ducked 10 dB under every line, cut at 2 kHz, and at least 7 dB under the voice in 1 to 4 kHz by `film aqa`. Never under code or a log the viewer has to read.
+- **Sound:** the bright-mallets cue under the prequel (`kit/generated/audio/bed-prequel-mallets.wav` in the video library), with the episode line spoken over it, and its matching bed under the postquel (`bed-postquel-mallets.wav`). Under narration, only the series' under-narration bed (`kit/generated/audio/under/`), and only beneath a traced example, a recall, or footage of a proof: ducked 10 dB under every line, cut at 2 kHz, and at least 7 dB under the voice in 1 to 4 kHz by `film aqa`. Never under code or a log the viewer has to read.
 - **Production line:** Keelson's `film` (the `film-cut` workflow, `film compose`, `film review`) from the series' `series.yaml` in the video library. Every cut keeps a cut record, so `film_status` flags a cut whose storyboard, takes, or boards changed after it.
 
 ## Spoken forms
