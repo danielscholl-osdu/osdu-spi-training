@@ -209,7 +209,7 @@ export const fieldnotes = [
     id: 'S201',
     chapter: 'your-environment',
     title: 'Your own environment',
-    duration: 142.5,
+    duration: 135.9,
     width: 1920,
     height: 1080,
     files: {
@@ -219,10 +219,10 @@ export const fieldnotes = [
       chapters: 'fieldnote-S201/chapters.vtt',
     },
     chapters: [
-      { time: 20.56, claim: 0 },
-      { time: 47.1, claim: 1 },
-      { time: 77.128, claim: 2 },
-      { time: 98.884, mistake: 'finished-means-ready' },
+      { time: 11.314, claim: 0 },
+      { time: 39.102, claim: 1 },
+      { time: 70.682, claim: 2 },
+      { time: 92.582, mistake: 'finished-means-ready' },
     ],
     cutFrom: {
       claims: [
