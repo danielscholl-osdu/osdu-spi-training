@@ -850,7 +850,7 @@ export const componentDetails = {
   'desk-verdict': {
     label: 'Your workstation / the verdict',
     title: 'The verdict names the image it ran.',
-    body: 'The last line reads pass or fail with the counts, then what ran: paired and the acceptance digest, or checkout, matched or unmatched, and the commit. In one run partition read pass: 11 tests, 1 skipped, paired with sha256:7fbfeeed…. The verdict is the commit’s own suite-verdict.py, and the exit code is 0 passed, 3 the suite ran and failed, 2 not run or discarded, and 1 not run for any other reason.',
+    body: 'The last line reads pass or fail with the counts, then what ran: paired and the acceptance digest, or checkout, matched or unmatched, and the commit. In one run partition read pass: 11 tests, 1 skipped, paired with sha256:7fbfeeed…. The verdict is the commit’s own suite-verdict.py, and the exit code is 0 passed, 3 the suite ran and failed, 2 not run or discarded, and 1 not run for any other reason. A pass counts tests, and JUnit reports a test with an empty body as a pass; spi test --report counts those.',
     artifact: {
       label: 'Exit codes',
       code: '0 passed · 3 failed · 2 not run or discarded · 1 other',

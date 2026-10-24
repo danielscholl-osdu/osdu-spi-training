@@ -732,7 +732,7 @@ export const fieldnotes = [
       next: 'How do you prove a service from your desk?',
     },
     notes: [
-      'The end card asks “How do you prove a service from your desk?”, which S205 now answers earlier on the service path; this lesson is the last page, so its pager returns to the start.',
+      'The end card asks “How do you prove a service from your desk?”, which S205 answers earlier on the service path; this lesson is the last page, so its pager returns to the start.',
     ],
   },
 ];

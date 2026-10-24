@@ -1796,6 +1796,19 @@ test('every published chapter, step, alias, and retired detail resolves', () => 
         new RegExp(`data-detail="${detail}"`),
         `${sourceDetail}: target component`,
       );
+      const withClaim = parseRoute(
+        `#${sourceChapter}?detail=${sourceDetail}&claim=1`,
+      );
+      assert.equal(withClaim.claim, null, `${sourceDetail}: stale claim`);
+      const owner = (target.outcomes || []).findIndex(
+        (claim) => claim.evidence === detail || claim.focus?.includes(detail),
+      );
+      if (owner >= 0 && !target.lesson)
+        assert.equal(
+          resolveLessonSelection(target, withClaim).claim,
+          owner,
+          `${sourceDetail}: claim that draws it`,
+        );
     }
   }
 
@@ -5892,7 +5905,7 @@ function cutFromDifferences(video) {
       );
   }
   // A whole-video note that quotes the question asked now stands in for a
-  // re-cut end card; on a page that now asks none, it quotes the end card's.
+  // re-cut end card; on a page that asks none, it quotes the end card's.
   const nextDiffers = (question) =>
     (cut.next ?? null) !== question &&
     !(video.notes || []).some(

@@ -49,7 +49,7 @@ The thirteen cuts made one per lesson stay published, with their routes, until t
 
 #### Season 2: Working the stack
 
-Season 1 ends at one authenticated partition lookup by the deploy identity. Season 2 covers what an engineer does with a running core environment on spi 0.32: whose images it runs, who may call it, what data it holds, how ingestion runs, and how to prove a service from a workstation. Each episode is cut from the stack's own decision records and docs and paired with its lesson in the _Working the stack_ book.
+Season 1 ends at one authenticated partition lookup by the deploy identity. Season 2 covers what an engineer does with a running core environment on spi 0.32: whose images it runs, who may call it, what data it holds, how ingestion runs, and how to prove a service from a workstation. Each episode is cut from the stack's own decision records and docs and was paired with its lesson in the _Working the stack_ book; S204, S202, S203 and S205 have since replaced 08, 09, 10 and 12, and 11 keeps its lesson.
 
 | Fieldnote | Episode                 | Covers (osdu-spi-stack)                                                                    | Form        | Storyboard                                                     | Status           |
 | --------- | ----------------------- | ------------------------------------------------------------------------------------------ | ----------- | -------------------------------------------------------------- | ---------------- |
