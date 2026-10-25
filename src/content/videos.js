@@ -209,7 +209,7 @@ export const fieldnotes = [
     id: 'S201',
     chapter: 'your-environment',
     title: 'Your own environment',
-    duration: 142.5,
+    duration: 135.9,
     width: 1920,
     height: 1080,
     files: {
@@ -219,10 +219,10 @@ export const fieldnotes = [
       chapters: 'fieldnote-S201/chapters.vtt',
     },
     chapters: [
-      { time: 20.56, claim: 0 },
-      { time: 47.1, claim: 1 },
-      { time: 77.128, claim: 2 },
-      { time: 98.884, mistake: 'finished-means-ready' },
+      { time: 11.314, claim: 0 },
+      { time: 39.102, claim: 1 },
+      { time: 70.682, claim: 2 },
+      { time: 92.582, mistake: 'finished-means-ready' },
     ],
     cutFrom: {
       claims: [
@@ -254,7 +254,7 @@ export const fieldnotes = [
     id: 'S202',
     chapter: 'who-is-asking',
     title: 'Who is asking',
-    duration: 145,
+    duration: 127.8,
     width: 1920,
     height: 1080,
     files: {
@@ -264,9 +264,9 @@ export const fieldnotes = [
       chapters: 'fieldnote-S202/chapters.vtt',
     },
     chapters: [
-      { time: 29.474, claim: 0 },
-      { time: 80.916, claim: 1 },
-      { time: 102.608, mistake: 'users-add-accumulates' },
+      { time: 12.414, claim: 0 },
+      { time: 63.856, claim: 1 },
+      { time: 85.548, mistake: 'users-add-accumulates' },
     ],
     cutFrom: {
       claims: [
@@ -293,7 +293,7 @@ export const fieldnotes = [
     id: 'S203',
     chapter: 'ready-not-loaded',
     title: 'Ready is not loaded',
-    duration: 155,
+    duration: 134.9,
     width: 1920,
     height: 1080,
     files: {
@@ -303,11 +303,11 @@ export const fieldnotes = [
       chapters: 'fieldnote-S203/chapters.vtt',
     },
     chapters: [
-      { time: 33.918, claim: 0 },
-      { time: 55.906, claim: 1 },
-      { time: 72.606, claim: 2 },
-      { time: 92.77, example: true },
-      { time: 111.814, mistake: 'deployable-means-loaded' },
+      { time: 13.386, claim: 0 },
+      { time: 35.374, claim: 1 },
+      { time: 52.074, claim: 2 },
+      { time: 72.238, example: true },
+      { time: 91.282, mistake: 'deployable-means-loaded' },
     ],
     cutFrom: {
       claims: [
@@ -338,7 +338,7 @@ export const fieldnotes = [
     id: 'S204',
     chapter: 'whose-image',
     title: 'Whose image is running',
-    duration: 134,
+    duration: 118,
     width: 1920,
     height: 1080,
     files: {
@@ -348,9 +348,9 @@ export const fieldnotes = [
       chapters: 'fieldnote-S204/chapters.vtt',
     },
     chapters: [
-      { time: 28.34, claim: 0 },
-      { time: 69.564, claim: 1 },
-      { time: 91.248, mistake: 'refresh-is-automatic' },
+      { time: 12.14, claim: 0 },
+      { time: 53.364, claim: 1 },
+      { time: 75.048, mistake: 'refresh-is-automatic' },
     ],
     cutFrom: {
       claims: [
@@ -378,7 +378,7 @@ export const fieldnotes = [
     id: 'S205',
     chapter: 'prove-from-desk',
     title: 'Prove it from your desk',
-    duration: 132,
+    duration: 117.6,
     width: 1920,
     height: 1080,
     files: {
@@ -388,8 +388,8 @@ export const fieldnotes = [
       chapters: 'fieldnote-S205/chapters.vtt',
     },
     chapters: [
-      { time: 27.95, claim: 0 },
-      { time: 53.456, claim: 1 },
+      { time: 13.498, claim: 0 },
+      { time: 39.004, claim: 1 },
     ],
     cutFrom: {
       claims: [
@@ -411,7 +411,7 @@ export const fieldnotes = [
     id: 'S206',
     chapter: 'ship-it',
     title: 'Ship it through the line',
-    duration: 173,
+    duration: 161.3,
     width: 1920,
     height: 1080,
     files: {
@@ -421,9 +421,9 @@ export const fieldnotes = [
       chapters: 'fieldnote-S206/chapters.vtt',
     },
     chapters: [
-      { time: 24.658, claim: 0 },
-      { time: 54.918, example: true },
-      { time: 125.502, mistake: 'acceptance-needs-a-release' },
+      { time: 12.966, claim: 0 },
+      { time: 43.226, example: true },
+      { time: 113.81, mistake: 'acceptance-needs-a-release' },
     ],
     cutFrom: {
       claims: [
@@ -446,7 +446,7 @@ export const fieldnotes = [
     id: 'S207',
     chapter: 'changes-to-you',
     title: 'Changes that come to you',
-    duration: 199.9,
+    duration: 189.1,
     width: 1920,
     height: 1080,
     files: {
@@ -456,10 +456,10 @@ export const fieldnotes = [
       chapters: 'fieldnote-S207/chapters.vtt',
     },
     chapters: [
-      { time: 24.694, claim: 0 },
-      { time: 96.71, claim: 1 },
-      { time: 129.23, claim: 2 },
-      { time: 158.782, mistake: 'template-sync-overwrites' },
+      { time: 13.85, claim: 0 },
+      { time: 85.866, claim: 1 },
+      { time: 118.386, claim: 2 },
+      { time: 147.938, mistake: 'template-sync-overwrites' },
     ],
     cutFrom: {
       claims: [
